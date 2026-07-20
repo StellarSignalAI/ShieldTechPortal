@@ -1,0 +1,182 @@
+/* ShieldTech — Base global styles (resets, utilities, component classes, motion) */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--canvas);
+  color: var(--text-high);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Grain overlay — 3% fractal noise over everything */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10000;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(63,169,245,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(63,169,245,0.3); }
+
+/* Selection */
+::selection { background: rgba(63,169,245,0.3); color: var(--text-high); }
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Utility classes */
+.mono { font-family: var(--font-mono); }
+.display { font-family: var(--font-display); }
+.text-high { color: var(--text-high); }
+.text-mid { color: var(--text-mid); }
+.text-low { color: var(--text-low); }
+
+/* Glass panel */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  position: relative;
+}
+.glass::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  pointer-events: none;
+}
+
+/* Status dots */
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.status-dot.online { background: var(--status-ok); box-shadow: 0 0 8px var(--status-ok); }
+.status-dot.warning { background: var(--status-warn); box-shadow: 0 0 8px var(--status-warn); }
+.status-dot.critical { background: var(--status-critical); box-shadow: 0 0 8px var(--status-critical); animation: pulse-critical 2s ease-in-out infinite; }
+.status-dot.offline { background: var(--text-low); }
+.status-dot.info { background: var(--status-info); box-shadow: 0 0 8px var(--status-info); }
+
+@keyframes pulse-critical {
+  0%, 100% { box-shadow: 0 0 4px var(--status-critical); }
+  50% { box-shadow: 0 0 12px var(--status-critical), 0 0 24px rgba(244,63,94,0.3); }
+}
+
+@keyframes pulse-online {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge.ok { background: rgba(52,211,153,0.12); color: var(--status-ok); }
+.badge.warn { background: rgba(251,191,36,0.12); color: var(--status-warn); }
+.badge.critical { background: rgba(244,63,94,0.12); color: var(--status-critical); }
+.badge.info { background: rgba(63,169,245,0.12); color: var(--status-info); }
+
+/* Animated grid background */
+@keyframes grid-move {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(40px, 40px); }
+}
+
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Stagger animation */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Entrance-animation safety net.
+   fade-up is applied inline with `both` fill + a stagger delay, so its opening
+   frame is opacity:0. In a hidden/backgrounded tab the animation clock is frozen
+   at time 0 (and never even leaves the delay), so content would stay invisible —
+   which also breaks print / PDF / screenshot capture. We only let the animation
+   run once the document has actually painted a frame: rAF (which is suspended
+   while hidden and during print) adds `anim-ready` to <html>. Until then — and
+   always when printing — show the final visible state instead of the blank frame.
+   Degrades safely: a page that never sets `anim-ready` simply shows content with
+   no entrance motion, never blank. */
+html:not(.anim-ready) [style*="fade-up"] {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+@media print {
+  [style*="fade-up"] { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes count-glow {
+  0% { text-shadow: 0 0 0 transparent; }
+  50% { text-shadow: 0 0 20px rgba(63,169,245,0.4); }
+  100% { text-shadow: 0 0 0 transparent; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Small caps labels */
+.label-sm {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-low);
+}
+
+/* Hairline divider */
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+  width: 100%;
+}
+
+/* Row hover behaviors (used across tables & cards) */
+.st-rowcard { transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease; }
+.st-rowcard:hover { border-color: var(--border-strong) !important; box-shadow: var(--shadow-hover) !important; transform: translateY(-1px); }
+.st-clickrow { transition: background 0.15s ease; cursor: pointer; }
+.st-clickrow:hover { background: var(--brand-tint-05) !important; }

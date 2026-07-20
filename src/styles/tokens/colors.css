@@ -1,0 +1,38 @@
+/* ShieldTech — Color tokens */
+:root {
+  /* Brand — electric security blue */
+  --brand: #3FA9F5;
+  --brand-hover: #5FC0FF;
+  --brand-pressed: #1E6FB0;
+
+  /* Canvas & surfaces — near-black blue, three elevation steps */
+  --canvas: #05070A;
+  --card: #0A0E14;
+  --modal: #111721;
+
+  /* Glass */
+  --glass-bg: rgba(17,23,33,0.55);
+  --glass-blur: 20px;
+
+  /* Borders — always brand-tinted alpha, never gray */
+  --border-subtle: rgba(63,169,245,0.10);
+  --border-strong: rgba(63,169,245,0.25);
+
+  /* Text — cool blue-grays, 3 steps */
+  --text-high: #EAF2FB;
+  --text-mid: #9FB2C8;
+  --text-low: #5C6F86;
+
+  /* Status */
+  --status-ok: #34D399;
+  --status-warn: #FBBF24;
+  --status-critical: #F43F5E;
+  --status-info: #3FA9F5;
+
+  /* Common alpha mixes (semantic aliases) */
+  --brand-tint-05: rgba(63,169,245,0.05);   /* row hover */
+  --brand-tint-12: rgba(63,169,245,0.12);   /* active tab / badge bg */
+  --ok-tint-12: rgba(52,211,153,0.12);
+  --warn-tint-12: rgba(251,191,36,0.12);
+  --critical-tint-12: rgba(244,63,94,0.12);
+}

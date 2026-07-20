@@ -1,0 +1,21 @@
+/* Widget Studio engine styles — ported verbatim from the inline <style> block
+   in the prototype's ShieldTech Portal.html shell. */
+.st-wcard { transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease; user-select: none; }
+.st-cell:not(.editing):hover .st-wcard { border-color: var(--border-strong) !important; box-shadow: 0 8px 22px -14px rgba(0,0,0,0.9), 0 0 0 1px rgba(63,169,245,0.12) !important; transform: translateY(-1px); }
+.st-cell.editing { cursor: grab; }
+.st-cell.editing:active { cursor: grabbing; }
+.st-cell.editing .st-wcard { animation: st-jiggle 0.4s ease-in-out infinite alternate; }
+.st-cell.st-dragging { opacity: 0.4; }
+.st-cell.st-dragover .st-wcard { border-color: var(--brand) !important; box-shadow: 0 0 0 2px var(--brand) !important; }
+.st-cell.st-resizing .st-wcard { border-color: var(--brand) !important; box-shadow: 0 0 0 2px var(--brand) !important; animation: none !important; }
+.st-resize-handle { position: absolute; bottom: 2px; right: 2px; width: 22px; height: 22px; border-radius: 0 0 var(--radius-md) 0; cursor: nwse-resize; z-index: 6; display: flex; align-items: flex-end; justify-content: flex-end; padding: 4px; color: var(--brand); opacity: 0.7; }
+.st-resize-handle:hover { opacity: 1; }
+.st-cell:not(.editing):hover .st-open-hint { opacity: 0.85; }
+.st-rowcard { transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease; }
+.st-rowcard:hover { border-color: var(--border-strong) !important; box-shadow: 0 8px 22px -14px rgba(0,0,0,0.9), 0 0 0 1px rgba(63,169,245,0.14) !important; transform: translateY(-1px); }
+.st-clickrow { transition: background 0.15s ease; cursor: pointer; }
+.st-clickrow:hover { background: rgba(63,169,245,0.05) !important; }
+@keyframes st-jiggle { from { transform: rotate(-0.45deg); } to { transform: rotate(0.45deg); } }
+@keyframes st-threat-pulse { 0% { box-shadow: 0 0 0 0 currentColor; } 70% { box-shadow: 0 0 0 9px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+.st-threat-pulse { animation: st-threat-pulse 2s ease-out infinite; }
+@media (prefers-reduced-motion: reduce) { .st-cell.editing .st-wcard, .st-threat-pulse { animation: none; } }

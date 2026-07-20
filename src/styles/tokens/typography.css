@@ -1,0 +1,20 @@
+/* ShieldTech — Typography tokens & webfonts */
+/* Fonts are self-hosted via @fontsource imports in src/main.jsx
+   (Montserrat 200–700, IBM Plex Sans 300–600, JetBrains Mono 300–500). */
+
+:root {
+  /* Families */
+  --font-display: 'Montserrat', sans-serif;   /* headings, hero numbers — weights 200–300 for large sizes */
+  --font-body: 'IBM Plex Sans', sans-serif;   /* everything else — 300–600 */
+  --font-mono: 'JetBrains Mono', monospace;   /* data, IDs, timestamps, currency, labels */
+
+  /* Scale (html { font-size: 14px } is the base) */
+  --text-hero: 28px;      /* stat values, weight 600, letter-spacing -0.02em, mono or display */
+  --text-h1: 20px;        /* screen titles — display, weight 300 */
+  --text-h2: 16px;        /* panel titles */
+  --text-body: 12.5px;    /* default row text */
+  --text-sm: 11.5px;      /* secondary text */
+  --text-xs: 10.5px;      /* metadata */
+  --text-label: 10px;     /* .label-sm — uppercase, 600, 0.1em tracking */
+  --text-micro: 9.5px;    /* table headers, chips — mono, uppercase, 0.8px tracking */
+}

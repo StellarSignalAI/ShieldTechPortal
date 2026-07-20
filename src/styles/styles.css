@@ -1,0 +1,6 @@
+/* ShieldTech Design System — global entry. @import list only; tokens + base are the source of truth. */
+@import url('tokens/typography.css');
+@import url('tokens/colors.css');
+@import url('tokens/spacing.css');
+@import url('tokens/effects.css');
+@import url('base/global.css');

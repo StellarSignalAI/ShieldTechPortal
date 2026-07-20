@@ -1,0 +1,13 @@
+/* ShieldTech — Glow & shadow tokens. Glow = brand identity; used sparingly on focus/active/alerts. */
+:root {
+  --glow-brand: 0 0 0 1px var(--brand), 0 0 24px -6px var(--brand);
+  --glow-brand-sm: 0 0 0 1px rgba(63,169,245,0.3), 0 0 12px -4px var(--brand);
+
+  /* Hover lift — cards raise 1px with deep shadow + faint brand ring */
+  --shadow-hover: 0 8px 22px -14px rgba(0,0,0,0.9), 0 0 0 1px rgba(63,169,245,0.12);
+
+  /* Status glows (dots, badges) */
+  --glow-ok: 0 0 8px var(--status-ok);
+  --glow-warn: 0 0 8px var(--status-warn);
+  --glow-critical: 0 0 8px var(--status-critical);
+}
