@@ -964,12 +964,7 @@ function SidecartDrawer({ items, setItems, onClose, showToast }) {
 /* ── Notification Command Center ── */
 function NotificationCenter({ onClose, showToast }) {
   const [prefTab, setPrefTab] = React.useState('all');
-  const notifications = [
-  { id: 1, type: 'payment', title: 'Payment received', body: 'City Hall — $22,100 via ACH', time: '2 min ago', read: false, channel: 'in-app' },
-  { id: 2, type: 'geofence', title: 'Tech arrived on-site', body: 'Mike Reyes at Metro Bank', time: '5 min ago', read: false, channel: 'in-app' },
-  { id: 3, type: 'proposal', title: 'Proposal viewed', body: 'Pinnacle Financial opened PROP-301 (4m 22s)', time: '18 min ago', read: false, channel: 'in-app' },
-  { id: 4, type: 'overdue', title: 'Invoice overdue', body: 'INV-2847 — Acme Dental — 38 days', time: '1h ago', read: true, channel: 'in-app' },
-  { id: 5, type: 'driving', title: 'Driving event', body: 'Tony Garcia — Speeding (42 in 25 zone)', time: '2h ago', read: true, channel: 'in-app' }];
+  const notifications = [];
 
 
   const typeIcons = { payment: '$', geofence: '⌖', proposal: '▤', overdue: '⚠', driving: '⬡' };

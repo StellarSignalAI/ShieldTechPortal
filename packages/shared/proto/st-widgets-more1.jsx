@@ -185,20 +185,10 @@ function WParts({ size }) {
 }
 
 /* ─────────── AR Aging / Invoices ─────────── */
-const M1_AR = [
-  { l: 'Current', v: 96400, color: '#34D399' },
-  { l: '1-30', v: 42100, color: '#3FA9F5' },
-  { l: '31-60', v: 18750, color: '#FBBF24' },
-  { l: '61-90', v: 9200, color: '#FB923C' },
-  { l: '90+', v: 5400, color: '#F43F5E' },
-];
-const M1_OVERDUE = [
-  { customer: 'Pacific Rim Hotels', amt: 12600, days: 47 },
-  { customer: 'Golden Gate Logistics', amt: 3100, days: 62 },
-  { customer: 'Sutter Health', amt: 7800, days: 38 },
-  { customer: 'Westfield Mall', amt: 5400, days: 94 },
-];
+const M1_AR = [];
+const M1_OVERDUE = [];
 function WInvoices({ size }) {
+  if (!M1_AR.length) return <WNoData size={size} title="A/R Aging" glyph="receipt" accent="#FB923C" />;
   const total = M1_AR.reduce((s, b) => s + b.v, 0);
   const overdue = M1_AR.slice(2).reduce((s, b) => s + b.v, 0);
   return (
@@ -228,13 +218,9 @@ function WInvoices({ size }) {
 }
 
 /* ─────────── Commission Tracker ─────────── */
-const M1_REPS = [
-  { name: 'Dana Cole', init: 'DC', color: '#3FA9F5', sold: 184000, comm: 12880 },
-  { name: 'Marcus Vale', init: 'MV', color: '#34D399', sold: 156500, comm: 10955 },
-  { name: 'Priya Shah', init: 'PS', color: '#c084fc', sold: 98200, comm: 6874 },
-  { name: 'Tom Ruiz', init: 'TR', color: '#FBBF24', sold: 61400, comm: 4298 },
-];
+const M1_REPS = [];
 function WCommissions({ size }) {
+  if (!M1_REPS.length) return <WNoData size={size} title="Commissions" glyph="money" accent="#34D399" />;
   const totalComm = M1_REPS.reduce((s, r) => s + r.comm, 0);
   const top = M1_REPS[0];
   const goal = 40000;

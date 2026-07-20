@@ -1,177 +1,108 @@
-/* Screen 2 — Enhanced Owner Dashboard */
+/* Screen 2 — Enhanced Owner Dashboard (store-driven; blank-canvas aware) */
 
 function DashboardScreen() {
-  const sparkRev = [42,45,38,52,48,55,60,58,63,67,62,71,68,74];
-  const sparkTickets = [12,15,11,18,14,10,8,12,9,7,11,8,6,9];
-  const sparkTechs = [6,7,8,7,9,8,10,9,11,10,12,11,10,12];
-  const sparkJobs = [8,7,10,9,11,12,10,14,13,11,15,12,14,16];
+  const [tickets] = useShieldStore(ticketStore);
+  const [jobs] = useShieldStore(jobStore);
+  const [incidents] = useShieldStore(incidentStore);
+  const [mrr] = useShieldStore(mrrStore);
+  const flat = Array(14).fill(0);
+
+  const openTickets = tickets.filter(t => t.status !== 'resolved').length;
+  const slaTracked = tickets.filter(t => t.sla);
+  const slaBreached = slaTracked.filter(t => t.sla.remaining <= 0).length;
+  const slaOnTime = slaTracked.length - slaBreached;
+  const slaPct = slaTracked.length ? Math.round((slaOnTime / slaTracked.length) * 100) : 0;
+  const alerts = [
+    ...incidents.filter(i => i.status === 'active').map(i => ({ severity: i.severity === 'P1' ? 'critical' : 'warning', message: i.title || i.summary || i.id, time: i.time || '', sla: i.sla || null })),
+    ...tickets.filter(t => t.status !== 'resolved' && t.priority === 'critical').map(t => ({ severity: 'critical', message: `${t.customer} — ${t.subject}`, time: '', sla: null })),
+  ];
+  const renewals = mrr.filter(r => r.renewal).slice(0, 4);
+
+  const Empty = ({ children }) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '26px 12px', fontSize: 12, color: 'var(--text-low)', textAlign: 'center' }}>{children}</div>
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 1400 }}>
       {/* KPI Row */}
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <StatCard label="REVENUE TODAY" value={18420} suffix="USD" trend="+12.4%" trendDir="up" sparkData={sparkRev} delay={0} />
-        <StatCard label="OPEN TICKETS" value={14} trend="-3" trendDir="down" sparkData={sparkTickets} delay={80} />
-        <StatCard label="TECHS ACTIVE" value={12} suffix="/ 15" trend="" sparkData={sparkTechs} delay={160} />
-        <StatCard label="JOBS TODAY" value={16} trend="+2" trendDir="up" sparkData={sparkJobs} delay={240} />
+        <StatCard label="REVENUE TODAY" value={0} suffix="USD" trend="" sparkData={flat} delay={0} />
+        <StatCard label="OPEN TICKETS" value={openTickets} trend="" sparkData={flat} delay={80} />
+        <StatCard label="TECHS ACTIVE" value={0} suffix="/ 0" trend="" sparkData={flat} delay={160} />
+        <StatCard label="JOBS TODAY" value={jobs.length} trend="" sparkData={flat} delay={240} />
       </div>
 
       {/* Revenue Goal + SLA + Weather Row */}
       <div style={{ display: 'flex', gap: 12 }}>
-        {/* Revenue Goal */}
         <div className="glass" style={{ padding: '16px 20px', flex: 1, animation: 'fade-up 0.5s ease 0.25s both' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <div className="label-sm">MONTHLY REVENUE GOAL</div>
-            <span className="mono" style={{ fontSize: 11, color: 'var(--status-ok)' }}>On Track</span>
+            <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)' }}>Not set</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ flex: 1 }}>
               <div style={{ height: 8, borderRadius: 4, background: 'rgba(63,169,245,0.08)', overflow: 'hidden' }}>
-                <div style={{ width: '72%', height: '100%', borderRadius: 4, background: 'linear-gradient(90deg, var(--brand), var(--brand-hover))', boxShadow: '0 0 12px rgba(63,169,245,0.3)' }} />
+                <div style={{ width: '0%', height: '100%', borderRadius: 4, background: 'linear-gradient(90deg, var(--brand), var(--brand-hover))' }} />
               </div>
             </div>
-            <span className="mono" style={{ fontSize: 13, fontWeight: 600 }}>$284K <span style={{ color: 'var(--text-low)', fontWeight: 400 }}>/ $395K</span></span>
+            <span className="mono" style={{ fontSize: 13, fontWeight: 600 }}>$0 <span style={{ color: 'var(--text-low)', fontWeight: 400 }}>/ —</span></span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-            <span style={{ fontSize: 10, color: 'var(--text-low)' }}>72% · 18 days remaining</span>
-            <span style={{ fontSize: 10, color: 'var(--status-ok)' }}>Projected: $408K</span>
+            <span style={{ fontSize: 10, color: 'var(--text-low)' }}>Set a goal in Finance to start tracking</span>
           </div>
         </div>
 
-        {/* SLA Compliance */}
         <div className="glass" style={{ padding: '16px 20px', width: 200, animation: 'fade-up 0.5s ease 0.3s both' }}>
           <div className="label-sm" style={{ marginBottom: 8 }}>SLA COMPLIANCE</div>
-          <HealthRing value={96} size={70} strokeWidth={5} color="var(--status-ok)" />
+          <HealthRing value={slaPct} size={70} strokeWidth={5} color={slaTracked.length ? 'var(--status-ok)' : 'var(--text-low)'} />
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
             <div style={{ textAlign: 'center' }}>
-              <div className="mono" style={{ fontSize: 12, color: 'var(--status-ok)' }}>48</div>
+              <div className="mono" style={{ fontSize: 12, color: 'var(--status-ok)' }}>{slaOnTime}</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)' }}>On Time</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div className="mono" style={{ fontSize: 12, color: 'var(--status-critical)' }}>2</div>
+              <div className="mono" style={{ fontSize: 12, color: 'var(--status-critical)' }}>{slaBreached}</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)' }}>Breached</div>
             </div>
           </div>
         </div>
 
-        {/* Weather */}
         <div className="glass" style={{ padding: '16px 20px', width: 180, animation: 'fade-up 0.5s ease 0.35s both' }}>
           <div className="label-sm" style={{ marginBottom: 8 }}>FIELD CONDITIONS</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 28 }}>☀️</span>
-            <div>
-              <div className="mono" style={{ fontSize: 20, fontWeight: 600 }}>72°F</div>
-              <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>Clear · San Francisco</div>
-            </div>
-          </div>
-          <div style={{ fontSize: 10, color: 'var(--status-ok)', marginTop: 6 }}>✓ Good conditions for outdoor installs</div>
+          <div style={{ fontSize: 12, color: 'var(--text-low)', lineHeight: 1.5 }}>Weather feed not connected</div>
+          <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 6, opacity: 0.7 }}>Configure in Settings → Integrations</div>
         </div>
       </div>
 
       {/* Main grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        {/* Monthly Performance */}
         <GlassPanel style={{ animation: 'fade-up 0.5s ease 0.3s both' }}>
           <SectionHeader title="Monthly Performance" icon="reports" />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <div>
-              <div className="label-sm" style={{ marginBottom: 8 }}>Revenue vs Last Month</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span className="mono" style={{ fontSize: 22, fontWeight: 600 }}>$284,600</span>
-                <span style={{ fontSize: 12, color: 'var(--status-ok)' }}>↑ 8.2%</span>
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-low)', marginTop: 2 }}>vs $263,100 prior</div>
-              <div style={{ marginTop: 12 }}>
-                <BarChart data={[
-                  { label: 'Jan', value: 220, prev: 195 }, { label: 'Feb', value: 245, prev: 218 },
-                  { label: 'Mar', value: 238, prev: 240 }, { label: 'Apr', value: 265, prev: 252 },
-                  { label: 'May', value: 284, prev: 263 }
-                ]} />
-              </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <MetricRow label="Gross Margin" value="28.4%" target="25%" status="ok" />
-              <MetricRow label="Win Rate" value="62%" target="55%" status="ok" />
-              <MetricRow label="AR Aging (>30d)" value="$42,800" target="<$30K" status="warn" />
-              <MetricRow label="Avg Ticket Close" value="4.2h" target="<6h" status="ok" />
-              <MetricRow label="First-Time Fix" value="87%" target="85%" status="ok" />
-              <MetricRow label="NPS Score" value="74" target="70" status="ok" />
-            </div>
-          </div>
+          <Empty>Performance metrics appear once invoices, tickets, and jobs exist.</Empty>
         </GlassPanel>
 
-        {/* Live Alerts */}
         <GlassPanel style={{ animation: 'fade-up 0.5s ease 0.4s both' }}>
-          <SectionHeader title="Live Alerts" icon="bolt" count={5} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <AlertRow severity="critical" message="Acme Dental — NVR offline for 6h 23m" time="6h ago" sla="SLA: 1h 37m left" />
-            <AlertRow severity="critical" message="Metro Bank Site B — 3 cameras unreachable" time="2h ago" sla="SLA: 4h left" />
-            <AlertRow severity="warning" message="Overdue invoice: Riverside Medical — $14,250 (38 days)" time="8d overdue" />
-            <AlertRow severity="warning" message="Proposal #Q-2847 awaiting approval — $67,500" time="3d pending" />
-            <AlertRow severity="info" message="Firmware update: Axis P3265-V (12 devices)" time="Today" />
-          </div>
-          {/* Unified timeline teaser */}
-          <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12 }}>⟡</span>
-            <span style={{ fontSize: 11, color: 'var(--brand)' }}>ShieldTech AI: 2 alerts are likely related — both on the same PoE switch</span>
-          </div>
+          <SectionHeader title="Live Alerts" icon="bolt" count={alerts.length} />
+          {alerts.length ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {alerts.slice(0, 6).map((a, i) => <AlertRow key={i} severity={a.severity} message={a.message} time={a.time} sla={a.sla} />)}
+            </div>
+          ) : <Empty>All clear — no active alerts.</Empty>}
         </GlassPanel>
       </div>
 
       {/* Bottom row: AI + Leaderboard + Map */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px 1fr', gap: 12 }}>
-        {/* AI Insights */}
         <GlassPanel style={{ animation: 'fade-up 0.5s ease 0.5s both' }}>
           <SectionHeader title="ShieldTech AI Insights" icon="⟡" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <InsightCard priority="high"
-              text="Acme Dental NVR has gone offline 4 times in 14 days. Recommend proactive site visit — the PoE switch may be failing."
-              action="Schedule service call" model="claude-3.5-sonnet" cost="$0.003" />
-            <InsightCard priority="medium"
-              text="3 proposals over $50K pending >48h. Win rate drops 22% after 72h without follow-up."
-              action="Draft follow-ups" model="gpt-4o" cost="$0.008" />
-            <InsightCard priority="low"
-              text="RMR grew 6.2% MoM. At this rate, you'll hit $180K MRR by Q3 — ahead of target."
-              action="View forecast" model="claude-3-haiku" cost="$0.001" />
-          </div>
+          <Empty>ShieldTech AI will surface insights here as your data grows.</Empty>
         </GlassPanel>
 
-        {/* Tech Leaderboard */}
         <GlassPanel style={{ animation: 'fade-up 0.5s ease 0.55s both' }}>
           <SectionHeader title="Top Technicians" icon="star" />
-          {[
-            { name: 'Jessica Liu', score: 98, jobs: 47, rating: '4.9', initials: 'JL' },
-            { name: 'Mike Reyes', score: 94, jobs: 42, rating: '4.8', initials: 'MR' },
-            { name: 'Tony Garcia', score: 91, jobs: 38, rating: '4.7', initials: 'TG' },
-            { name: 'Kevin White', score: 88, jobs: 35, rating: '4.6', initials: 'KW' },
-            { name: 'Diana Patel', score: 85, jobs: 31, rating: '4.8', initials: 'DP' },
-          ].map((tech, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0',
-              borderBottom: i < 4 ? '1px solid rgba(63,169,245,0.04)' : 'none'
-            }}>
-              <span className="mono" style={{
-                width: 18, height: 18, borderRadius: '50%', fontSize: 9, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: i === 0 ? 'rgba(251,191,36,0.15)' : 'rgba(63,169,245,0.06)',
-                color: i === 0 ? 'var(--status-warn)' : 'var(--text-low)'
-              }}>{i + 1}</span>
-              <div style={{
-                width: 24, height: 24, borderRadius: 6, fontSize: 9, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(63,169,245,0.1)', color: 'var(--brand)',
-                fontFamily: 'var(--font-mono)'
-              }}>{tech.initials}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)' }}>{tech.name}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{tech.jobs} jobs · ★{tech.rating}</div>
-              </div>
-              <div className="mono" style={{ fontSize: 13, fontWeight: 600, color: 'var(--brand)' }}>{tech.score}</div>
-            </div>
-          ))}
+          <Empty>No technicians yet — invite your team in Admin → Users.</Empty>
         </GlassPanel>
 
-        {/* Fleet Map */}
         <GlassPanel style={{ animation: 'fade-up 0.5s ease 0.6s both', padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '14px 18px 10px' }}>
             <SectionHeader title="Fleet Status Map" icon="map-pin" />
@@ -180,73 +111,30 @@ function DashboardScreen() {
             <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, opacity: 0.15 }}>
               <defs><pattern id="mapG" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(63,169,245,0.3)" strokeWidth="0.3"/></pattern></defs>
               <rect width="100%" height="100%" fill="url(#mapG)" />
-              <line x1="10%" y1="30%" x2="90%" y2="35%" stroke="rgba(63,169,245,0.08)" strokeWidth="2"/>
-              <line x1="30%" y1="10%" x2="35%" y2="90%" stroke="rgba(63,169,245,0.06)" strokeWidth="2"/>
-              <line x1="60%" y1="15%" x2="65%" y2="85%" stroke="rgba(63,169,245,0.06)" strokeWidth="1.5"/>
             </svg>
-            <MapMarker x="22%" y="28%" label="Acme Dental" status="critical" />
-            <MapMarker x="45%" y="42%" label="Metro Bank A" status="online" />
-            <MapMarker x="62%" y="25%" label="Metro Bank B" status="warning" />
-            <MapMarker x="35%" y="65%" label="Riverside Med" status="online" />
-            <MapMarker x="75%" y="55%" label="City Hall" status="online" />
-            <MapMarker x="52%" y="72%" label="Harbor View" status="online" />
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--text-low)' }}>No customer sites yet</div>
           </div>
         </GlassPanel>
       </div>
 
       {/* Live Activity Feed + Contract Renewals */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        {/* Live Activity Feed */}
         <GlassPanel style={{ animation: 'fade-up 0.5s ease 0.7s both' }}>
           <SectionHeader title="Live Activity Feed" icon="◉" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0, maxHeight: 180, overflow: 'auto' }}>
-            {[
-              { time: '2:14 PM', user: 'Mike Reyes', action: 'Completed job J-4201 at Acme Dental', type: 'ok' },
-              { time: '2:01 PM', user: 'System', action: 'Invoice INV-2865 sent to Marina District Dental', type: 'info' },
-              { time: '1:45 PM', user: 'Jessica Liu', action: 'Started on-site at Metro Bank B', type: 'info' },
-              { time: '1:30 PM', user: 'ShieldTech AI', action: 'Auto-triaged ticket TKT-2845 → High priority, assigned Mike', type: 'info' },
-              { time: '1:12 PM', user: 'Sarah Chen', action: 'New lead: Pinnacle Financial Group ($128,500)', type: 'ok' },
-              { time: '12:50 PM', user: 'System', action: 'Payment received: City Hall — $22,100', type: 'ok' },
-              { time: '12:30 PM', user: 'Diana Patel', action: 'Submitted timesheet — 32.5h (pending approval)', type: 'info' },
-            ].map((ev, i) => (
-              <div key={i} style={{
-                display: 'flex', gap: 8, padding: '7px 0',
-                borderBottom: '1px solid rgba(63,169,245,0.04)',
-                animation: `fade-up 0.3s ease ${i * 50}ms both`
-              }}>
-                <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', width: 56, flexShrink: 0 }}>{ev.time}</span>
-                <StatusDot status={ev.type === 'ok' ? 'online' : 'info'} size={5} />
-                <div style={{ flex: 1, fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.4 }}>
-                  <span style={{ color: 'var(--text-high)', fontWeight: 500 }}>{ev.user}</span> {ev.action}
-                </div>
-              </div>
-            ))}
-          </div>
+          <Empty>Activity from your team and systems will stream here.</Empty>
         </GlassPanel>
 
-        {/* Contract Renewals + Upcoming */}
         <GlassPanel style={{ animation: 'fade-up 0.5s ease 0.75s both' }}>
-          <SectionHeader title="Upcoming Renewals" icon="clipboard" count={4} />
-          {[
-            { customer: 'Riverside Medical', type: 'RMR', value: '$2,800/mo', expires: 'Jun 28', status: 'ok', days: 23 },
-            { customer: 'City Hall', type: 'RMR', value: '$4,200/mo', expires: 'Jul 15', status: 'ok', days: 40 },
-            { customer: 'Harbor View Condos', type: 'Warranty', value: '—', expires: 'Jul 2', status: 'warn', days: 27 },
-            { customer: 'Westfield Mall', type: 'RMR', value: '$6,100/mo', expires: 'Aug 1', status: 'ok', days: 57 },
-          ].map((r, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0',
-              borderBottom: i < 3 ? '1px solid rgba(63,169,245,0.04)' : 'none'
-            }}>
+          <SectionHeader title="Upcoming Renewals" icon="clipboard" count={renewals.length} />
+          {renewals.length ? renewals.map((r, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < renewals.length - 1 ? '1px solid rgba(63,169,245,0.04)' : 'none' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{r.customer}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{r.type} · {r.value}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{r.plan || 'RMR'} · ${'{'}r.mrr{'}'}/mo</div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div className="mono" style={{ fontSize: 11, color: r.days < 30 ? 'var(--status-warn)' : 'var(--text-mid)' }}>{r.expires}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{r.days}d</div>
-              </div>
+              <div className="mono" style={{ fontSize: 11, color: 'var(--text-mid)' }}>{r.renewal}</div>
             </div>
-          ))}
+          )) : <Empty>No contracts yet — renewals will appear here.</Empty>}
           <button onClick={() => window.__shieldNav && window.__shieldNav('contracts')} style={{
             width: '100%', marginTop: 10, padding: '6px', fontSize: 11,
             background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)',

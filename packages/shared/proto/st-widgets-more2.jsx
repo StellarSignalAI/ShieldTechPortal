@@ -2,13 +2,7 @@
    Threat Level (animated) · Device Uptime Wall · Team Kudos (rotating) ·
    Cert Expiry · Install Heatmap · On-Call Rotation */
 
-const M2_TEAM = [
-  { init: 'MR', name: 'Mike Reyes', color: '#3FA9F5' },
-  { init: 'JL', name: 'Jessica Liu', color: '#34D399' },
-  { init: 'KW', name: 'Kevin White', color: '#FBBF24' },
-  { init: 'DP', name: 'Diana Patel', color: '#c084fc' },
-  { init: 'TG', name: 'Tony Grant', color: '#F43F5E' },
-];
+const M2_TEAM = [];
 function m2Avatar(t, sz = 24) {
   return (
     <span style={{ width: sz, height: sz, borderRadius: '50%', background: hexToRgba(t.color, 0.22), color: t.color, fontSize: sz * 0.42, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${hexToRgba(t.color, 0.4)}` }}>{t.init}</span>
@@ -82,15 +76,11 @@ function WThreat({ size }) {
 
 /* ─────────── Device Uptime Wall ─────────── */
 /* deterministic fleet status: 0 ok · 1 warn · 2 down */
-const M2_FLEET = Array.from({ length: 48 }, (_, i) => ([5, 19, 33].includes(i) ? 2 : [2, 11, 24, 38, 41].includes(i) ? 1 : 0));
+const M2_FLEET = [];
 const M2_UPCOLOR = ['#34D399', '#FBBF24', '#F43F5E'];
-const M2_SITES = [
-  { name: 'Riverside Medical', up: 96.2, n: 42 },
-  { name: 'Metro Bank Corp', up: 99.8, n: 28 },
-  { name: 'Westfield Mall', up: 94.1, n: 64 },
-  { name: 'City Hall', up: 100, n: 19 },
-];
+const M2_SITES = [];
 function WUptime({ size }) {
+  if (!M2_FLEET.length) return <WNoData size={size} title="Device Uptime" glyph="camera-feed" accent="#34D399" />;
   const down = M2_FLEET.filter(s => s === 2).length;
   const warn = M2_FLEET.filter(s => s === 1).length;
   const ok = M2_FLEET.length - down - warn;
@@ -138,20 +128,15 @@ function WUptime({ size }) {
 }
 
 /* ─────────── Team Kudos (rotating shoutouts) ─────────── */
-const M2_KUDOS = [
-  { from: 0, to: 1, text: 'crushed the Metro Bank install a day early' },
-  { from: 3, to: 2, text: 'caught a wiring fault before it became a callback' },
-  { from: 2, to: 0, text: 'mentored the new hire all week — legend' },
-  { from: 1, to: 4, text: 'drove 2hrs to cover an emergency P1. Hero.' },
-  { from: 4, to: 3, text: 'closed 9 tickets in a single shift 🔥' },
-];
+const M2_KUDOS = [];
 function WKudos({ size }) {
   const [idx, setIdx] = React.useState(0);
   React.useEffect(() => {
     const t = setInterval(() => setIdx(i => (i + 1) % M2_KUDOS.length), 4500);
     return () => clearInterval(t);
   }, []);
-  const k = M2_KUDOS[idx];
+  if (!M2_KUDOS.length || !M2_TEAM.length) return <WNoData size={size} title="Team Kudos" glyph="star" accent="#FCD34D" />;
+  const k = M2_KUDOS[idx % M2_KUDOS.length];
   const from = M2_TEAM[k.from], to = M2_TEAM[k.to];
   return (
     <WCard size={size} accent="#FCD34D" title="Team Kudos" glyph="star"
@@ -195,15 +180,10 @@ function WKudos({ size }) {
 }
 
 /* ─────────── Cert Expiry Countdown ─────────── */
-const M2_CERTS = [
-  { t: 2, cert: 'NICET II — Fire Alarm', days: 18 },
-  { t: 0, cert: 'Axis Certified Pro', days: 44 },
-  { t: 3, cert: 'Lenel OnGuard', days: 71 },
-  { t: 1, cert: 'OSHA-30', days: 9 },
-  { t: 4, cert: 'CA C-7 License', days: 120 },
-];
+const M2_CERTS = [];
 function m2CertColor(d) { return d <= 14 ? '#F43F5E' : d <= 45 ? '#FBBF24' : '#34D399'; }
 function WCerts({ size }) {
+  if (!M2_CERTS.length || !M2_TEAM.length) return <WNoData size={size} title="Cert Expiry" glyph="certs" />;
   const sorted = [...M2_CERTS].sort((a, b) => a.days - b.days);
   const soon = sorted.filter(c => c.days <= 60);
   const nearest = sorted[0];
@@ -311,6 +291,7 @@ function WPowerHour({ size }) {
 
 /* ─────────── On-Call Rotation ─────────── */
 function WOnCall({ size }) {
+  if (!M2_TEAM.length) return <WNoData size={size} title="On-Call" glyph="phone" />;
   const dow = new Date().getDay(); // 0 Sun..6 Sat
   const cur = M2_TEAM[dow % M2_TEAM.length];
   const next = M2_TEAM[(dow + 1) % M2_TEAM.length];

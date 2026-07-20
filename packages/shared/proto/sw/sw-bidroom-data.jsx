@@ -369,13 +369,7 @@ function brTierPrice(opp, s, tierId) {
 }
 
 /* Likely competitors — deterministic war-games field */
-const BR_COMPETITOR_POOL = [
-  { name: 'Guardian Systems Group', style: 'Volume shop — buys work with thin margin', m: 9 },
-  { name: 'Keystone Integrated Security', style: 'Regional incumbent — strong on K-12', m: 16 },
-  { name: 'Atlantic Low Voltage', style: 'GC-favorite sub — aggressive on labor', m: 11 },
-  { name: 'SecureNet Solutions', style: 'Enterprise pedigree — prices high, wins on spec', m: 22 },
-  { name: 'First Line Fire & Security', style: 'Fire-first — pads unfamiliar security scope', m: 19 },
-];
+const BR_COMPETITOR_POOL = [];
 function brCompetitors(opp) {
   const h = brHash(opp.id);
   const n = 3 + (h % 3);
@@ -388,16 +382,7 @@ function brCompetitors(opp) {
 }
 
 /* ─────────── AI lead feed ─────────── */
-const BR_LEADS = [
-  { id: 'lead-lehigh', title: 'District-Wide Camera & Access Refresh', buyer: 'Lehigh Valley Charter Schools', source: 'PennBid', sourceRisk: 'Verified', state: 'PA', territory: 'PA', trades: ['CCTV', 'Access', 'Div 28'], fit: 87, status: 'Hot', value: 350000, owner: 'daniel', dueAt: '2026-07-10T16:00:00Z', siteWalk: '2026-07-01T13:00:00Z', lat: 40.6084, lng: -75.4902, region: { x: 55, y: 42 }, docs: { rfp: 'synced', drawings: 'synced', specs: 'pending', addenda: 'none' }, poc: { name: 'Facilities Office', title: 'Director of Facilities', phone: '(610) 555-0233', why: 'Bond-funded, and the district has no incumbent integrator on record.', route: 'Direct line' }, nextAction: 'Qualify the source and confirm walk date.',
-    why: 'Matches your 3 won K-12 access jobs. Bond-funded, verified PennBid source, no incumbent on record.' },
-  { id: 'lead-trenton', title: 'Water Authority Perimeter Security', buyer: 'Trenton Water Works', source: 'BidNet Direct', sourceRisk: 'Needs check', state: 'NJ', territory: 'NJ', trades: ['Intrusion', 'CCTV', 'Fiber'], fit: 76, status: 'Warm', value: 290000, owner: 'daniel', dueAt: '2026-07-20T15:00:00Z', siteWalk: null, lat: 40.2206, lng: -74.7597, region: { x: 63, y: 50 }, docs: { rfp: 'synced', drawings: 'pending', specs: 'metadata', addenda: 'none' }, poc: { name: 'Procurement Desk', title: 'Purchasing', phone: '(609) 555-0171', why: 'Utility perimeter work repeats across every pump station once you are approved.', route: 'Main line' }, nextAction: 'Verify the BidNet listing against the authority site.',
-    why: 'Utility perimeter scope — same shape as the PSE&G substation work already in your pipeline.' },
-  { id: 'lead-westchester', title: 'County Courthouse Screening & CCTV', buyer: 'Westchester County (NY)', source: 'Empire State Bid System', sourceRisk: 'Verified', state: 'NY', territory: 'NY', trades: ['CCTV', 'Access', 'Cabling'], fit: 81, status: 'Warm', value: 420000, owner: 'tina', dueAt: '2026-07-24T16:00:00Z', siteWalk: '2026-07-14T10:00:00Z', lat: 41.0339, lng: -73.7629, region: { x: 72, y: 32 }, docs: { rfp: 'synced', drawings: 'synced', specs: 'synced', addenda: 'portal' }, poc: { name: 'B. Callahan', title: 'Capital Projects PM', phone: '(914) 555-0148', why: 'Courthouse security is recurring county work — one clean job seeds the whole capital program.', route: 'Email then call' }, nextAction: 'Qualify; docs are already complete.',
-    why: 'All four document sets already posted and synced — lowest-effort qualify on the board.' },
-  { id: 'lead-medstar', title: 'Clinic Network Infant Protection + Access', buyer: 'MedStar Health (via GC)', source: 'GC bid list', sourceRisk: 'Needs check', state: 'MD', territory: 'MD', trades: ['Access', 'CCTV', 'Nurse call'], fit: 73, status: 'Nurture', value: 260000, owner: 'marcus', dueAt: '2026-07-28T17:00:00Z', siteWalk: null, lat: 39.2037, lng: -76.6899, region: { x: 47, y: 61 }, docs: { rfp: 'metadata', drawings: 'none', specs: 'none', addenda: 'none' }, poc: { name: 'GC Preconstruction', title: 'Precon Manager', phone: '(410) 555-0217', why: 'Healthcare GCs reuse their low-voltage sub across every clinic fit-out.', route: 'Through the GC' }, nextAction: 'Verify the GC listing and request drawings.',
-    why: 'Healthcare fit-out through a GC that runs 6+ clinic jobs a year in your MD territory.' },
-];
+const BR_LEADS = [];
 
 function brLeadState() {
   try { return JSON.parse(localStorage.getItem('sw:bidroom:leads') || '{}'); } catch { return {}; }

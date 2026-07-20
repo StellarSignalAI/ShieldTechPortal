@@ -1,30 +1,11 @@
 /* Service Plans Engine — D-Tools-class recurring service contracts
    Plan templates → sell to customers → service orders → MRR rollup. */
 
-const SP_PLANS = [
-  { id: 'bronze',   name: 'Bronze',   color: '#b08d57', price: 149,  sla: 'Next business day', visits: 1, features: ['Remote monitoring', '1 preventive visit / yr', 'Email support', 'Firmware updates'] },
-  { id: 'silver',   name: 'Silver',   color: '#9fb2c8', price: 349,  sla: '8 business hours',  visits: 2, features: ['Everything in Bronze', '2 preventive visits / yr', 'Phone + email support', 'Priority dispatch', '10% parts discount'] },
-  { id: 'gold',     name: 'Gold',     color: '#f2c14e', price: 749,  sla: '4 hours',           visits: 4, features: ['Everything in Silver', 'Quarterly preventive visits', '24/7 support line', 'Loaner equipment', '20% parts discount', 'Annual security audit'] },
-  { id: 'platinum', name: 'Platinum', color: '#3FA9F5', price: 1499, sla: '1 hour',            visits: 12, features: ['Everything in Gold', 'Monthly preventive visits', 'Dedicated account engineer', 'Free parts (covered)', 'On-site spare pool', 'Cyber + compliance review'] },
-];
+const SP_PLANS = [];
 
-const SP_CONTRACTS = [
-  { id: 'k1', customer: 'Metro Bank Corp',     plan: 'platinum', mrr: 1499, since: 'Jan 2024', renews: 'Jan 2027', status: 'active',  sites: 4, devices: 142 },
-  { id: 'k2', customer: 'Riverside Medical',   plan: 'gold',     mrr: 749,  since: 'Mar 2024', renews: 'Mar 2026', status: 'renewal', sites: 2, devices: 88 },
-  { id: 'k3', customer: 'City Hall',           plan: 'gold',     mrr: 749,  since: 'Jun 2023', renews: 'Jun 2026', status: 'active',  sites: 1, devices: 64 },
-  { id: 'k4', customer: 'Westfield Mall',      plan: 'silver',   mrr: 349,  since: 'Sep 2024', renews: 'Sep 2026', status: 'active',  sites: 3, devices: 120 },
-  { id: 'k5', customer: 'Pacific Rim Hotels',  plan: 'silver',   mrr: 349,  since: 'Nov 2024', renews: 'Nov 2026', status: 'active',  sites: 6, devices: 210 },
-  { id: 'k6', customer: 'Acme Dental',         plan: 'bronze',   mrr: 149,  since: 'Feb 2025', renews: 'Feb 2026', status: 'renewal', sites: 1, devices: 24 },
-  { id: 'k7', customer: 'Harbor View Condos',  plan: 'bronze',   mrr: 149,  since: 'May 2025', renews: 'May 2026', status: 'active',  sites: 1, devices: 32 },
-];
+const SP_CONTRACTS = [];
 
-const SP_ORDERS = [
-  { id: 'so1', customer: 'Metro Bank Corp',    type: 'Preventive', plan: 'platinum', summary: 'Monthly camera + NVR health check', tech: 'Mike Reyes',  due: 'Today 2:00 PM',  status: 'scheduled' },
-  { id: 'so2', customer: 'Riverside Medical',  type: 'Reactive',   plan: 'gold',     summary: 'Card reader offline — main entrance', tech: 'Jessica Liu', due: 'Today 4:30 PM',  status: 'in-progress' },
-  { id: 'so3', customer: 'City Hall',          type: 'Preventive', plan: 'gold',     summary: 'Quarterly PM — all systems',        tech: 'Unassigned', due: 'Tomorrow 9:00 AM', status: 'scheduled' },
-  { id: 'so4', customer: 'Westfield Mall',     type: 'Reactive',   plan: 'silver',   summary: 'Intrusion zone 4 false alarms',     tech: 'Mike Reyes',  due: 'Jun 19',         status: 'scheduled' },
-  { id: 'so5', customer: 'Pacific Rim Hotels', type: 'Inspection', plan: 'silver',   summary: 'Annual fire panel inspection',      tech: 'Carlos Vega', due: 'Jun 22',         status: 'scheduled' },
-];
+const SP_ORDERS = [];
 
 const SP_ORDER_STATUS = {
   scheduled: { c: 'var(--brand)', l: 'Scheduled' },

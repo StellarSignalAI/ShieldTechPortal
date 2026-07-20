@@ -317,16 +317,16 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
           <Icon name="hermes" size={14} color="#fff" /> Ask ShieldTech AI
         </button>
 
-        {/* Notifications */}
+        {/* Notifications (badge appears when unread notifications exist) */}
         <div onClick={onNotifications} style={{ position: 'relative', cursor: 'pointer' }}>
           <Icon name="notification" size={18} color="var(--text-mid)" />
-          <span style={{
+          {(window.__shieldUnreadCount || 0) > 0 && <span style={{
             position: 'absolute', top: -4, right: -6,
             width: 16, height: 16, borderRadius: '50%',
             background: 'var(--status-critical)', color: '#fff',
             fontSize: 9, fontWeight: 700, display: 'flex',
             alignItems: 'center', justifyContent: 'center'
-          }}>3</span>
+          }}>{window.__shieldUnreadCount}</span>}
         </div>
 
         {/* Avatar + Profile Dropdown */}
@@ -338,7 +338,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
             fontSize: 12, fontWeight: 600, color: '#fff', cursor: 'pointer',
             boxShadow: profileOpen ? '0 0 0 2px var(--brand)' : 'none',
             transition: 'box-shadow 0.15s'
-          }}>JM</div>
+          }}>{(window.__shieldUser && window.__shieldUser.initials) || '·'}</div>
 
           {profileOpen && (
             <>
@@ -351,11 +351,11 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
               }}>
                 {/* Profile header */}
                 <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#fff', flexShrink: 0 }}>JM</div>
+                  <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#fff', flexShrink: 0 }}>{(window.__shieldUser && window.__shieldUser.initials) || '·'}</div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>John Mitchell</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-low)' }}>Owner / GM</div>
-                    <div style={{ fontSize: 10, color: 'var(--brand)' }}>jmitchell@shieldtech.com</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{(window.__shieldUser && window.__shieldUser.name) || 'Not signed in'}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{(window.__shieldUser && window.__shieldUser.role) || ''}</div>
+                    <div style={{ fontSize: 10, color: 'var(--brand)' }}>{(window.__shieldUser && window.__shieldUser.email) || ''}</div>
                   </div>
                 </div>
 

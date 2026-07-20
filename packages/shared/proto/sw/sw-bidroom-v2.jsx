@@ -71,11 +71,7 @@ function brHoursLeft(opp) {
 }
 
 /* Overnight agent run */
-const BR_AGENT_RUN = {
-  at: '4:12 AM', portals: ['SAM.gov', 'PennBid', 'eMMA', 'eVA', 'BidNet', 'Empire State BS'],
-  screened: 1247, matched: BR_LEADS.length,
-  rejected: [['outside territory', 61], ['wrong trades', 38], ['too large / bonded out of range', 12], ['expired or awarded', 9]],
-};
+const BR_AGENT_RUN = null; /* populated by the real overnight lead-scan run */
 
 /* ─────────── Qualify V2 — verification + intel + scorecard ─────────── */
 function BrStepQualify({ opp, state, update }) {
@@ -421,8 +417,8 @@ function BidBoardWorkspace({ onOpenOpp }) {
       {/* Headline numbers */}
       <BbNumbers opps={opps} />
 
-      {/* Agent run ticker */}
-      <GlassCard style={{ padding: '11px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+      {/* Agent run ticker (renders only after a real overnight run) */}
+      {BR_AGENT_RUN && <GlassCard style={{ padding: '11px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <span style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)', flexShrink: 0 }}><Icon name="sparkles" size={14} color="var(--brand)" /></span>
         <div style={{ flex: 1, minWidth: 260, font: '400 12.5px/1.55 var(--font-body)', color: 'var(--text-mid)' }}>
           <span style={{ color: 'var(--text-high)', fontWeight: 600 }}>SHIELDTECH AI ran at {BR_AGENT_RUN.at}</span> — screened <span style={{ color: 'var(--text-high)' }}>{BR_AGENT_RUN.screened.toLocaleString()} solicitations</span> across {BR_AGENT_RUN.portals.length} portals · <span style={{ color: 'var(--status-ok)', fontWeight: 600 }}>{freshLeads.length} matched</span> your win profile · top rejections: {BR_AGENT_RUN.rejected.slice(0, 2).map(([r, n]) => `${r} (${n})`).join(', ')}
@@ -430,7 +426,7 @@ function BidBoardWorkspace({ onOpenOpp }) {
         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
           {BR_AGENT_RUN.portals.map(p => <span key={p} style={{ padding: '4px 9px', borderRadius: 999, background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', font: '500 10px/1 var(--font-mono)', color: 'var(--text-low)' }}>{p}</span>)}
         </div>
-      </GlassCard>
+      </GlassCard>}
 
       {/* Needs you now */}
       {queue.length > 0 && (

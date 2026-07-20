@@ -11,25 +11,9 @@ const SURVEY_STEPS = [
   'Building proposal draft…',
 ];
 
-const SURVEY_DETECTED = [
-  { kind: 'Perimeter doors', icon: 'reader', count: 6, note: '4 need access readers, 2 alarm-only', conf: 96 },
-  { kind: 'Camera positions', icon: 'cam-dome', count: 14, note: '8 indoor dome · 4 outdoor bullet · 2 PTZ', conf: 91 },
-  { kind: 'Head-end location', icon: 'controller', count: 1, note: 'IT closet, rack space available', conf: 88 },
-  { kind: 'Cable runs', icon: 'topology', count: 21, note: '~2,400 ft CAT6A, plenum required', conf: 82 },
-  { kind: 'Motion zones', icon: 'anomaly', count: 9, note: 'Open-plan office + warehouse bays', conf: 90 },
-];
+const SURVEY_DETECTED = [];
 
-const SURVEY_BOM_SEED = [
-  { sku: 'P3245-V',  desc: 'Axis P3245-V Indoor Dome',        qty: 8,  unit: 285,  hrs: 1.5 },
-  { sku: 'P1468-LE', desc: 'Axis P1468-LE Outdoor Bullet 4K', qty: 4,  unit: 412,  hrs: 2.0 },
-  { sku: 'Q6135-LE', desc: 'Axis Q6135-LE PTZ',               qty: 2,  unit: 890,  hrs: 2.5 },
-  { sku: 'RP40',     desc: 'HID RP40 Multiclass Reader',      qty: 4,  unit: 165,  hrs: 1.5 },
-  { sku: 'HID-CTRL', desc: 'HID Controller (4-door)',         qty: 1,  unit: 320,  hrs: 3.0 },
-  { sku: 'XNR-6410', desc: 'Hanwha XNR-6410 NVR 64ch',        qty: 1,  unit: 1850, hrs: 4.0 },
-  { sku: 'POE24',    desc: 'PoE++ Switch 24-port',            qty: 1,  unit: 480,  hrs: 2.0 },
-  { sku: 'CAT6A-1K', desc: 'CAT6A Plenum 1000ft',             qty: 3,  unit: 280,  hrs: 0 },
-  { sku: 'LABOR-RUN',desc: 'Cable runs & terminations (21 drops)', qty: 21, unit: 0, hrs: 1.2 },
-];
+const SURVEY_BOM_SEED = [];
 
 const SURVEY_RATE = 145; // blended labor $/hr
 

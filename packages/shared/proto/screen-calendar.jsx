@@ -6,13 +6,7 @@
    - Month bars: booking-style spans with start/end day handles (CalMonthView in calendar-month.jsx)
    - Click job → panel with tech toggle chips · double-click → work order · Esc cancels drags */
 
-const CAL_TECHS = [
-  { id: 'MR', name: 'Mike Reyes',   color: '#3FA9F5' },
-  { id: 'JL', name: 'Jessica Liu',  color: '#34D399' },
-  { id: 'KW', name: 'Kevin White',  color: '#FBBF24' },
-  { id: 'DP', name: 'Diana Patel',  color: '#c084fc' },
-  { id: 'TG', name: 'Tony Garcia',  color: '#F43F5E' },
-];
+const CAL_TECHS = [];
 
 const CAL_TYPES = {
   install:     { bg: 'rgba(63,169,245,0.18)',  border: '#3FA9F5',  label: 'Install' },

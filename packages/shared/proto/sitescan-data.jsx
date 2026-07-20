@@ -88,61 +88,7 @@ function ssNextOffset(floor) {
 }
 
 /* ── SiteScan project store (persistent, syncs like every Shield store) ── */
-const siteScanStore = createShieldStore('sitescans', [{
-  id: 'SS-1201', customer: 'Metro Bank Corp', site: '425 Market St', created: 'Jul 2', status: 'in-progress', pushed: [], projectLink: null,
-  floors: [
-    { id: 'F1', label: 'Ground Floor',
-      rooms: [
-        { id: 'r1', name: 'Lobby',          mode: 'auto',   h: 10.5, poly: [[0, 0], [30, 0], [30, 22], [0, 22]] },
-        { id: 'r2', name: 'Teller Line',    mode: 'corner', h: 10.5, poly: [[30, 0], [52, 0], [52, 14], [30, 14]] },
-        { id: 'r3', name: 'IT Closet',      mode: 'corner', h: 9,    poly: [[30, 14], [42, 14], [42, 22], [30, 22]] },
-        { id: 'r4', name: 'Manager Office', mode: 'auto',   h: 9,    poly: [[52, 0], [66, 0], [66, 14], [52, 14]] },
-      ],
-      doors: [
-        { id: 'd1', room: 'r1', edge: 2, t: 0.5,  w: 6, kind: 'door',   label: 'Main entrance' },
-        { id: 'd2', room: 'r1', edge: 1, t: 0.3,  w: 4, kind: 'door',   label: 'Lobby → Teller' },
-        { id: 'd3', room: 'r3', edge: 3, t: 0.5,  w: 3, kind: 'door',   label: 'IT closet' },
-        { id: 'd4', room: 'r4', edge: 3, t: 0.5,  w: 3, kind: 'door',   label: 'Office' },
-        { id: 'd5', room: 'r1', edge: 0, t: 0.35, w: 8, kind: 'window', label: 'Storefront glazing' },
-        { id: 'd6', room: 'r4', edge: 0, t: 0.5,  w: 5, kind: 'window', label: 'Office window' },
-      ],
-      devices: [
-        { id: 'v1', type: 'dome',   x: 15, y: 11, z: 9,   label: 'CAM-01' },
-        { id: 'v2', type: 'dome',   x: 41, y: 7,  z: 9,   label: 'CAM-02' },
-        { id: 'v3', type: 'bullet', x: 15, y: 21, z: 10,  label: 'CAM-03' },
-        { id: 'v4', type: 'reader', x: 55, y: 13.6, z: 4.5, label: 'ACR-01' },
-        { id: 'v5', type: 'motion', x: 2,  y: 2,  z: 8,   label: 'PIR-01' },
-        { id: 'v6', type: 'panel',  x: 32, y: 20, z: 5,   label: 'CP-01' },
-        { id: 'v7', type: 'nvr',    x: 39, y: 20, z: 4,   label: 'NVR-01' },
-        { id: 'v8', type: 'keypad', x: 12, y: 21.4, z: 4.5, label: 'KP-01' },
-      ],
-      cables: [
-        { id: 'c1', pts: [[15, 11], [15, 16], [33, 16], [36, 20]], type: 'cat6a' },
-        { id: 'c2', pts: [[41, 7], [41, 13], [39, 16], [38, 20]], type: 'cat6a' },
-        { id: 'c3', pts: [[15, 21], [16, 17], [33, 17], [36, 20.4]], type: 'cat6a' },
-      ],
-      photos: [
-        { id: 'p1', x: 15, y: 20, label: 'Entrance — existing keypad', hue: 210 },
-        { id: 'p2', x: 37, y: 19, label: 'IT closet rack — 12U free', hue: 150 },
-      ],
-      objects: [
-        { id: 'o1', type: 'counter',  x: 31, y: 2,  w: 3,   h: 10,  conf: 94 },
-        { id: 'o2', type: 'desk',     x: 55, y: 3,  w: 6,   h: 2.5, conf: 91 },
-        { id: 'o3', type: 'couch',    x: 3,  y: 15, w: 7,   h: 3,   conf: 88 },
-        { id: 'o4', type: 'rack',     x: 38, y: 19, w: 2.5, h: 2.5, conf: 96 },
-        { id: 'o5', type: 'cabinet',  x: 43, y: 1,  w: 6,   h: 2,   conf: 85 },
-        { id: 'o6', type: 'outlet',   x: 29.4, y: 8, w: 0.8, h: 0.8, conf: 97 },
-      ],
-    },
-    { id: 'F2', label: 'Second Floor',
-      rooms: [{ id: 'r5', name: 'Open Office', mode: 'auto', h: 9, poly: [[0, 0], [36, 0], [36, 24], [0, 24]] }],
-      doors: [{ id: 'd7', room: 'r5', edge: 3, t: 0.2, w: 4, kind: 'door', label: 'Stairwell' }],
-      devices: [{ id: 'v9', type: 'dome', x: 12, y: 12, z: 9, label: 'CAM-04' }, { id: 'v10', type: 'dome', x: 27, y: 12, z: 9, label: 'CAM-05' }],
-      cables: [], photos: [],
-      objects: [{ id: 'o7', type: 'desk', x: 4, y: 4, w: 6, h: 2.5, conf: 90 }, { id: 'o8', type: 'desk', x: 4, y: 10, w: 6, h: 2.5, conf: 89 }, { id: 'o9', type: 'table', x: 24, y: 16, w: 8, h: 4, conf: 86 }],
-    },
-  ],
-}]);
+const siteScanStore = createShieldStore('sitescans', []);
 
 /* Blueprint push inbox → surfaces in Design Studio (shared-state exports studioInboxStore) */
 

@@ -100,6 +100,18 @@ function WRow({ label, glyph, glyphColor, a, b, accent, last }) {
 }
 
 /* ── Divider used under the header on medium/large (like the weather hairline) ── */
+/* Shared empty state for widgets whose data source has no records yet */
+function WNoData({ size, accent = '#3FA9F5', title, glyph, sub }) {
+  return (
+    <WCard size={size} accent={accent} title={title} glyph={glyph} sub={sub}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 6, padding: 8 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-low)' }}>No data yet</div>
+        <div style={{ fontSize: 10.5, color: 'var(--text-low)', opacity: 0.7, textAlign: 'center' }}>Records will appear here as you add them</div>
+      </div>
+    </WCard>
+  );
+}
+
 function WDivide() {
   return <div style={{ height: 1, background: 'rgba(255,255,255,0.10)', margin: '10px 0' }} />;
 }

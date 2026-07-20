@@ -113,55 +113,7 @@ function StateGate({ state = 'live', label = 'records', onRetry, children }) {
 }
 
 /* ── QBO Map — full traceability of the 153-item scan ── */
-const QBO_MAP_DATA = [
-  { area: 'Home & command', rows: [
-    { dest: 'Dashboard', key: 'dashboard', n: 1, go: { screen: 'dashboard' }, abs: ['Home dashboard'] },
-    { dest: 'Daily Mission', key: 'daily-mission', n: 3, go: { screen: 'digest' }, abs: ['Feed', 'Tasks', 'Notifications and tasks panel'] },
-    { dest: 'Portal search', key: 'search', n: 2, go: { screen: 'custom-dashboard' }, abs: ['Global search', 'Search panel'] },
-    { dest: 'Finance / AI Co-pilot', key: 'finance:copilot', n: 2, go: { screen: 'finance', params: { financeTab: 'copilot' } }, abs: ['Intuit Intelligence chat', 'AI chat panel'] },
-    { dest: 'QBO Map', key: 'finance:qbo-map', n: 2, go: { screen: 'finance', params: { financeTab: 'qbo-map' } }, abs: ['Create menu panel', 'Settings menu panel'] },
-    { dest: 'Portal navigation', key: 'navigation', n: 1, go: { screen: 'dashboard' }, abs: ['Left navigation'] }] },
-  { area: 'Money in', rows: [
-    { dest: 'Finance / Overview', key: 'finance:overview', n: 1, go: { screen: 'finance', params: { financeTab: 'overview' } }, abs: ['Sales overview'] },
-    { dest: 'Finance / Invoices', key: 'finance:invoices', n: 5, go: { screen: 'finance', params: { financeTab: 'invoices' } }, abs: ['Invoice (Create + Sales)', 'Delayed charge', 'Sales transactions', 'Invoice detail drawer'] },
-    { dest: 'Finance / Estimates', key: 'finance:estimates', n: 3, go: { screen: 'finance', params: { financeTab: 'estimates' } }, abs: ['Estimate (Create + Customer Hub)', 'Estimate detail drawer'] },
-    { dest: 'Finance / Stripe Payments', key: 'finance:stripe', n: 2, go: { screen: 'finance', params: { financeTab: 'stripe' } }, abs: ['Payment links (Create + Sales)'] },
-    { dest: 'Finance / Credits & Receipts', key: 'finance:credits', n: 5, go: { screen: 'finance', params: { financeTab: 'credits' } }, abs: ['Receive payment', 'Credit memo', 'Sales receipt', 'Refund receipt', 'Delayed credit'] },
-    { dest: 'Finance / Statements', key: 'finance:statements', n: 1, go: { screen: 'finance', params: { financeTab: 'statements' } }, abs: ['Statement'] },
-    { dest: 'Finance / Recurring', key: 'finance:recurring', n: 3, go: { screen: 'finance', params: { financeTab: 'recurring' } }, abs: ['Recurring payments', 'Recurring transactions'] },
-    { dest: 'Finance / Products & Services', key: 'finance:products', n: 4, go: { screen: 'finance', params: { financeTab: 'products' } }, abs: ['Products & Services (3 areas)', 'Product/service drawer'] }] },
-  { area: 'Money out', rows: [
-    { dest: 'Finance / Bills & AP', key: 'finance:ap', n: 7, go: { screen: 'finance', params: { financeTab: 'ap' } }, abs: ['Vendors', 'Bills', 'Bill payments', '1099s', 'Vendor drawer'] },
-    { dest: 'Finance / Expenses', key: 'finance:expenses', n: 5, go: { screen: 'finance', params: { financeTab: 'expenses' } }, abs: ['Checks', 'Pay down credit card', 'Expenses overview', 'Expense transactions', 'Mileage'] },
-    { dest: 'Finance / Lending', key: 'finance:lending', n: 4, go: { screen: 'finance', params: { financeTab: 'lending' } }, abs: ['Apply for capital', 'Term loan', 'Line of credit', 'Credit cards'] },
-    { dest: 'Team / Contractors', key: 'team:contractors', n: 2, go: { screen: 'employees', params: { teamTab: 'contractors' } }, abs: ['Contractors (Expenses + Team)'] }] },
-  { area: 'Accounting controls', rows: [
-    { dest: 'Finance / Bank Feed', key: 'finance:bankfeed', n: 8, go: { screen: 'finance', params: { financeTab: 'bankfeed' } }, abs: ['Bank deposit', 'Transfer', 'Bank transactions', 'Receipts', 'Rules', 'QBO payouts', 'QuickBooks Checking', 'Banking drawer'] },
-    { dest: 'Finance / Reconciliation', key: 'finance:reconcile', n: 1, go: { screen: 'finance', params: { financeTab: 'reconcile' } }, abs: ['Reconcile'] },
-    { dest: 'Finance / Chart of Accounts', key: 'finance:accounts', n: 1, go: { screen: 'finance', params: { financeTab: 'accounts' } }, abs: ['Chart of accounts'] },
-    { dest: 'Finance / General Ledger', key: 'finance:ledger', n: 1, go: { screen: 'finance', params: { financeTab: 'ledger' } }, abs: ['Journal entry'] },
-    { dest: 'Finance / Sales Tax', key: 'finance:sales-tax', n: 5, go: { screen: 'finance', params: { financeTab: 'sales-tax' } }, abs: ['Sales tax overview', 'Returns', 'Categories', 'Economic nexus', 'Sales tax settings'] },
-    { dest: 'Finance / Settings', key: 'finance:settings', n: 6, go: { screen: 'finance', params: { financeTab: 'settings' } }, abs: ['My accountant', 'Intuit Experts', 'Account and settings', 'Report settings', 'All lists', 'Lists menu'] },
-    { dest: 'Finance / Branding', key: 'finance:branding', n: 1, go: { screen: 'finance', params: { financeTab: 'branding' } }, abs: ['Custom form styles'] }] },
-  { area: 'Reports & planning', rows: [
-    { dest: 'Finance / Reports', key: 'finance:reports-center', n: 16, go: { screen: 'finance', params: { financeTab: 'reports-center' } }, abs: ['Reports overview', 'Standard/Custom/Management reports', 'Cash flow overview + planner', 'Budgeting', 'P&L', 'Balance Sheet', 'A/R Aging', 'Sales by Customer', 'Business tax overview', 'Tax checklist', 'Report filter panel', 'Custom report builder'] },
-    { dest: 'Reports / Dashboards', key: 'reports:dashboards', n: 2, go: { screen: 'reports' }, abs: ['KPIs', 'Dashboards'] },
-    { dest: 'Reports / Spreadsheet Sync', key: 'reports:spreadsheet-sync', n: 1, go: { screen: 'reports' }, abs: ['Spreadsheet sync'] }] },
-  { area: 'Operations links', rows: [
-    { dest: 'CRM / Overview + Pipeline + Customers', key: 'crm:*', n: 5, go: { screen: 'crm' }, abs: ['Customer Hub overview', 'Opportunities', 'Customers', 'Customer drawer'] },
-    { dest: 'Quote-to-Cash / Proposals', key: 'qtc:proposals', n: 1, go: { screen: 'quote-cash' }, abs: ['Proposals'] },
-    { dest: 'Contracts', key: 'contracts', n: 1, go: { screen: 'contracts' }, abs: ['Contracts'] },
-    { dest: 'Calendar / Appointments', key: 'calendar:appointments', n: 1, go: { screen: 'calendar' }, abs: ['Appointments'] },
-    { dest: 'Customer Reviews', key: 'reviews', n: 1, go: { screen: 'nps' }, abs: ['Reviews'] },
-    { dest: 'Projects + Job Costing', key: 'projects / job-costing', n: 3, go: { screen: 'costing' }, abs: ['Projects', 'Project profitability', 'Job costing'] },
-    { dest: 'Team / Overview + Employees + Time + Payroll', key: 'team:*', n: 11, go: { screen: 'employees' }, abs: ['Team overview', 'Employees', 'Time overview', 'Time entries', 'Single time activity', 'Weekly timesheet', 'Payroll (3 areas)', 'Payroll setup', 'Payroll tax'] },
-    { dest: 'Inventory / Overview + Stock + SO + PO + Receipts + Shipping', key: 'inventory:*', n: 11, go: { screen: 'inventory' }, abs: ['Inventory overview', 'Inventory', 'Qty adjustment', 'Sales orders (3 areas)', 'Purchase orders (2 areas)', 'Item receipts', 'Shipping labels'] },
-    { dest: 'Marketing', key: 'marketing', n: 2, go: { screen: 'marketing' }, abs: ['Marketing overview', 'Campaigns'] },
-    { dest: 'Integrations hub', key: 'integrations:*', n: 9, go: { screen: 'integrations' }, abs: ['Integrations', 'Integration settings', 'Integration transactions', 'Sales channels', 'Store', 'Import data', 'Import desktop data', 'Export data', 'Import/export modal'] }] },
-  { area: 'Administration', rows: [
-    { dest: 'Portal Settings (Users, Billing, Privacy, Fields, Resolution, Desktop, Updates, Help, Account)', key: 'settings:*', n: 14, go: { screen: 'portal-settings' }, abs: ['Manage users', 'User management panel', 'Subscriptions and billing', 'Privacy', 'Custom fields', 'Resolution center', 'Desktop app', "What's new", 'Help', 'Help panel', 'Intuit account', 'Account switcher'] },
-    { dest: 'Documents / Attachments', key: 'documents:attachments', n: 1, go: { screen: 'documents' }, abs: ['Attachments'] }] },
-];
+const QBO_MAP_DATA = [];
 
 function FinanceQboMap() {
   const [q, setQ] = React.useState('');

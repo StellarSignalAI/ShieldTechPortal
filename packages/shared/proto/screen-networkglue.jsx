@@ -17,33 +17,12 @@ const NG_CLASS = {
 };
 
 /* Discovered devices (collector inbox) */
-const NG_DISCOVERED = [
-  { id: 'd1',  name: 'cam-lobby-01',    ip: '192.168.1.101', mac: 'AC:CC:8E:F0:12:34', vendor: 'Axis',       type: 'IP Camera',      cls: 'managed',   port: 'SW-01 · P3',  seen: '2m ago',  state: 'new' },
-  { id: 'd2',  name: 'nvr-main',        ip: '192.168.1.100', mac: '00:09:18:A0:12:34', vendor: 'Hanwha',     type: 'NVR',            cls: 'managed',   port: 'SW-01 · P1',  seen: '2m ago',  state: 'documented' },
-  { id: 'd3',  name: 'UNKNOWN-5F2A',    ip: '192.168.1.148', mac: 'B8:27:EB:5F:2A:1C', vendor: 'Raspberry Pi', type: 'Unknown',      cls: 'unmanaged', port: 'SW-01 · P14', seen: '2m ago',  state: 'new' },
-  { id: 'd4',  name: 'sw-idf-01',       ip: '192.168.1.2',   mac: '00:1A:2B:3C:4D:5E', vendor: 'Cisco',      type: 'Switch',         cls: 'managed',   port: 'Core · P24',  seen: '2m ago',  state: 'documented' },
-  { id: 'd5',  name: 'WIN-DC01',        ip: '192.168.1.10',  mac: '00:15:5D:01:0A:01', vendor: 'Microsoft',  type: 'Domain Ctrl',    cls: 'hyperv',    port: 'SW-01 · P2',  seen: '2m ago',  state: 'new' },
-  { id: 'd6',  name: 'ESXi-HOST-01',    ip: '192.168.1.20',  mac: '00:50:56:9A:33:7B', vendor: 'VMware',     type: 'Hypervisor',     cls: 'vmware',    port: 'Core · P22',  seen: '2m ago',  state: 'documented' },
-  { id: 'd7',  name: 'VM-FILES',        ip: '192.168.1.21',  mac: '00:50:56:9A:33:8C', vendor: 'VMware',     type: 'File Server',    cls: 'virtual',   port: 'virtual',     seen: '2m ago',  state: 'new' },
-  { id: 'd8',  name: 'acr-frontdoor',   ip: '192.168.1.110', mac: '00:06:8E:21:44:09', vendor: 'HID',        type: 'Access Reader',  cls: 'managed',   port: 'SW-02 · P5',  seen: '2m ago',  state: 'documented' },
-  { id: 'd9',  name: 'UNKNOWN-9931',    ip: '192.168.1.201', mac: '3C:5A:B4:99:31:7E', vendor: 'Espressif',  type: 'IoT (unidentified)', cls: 'unmanaged', port: 'SW-02 · P19', seen: '2m ago', state: 'new' },
-  { id: 'd10', name: 'ap-floor1',       ip: '192.168.1.5',   mac: 'FC:EC:DA:00:11:22', vendor: 'Ubiquiti',   type: 'Access Point',   cls: 'managed',   port: 'SW-01 · P8',  seen: '2m ago',  state: 'documented' },
-  { id: 'd11', name: 'VM-BACKUP',       ip: '192.168.1.22',  mac: '00:50:56:9A:33:9D', vendor: 'VMware',     type: 'Backup Appliance', cls: 'virtual', port: 'virtual',     seen: '2m ago',  state: 'new' },
-  { id: 'd12', name: 'alarm-panel-01',  ip: '192.168.1.120', mac: '00:1B:44:11:3A:B7', vendor: 'DSC',        type: 'Alarm Panel',    cls: 'managed',   port: 'SW-02 · P7',  seen: '2m ago',  state: 'documented' },
-];
+const NG_DISCOVERED = [];
 
 /* Switch port maps — keyed by switch */
-const NG_SWITCHES = [
-  { id: 'core', name: 'Core Switch', model: 'USW-Pro-48-PoE', ports: 48, poeUsed: 185, poeTotal: 400, ip: '10.1.1.2' },
-  { id: 'sw01', name: 'SW-01 (IDF Floor 1)', model: 'USW-24-PoE', ports: 24, poeUsed: 142, poeTotal: 250, ip: '10.1.4.2' },
-  { id: 'sw02', name: 'SW-02 (Floor 2)', model: 'USW-24-PoE', ports: 24, poeUsed: 98, poeTotal: 250, ip: '10.1.5.2' },
-];
+const NG_SWITCHES = [];
 /* Per-switch port assignments. Anything not listed = empty. */
-const NG_PORTMAP = {
-  core: { 1:{d:'USG-Pro-4',t:'uplink',spd:'10G',vlan:'all'}, 22:{d:'ESXi-HOST-01',t:'host',spd:'10G',vlan:'Servers',poe:0}, 24:{d:'SW-01',t:'trunk',spd:'1G',vlan:'all'}, 23:{d:'SW-02',t:'trunk',spd:'1G',vlan:'all'}, 12:{d:'App Server',t:'host',spd:'1G',vlan:'Servers'}, 13:{d:'NVR-01',t:'device',spd:'1G',vlan:'Security',poe:0} },
-  sw01: { 1:{d:'nvr-main',t:'device',spd:'1G',vlan:'Security',poe:0}, 2:{d:'WIN-DC01',t:'host',spd:'1G',vlan:'Servers'}, 3:{d:'cam-lobby-01',t:'camera',spd:'100M',vlan:'Security',poe:12.4}, 4:{d:'cam-parking-n',t:'camera',spd:'100M',vlan:'Security',poe:12.4}, 8:{d:'ap-floor1',t:'ap',spd:'1G',vlan:'all',poe:9.2}, 14:{d:'UNKNOWN-5F2A',t:'rogue',spd:'100M',vlan:'Default',poe:3.1}, 24:{d:'Core',t:'uplink',spd:'1G',vlan:'all'} },
-  sw02: { 5:{d:'acr-frontdoor',t:'access',spd:'100M',vlan:'Security',poe:3.8}, 7:{d:'alarm-panel-01',t:'device',spd:'100M',vlan:'Security',poe:2.4}, 8:{d:'ACR-02',t:'access',spd:'100M',vlan:'Security',poe:3.8}, 19:{d:'UNKNOWN-9931',t:'rogue',spd:'100M',vlan:'IoT',poe:1.8}, 24:{d:'Core',t:'uplink',spd:'1G',vlan:'all'} },
-};
+const NG_PORTMAP = {};
 const NG_PORT_TYPE = {
   uplink:{c:'#a78bfa',l:'Uplink'}, trunk:{c:'#a78bfa',l:'Trunk'}, camera:{c:'var(--status-ok)',l:'Camera'},
   access:{c:'var(--status-warn)',l:'Access'}, ap:{c:'#60a5fa',l:'AP'}, device:{c:'var(--brand)',l:'Device'},
@@ -51,45 +30,16 @@ const NG_PORT_TYPE = {
 };
 
 /* Microsoft identity — users */
-const NG_MS_USERS = [
-  { id:'u1', name:'Linda Park',   upn:'lpark@metrobank.com',  dept:'Security',  role:'Security Manager', mfa:true,  lic:'M365 E3', groups:6, signin:'2h ago',  status:'enabled' },
-  { id:'u2', name:'James Cole',   upn:'jcole@metrobank.com',  dept:'IT',        role:'IT Admin',         mfa:true,  lic:'M365 E5', groups:11,signin:'18m ago', status:'enabled' },
-  { id:'u3', name:'Rachel Diaz',  upn:'rdiaz@metrobank.com',  dept:'Operations',role:'Ops Lead',         mfa:false, lic:'M365 E3', groups:4, signin:'1d ago',  status:'enabled' },
-  { id:'u4', name:'Tom Becker',   upn:'tbecker@metrobank.com',dept:'Finance',   role:'Controller',       mfa:true,  lic:'M365 E3', groups:5, signin:'4h ago',  status:'enabled' },
-  { id:'u5', name:'svc-backup',   upn:'svc-backup@metrobank.com',dept:'Service',role:'Service Account',  mfa:false, lic:'—',       groups:2, signin:'3m ago',  status:'enabled' },
-  { id:'u6', name:'Greg Olsen',   upn:'golsen@metrobank.com', dept:'Sales',     role:'Account Exec',     mfa:false, lic:'M365 F3', groups:3, signin:'45d ago', status:'disabled' },
-];
+const NG_MS_USERS = [];
 /* Microsoft identity — groups */
-const NG_MS_GROUPS = [
-  { id:'g1', name:'Security Team',     type:'M365',         members:8,  source:'Entra ID',         resources:['SharePoint: Security', 'Teams: SOC', 'Mailbox: alerts@'] },
-  { id:'g2', name:'Domain Admins',     type:'Security',     members:3,  source:'Active Directory',  resources:['Full directory control', 'GPO management'] },
-  { id:'g3', name:'All Staff',         type:'Distribution', members:142,source:'Entra ID',         resources:['Company broadcast'] },
-  { id:'g4', name:'Finance',           type:'Security',     members:6,  source:'Active Directory',  resources:['\\\\fileserver\\finance', 'QuickBooks share'] },
-  { id:'g5', name:'BitLocker-Escrow',  type:'Security',     members:24, source:'Entra ID',         resources:['Device recovery keys'] },
-];
-const NG_MS_SYNC = [
-  { id:'m365',  label:'Microsoft 365',    sub:'14 licenses · 142 users', status:'synced',  last:'4 min ago' },
-  { id:'entra', label:'Entra ID',         sub:'Tenant: metrobank.onmicrosoft.com', status:'synced', last:'4 min ago' },
-  { id:'ad',    label:'Active Directory', sub:'DC: WIN-DC01 · metrobank.local', status:'synced', last:'12 min ago' },
-];
+const NG_MS_GROUPS = [];
+const NG_MS_SYNC = [];
 
 /* BitLocker recovery keys */
-const NG_BITLOCKER = [
-  { id:'b1', device:'WIN-DC01',        vol:'OS (C:)',   keyId:'A1B2C3D4-5E6F-7890-ABCD-EF1234567890', key:'481923-007264-558102-339471-118260-907553-224418-660031', linked:'WIN-DC01 (Hyper-V)',     escrow:'Entra ID',        rotated:'Feb 12, 2026', status:'escrowed' },
-  { id:'b2', device:'NVR-WORKSTATION', vol:'OS (C:)',   keyId:'B2C3D4E5-6F70-8901-BCDE-F12345678901', key:'220471-883106-447290-118365-660042-229517-883104-447291', linked:'NVR Admin Station',      escrow:'Active Directory',rotated:'Jan 30, 2026', status:'escrowed' },
-  { id:'b3', device:'ESXi-MGMT-VM',    vol:'Data (D:)', keyId:'C3D4E5F6-7081-9012-CDEF-123456789012', key:'907553-224418-660031-481923-007264-558102-339471-118260', linked:'ESXi-HOST-01 (VMware)',  escrow:'Entra ID',        rotated:'Mar 04, 2026', status:'escrowed' },
-  { id:'b4', device:'RECEPTION-PC',    vol:'OS (C:)',   keyId:'D4E5F6G7-8192-0123-DEF0-234567890123', key:'118365-660042-229517-883104-447291-220471-883106-447290', linked:'—',                     escrow:'pending',         rotated:'—',            status:'missing' },
-];
+const NG_BITLOCKER = [];
 
 /* Password rotation engine */
-const NG_ROTATION = [
-  { id:'r1', name:'WIN-DC01 — Administrator', type:'Active Directory', schedule:'30 days', last:'Feb 12, 2026', next:'in 4 days',  status:'scheduled' },
-  { id:'r2', name:'svc-backup',               type:'Entra ID',         schedule:'30 days', last:'Mar 01, 2026', next:'in 19 days', status:'scheduled' },
-  { id:'r3', name:'NVR Admin',                type:'Device',           schedule:'90 days', last:'Feb 04, 2026', next:'in 2 days',  status:'due' },
-  { id:'r4', name:'Access Panel — installer', type:'Device',           schedule:'90 days', last:'Dec 20, 2025', next:'overdue 3d', status:'overdue' },
-  { id:'r5', name:'M365 — break-glass admin', type:'Microsoft 365',    schedule:'On demand',last:'May 30, 2026', next:'manual',     status:'manual' },
-  { id:'r6', name:'Monitoring Portal',        type:'Device',           schedule:'60 days', last:'Apr 18, 2026', next:'in 31 days', status:'scheduled' },
-];
+const NG_ROTATION = [];
 const NG_ROT_STATUS = {
   scheduled:{c:'var(--status-ok)',l:'Scheduled'}, due:{c:'var(--status-warn)',l:'Due soon'},
   overdue:{c:'var(--status-critical)',l:'Overdue'}, manual:{c:'var(--text-low)',l:'On demand'},

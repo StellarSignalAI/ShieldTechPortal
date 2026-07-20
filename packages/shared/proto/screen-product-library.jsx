@@ -4,26 +4,7 @@
    so Design Studio and Proposal Builder both consume it. */
 
 /* ── Brand directory (catalog feeds + sync status) ── */
-const PL_BRANDS = [
-  { id: 'axis', name: 'Axis Communications', country: 'Sweden', cats: ['Cameras', 'NVR', 'Encoders', 'Analytics'], sync: 'live', skus: 0, tier: 'Authorized' },
-  { id: 'hanwha', name: 'Hanwha Vision', country: 'South Korea', cats: ['Cameras', 'NVR', 'Analytics'], sync: 'live', skus: 0, tier: 'Gold Partner' },
-  { id: 'verkada', name: 'Verkada', country: 'USA', cats: ['Cameras', 'Access', 'Sensors'], sync: 'live', skus: 0, tier: 'Certified' },
-  { id: 'bosch', name: 'Bosch Security', country: 'Germany', cats: ['Cameras', 'Intrusion', 'Fire'], sync: 'live', skus: 0, tier: 'Authorized' },
-  { id: 'avigilon', name: 'Avigilon', country: 'Canada', cats: ['Cameras', 'NVR', 'Access'], sync: 'live', skus: 0, tier: 'Authorized' },
-  { id: 'hikvision', name: 'Hikvision', country: 'China', cats: ['Cameras', 'NVR'], sync: 'manual', skus: 0, tier: 'Reseller' },
-  { id: 'hid', name: 'HID Global', country: 'USA', cats: ['Access', 'Credentials'], sync: 'live', skus: 0, tier: 'Platinum' },
-  { id: 'mercury', name: 'Mercury Security', country: 'USA', cats: ['Access'], sync: 'live', skus: 0, tier: 'Authorized' },
-  { id: 'lenel', name: 'LenelS2', country: 'USA', cats: ['Access'], sync: 'manual', skus: 0, tier: 'VAR' },
-  { id: 'dsc', name: 'DSC (Tyco)', country: 'Canada', cats: ['Intrusion'], sync: 'live', skus: 0, tier: 'Authorized' },
-  { id: 'honeywell', name: 'Honeywell', country: 'USA', cats: ['Intrusion', 'Fire', 'Access'], sync: 'live', skus: 0, tier: 'Distributor' },
-  { id: 'ubiquiti', name: 'Ubiquiti', country: 'USA', cats: ['Network'], sync: 'live', skus: 0, tier: 'Reseller' },
-  { id: 'cisco', name: 'Cisco Meraki', country: 'USA', cats: ['Network'], sync: 'live', skus: 0, tier: 'Select' },
-  { id: 'apc', name: 'APC by Schneider', country: 'USA', cats: ['Power'], sync: 'live', skus: 0, tier: 'Distributor' },
-  { id: 'altronix', name: 'Altronix', country: 'USA', cats: ['Power'], sync: 'live', skus: 0, tier: 'Authorized' },
-  { id: 'middle', name: 'Middle Atlantic', country: 'USA', cats: ['Racks', 'Power'], sync: 'live', skus: 0, tier: 'Authorized' },
-  { id: 'commscope', name: 'CommScope', country: 'USA', cats: ['Cabling'], sync: 'live', skus: 0, tier: 'Distributor' },
-  { id: 'panduit', name: 'Panduit', country: 'USA', cats: ['Cabling', 'Racks'], sync: 'manual', skus: 0, tier: 'Reseller' },
-];
+const PL_BRANDS = [];
 
 const PL_CAT_META = {
   'Cameras':     { icon: 'cam-dome',    color: 'var(--brand)' },
@@ -42,42 +23,7 @@ const PL_CAT_META = {
 };
 
 /* ── Catalog generator — expands real model lines into a deep SKU list ── */
-const PL_SEEDS = [
-  // brand, cat, subcat, baseName, baseMsrp, [variant suffixes w/ price multipliers], specBlurb
-  ['axis', 'Cameras', 'Dome', 'AXIS P32', 890, [['65-V', 1, '2MP'], ['68-LV', 1.4, '4K'], ['67-LVE', 1.25, '5MP'], ['75-LVE', 1.7, '4K']], 'Lightfinder 2.0, WDR Forensic Capture, IR, OptimizedIR'],
-  ['axis', 'Cameras', 'Bullet', 'AXIS P14', 760, [['65-LE', 1, '2MP'], ['67-LE', 1.3, '5MP'], ['68-LVE', 1.6, '4K']], 'OptimizedIR, WDR, IK10 vandal-resistant'],
-  ['axis', 'Cameras', 'PTZ', 'AXIS Q61', 4800, [['35-LE', 1, '2MP'], ['54-LE', 1.4, '4MP'], ['78', 2.1, '4K']], '32x optical zoom, Autotracking 2, OptimizedIR 200m'],
-  ['axis', 'NVR', 'Recorder', 'AXIS S30', 2200, [['08', 1, '8ch'], ['16', 1.6, '16ch'], ['Rack', 2.8, '32ch']], 'AXIS Camera Station, PoE, RAID, pre-installed'],
-  ['hanwha', 'Cameras', 'Dome', 'Hanwha XND-', 780, [['8080RV', 1, '5MP'], ['9082RV', 1.5, '4K'], ['C9083RV', 1.8, '4K AI']], 'WiseStream III, 150dB WDR, IR, AI object detection'],
-  ['hanwha', 'Cameras', 'Bullet', 'Hanwha QNO-', 680, [['8080R', 1, '5MP'], ['C9083R', 1.6, '4K'], ['9032R', 1.3, '8MP']], 'IR 30m, 120dB WDR, IP67, IK10'],
-  ['hanwha', 'Cameras', 'Multi-sensor', 'Hanwha PNM-', 2400, [['9085RQZ1', 1, '4x5MP'], ['C12083RVD', 1.5, '4x8MP']], '180/270/360 multi-directional, per-channel AI'],
-  ['hanwha', 'NVR', 'Recorder', 'Hanwha XNR-', 2800, [['6410', 1, '32ch'], ['6420', 1.5, '64ch'], ['6450', 2.2, '128ch']], 'WAVE VMS, PoE, multi-bay RAID, failover'],
-  ['verkada', 'Cameras', 'Dome', 'Verkada CD', 1100, [['42', 0.8, '3MP'], ['52', 1, '5MP'], ['62', 1.5, '4K']], 'Cloud-managed, onboard AI, solid-state storage'],
-  ['verkada', 'Cameras', 'Bullet', 'Verkada CB', 1300, [['52-E', 1, '5MP'], ['62-E', 1.3, '4K']], 'Edge storage up to 365 days, weatherproof'],
-  ['verkada', 'Access', 'Controller', 'Verkada AC', 1600, [['41', 1, '4-door'], ['62', 1.4, '6-door']], 'Cloud access control, built-in cellular backup'],
-  ['bosch', 'Cameras', 'Dome', 'Bosch FLEXIDOME 8000i', 1450, [['NDE-', 1, '4K'], ['NDV-', 0.9, '6MP']], 'Starlight, Intelligent Video Analytics built in'],
-  ['bosch', 'Intrusion', 'Panel', 'Bosch B', 720, [['5512', 1, '48-pt'], ['6512', 1.5, '96-pt'], ['9512', 2.4, '599-pt']], 'IP alarm, cloud, partitioned areas'],
-  ['avigilon', 'Cameras', 'Dome', 'Avigilon H6A', 1350, [['-DO1', 1, '4MP'], ['-DO2', 1.4, '8MP'], ['-DC', 1.7, '4K']], 'Self-learning analytics, HDSM SmartCodec'],
-  ['avigilon', 'NVR', 'Appliance', 'Avigilon HD NVR4', 5200, [['Std', 1, '24TB'], ['Prem', 1.6, '48TB'], ['Value', 0.7, '12TB']], 'ACC software, RAID, dual NIC'],
-  ['hikvision', 'Cameras', 'Turret', 'Hikvision DS-2CD', 320, [['2347', 1, '4MP'], ['2387', 1.5, '8MP']], 'AcuSense, ColorVu, IR, IP67'],
-  ['hid', 'Access', 'Reader', 'HID Signo', 620, [['20', 0.85, 'Mullion'], ['40', 1, 'Wall'], ['40K', 1.2, 'Keypad']], 'OSDP Secure Channel, BLE, NFC, multi-tech'],
-  ['hid', 'Credentials', 'Card', 'HID iCLASS Seos', 6, [['Card', 1, ''], ['Fob', 1.3, ''], ['Sticker', 0.8, '']], 'Seos credential, AES-128, mobile-ready'],
-  ['mercury', 'Access', 'Panel', 'Mercury LP', 1850, [['1501', 0.7, '1-door'], ['1502', 1, '2-door'], ['4502', 1.6, '4-door']], 'OSDP, PoE, onboard DB, open architecture'],
-  ['lenel', 'Access', 'Panel', 'LenelS2 LNL-', 2100, [['X2210', 1, '2-rdr'], ['X3300', 1.5, 'I/O'], ['X4420', 2, '4-rdr']], 'OnGuard, NetBox, encrypted OSDP'],
-  ['dsc', 'Intrusion', 'Panel', 'DSC PowerSeries Neo HS', 680, [['2016', 0.7, '16-zone'], ['2064', 1, '64-zone'], ['2128', 1.5, '128-zone']], 'PowerG wireless, IP/cellular, partitions'],
-  ['dsc', 'Intrusion', 'Sensor', 'DSC PG99', 95, [['14', 1, 'PIR'], ['24', 1.1, 'PIR+'], ['34', 1.5, 'Dual-Tec']], 'PowerG 128-bit AES, pet immune, 8yr battery'],
-  ['honeywell', 'Fire', 'Panel', 'Honeywell NOTIFIER', 2400, [['NFS2-640', 1, '636-pt'], ['NFS2-3030', 2.2, '3180-pt']], 'Intelligent addressable, networkable, voice'],
-  ['honeywell', 'Intrusion', 'Sensor', 'Honeywell 5800', 85, [['PIR-RES', 1, 'PIR'], ['CO', 1.5, 'CO'], ['COMBO', 1.8, 'Smoke/Heat']], 'Wireless, SiX/5800 series, tamper'],
-  ['ubiquiti', 'Network', 'Switch', 'Ubiquiti USW-Pro-', 699, [['24-PoE', 1, '24-port'], ['48-PoE', 1.6, '48-port'], ['Aggregation', 1.4, '10G']], 'L3, PoE++ budget, SFP+, UniFi managed'],
-  ['ubiquiti', 'Network', 'Access Point', 'Ubiquiti U6-', 180, [['Lite', 1, 'WiFi6'], ['Pro', 1.6, 'WiFi6'], ['Enterprise', 2.4, 'WiFi6E']], 'WiFi 6/6E, PoE, UniFi controller'],
-  ['cisco', 'Network', 'Switch', 'Meraki MS', 1400, [['130-24P', 1, '24-port'], ['250-48', 2.1, '48-port'], ['355-24X', 2.8, 'multigig']], 'Cloud-managed, stackable, PoE+'],
-  ['apc', 'Power', 'UPS', 'APC Smart-UPS', 740, [['750VA', 0.6, ''], ['1500VA', 1, ''], ['3000VA', 2.1, '']], 'Line-interactive, AVR, network card, LCD'],
-  ['altronix', 'Power', 'Power Supply', 'Altronix', 280, [['AL400ULACM', 1, '4-out'], ['Maximal3', 2.1, '8-out'], ['eFlow104', 1.4, 'access']], '12/24VDC, FAI trigger, battery backup'],
-  ['middle', 'Racks', 'Rack', 'Middle Atlantic', 520, [['DWR-12', 0.7, '12U'], ['SR-24', 1, '24U'], ['ERK-42', 1.8, '42U']], 'Welded steel, vented, cable mgmt, lockable'],
-  ['middle', 'Power', 'PDU', 'Middle Atlantic PD-', 180, [['915R', 1, '9-out'], ['2015', 1.4, '20A'], ['1420', 1.2, 'surge']], 'Rackmount PDU, surge, RackLink monitoring'],
-  ['commscope', 'Cabling', 'Cable', 'CommScope', 320, [['Cat6A UTP', 1, '1000ft'], ['Cat6 Plenum', 0.8, '1000ft'], ['OM4 Fiber', 1.6, '1000ft']], 'Systimax, verified channel, 25yr warranty'],
-  ['panduit', 'Cabling', 'Patch Panel', 'Panduit', 220, [['24-port', 1, 'Cat6A'], ['48-port', 1.7, 'Cat6A'], ['Fiber LGX', 1.3, 'fiber']], 'Mini-Com modular, shielded, rackmount'],
-];
+const PL_SEEDS = [];
 
 function plBuildCatalog() {
   const out = [];
