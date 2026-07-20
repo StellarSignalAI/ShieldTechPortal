@@ -1,7 +1,7 @@
 // ============================================================
 // Leads engine — Blueprint viewer (Bluebeam-style)
 // Full-bleed plan with zoom/pan, wipe slider between the
-// as-issued sheet and the HERMES markup, per-trade layer
+// as-issued sheet and the SHIELDTECH AI markup, per-trade layer
 // toggles, and click-a-device → BOM line + spec + price.
 // ============================================================
 
@@ -133,7 +133,7 @@ function BrPlanSVG({ opp, plan, marked, layers, selected, onSelect }) {
       {marked ? (
         <g transform="translate(5 71.2)">
           <rect width="38" height="3.8" rx="0.5" fill="rgba(251,191,36,0.1)" stroke="rgba(251,191,36,0.55)" strokeWidth="0.25" />
-          <text x="19" y="2.6" fontSize="1.6" fill="#FCD34D" textAnchor="middle" fontFamily="var(--font-mono)" letterSpacing="0.3">HERMES MARKUP · DIMS FIELD-VERIFIED · SURVEY GRADE</text>
+          <text x="19" y="2.6" fontSize="1.6" fill="#FCD34D" textAnchor="middle" fontFamily="var(--font-mono)" letterSpacing="0.3">SHIELDTECH AI MARKUP · DIMS FIELD-VERIFIED · SURVEY GRADE</text>
         </g>
       ) : (
         <g transform="translate(5 71.2)">

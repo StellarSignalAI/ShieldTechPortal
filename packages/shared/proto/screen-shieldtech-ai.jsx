@@ -1,13 +1,13 @@
-/* Screen 5 — Hermes ⌘K Assistant */
+/* Screen 5 — ShieldTech AI ⌘K Assistant */
 
-function HermesScreen() {
+function ShieldAIScreen() {
   const [typing, setTyping] = React.useState(true);
   const [draftOpen, setDraftOpen] = React.useState(true);
   const [input, setInput] = React.useState('');
 
   const send = () => {
     if (!input.trim()) return;
-    shieldToast('Hermes is thinking…');
+    shieldToast('ShieldTech AI is thinking…');
     setInput('');
   };
 
@@ -27,12 +27,12 @@ function HermesScreen() {
         </div>
         <GlassPanel>
           <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-low)' }}>
-            Dashboard content beneath the Hermes overlay
+            Dashboard content beneath the ShieldTech AI overlay
           </div>
         </GlassPanel>
       </div>
 
-      {/* Hermes Panel — sliding in from right */}
+      {/* ShieldTech AI Panel — sliding in from right */}
       <div style={{
         width: 440, flexShrink: 0,
         background: 'var(--glass-bg)',
@@ -56,7 +56,7 @@ function HermesScreen() {
             fontSize: 18, boxShadow: 'var(--glow-brand-sm)'
           }}>⟡</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 500 }}>Hermes</div>
+            <div style={{ fontSize: 14, fontWeight: 500 }}>ShieldTech AI</div>
             <div style={{ fontSize: 11, color: 'var(--text-low)' }}>AI Assistant · Online</div>
           </div>
           <span className="mono" style={{
@@ -89,7 +89,7 @@ function HermesScreen() {
             </div>
           </div>
 
-          {/* Hermes response */}
+          {/* ShieldTech AI response */}
           <div style={{ display: 'flex', gap: 10 }}>
             <div style={{
               width: 24, height: 24, borderRadius: 6, flexShrink: 0,
@@ -132,11 +132,7 @@ function HermesScreen() {
                 fontSize: 10, color: 'var(--text-low)', marginTop: 6,
                 display: 'flex', alignItems: 'center', gap: 8
               }}>
-                <span>claude-3.5-sonnet</span>
-                <span>·</span>
-                <span>1,247 tokens</span>
-                <span>·</span>
-                <span>$0.004</span>
+                <span>{window.__shieldAIModel || 'model not configured'}</span>
               </div>
             </div>
           </div>
@@ -152,7 +148,7 @@ function HermesScreen() {
               }}
               onMouseEnter={e => { e.target.style.background = 'rgba(63,169,245,0.12)'; e.target.style.borderColor = 'var(--border-strong)'; }}
               onMouseLeave={e => { e.target.style.background = 'rgba(63,169,245,0.06)'; e.target.style.borderColor = 'var(--border-subtle)'; }}
-              onClick={() => shieldToast(`Hermes: working on “${chip}”…`)}
+              onClick={() => shieldToast(`ShieldTech AI: working on “${chip}”…`)}
               >{chip}</button>
             ))}
           </div>
@@ -216,7 +212,7 @@ function HermesScreen() {
           padding: '12px 20px', borderTop: '1px solid var(--border-subtle)',
           display: 'flex', gap: 8
         }}>
-          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(); }} placeholder="Ask Hermes anything…" style={{
+          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(); }} placeholder="Ask ShieldTech AI anything…" style={{
             flex: 1, padding: '10px 14px',
             background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
             borderRadius: 8, color: 'var(--text-high)', fontSize: 13,
@@ -241,4 +237,4 @@ function HermesScreen() {
   );
 }
 
-Object.assign(window, { HermesScreen });
+Object.assign(window, { ShieldAIScreen });

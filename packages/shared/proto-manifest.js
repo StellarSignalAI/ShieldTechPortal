@@ -22,7 +22,7 @@ import './proto/screen-login.jsx';
 import './proto/screen-dashboard.jsx';
 import './proto/screen-customer.jsx';
 import './proto/screen-customer-expanded.jsx';
-import './proto/screen-hermes.jsx';
+import './proto/screen-shieldtech-ai.jsx';
 import './proto/screen-crm.jsx';
 import './proto/screen-studio.jsx';
 import './proto/screen-studio-views.jsx';

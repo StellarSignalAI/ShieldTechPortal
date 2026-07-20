@@ -8,7 +8,7 @@ const NAV_GROUPS = [
 },
 { id: 'overview', label: 'OVERVIEW', collapsible: false, items: [
   { id: 'dashboard', icon: 'grid-2', label: 'Mission Control', useSvg: true },
-  { id: 'hermes', icon: 'hermes', label: 'Hermes AI', useSvg: true },
+  { id: 'shieldtech-ai', icon: 'hermes', label: 'ShieldTech AI', useSvg: true },
   { id: 'chat', icon: 'chat', label: 'Team Chat', useSvg: true },
   { id: 'calendar', icon: 'calendar', label: 'Calendar', useSvg: true },
   { id: 'copilot', icon: 'hermes', label: 'Scheduling Copilot', useSvg: true },
@@ -268,7 +268,7 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
 }
 
 /* ── Top Bar ── */
-function TopBar({ title, onHermes, onNotifications, onNav }) {
+function TopBar({ title, onAI, onNotifications, onNav }) {
   const [profileOpen, setProfileOpen] = React.useState(false);
   const [theme, setTheme] = React.useState('dark');
   const [userStatus, setUserStatus] = React.useState('online');
@@ -302,8 +302,8 @@ function TopBar({ title, onHermes, onNotifications, onNav }) {
 
       {/* Right: status + actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        {/* Hermes button */}
-        <button onClick={() => onNav && onNav('hermes')} style={{
+        {/* ShieldTech AI button */}
+        <button onClick={() => onNav && onNav('shieldtech-ai')} style={{
           display: 'flex', alignItems: 'center', gap: 6,
           background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)',
           borderRadius: 8, padding: '5px 12px', cursor: 'pointer',
@@ -314,7 +314,7 @@ function TopBar({ title, onHermes, onNotifications, onNav }) {
         onMouseEnter={(e) => e.currentTarget.style.boxShadow = 'var(--glow-brand-sm)'}
         onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 12px -4px rgba(63,169,245,0.2)'}>
 
-          <Icon name="hermes" size={14} color="#fff" /> Ask Hermes AI
+          <Icon name="hermes" size={14} color="#fff" /> Ask ShieldTech AI
         </button>
 
         {/* Notifications */}
@@ -385,7 +385,7 @@ function TopBar({ title, onHermes, onNotifications, onNav }) {
 
                 <div style={{ padding: '4px 0' }}>
                   {[
-                    { icon: 'hermes', label: 'Hermes AI Settings', desc: 'Tone, auto-actions, context' },
+                    { icon: 'hermes', label: 'ShieldTech AI Settings', desc: 'Tone, auto-actions, context' },
                     { icon: 'poe', label: 'Integrations', desc: 'Stripe, QuickBooks, Samsara' },
                   ].map((item, i) => (
                     <button key={i} onClick={() => setProfileOpen(false)} style={{
@@ -466,10 +466,10 @@ function TopBar({ title, onHermes, onNotifications, onNav }) {
 }
 
 /* ── App Shell ── */
-function AppShell({ screen, onNav, children, onHermes, isCustomer, onBack }) {
+function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
   const titles = {
     dashboard: 'Mission Control', customer: 'Customer Portal',
-    assets: 'Asset Management', hermes: 'Hermes AI',
+    assets: 'Asset Management', 'shieldtech-ai': 'ShieldTech AI',
     crm: 'Leads', studio: 'Design Studio',
     'product-library': 'Product Library', 'service-plans': 'Service Plans',
     'custom-dashboard': 'My Dashboard',
@@ -572,7 +572,7 @@ function AppShell({ screen, onNav, children, onHermes, isCustomer, onBack }) {
         <NavRail current={screen} onNav={onNav} collapsed={navCollapsed} onToggleCollapse={() => setNavCollapsed(prev => !prev)} />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <TopBar title={titles[screen] || 'ShieldTech'} onHermes={onHermes} onNotifications={() => setNotifOpen(!notifOpen)} onNav={onNav} />
+        <TopBar title={titles[screen] || 'ShieldTech'} onAI={onAI} onNotifications={() => setNotifOpen(!notifOpen)} onNav={onNav} />
         <main style={{ flex: 1, overflow: 'auto', padding: 24 }}>
           {children}
         </main>

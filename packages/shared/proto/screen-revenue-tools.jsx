@@ -129,7 +129,7 @@ function RRBuilderScreen() {
                 : <button onClick={() => { setPitched(x => [...x, c.name]); showToast(`Pitch generated for ${c.name} — in your outbox`, 'ok'); }} style={{ padding: '7px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', width: 110 }}>Generate pitch</button>}
             </div>
             <div style={{ marginTop: 8, padding: '7px 11px', borderRadius: 7, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-mid)' }}>
-              <span style={{ color: 'var(--brand)', fontWeight: 600 }}>Hermes angle:</span> {c.hook}
+              <span style={{ color: 'var(--brand)', fontWeight: 600 }}>ShieldTech AI angle:</span> {c.hook}
             </div>
           </div>
         ))}

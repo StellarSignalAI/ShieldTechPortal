@@ -59,7 +59,7 @@ function brNextAction(opp, s) {
   const cur = brCurrentPhase(opp, s);
   if (cur === 'nogo') return { phase: 'Parked', action: 'Marked no-go' };
   if (cur === 'won') return { phase: 'Won', action: 'Convert to project — hand off to operations' };
-  if (cur === 'lost') return { phase: 'Lost', action: 'Loss logged — HERMES adjusted the model' };
+  if (cur === 'lost') return { phase: 'Lost', action: 'Loss logged — SHIELDTECH AI adjusted the model' };
   if (cur === 'submitted') return { phase: 'Sent Out', action: 'Confirm receipt with ' + opp.poc.name };
   const p = brPhaseParts(opp, s).find(x => x.id === cur);
   if (!p) return { phase: 'Review', action: 'Open the review deck' };
@@ -256,7 +256,7 @@ function BbCardMenu({ opp, s }) {
             onClick={() => save({ submitted: { at: new Date().toISOString(), method: 'manual' }, award: null }, opp.title + ' marked sent out', 'ok')} />
           {s.submitted && !s.award && <>
             <Item icon="checkCircle" label="Mark won" color="var(--status-ok)" onClick={() => save({ award: { result: 'won', reason: 'best value' } }, 'WON — ' + opp.title, 'ok')} />
-            <Item icon="x" label="Mark lost" color="var(--status-critical)" onClick={() => save({ award: { result: 'lost', reason: 'beaten on price' } }, 'Loss logged — HERMES adjusts the model')} />
+            <Item icon="x" label="Mark lost" color="var(--status-critical)" onClick={() => save({ award: { result: 'lost', reason: 'beaten on price' } }, 'Loss logged — SHIELDTECH AI adjusts the model')} />
           </>}
           {s.decision !== 'nogo'
             ? <Item icon="flag" label="Park as no-go" divider onClick={() => save({ decision: 'nogo' }, opp.title + ' parked')} />
@@ -292,7 +292,7 @@ function BbBidCard({ opp, onOpen }) {
         {nogo ? <Pill tone="Dead" label="No-go" small /> : cur === 'won' ? <Pill tone="Done" label="Won" small dot /> : cur === 'lost' ? <Pill tone="Dead" label="Lost" small /> : cur === 'submitted' ? <Pill tone="Done" label="Sent out" small dot /> : <BbHeat opp={opp} />}
       </div>
       {!nogo && cur !== 'submitted' && cur !== 'won' && cur !== 'lost' && (
-        <div style={{ font: '400 11px/1.45 var(--font-body)', color: untouched ? 'var(--brand)' : 'var(--text-low)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{untouched ? '● Built by HERMES — ready for review' : 'Next: ' + brNextAction(opp, s).action}</div>
+        <div style={{ font: '400 11px/1.45 var(--font-body)', color: untouched ? 'var(--brand)' : 'var(--text-low)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{untouched ? '● Built by SHIELDTECH AI — ready for review' : 'Next: ' + brNextAction(opp, s).action}</div>
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(63,169,245,0.12)', overflow: 'hidden' }}>
@@ -425,7 +425,7 @@ function BidBoardWorkspace({ onOpenOpp }) {
       <GlassCard style={{ padding: '11px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <span style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)', flexShrink: 0 }}><Icon name="sparkles" size={14} color="var(--brand)" /></span>
         <div style={{ flex: 1, minWidth: 260, font: '400 12.5px/1.55 var(--font-body)', color: 'var(--text-mid)' }}>
-          <span style={{ color: 'var(--text-high)', fontWeight: 600 }}>HERMES ran at {BR_AGENT_RUN.at}</span> — screened <span style={{ color: 'var(--text-high)' }}>{BR_AGENT_RUN.screened.toLocaleString()} solicitations</span> across {BR_AGENT_RUN.portals.length} portals · <span style={{ color: 'var(--status-ok)', fontWeight: 600 }}>{freshLeads.length} matched</span> your win profile · top rejections: {BR_AGENT_RUN.rejected.slice(0, 2).map(([r, n]) => `${r} (${n})`).join(', ')}
+          <span style={{ color: 'var(--text-high)', fontWeight: 600 }}>SHIELDTECH AI ran at {BR_AGENT_RUN.at}</span> — screened <span style={{ color: 'var(--text-high)' }}>{BR_AGENT_RUN.screened.toLocaleString()} solicitations</span> across {BR_AGENT_RUN.portals.length} portals · <span style={{ color: 'var(--status-ok)', fontWeight: 600 }}>{freshLeads.length} matched</span> your win profile · top rejections: {BR_AGENT_RUN.rejected.slice(0, 2).map(([r, n]) => `${r} (${n})`).join(', ')}
         </div>
         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
           {BR_AGENT_RUN.portals.map(p => <span key={p} style={{ padding: '4px 9px', borderRadius: 999, background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', font: '500 10px/1 var(--font-mono)', color: 'var(--text-low)' }}>{p}</span>)}

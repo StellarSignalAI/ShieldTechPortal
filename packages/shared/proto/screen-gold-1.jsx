@@ -56,7 +56,7 @@ function CustomerHealthScreen() {
         <div className="glass" style={{ padding: '12px 18px', borderLeft: '3px solid var(--status-critical)', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span>⟡</span>
           <div style={{ flex: 1 }}>
-            <span style={{ fontSize: 13, color: 'var(--text-high)' }}><strong>Hermes Churn Alert:</strong> {atRisk.length} customer{atRisk.length > 1 ? 's' : ''} showing elevated churn signals. </span>
+            <span style={{ fontSize: 13, color: 'var(--text-high)' }}><strong>ShieldTech AI Churn Alert:</strong> {atRisk.length} customer{atRisk.length > 1 ? 's' : ''} showing elevated churn signals. </span>
             <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>Harbor View hasn't been contacted in 4 weeks and is paying 24 days late. Recommend an immediate outreach call.</span>
           </div>
           <button onClick={() => shieldModal({ kind: 'editor', title: 'Draft Outreach — Harbor View Condos', subtitle: 'Review and edit before sending', submitLabel: 'Send Email', successMsg: 'Outreach email sent to Harbor View Condos', value: 'Hi Frank,\n\nWe wanted to check in — it’s been about a month since our last touchpoint, and we noticed your recent invoices have run a little behind. We value the partnership and want to make sure everything is running smoothly on your end.\n\nCould we schedule a quick 15-minute call this week to review your system health and answer any billing questions?\n\nBest regards,\nShieldTech Account Team' })} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Draft Outreach</button>
@@ -216,7 +216,7 @@ function RevenueForecastScreen() {
           <div style={{ marginTop: 10, padding: '8px 10px', borderRadius: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>⟡</span>
-              <span style={{ fontSize: 11, color: 'var(--brand)' }}>Hermes: At current close rates, Q3 revenue will hit $942K — 4% above target.</span>
+              <span style={{ fontSize: 11, color: 'var(--brand)' }}>ShieldTech AI: At current close rates, Q3 revenue will hit $942K — 4% above target.</span>
             </div>
           </div>
         </GlassPanel>

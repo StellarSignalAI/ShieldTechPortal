@@ -346,7 +346,7 @@ function InventoryScreen() {
                   {/* AI suggestion */}
                   <GlassPanel style={{ borderLeft: '3px solid var(--brand)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                      <span>⟡</span><span style={{ fontSize: 11, fontWeight: 500, color: 'var(--brand)' }}>Hermes Inventory AI</span>
+                      <span>⟡</span><span style={{ fontSize: 11, fontWeight: 500, color: 'var(--brand)' }}>ShieldTech AI Inventory AI</span>
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-mid)', lineHeight: 1.5 }}>
                       Verkada CD52 is out of stock with 2 committed. Auto-PO recommended. Axis P3265-V usage is 3.2/week — consider increasing reorder from 5 to 8.
@@ -640,11 +640,11 @@ function ReportsScreen() {
         </GlassPanel>
       </div>
 
-      {/* Hermes AI insight */}
+      {/* ShieldTech AI insight */}
       <GlassPanel style={{ borderLeft: '3px solid var(--brand)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <span style={{ fontSize: 14 }}>⟡</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--brand)' }}>Hermes Business Insight</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--brand)' }}>ShieldTech AI Business Insight</span>
         </div>
         <p style={{ fontSize: 13, color: 'var(--text-high)', lineHeight: 1.55 }}>
           Referrals generate <strong>3.4x more revenue per dollar spent</strong> than trade shows ($186K at $42 CAC vs $38K at $820 CAC). Consider reallocating 40% of the trade show budget to a structured referral incentive program. Estimated additional revenue: $62K/quarter.

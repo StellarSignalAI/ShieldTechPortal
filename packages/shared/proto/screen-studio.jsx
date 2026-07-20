@@ -227,11 +227,11 @@ function StudioScreen({ onExportToProposal }) {
           })}
         </div>
 
-        {/* Bottom: Hermes + Draw */}
+        {/* Bottom: ShieldTech AI + Draw */}
         <div style={{ padding: '8px 12px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 4 }}>
           <button onClick={() => setDrawingBuilderOpen(true)} style={{ width: '100%', padding: '7px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✏ Open Drawing Builder</button>
-          <button onClick={() => showToast('Hermes analyzing floor plan...')} style={{ width: '100%', padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-            <span>⟡</span> Hermes: Auto-Design Layout
+          <button onClick={() => showToast('ShieldTech AI analyzing floor plan...')} style={{ width: '100%', padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+            <span>⟡</span> ShieldTech AI: Auto-Design Layout
           </button>
         </div>
       </div>
@@ -580,7 +580,7 @@ function DeviceDetailModal({ device, brands, onClose, onPlace, showToast }) {
 
         {/* Comparable products suggestion */}
         <div style={{ marginBottom: 14, padding: '8px 12px', borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--brand)', marginBottom: 4 }}><span>⟡</span> Hermes: Similar products</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--brand)', marginBottom: 4 }}><span>⟡</span> ShieldTech AI: Similar products</div>
           <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>Consider the {device.brand === 'axis' ? 'Hanwha' : 'Axis'} equivalent for {device.margin < 25 ? 'better margins' : 'price comparison'}.</div>
         </div>
 

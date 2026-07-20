@@ -201,7 +201,7 @@ const SW_HEALTH = [
 ];
 
 /* ─────────── AI skills (from lib/hermes/skill-base.ts) ─────────── */
-const SW_HERMES_SKILLS = [
+const SW_SHIELDAI_SKILLS = [
   { id: 'territory', title: 'Territory bid discovery', summary: 'Search VA, MD, NJ, PA, NY + national/federal sources for ShieldTech trades.' },
   { id: 'verify', title: 'Official source verification', summary: 'A bid is actionable only when source, buyer, due date, docs, and addenda are traceable.' },
   { id: 'docs', title: 'Document readiness', summary: 'Track whether RFPs, drawings, specs, and addenda are synced or still portal/manual pulls.' },
@@ -374,7 +374,7 @@ window.SW = {
   industryById: (id) => SW_INDUSTRIES.find(i => i.id === id) || null,
   oppsByIndustry: (id) => SW_OPPS.filter(o => o.industry === id),
   MONEY_ACTIONS: SW_MONEY_ACTIONS, PIPELINE: SW_PIPELINE, STAGES: SW_STAGES,
-  APPROVALS: SW_APPROVALS, HEALTH: SW_HEALTH, HERMES_SKILLS: SW_HERMES_SKILLS,
+  APPROVALS: SW_APPROVALS, HEALTH: SW_HEALTH, SHIELDAI_SKILLS: SW_SHIELDAI_SKILLS,
   oppById: (id) => SW_OPPS.find(o => o.id === id) || null,
   tasksForUser: (uid) => SW_TASKS.filter(t => swGetOwner('task', t.id, t.owner) === uid),
 };

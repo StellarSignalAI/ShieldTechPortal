@@ -293,7 +293,7 @@ function StripeSettings() {
 function FinanceCopilot() {
   const [query, setQuery] = React.useState('');
   const [convo, setConvo] = React.useState([
-    { role: 'hermes', text: 'I\'m your AI Financial Co-pilot. Ask me anything about your books, cash flow, profitability, or collections. I can also draft reminders and journal entries.', chart: null },
+    { role: 'ai', text: 'I\'m your AI Financial Co-pilot. Ask me anything about your books, cash flow, profitability, or collections. I can also draft reminders and journal entries.', chart: null },
   ]);
   const [loading, setLoading] = React.useState(false);
 
@@ -321,7 +321,7 @@ function FinanceCopilot() {
     setLoading(true);
     setTimeout(() => {
       const answer = answers[question] || { text: `Based on your books, I can see the relevant data. Let me analyze this for you...\n\nYour total revenue YTD is $1.25M with a 28.4% gross margin. Cash position is strong at $482,600. I'd recommend reviewing the AR aging report for any items that need attention.`, chart: null };
-      setConvo(prev => [...prev, { role: 'hermes', text: answer.text, chart: answer.chart }]);
+      setConvo(prev => [...prev, { role: 'ai', text: answer.text, chart: answer.chart }]);
       setLoading(false);
     }, 1200);
   };
@@ -331,7 +331,7 @@ function FinanceCopilot() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
         <span style={{ fontSize: 20 }}>⟡</span>
         <div>
-          <div className="display" style={{ fontSize: 16, fontWeight: 500 }}>Hermes Financial Co-pilot</div>
+          <div className="display" style={{ fontSize: 16, fontWeight: 500 }}>ShieldTech AI Financial Co-pilot</div>
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Natural-language BI over your books</div>
         </div>
       </div>
@@ -347,10 +347,10 @@ function FinanceCopilot() {
       <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 12 }}>
         {convo.map((msg, i) => (
           <div key={i} style={{ display: 'flex', gap: 10, maxWidth: msg.role === 'user' ? '70%' : '100%', alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-            {msg.role === 'hermes' && (
+            {msg.role === 'ai' && (
               <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>⟡</div>
             )}
-            <div style={{ padding: '10px 14px', borderRadius: 10, background: msg.role === 'user' ? 'var(--brand)' : 'var(--glass-bg)', border: msg.role === 'hermes' ? '1px solid var(--border-subtle)' : 'none' }}>
+            <div style={{ padding: '10px 14px', borderRadius: 10, background: msg.role === 'user' ? 'var(--brand)' : 'var(--glass-bg)', border: msg.role === 'ai' ? '1px solid var(--border-subtle)' : 'none' }}>
               <div style={{ fontSize: 12, color: msg.role === 'user' ? '#fff' : 'var(--text-high)', lineHeight: 1.6, whiteSpace: 'pre-line' }}>{msg.text.replace(/\*\*(.*?)\*\*/g, '$1')}</div>
               {msg.chart === 'profitability' && (
                 <div style={{ marginTop: 10, display: 'flex', gap: 6 }}>

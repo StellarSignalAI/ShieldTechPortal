@@ -38,11 +38,11 @@ function ExpenseApprovalScreen() {
         <StatCard label="AVG PER TECH" value={`$${(monthTotal / 5).toFixed(0)}`} mono={false} delay={240} />
       </div>
 
-      {/* Hermes insight */}
+      {/* ShieldTech AI insight */}
       <div className="glass" style={{ padding: '10px 16px', borderLeft: '3px solid var(--brand)', display: 'flex', alignItems: 'center', gap: 10 }}>
         <span>⟡</span>
         <span style={{ fontSize: 12, color: 'var(--text-high)', flex: 1 }}>
-          <strong>Hermes:</strong> Diana Patel's parking expense ($22) could use the company parking pass — saved $88/mo for City Hall jobs last quarter.
+          <strong>ShieldTech AI:</strong> Diana Patel's parking expense ($22) could use the company parking pass — saved $88/mo for City Hall jobs last quarter.
         </span>
         <button onClick={() => shieldToast('Flagged for Diana Patel — parking pass note sent', 'info')} style={{ padding: '4px 10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Flag & Notify</button>
       </div>

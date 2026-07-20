@@ -26,7 +26,7 @@ function DailyDigestScreen() {
       <div className="glass" style={{ padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 16 }}>
         <div>
           <div className="display" style={{ fontSize: 20, fontWeight: 300, color: 'var(--text-high)' }}>Daily Digest — Thursday, June 12</div>
-          <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 3 }}>Auto-compiled by Hermes from field activity · refreshes live, sends at 6:00 PM</div>
+          <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 3 }}>Auto-compiled by ShieldTech AI from field activity · refreshes live, sends at 6:00 PM</div>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           <button onClick={() => showToast('Digest emailed to jmitchell@shieldtech.com', 'ok')} style={digestBtn('var(--brand)', 'rgba(63,169,245,0.08)', 'var(--border-strong)')}>Email now</button>

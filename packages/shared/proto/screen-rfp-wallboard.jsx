@@ -49,7 +49,7 @@ function RFPScreen() {
             {isOpen && (
               <div style={{ padding: '0 18px 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div>
-                  <div style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 8 }}>Hermes Summary</div>
+                  <div style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 8 }}>ShieldTech AI Summary</div>
                   {r.summary.map(s => <div key={s} style={{ fontSize: 11, color: 'var(--text-mid)', padding: '3px 0', lineHeight: 1.5 }}>· {s}</div>)}
                 </div>
                 <div>

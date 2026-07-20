@@ -47,7 +47,7 @@ const TWEAK_DEFAULTS = {
 /* Master screen list for Tweaks selector */
 const SCREEN_LIST = [
   'login', 'custom-dashboard', 'dashboard', 'customer', 'customers-list',
-  'assets', 'hermes', 'crm', 'studio', 'dispatch', 'finance',
+  'assets', 'shieldtech-ai', 'crm', 'studio', 'dispatch', 'finance',
   'approvals', 'cameras', 'topology', 'certs', 'tools', 'costing',
   'audit', 'warroom', 'floorplan', 'anomaly', 'expenses', 'timesheets',
   'projects', 'inventory', 'reports', 'proposals', 'employees',
@@ -64,7 +64,7 @@ const SCREEN_LIST = [
 const SCREEN_COMPONENTS = {
   dashboard: 'DashboardScreen',
   assets: 'AssetsScreen',
-  hermes: 'HermesScreen',
+  'shieldtech-ai': 'ShieldAIScreen',
   crm: 'BidBoardScreen',
   studio: 'StudioScreen',
   'product-library': 'ProductLibraryScreen',
@@ -145,7 +145,8 @@ function MissingScreen({ id }) {
 /* URL-hash ↔ screen sync so screens are deep-linkable (replaces the design
    host's tweak persistence as the navigation state of record). */
 function screenFromHash() {
-  const h = window.location.hash.replace(/^#\/?/, '');
+  let h = window.location.hash.replace(/^#\/?/, '');
+  if (h === 'hermes') h = 'shieldtech-ai'; // legacy alias
   return SCREEN_LIST.includes(h) ? h : null;
 }
 
@@ -154,7 +155,7 @@ function App() {
     ...TWEAK_DEFAULTS,
     screen: screenFromHash() || TWEAK_DEFAULTS.screen,
   });
-  const [hermesOpen, setHermesOpen] = useState(false);
+  const [aiOpen, setShieldAIOpen] = useState(false);
   const screen = t.screen;
 
   useEffect(() => {
@@ -216,7 +217,7 @@ function App() {
     const CustomerExpandedScreen = pick('CustomerExpandedScreen');
     return (
       <>
-        <AppShell screen={screen} onNav={handleNav} isCustomer onHermes={() => setHermesOpen(!hermesOpen)} onBack={() => handleNav('custom-dashboard')}>
+        <AppShell screen={screen} onNav={handleNav} isCustomer onAI={() => setShieldAIOpen(!aiOpen)} onBack={() => handleNav('custom-dashboard')}>
           <CustomerExpandedScreen />
         </AppShell>
         <TweaksPanel>
@@ -235,7 +236,7 @@ function App() {
     const CustomerTimeline = pick('CustomerTimeline');
     return (
       <>
-        <AppShell screen={screen} onNav={handleNav} onHermes={() => setHermesOpen(!hermesOpen)}>
+        <AppShell screen={screen} onNav={handleNav} onAI={() => setShieldAIOpen(!aiOpen)}>
           <CustomerTimeline customer="City Hall" />
         </AppShell>
         <TweaksPanel>{navTweaks}</TweaksPanel>
@@ -248,7 +249,7 @@ function App() {
     const CustomDashboard = pick('CustomDashboard');
     return (
       <>
-        <AppShell screen={screen} onNav={handleNav} onHermes={() => setHermesOpen(!hermesOpen)}>
+        <AppShell screen={screen} onNav={handleNav} onAI={() => setShieldAIOpen(!aiOpen)}>
           <CustomDashboard onNav={handleNav} />
         </AppShell>
         <TweaksPanel>
@@ -270,7 +271,7 @@ function App() {
 
   return (
     <>
-      <AppShell screen={screen} onNav={handleNav} onHermes={() => setHermesOpen(!hermesOpen)}>
+      <AppShell screen={screen} onNav={handleNav} onAI={() => setShieldAIOpen(!aiOpen)}>
         <ScreenComponent />
       </AppShell>
       <TweaksPanel>

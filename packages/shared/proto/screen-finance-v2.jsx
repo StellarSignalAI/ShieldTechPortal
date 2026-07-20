@@ -232,7 +232,7 @@ function FinanceOverview({ onNav }) {
           </div>
           <div style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span>⟡</span>
-            <span style={{ fontSize: 11, color: 'var(--brand)' }}>Hermes: Cash position strong. $19,450 in overdue AR is the main risk — draft collection reminders?</span>
+            <span style={{ fontSize: 11, color: 'var(--brand)' }}>ShieldTech AI: Cash position strong. $19,450 in overdue AR is the main risk — draft collection reminders?</span>
             <button onClick={() => shieldModal({ kind: 'editor', title: 'Collection Reminders', subtitle: '3 overdue accounts · $19,450 outstanding', submitLabel: 'Send Reminders', successMsg: 'Reminders sent to 3 accounts', value: 'Subject: Friendly reminder — invoice past due\n\nHi {{customer}},\n\nOur records show invoice {{invoice}} for {{amount}} is now {{days}} days past due. If payment has already been sent, please disregard this note.\n\nYou can pay securely online or reply with any questions. We appreciate your business.\n\nBest regards,\nShieldTech Accounts Receivable' })} style={{ marginLeft: 'auto', padding: '3px 10px', fontSize: 10, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Draft Reminders</button>
           </div>
         </GlassPanel>

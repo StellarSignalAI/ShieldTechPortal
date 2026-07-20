@@ -214,7 +214,7 @@ function LoginScreen() {
         }}>
           <p style={{ fontSize: 11, color: 'var(--text-low)', lineHeight: 1.5 }}>
             Protected by 256-bit encryption<br />
-            <span className="mono" style={{ fontSize: 10, opacity: 0.6 }}>v4.2.1 · Hermes AI Online</span>
+            <span className="mono" style={{ fontSize: 10, opacity: 0.6 }}>v4.2.1 · ShieldTech AI Online</span>
           </p>
         </div>
       </div>

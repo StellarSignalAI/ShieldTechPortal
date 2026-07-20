@@ -60,7 +60,7 @@ function WarRoomView() {
           <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
               <span>⟡</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--brand)' }}>HERMES ROOT CAUSE ANALYSIS</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--brand)' }}>SHIELDTECH AI ROOT CAUSE ANALYSIS</span>
             </div>
             <p style={{ fontSize: 12, color: 'var(--text-high)', lineHeight: 1.5 }}>
               <strong>Probable cause:</strong> PoE switch failure on Floor 2 (USW-24-PoE at 10.2.4.2). All affected devices share this uplink. Switch last responded 2h 3m ago. Recommend: check power supply, then failover to backup switch in IDF-B.
@@ -77,7 +77,7 @@ function WarRoomView() {
               { time: '12:19 PM', event: 'Camera 5 (Hallway) went offline', type: 'critical', auto: true },
               { time: '12:19 PM', event: 'Camera 7 (Entrance B) went offline', type: 'critical', auto: true },
               { time: '12:20 PM', event: 'NVR recording interrupted — 3 feeds', type: 'warn', auto: true },
-              { time: '12:20 PM', event: 'Hermes: correlated outage → single switch', type: 'info', auto: true },
+              { time: '12:20 PM', event: 'ShieldTech AI: correlated outage → single switch', type: 'info', auto: true },
               { time: '12:21 PM', event: 'Auto-escalated to Severity 1', type: 'critical', auto: true },
               { time: '12:25 PM', event: 'John Mitchell acknowledged incident', type: 'info', auto: false },
               { time: '12:32 PM', event: 'Kevin White dispatched — ETA 45 min', type: 'info', auto: false },
@@ -290,7 +290,7 @@ function AnomalyView() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
           <h2 className="display" style={{ fontSize: 20, fontWeight: 300 }}>AI Anomaly Detection</h2>
-          <p style={{ fontSize: 13, color: 'var(--text-mid)', marginTop: 4 }}>Hermes continuously monitors for unusual patterns across devices, access, network, and business data.</p>
+          <p style={{ fontSize: 13, color: 'var(--text-mid)', marginTop: 4 }}>ShieldTech AI continuously monitors for unusual patterns across devices, access, network, and business data.</p>
         </div>
         <div className="glass" style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
           <StatusDot status="online" size={6} pulse />
@@ -326,7 +326,7 @@ function AnomalyView() {
             <div style={{ padding: '10px 12px', borderRadius: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                 <span style={{ fontSize: 12 }}>⟡</span>
-                <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--brand)', textTransform: 'uppercase' }}>Hermes Suggestion</span>
+                <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--brand)', textTransform: 'uppercase' }}>ShieldTech AI Suggestion</span>
               </div>
               <p style={{ fontSize: 12, color: 'var(--text-high)', lineHeight: 1.5 }}>{a.suggestion}</p>
             </div>

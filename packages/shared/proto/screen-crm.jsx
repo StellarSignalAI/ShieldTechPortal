@@ -123,7 +123,7 @@ function CRMScreen() {
         <GlassPanel style={{ borderLeft: '3px solid var(--brand)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <span style={{ fontSize: 16 }}>⟡</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--brand)' }}>Hermes AI Score</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--brand)' }}>ShieldTech AI Score</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>

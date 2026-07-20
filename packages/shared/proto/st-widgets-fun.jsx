@@ -1,6 +1,6 @@
 /* ShieldTech Widgets — Inventive / Fun group
    Field Weather (the Apple baseline) · Tech Leaderboard · NPS Pulse ·
-   Safety Streak · Hermes Briefing · Ops Clock */
+   Safety Streak · ShieldTech AI Briefing · Ops Clock */
 
 /* ── Weather glyphs (SVG, matches the Apple sun) ── */
 function Sun({ size = 16, color = '#FCD34D' }) {
@@ -205,8 +205,8 @@ function WSafety({ size }) {
   );
 }
 
-/* ─────────── Hermes Briefing (AI digest) ─────────── */
-function WHermes({ size }) {
+/* ─────────── ShieldTech AI Briefing (AI digest) ─────────── */
+function WShieldAI({ size }) {
   const insights = [
     { icon: 'warning-tri', color: '#F43F5E', t: 'Riverside NVR SLA breaches in 1.8h', s: 'Dispatch ETA 10am — on track' },
     { icon: 'roi', color: '#34D399', t: 'MRR up 6.2% MoM', s: 'Pinnacle Enterprise plan activated' },
@@ -214,7 +214,7 @@ function WHermes({ size }) {
     { icon: 'warning-tri', color: '#FBBF24', t: 'Bayshore Medical at churn risk', s: 'NPS 4 · renewal Jul · no follow-up' },
   ];
   return (
-    <WCard size={size} accent="#3FA9F5" title="Hermes Briefing" glyph="hermes" sub={size !== 'small' ? 'AI · updated 8:00 AM' : null}>
+    <WCard size={size} accent="#3FA9F5" title="ShieldTech AI Briefing" glyph="hermes" sub={size !== 'small' ? 'AI · updated 8:00 AM' : null}>
       {size === 'small' && (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <Icon name={insights[0].icon} size={18} color={insights[0].color} />
@@ -245,7 +245,7 @@ function WClock({ size }) {
   React.useEffect(() => { const t = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(t); }, []);
   const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: size !== 'small' ? '2-digit' : undefined });
   const date = now.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
-  const systems = [['Monitoring', '#34D399'], ['Dispatch', '#34D399'], ['Payments', '#34D399'], ['Hermes AI', '#34D399']];
+  const systems = [['Monitoring', '#34D399'], ['Dispatch', '#34D399'], ['Payments', '#34D399'], ['ShieldTech AI', '#34D399']];
   return (
     <WCard size={size} accent="#3FA9F5" title="Ops Center" glyph="statuspage" sub={size !== 'small' ? 'on-call: Mike Reyes' : null}>
       {size === 'small' && (
@@ -277,10 +277,10 @@ registerWidget('weather',     { label: 'Field Weather',      cat: 'Inventive', a
 registerWidget('leaderboard', { label: 'Tech Leaderboard',   cat: 'Inventive', accent: '#FCD34D', glyph: 'star',       sizes: ['small', 'medium', 'large'], render: s => <WLeaderboard size={s} /> });
 registerWidget('nps',         { label: 'NPS Pulse',          cat: 'Inventive', accent: '#34D399', glyph: 'star',       sizes: ['small', 'medium', 'large'], render: s => <WNPS size={s} /> });
 registerWidget('safety',      { label: 'Safety Streak',      cat: 'Inventive', accent: '#34D399', glyph: 'check',      sizes: ['small', 'medium', 'large'], render: s => <WSafety size={s} /> });
-registerWidget('hermes',      { label: 'Hermes Briefing',    cat: 'Inventive', accent: '#3FA9F5', glyph: 'hermes',     sizes: ['small', 'medium', 'large'], render: s => <WHermes size={s} /> });
+registerWidget('hermes',      { label: 'ShieldTech AI Briefing',    cat: 'Inventive', accent: '#3FA9F5', glyph: 'hermes',     sizes: ['small', 'medium', 'large'], render: s => <WShieldAI size={s} /> });
 registerWidget('clock',       { label: 'Ops Center Clock',   cat: 'Inventive', accent: '#3FA9F5', glyph: 'statuspage', sizes: ['small', 'medium', 'large'], render: s => <WClock size={s} /> });
 
 /* ── Master display order for the gallery ── */
 const ST_ORDER = ['tickets', 'monitoring', 'workorders', 'schedule', 'fleet', 'approvals', 'mrr', 'pipeline', 'revenue', 'health', 'renewals', 'weather', 'leaderboard', 'nps', 'safety', 'hermes', 'clock'];
 
-Object.assign(window, { Sun, WWeather, WLeaderboard, WNPS, WSafety, WHermes, WClock, ST_ORDER });
+Object.assign(window, { Sun, WWeather, WLeaderboard, WNPS, WSafety, WShieldAI, WClock, ST_ORDER });

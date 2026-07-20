@@ -6,7 +6,7 @@ function ApprovalsScreen() {
       id: 1, tag: 'comms', risk: 'low',
       title: 'Email to Acme Dental — Service Follow-up',
       who: 'Acme Dental Group — Jennifer Foster',
-      summary: 'Hermes drafted a follow-up email regarding the intermittent rear exit camera. Proposes scheduling a technician visit Thursday or Friday.',
+      summary: 'ShieldTech AI drafted a follow-up email regarding the intermittent rear exit camera. Proposes scheduling a technician visit Thursday or Friday.',
       content: 'Hi Jennifer,\n\nWe\'ve detected intermittent connectivity on your rear exit camera over the past week. Our diagnostics indicate a likely cable issue.\n\nWe\'d like to schedule a technician visit to inspect and resolve this. Would Thursday or Friday work for your team?\n\nBest regards,\nShieldTech Service Team',
       model: 'claude-3.5-sonnet', tokens: 842, cost: '$0.003',
       time: '12 min ago'
@@ -15,7 +15,7 @@ function ApprovalsScreen() {
       id: 2, tag: 'pricing', risk: 'medium',
       title: 'Volume Discount — Pacific Rim Hotels Proposal',
       who: 'Pacific Rim Hotels — Lisa Wang',
-      summary: 'Sales requested a 5% volume discount on the $215,000 proposal for 3-property camera upgrade. Hermes analyzed margin impact: reduces gross margin from 34.2% to 29.8% — still above 25% threshold.',
+      summary: 'Sales requested a 5% volume discount on the $215,000 proposal for 3-property camera upgrade. ShieldTech AI analyzed margin impact: reduces gross margin from 34.2% to 29.8% — still above 25% threshold.',
       content: null,
       model: 'gpt-4o', tokens: 1240, cost: '$0.008',
       time: '45 min ago'
@@ -24,7 +24,7 @@ function ApprovalsScreen() {
       id: 3, tag: 'alarm', risk: 'high',
       title: 'Alarm Signal Forwarding Change — City Hall',
       who: 'City Hall — Municipal Security Office',
-      summary: 'Request to change alarm signal forwarding from Central Station A to Central Station B. This affects fire and intrusion monitoring for a government facility. Hermes flagged this as high-risk due to the monitoring gap during switchover.',
+      summary: 'Request to change alarm signal forwarding from Central Station A to Central Station B. This affects fire and intrusion monitoring for a government facility. ShieldTech AI flagged this as high-risk due to the monitoring gap during switchover.',
       content: null,
       model: 'claude-3.5-sonnet', tokens: 654, cost: '$0.002',
       time: '1h ago'
@@ -33,7 +33,7 @@ function ApprovalsScreen() {
       id: 4, tag: 'contract', risk: 'low',
       title: 'RMR Contract Renewal — Riverside Medical',
       who: 'Riverside Medical Center — Operations',
-      summary: 'Auto-renewal of 36-month RMR agreement at $2,800/mo. Hermes verified: customer health score 94, no open complaints, 99.8% uptime. Recommends approval with standard 3% annual escalator.',
+      summary: 'Auto-renewal of 36-month RMR agreement at $2,800/mo. ShieldTech AI verified: customer health score 94, no open complaints, 99.8% uptime. Recommends approval with standard 3% annual escalator.',
       content: null,
       model: 'claude-3-haiku', tokens: 380, cost: '$0.001',
       time: '2h ago'
@@ -42,7 +42,7 @@ function ApprovalsScreen() {
       id: 5, tag: 'refund', risk: 'medium',
       title: 'Partial Credit — Harbor View Condos',
       who: 'Harbor View Condos HOA — Board',
-      summary: 'Customer requesting $1,200 credit for 4 days of monitoring downtime during the May 18 network outage. Hermes calculated: pro-rated credit would be $840 based on contract terms, but suggests $1,050 as a goodwill gesture given the customer\'s 3-year tenure.',
+      summary: 'Customer requesting $1,200 credit for 4 days of monitoring downtime during the May 18 network outage. ShieldTech AI calculated: pro-rated credit would be $840 based on contract terms, but suggests $1,050 as a goodwill gesture given the customer\'s 3-year tenure.',
       content: 'Dear Harbor View HOA Board,\n\nWe sincerely apologize for the monitoring interruption on May 18–22. After reviewing your account, we\'re issuing a credit of $1,050 to your next invoice — reflecting the service gap plus a goodwill adjustment for your long-standing partnership.\n\nPlease let us know if you have any questions.\n\nBest,\nShieldTech Accounts Team',
       model: 'gpt-4o', tokens: 920, cost: '$0.006',
       time: '3h ago'
@@ -51,7 +51,7 @@ function ApprovalsScreen() {
       id: 6, tag: 'comms', risk: 'low',
       title: 'Monthly Health Report — Westfield Mall',
       who: 'Westfield Mall — Facilities Management',
-      summary: 'Automated monthly health report for Westfield Mall. All 32 devices online, 99.7% uptime, no incidents. Hermes generated the PDF summary and cover email.',
+      summary: 'Automated monthly health report for Westfield Mall. All 32 devices online, 99.7% uptime, no incidents. ShieldTech AI generated the PDF summary and cover email.',
       content: null,
       model: 'claude-3-haiku', tokens: 290, cost: '$0.001',
       time: '4h ago'
@@ -84,7 +84,7 @@ function ApprovalsScreen() {
             Approvals Center
           </h2>
           <p style={{ fontSize: 13, color: 'var(--text-mid)', marginTop: 4 }}>
-            Review AI-drafted actions before they go live. Hermes drafts; you commit.
+            Review AI-drafted actions before they go live. ShieldTech AI drafts; you commit.
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -122,7 +122,7 @@ function ApprovalsScreen() {
         <div className="glass" style={{ padding: '48px 24px', textAlign: 'center' }}>
           <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.5 }}>✓</div>
           <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-high)', marginBottom: 6 }}>All caught up</div>
-          <div style={{ fontSize: 13, color: 'var(--text-mid)' }}>No pending approvals. Hermes will queue new drafts here as they come in.</div>
+          <div style={{ fontSize: 13, color: 'var(--text-mid)' }}>No pending approvals. ShieldTech AI will queue new drafts here as they come in.</div>
         </div>
       )}
 

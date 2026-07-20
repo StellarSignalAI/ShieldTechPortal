@@ -113,7 +113,7 @@ function DashboardScreen() {
           {/* Unified timeline teaser */}
           <div style={{ marginTop: 12, padding: '8px 12px', borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 12 }}>⟡</span>
-            <span style={{ fontSize: 11, color: 'var(--brand)' }}>Hermes: 2 alerts are likely related — both on the same PoE switch</span>
+            <span style={{ fontSize: 11, color: 'var(--brand)' }}>ShieldTech AI: 2 alerts are likely related — both on the same PoE switch</span>
           </div>
         </GlassPanel>
       </div>
@@ -122,7 +122,7 @@ function DashboardScreen() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px 1fr', gap: 12 }}>
         {/* AI Insights */}
         <GlassPanel style={{ animation: 'fade-up 0.5s ease 0.5s both' }}>
-          <SectionHeader title="Hermes AI Insights" icon="⟡" />
+          <SectionHeader title="ShieldTech AI Insights" icon="⟡" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <InsightCard priority="high"
               text="Acme Dental NVR has gone offline 4 times in 14 days. Recommend proactive site visit — the PoE switch may be failing."
@@ -204,7 +204,7 @@ function DashboardScreen() {
               { time: '2:14 PM', user: 'Mike Reyes', action: 'Completed job J-4201 at Acme Dental', type: 'ok' },
               { time: '2:01 PM', user: 'System', action: 'Invoice INV-2865 sent to Marina District Dental', type: 'info' },
               { time: '1:45 PM', user: 'Jessica Liu', action: 'Started on-site at Metro Bank B', type: 'info' },
-              { time: '1:30 PM', user: 'Hermes', action: 'Auto-triaged ticket TKT-2845 → High priority, assigned Mike', type: 'info' },
+              { time: '1:30 PM', user: 'ShieldTech AI', action: 'Auto-triaged ticket TKT-2845 → High priority, assigned Mike', type: 'info' },
               { time: '1:12 PM', user: 'Sarah Chen', action: 'New lead: Pinnacle Financial Group ($128,500)', type: 'ok' },
               { time: '12:50 PM', user: 'System', action: 'Payment received: City Hall — $22,100', type: 'ok' },
               { time: '12:30 PM', user: 'Diana Patel', action: 'Submitted timesheet — 32.5h (pending approval)', type: 'info' },

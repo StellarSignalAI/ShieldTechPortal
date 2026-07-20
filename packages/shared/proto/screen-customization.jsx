@@ -740,7 +740,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
   }
 
   if (type === 'hermes-chat') {
-    return <HermesChatWidget label={label} base={base} />;
+    return <ShieldAIChatWidget label={label} base={base} />;
   }
 
   // Fallback
@@ -830,7 +830,7 @@ function PreferencesDrawer({ density, setDensity, accent, setAccent, onClose, sh
 function NavCustomizeDrawer({ onClose, showToast, inline }) {
   const [navItems, setNavItems] = React.useState([
   { id: 'dashboard', label: 'Mission Control', pinned: true, visible: true },
-  { id: 'hermes', label: 'Hermes AI', pinned: true, visible: true },
+  { id: 'hermes', label: 'ShieldTech AI', pinned: true, visible: true },
   { id: 'crm', label: 'Pipeline / CRM', pinned: false, visible: true },
   { id: 'proposals', label: 'Proposal Builder', pinned: false, visible: true },
   { id: 'dispatch', label: 'Dispatch', pinned: false, visible: true },
@@ -1071,9 +1071,9 @@ function CommandPalette({ onClose, onNav, showToast }) {
   { label: 'Search Invoices...', cat: 'Search', action: () => {onNav?.('finance');onClose();} },
   { label: 'Search Customers...', cat: 'Search', action: () => {onNav?.('customer');onClose();} },
   { label: 'Search Proposals...', cat: 'Search', action: () => {onNav?.('proposals');onClose();} },
-  { label: 'Ask Hermes: What\'s my cash position?', cat: 'AI', action: () => {onNav?.('hermes');onClose();} },
-  { label: 'Ask Hermes: Who\'s overdue?', cat: 'AI', action: () => {onNav?.('hermes');onClose();} },
-  { label: 'Ask Hermes: Profitability by service line?', cat: 'AI', action: () => {onNav?.('hermes');onClose();} }];
+  { label: 'Ask ShieldTech AI: What\'s my cash position?', cat: 'AI', action: () => {onNav?.('hermes');onClose();} },
+  { label: 'Ask ShieldTech AI: Who\'s overdue?', cat: 'AI', action: () => {onNav?.('hermes');onClose();} },
+  { label: 'Ask ShieldTech AI: Profitability by service line?', cat: 'AI', action: () => {onNav?.('hermes');onClose();} }];
 
 
   const filtered = query ? allCommands.filter((c) => c.label.toLowerCase().includes(query.toLowerCase())) : allCommands;
@@ -1092,7 +1092,7 @@ function CommandPalette({ onClose, onNav, showToast }) {
       <div onClick={(e) => e.stopPropagation()} style={{ width: 560, maxHeight: '60vh', background: 'var(--modal)', border: '1px solid var(--border-strong)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', animation: 'fade-up 0.15s ease both' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)' }}>
           <span style={{ color: 'var(--text-low)', fontSize: 16 }}>⌕</span>
-          <input autoFocus value={query} onChange={(e) => {setQuery(e.target.value);setSelected(0);}} onKeyDown={handleKeyDown} placeholder="Search commands, records, or ask Hermes..." style={{ flex: 1, background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' }} />
+          <input autoFocus value={query} onChange={(e) => {setQuery(e.target.value);setSelected(0);}} onKeyDown={handleKeyDown} placeholder="Search commands, records, or ask ShieldTech AI..." style={{ flex: 1, background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' }} />
           <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', border: '1px solid var(--border-subtle)', padding: '2px 6px', borderRadius: 4 }}>ESC</span>
         </div>
         <div style={{ maxHeight: 'calc(60vh - 52px)', overflow: 'auto', padding: '6px 0' }}>
@@ -1398,10 +1398,10 @@ function DashboardTab({ label, isActive, onClick, onDoubleClick, onClose }) {
 
 }
 
-/* ── Hermes AI Chat Widget ── */
-function HermesChatWidget({ label, base }) {
+/* ── ShieldTech AI Chat Widget ── */
+function ShieldAIChatWidget({ label, base }) {
   const [messages, setMessages] = React.useState([
-  { role: 'ai', text: 'Hey! I\'m Hermes, your AI assistant. Ask me anything about your business — finances, dispatch, customers, reports.' }]
+  { role: 'ai', text: 'Hey! I\'m ShieldTech AI, your AI assistant. Ask me anything about your business — finances, dispatch, customers, reports.' }]
   );
   const [input, setInput] = React.useState('');
   const [typing, setTyping] = React.useState(false);
@@ -1453,7 +1453,7 @@ function HermesChatWidget({ label, base }) {
       {/* Header */}
       <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ fontSize: 14 }}>⟡</span>
-        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--brand)' }}>{label || 'Hermes AI Chat'}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--brand)' }}>{label || 'ShieldTech AI Chat'}</span>
         <StatusDot status="online" size={5} />
       </div>
 
@@ -1491,7 +1491,7 @@ function HermesChatWidget({ label, base }) {
       {/* Input */}
       <div style={{ padding: '8px 10px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 6 }}>
         <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => {if (e.key === 'Enter') send();}}
-        placeholder="Ask Hermes anything..."
+        placeholder="Ask ShieldTech AI anything..."
         style={{ flex: 1, padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={send} style={{ padding: '7px 12px', background: input.trim() ? 'var(--brand)' : 'rgba(63,169,245,0.06)', border: 'none', borderRadius: 6, color: input.trim() ? '#fff' : 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600, transition: 'all 0.15s' }}>Send</button>
       </div>
@@ -1757,7 +1757,7 @@ function WidgetSizePreview({ type, label, size, styleIdx, styles }) {
 }
 
 Object.assign(window, {
-  CustomDashboard, WidgetMenuBtn, WidgetRenderer, WidgetSizePreview, WidgetLibraryDrawer, HermesChatWidget,
+  CustomDashboard, WidgetMenuBtn, WidgetRenderer, WidgetSizePreview, WidgetLibraryDrawer, ShieldAIChatWidget,
   PreferencesDrawer, NavCustomizeDrawer, SidecartDrawer, NotificationCenter,
   CommandPalette, CustomerTimeline, TabContextMenu, DeleteTabConfirm, WidgetGalleryPicker,
   DashboardTab

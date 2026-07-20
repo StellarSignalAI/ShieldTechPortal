@@ -53,7 +53,7 @@ function BrGuide({ opp, state, step }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <span style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)' }}><Icon name="sparkles" size={13} color="var(--brand)" /></span>
           <div>
-            <div style={{ font: '700 12px/1 var(--font-display)', color: 'var(--text-high)', letterSpacing: '0.04em' }}>HERMES</div>
+            <div style={{ font: '700 12px/1 var(--font-display)', color: 'var(--text-high)', letterSpacing: '0.04em' }}>SHIELDTECH AI</div>
             <div style={{ font: '500 9px/1 var(--font-body)', color: 'var(--brand)', letterSpacing: '0.12em', marginTop: 2 }}>PHASE {BR_PHASES.findIndex(p => p.id === step) + 1} GUIDE</div>
           </div>
         </div>

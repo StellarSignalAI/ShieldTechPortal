@@ -208,7 +208,7 @@ function HelpdeskScreen() {
                 <div style={{ background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                     <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(63,169,245,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: 'var(--brand)', fontWeight: 700 }}>AI</div>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--brand)' }}>Hermes Suggested Resolution</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--brand)' }}>ShieldTech AI Suggested Resolution</span>
                   </div>
                   <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.55, margin: 0 }}>{tk.aiSuggestion}</p>
                   <button onClick={() => setReplyText(tk.aiSuggestion)} style={{ marginTop: 8, fontSize: 11, color: 'var(--brand)', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, padding: '4px 10px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Use as Reply</button>

@@ -145,7 +145,7 @@ function SchedCopilotScreen() {
 
           {stage === 'idle' && (
             <div style={{ padding: '50px 20px', textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>
-              Hit <span style={{ color: 'var(--brand)', fontWeight: 600 }}>Optimize my week</span> and Hermes will propose assignments with full reasoning.
+              Hit <span style={{ color: 'var(--brand)', fontWeight: 600 }}>Optimize my week</span> and ShieldTech AI will propose assignments with full reasoning.
             </div>
           )}
           {stage === 'solving' && (

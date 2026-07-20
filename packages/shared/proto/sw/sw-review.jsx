@@ -1,6 +1,6 @@
 // ============================================================
 // Leads engine — Review deck
-// The guided co-pilot flow: HERMES already made every decision;
+// The guided co-pilot flow: SHIELDTECH AI already made every decision;
 // you swipe through them one at a time — approve, veto, or edit.
 // Approvals write the same state the phase model reads.
 // ============================================================
@@ -46,7 +46,7 @@ function brDecisions(opp, s) {
     done: s.docsReviewed.drawings, openBlueprint: true,
     approve: (u) => u(p => ({ ...p, docsReviewed: { ...p.docsReviewed, drawings: true } })),
     vetoLabel: 'Markups wrong — recount',
-    veto: (u) => { swToast('Recount queued — HERMES will re-run the takeoff tonight', 'info'); },
+    veto: (u) => { swToast('Recount queued — SHIELDTECH AI will re-run the takeoff tonight', 'info'); },
   });
 
   flags.forEach(f => {

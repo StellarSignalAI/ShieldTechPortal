@@ -542,7 +542,7 @@ function CustomerAIChatView() {
             border: '1px solid var(--border-subtle)', borderRadius: 8,
             color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none'
           }} />
-          <button onClick={() => shieldToast('Message sent to Hermes', 'ok')} style={{
+          <button onClick={() => shieldToast('Message sent to ShieldTech AI', 'ok')} style={{
             background: 'var(--brand)', border: 'none', borderRadius: 8,
             padding: '8px 16px', color: '#fff', fontSize: 13, cursor: 'pointer',
             fontFamily: 'var(--font-body)', fontWeight: 500

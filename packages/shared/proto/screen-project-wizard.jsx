@@ -175,9 +175,9 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
               <div style={{ marginTop: 12, padding: 10, borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--brand)' }}>
                   <Icon name="hermes" size={14} color="var(--brand)" />
-                  <span style={{ fontWeight: 500 }}>Hermes: Auto-populate from floor plan</span>
+                  <span style={{ fontWeight: 500 }}>ShieldTech AI: Auto-populate from floor plan</span>
                 </div>
-                <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 4 }}>Upload a floor plan and Hermes will suggest camera placement, access points, and sensor locations based on the layout.</div>
+                <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 4 }}>Upload a floor plan and ShieldTech AI will suggest camera placement, access points, and sensor locations based on the layout.</div>
               </div>
             </div>
           )}
@@ -322,7 +322,7 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
 
               <div style={{ marginTop: 10, padding: 10, borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Icon name="hermes" size={14} color="var(--brand)" />
-                <span style={{ fontSize: 11, color: 'var(--brand)' }}>Hermes: Compare this estimate against 3 similar past projects — margins look healthy at 20%.</span>
+                <span style={{ fontSize: 11, color: 'var(--brand)' }}>ShieldTech AI: Compare this estimate against 3 similar past projects — margins look healthy at 20%.</span>
               </div>
             </div>
             );

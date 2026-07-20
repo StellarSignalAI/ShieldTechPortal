@@ -78,7 +78,7 @@ function DispatchScreen() {
           <div style={{ padding: '4px 10px', borderRadius: 4, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-low)' }}>
             GPS: Phone + Samsara seam ready
           </div>
-          <button onClick={() => showToast('Hermes optimizing routes...')} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button onClick={() => showToast('ShieldTech AI optimizing routes...')} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
             <span>⟡</span> Optimize Routes
           </button>
         </div>
@@ -674,11 +674,11 @@ function DispatchScheduleBoard({ techs, showToast }) {
         ))}
       </div>
 
-      {/* Hermes suggestion */}
+      {/* ShieldTech AI suggestion */}
       <GlassPanel style={{ marginTop: 8, borderLeft: '3px solid var(--brand)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span>⟡</span>
-          <span style={{ fontSize: 12, color: 'var(--brand)', flex: 1 }}>Hermes: Diana Patel is open after 9 AM. Bayshore Medical (J-402) has a critical SLA at 45m — assign her? Travel: 18 min.</span>
+          <span style={{ fontSize: 12, color: 'var(--brand)', flex: 1 }}>ShieldTech AI: Diana Patel is open after 9 AM. Bayshore Medical (J-402) has a critical SLA at 45m — assign her? Travel: 18 min.</span>
           <button onClick={() => { addBlock('DP', 'Bayshore Medical — Emergency Service', 3, 3, 'emergency', 'high', 'Bayshore Medical'); }} style={{ padding: '5px 12px', background: 'var(--brand)', border: 'none', borderRadius: 5, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Assign</button>
           <button onClick={() => showToast('Dismissed')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Dismiss</button>
         </div>

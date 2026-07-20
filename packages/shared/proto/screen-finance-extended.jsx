@@ -363,7 +363,7 @@ function FinanceReportsCenter({ showToast }) {
         <SectionHeader title="Reports Center" icon="reports" />
         <div style={{ display: 'flex', gap: 8 }}>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search reports..." style={{ padding: '5px 14px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 200 }} />
-          <button onClick={() => showToast('Hermes: What report do you need?')} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button onClick={() => showToast('ShieldTech AI: What report do you need?')} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
             <span>⟡</span> AI Report
           </button>
         </div>

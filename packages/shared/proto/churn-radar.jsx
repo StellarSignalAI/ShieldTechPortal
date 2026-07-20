@@ -33,7 +33,7 @@ function ChurnRadarPanel({ customer, showToast }) {
 
   const plays = [
     level !== 'healthy' && { label: 'Schedule exec check-in call', desc: 'Owner-to-owner, this week', go: () => toast('Call placed on your calendar — Thu 3:00 PM') },
-    level === 'critical' && { label: 'Draft win-back outreach', desc: 'Hermes writes it from their incident history', go: () => toast('Draft ready in your outbox') },
+    level === 'critical' && { label: 'Draft win-back outreach', desc: 'ShieldTech AI writes it from their incident history', go: () => toast('Draft ready in your outbox') },
     { label: 'Proactive maintenance visit', desc: 'No-charge system tune-up, schedules from backlog', go: () => { if (window.backlogStore) backlogStore.set(prev => [{ id: 'p' + Date.now(), title: `${name} — Goodwill PM visit`, customer: name, type: 'maintenance', dur: 2, days: 1, value: 0, addr: '—', sla: '7d' }, ...prev]); toast('PM visit added to Unscheduled tray'); } },
     level !== 'healthy' && mrr && { label: 'Offer one-month service credit', desc: `$${mrr.mrr.toLocaleString()} — needs your approval`, go: () => toast('Credit queued for approval') },
   ].filter(Boolean);

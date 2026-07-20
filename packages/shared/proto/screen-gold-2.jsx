@@ -28,12 +28,12 @@ function ServiceReportScreen() {
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--brand)' }}>AI-Powered Report Generation</span>
         </div>
         <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, marginBottom: 10 }}>
-          Hermes automatically generates professional service reports from technician check-ins, time entries, photos, and job notes. Each report includes work summary, equipment used, test results, before/after photos, and recommendations — ready for customer delivery.
+          ShieldTech AI automatically generates professional service reports from technician check-ins, time entries, photos, and job notes. Each report includes work summary, equipment used, test results, before/after photos, and recommendations — ready for customer delivery.
         </p>
         <div style={{ display: 'flex', gap: 24 }}>
           {[
             { step: '1', label: 'Tech completes job', desc: 'Checklist, photos, notes' },
-            { step: '2', label: 'Hermes drafts report', desc: 'Professional PDF in 30s' },
+            { step: '2', label: 'ShieldTech AI drafts report', desc: 'Professional PDF in 30s' },
             { step: '3', label: 'Review & approve', desc: 'Edit or send as-is' },
             { step: '4', label: 'Auto-deliver', desc: 'Email to customer' },
           ].map((s, i) => (

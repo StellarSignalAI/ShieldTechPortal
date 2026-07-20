@@ -133,7 +133,7 @@ function BrDrawingSheet({ opp, sheet, highlightRow, marked = true }) {
         {marked && (
           <g transform="translate(6 6)">
             <rect width="26" height="4.6" rx="0.6" fill="rgba(251,191,36,0.1)" stroke="rgba(251,191,36,0.55)" strokeWidth="0.28" />
-            <text x="13" y="3.1" fontSize="1.8" fill="#FCD34D" textAnchor="middle" fontFamily="var(--font-mono)" letterSpacing="0.5">HERMES MARKUP v2</text>
+            <text x="13" y="3.1" fontSize="1.8" fill="#FCD34D" textAnchor="middle" fontFamily="var(--font-mono)" letterSpacing="0.5">SHIELDTECH AI MARKUP v2</text>
           </g>
         )}
         {/* title block */}
@@ -172,7 +172,7 @@ function BrDrawingSheet({ opp, sheet, highlightRow, marked = true }) {
       </div>
       ) : (
         <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '9px 12px', font: '400 11.5px/1.5 var(--font-body)', color: 'var(--text-low)' }}>
-          Sheet as issued by the buyer — no ShieldTech markup. Flip to Marked to see HERMES device placement and callouts.
+          Sheet as issued by the buyer — no ShieldTech markup. Flip to Marked to see SHIELDTECH AI device placement and callouts.
         </div>
       )}
     </div>

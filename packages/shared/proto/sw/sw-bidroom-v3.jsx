@@ -1,6 +1,6 @@
 // ============================================================
 // Leads engine — Bid Room V3 shell (co-pilot)
-// HERMES built the whole bid; you review. Review deck is home;
+// SHIELDTECH AI built the whole bid; you review. Review deck is home;
 // Blueprint / Site model / War games / Numbers / Proposal /
 // Submit are inspection surfaces. Confidence meter live in the
 // header. Overrides window.BidRoom.
@@ -38,7 +38,7 @@ function BrSubmitV3({ opp, state, update }) {
     const followups = [
       { t: 'Today', txt: `Confirm receipt with ${opp.poc.name}${opp.poc.phone ? ' · ' + opp.poc.phone : ''}`, done: true },
       { t: '+3 days', txt: 'Check the portal for addenda or bid-opening results', done: false },
-      { t: '+10 days', txt: 'Nudge the buyer on award timeline (HERMES drafts the email)', done: false },
+      { t: '+10 days', txt: 'Nudge the buyer on award timeline (SHIELDTECH AI drafts the email)', done: false },
       { t: 'On award', txt: 'Won → convert to project · Lost → capture the number that beat you', done: false },
     ];
     return (
@@ -46,7 +46,7 @@ function BrSubmitV3({ opp, state, update }) {
         <Card style={{ padding: 18, textAlign: 'center' }}>
           <Icon name="checkCircle" size={34} color="var(--status-ok)" />
           <div style={{ font: '700 19px/1.3 var(--font-display)', color: 'var(--text-high)', marginTop: 10 }}>Submitted at {fmt(est.total)}</div>
-          <div style={{ font: '400 12.5px/1.6 var(--font-body)', color: 'var(--text-mid)', marginTop: 6 }}>{opp.title} · {opp.buyer}. HERMES now owns the follow-up sequence.</div>
+          <div style={{ font: '400 12.5px/1.6 var(--font-body)', color: 'var(--text-mid)', marginTop: 6 }}>{opp.title} · {opp.buyer}. SHIELDTECH AI now owns the follow-up sequence.</div>
         </Card>
         <Card style={{ padding: 16 }}>
           <Eyebrow color="var(--brand)">Follow-up sequence — automated</Eyebrow>
@@ -61,7 +61,7 @@ function BrSubmitV3({ opp, state, update }) {
           </div>
         </Card>
         <Card style={{ padding: 16 }}>
-          <Eyebrow>Award result — teaches HERMES</Eyebrow>
+          <Eyebrow>Award result — teaches SHIELDTECH AI</Eyebrow>
           {state.award ? (
             <div style={{ marginTop: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
@@ -71,14 +71,14 @@ function BrSubmitV3({ opp, state, update }) {
               {state.award.result === 'won' ? (
                 <Btn kind="primary" icon="arrowR" full style={{ marginTop: 12 }} onClick={() => swToast('Handed off to Operations — project shell created with the BOM, drawings, and schedule', 'ok')}>Convert to project</Btn>
               ) : (
-                <div style={{ font: '400 12px/1.6 var(--font-body)', color: 'var(--text-mid)', marginTop: 10 }}>Logged. HERMES adjusts its {opp.trades[0].toLowerCase()} pricing model and this buyer's profile.</div>
+                <div style={{ font: '400 12px/1.6 var(--font-body)', color: 'var(--text-mid)', marginTop: 10 }}>Logged. SHIELDTECH AI adjusts its {opp.trades[0].toLowerCase()} pricing model and this buyer's profile.</div>
               )}
               <Btn kind="ghost" size="sm" style={{ marginTop: 10 }} onClick={() => update({ award: null })}>Undo</Btn>
             </div>
           ) : (
             <div style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
-              <Btn kind="success" icon="check" style={{ flex: 1, minWidth: 140 }} onClick={() => { update({ award: { result: 'won', reason: 'best value' } }); swToast('WON — HERMES sharpens the model around this profile', 'ok'); }}>We won</Btn>
-              <Btn kind="secondary" icon="x" style={{ flex: 1, minWidth: 140 }} onClick={() => { update({ award: { result: 'lost', reason: 'beaten on price' } }); swToast('Logged — HERMES will bid this buyer leaner next time', 'info'); }}>Lost on price</Btn>
+              <Btn kind="success" icon="check" style={{ flex: 1, minWidth: 140 }} onClick={() => { update({ award: { result: 'won', reason: 'best value' } }); swToast('WON — SHIELDTECH AI sharpens the model around this profile', 'ok'); }}>We won</Btn>
+              <Btn kind="secondary" icon="x" style={{ flex: 1, minWidth: 140 }} onClick={() => { update({ award: { result: 'lost', reason: 'beaten on price' } }); swToast('Logged — SHIELDTECH AI will bid this buyer leaner next time', 'info'); }}>Lost on price</Btn>
               <Btn kind="ghost" style={{ flex: 1, minWidth: 120 }} onClick={() => { update({ award: { result: 'lost', reason: 'scope/references' } }); }}>Lost — other</Btn>
             </div>
           )}
@@ -129,7 +129,7 @@ function BidRoom({ oppId, onClose }) {
             <span style={{ font: `700 ${isMobile ? 14 : 16}px/1.2 var(--font-display)`, color: 'var(--text-high)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opp.title}</span>
             {nogo ? <Pill tone="Dead" label="No-go" small dot /> : state.submitted ? <Pill tone="Done" label="Submitted" small dot /> : <Pill tone={opp.status} label={doneN + '/' + decisions.length + ' approved'} small dot />}
           </div>
-          {!isMobile && <div style={{ font: '500 11px/1.3 var(--font-body)', color: 'var(--text-mid)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opp.buyer} · due {swDueLabel(opp.dueAt)} · built by HERMES overnight</div>}
+          {!isMobile && <div style={{ font: '500 11px/1.3 var(--font-body)', color: 'var(--text-mid)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opp.buyer} · due {swDueLabel(opp.dueAt)} · built by SHIELDTECH AI overnight</div>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 10 : 18, flexShrink: 0 }}>
           {!isMobile && <BrConfidence opp={opp} state={state} />}
@@ -159,7 +159,7 @@ function BidRoom({ oppId, onClose }) {
 
       {nogo && (
         <div style={{ padding: '9px 20px', background: 'rgba(148,163,184,0.06)', borderBottom: '1px solid var(--border-subtle)', font: '500 12px/1.4 var(--font-body)', color: 'var(--text-mid)', display: 'flex', gap: 10, alignItems: 'center' }}>
-          <Icon name="flag" size={14} color="var(--text-low)" />Parked as no-go — HERMES keeps watching this buyer.
+          <Icon name="flag" size={14} color="var(--text-low)" />Parked as no-go — SHIELDTECH AI keeps watching this buyer.
           <Btn kind="ghost" size="sm" onClick={() => update({ decision: null })}>Reopen</Btn>
         </div>
       )}

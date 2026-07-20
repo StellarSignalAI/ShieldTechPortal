@@ -174,7 +174,7 @@ function FinanceExpenses({ setModal, showToast }) {
         <GlassPanel style={{ borderLeft: '3px solid var(--brand)', animation: 'fade-up 0.3s ease both' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <span style={{ fontSize: 14 }}>⟡</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--brand)' }}>Hermes Receipt OCR</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--brand)' }}>ShieldTech AI Receipt OCR</span>
             <button onClick={() => setOcrDemo(false)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 14 }}>✕</button>
           </div>
           <div style={{ display: 'flex', gap: 16 }}>
@@ -185,7 +185,7 @@ function FinanceExpenses({ setModal, showToast }) {
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, marginBottom: 8 }}>
-                Upload a receipt photo or PDF. Hermes will extract vendor, amount, date, and category automatically. Review and approve the expense in one click.
+                Upload a receipt photo or PDF. ShieldTech AI will extract vendor, amount, date, and category automatically. Review and approve the expense in one click.
               </p>
               <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'var(--text-low)' }}>
                 <span>✓ Auto vendor match</span>
@@ -1131,7 +1131,7 @@ function InvoiceSendModal({ invoiceNum, customer, total, dueDate, sendEmails, se
 
             {emailMode === 'ai' && (
               <button onClick={generateAI} style={{ marginTop: 6, padding: '4px 10px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span>⟡</span> Regenerate with Hermes
+                <span>⟡</span> Regenerate with ShieldTech AI
               </button>
             )}
 

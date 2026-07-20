@@ -162,7 +162,7 @@ function ProposalBuilderView({ proposal, onBack, previewMode, setPreviewMode }) 
   ]);
   const [selectedBlock, setSelectedBlock] = React.useState('cover');
   const [settingsOpen, setSettingsOpen] = React.useState(false);
-  const [hermesDrawer, setHermesDrawer] = React.useState(false);
+  const [hermesDrawer, setShieldAIDrawer] = React.useState(false);
 
   const blockTypes = [
     { type: 'cover', label: 'Cover Page', icon: '◉' },
@@ -246,10 +246,10 @@ function ProposalBuilderView({ proposal, onBack, previewMode, setPreviewMode }) 
             </div>
           ))}
         </div>
-        {/* Hermes assist */}
+        {/* ShieldTech AI assist */}
         <div style={{ padding: '8px 12px', borderTop: '1px solid var(--border-subtle)' }}>
-          <button onClick={() => setHermesDrawer(!hermesDrawer)} style={{ width: '100%', padding: '6px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-            <span>⟡</span> Hermes Assist
+          <button onClick={() => setShieldAIDrawer(!hermesDrawer)} style={{ width: '100%', padding: '6px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+            <span>⟡</span> ShieldTech AI Assist
           </button>
         </div>
       </div>
@@ -317,7 +317,7 @@ function ProposalBuilderView({ proposal, onBack, previewMode, setPreviewMode }) 
               <div className="label-sm">CONTENT</div>
               <textarea placeholder="Edit block text..." defaultValue={sel.content.text || ''} style={{ width: '100%', minHeight: 100, padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
               {sel.type !== 'terms' && (
-                <button onClick={() => shieldToast('Hermes is rewriting this section…', 'info')} style={{ alignSelf: 'flex-start', padding: '4px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <button onClick={() => shieldToast('ShieldTech AI is rewriting this section…', 'info')} style={{ alignSelf: 'flex-start', padding: '4px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span>⟡</span> AI Rewrite
                 </button>
               )}
@@ -380,16 +380,16 @@ function ProposalBuilderView({ proposal, onBack, previewMode, setPreviewMode }) 
         </div>
       </div>
 
-      {/* Hermes Drawer */}
+      {/* ShieldTech AI Drawer */}
       {hermesDrawer && (
         <div style={{ position: 'fixed', right: 280, top: 52, bottom: 0, width: 320, background: 'var(--card)', borderLeft: '1px solid var(--border-subtle)', zIndex: 500, display: 'flex', flexDirection: 'column', animation: 'fade-up 0.2s ease both' }}>
           <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span>⟡</span><span style={{ fontSize: 13, fontWeight: 600, color: 'var(--brand)' }}>Hermes Proposal Assist</span></div>
-            <button onClick={() => setHermesDrawer(false)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 14 }}>✕</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span>⟡</span><span style={{ fontSize: 13, fontWeight: 600, color: 'var(--brand)' }}>ShieldTech AI Proposal Assist</span></div>
+            <button onClick={() => setShieldAIDrawer(false)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 14 }}>✕</button>
           </div>
           <div style={{ flex: 1, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
             {['Draft scope of work for this system','Write the introduction letter','Summarize the value proposition','Suggest upsell opportunities','Rewrite pricing for executive audience'].map((s, i) => (
-              <button key={i} onClick={() => shieldToast('Hermes: “' + s + '” — drafting…', 'info')} style={{ padding: '8px 12px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>{s}</button>
+              <button key={i} onClick={() => shieldToast('ShieldTech AI: “' + s + '” — drafting…', 'info')} style={{ padding: '8px 12px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>{s}</button>
             ))}
           </div>
         </div>

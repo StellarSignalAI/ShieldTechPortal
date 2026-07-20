@@ -24,7 +24,7 @@ function BrWarGames({ opp, state, update }) {
       <Card style={{ padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
           <Icon name="target" size={15} color="var(--status-critical)" />
-          <span style={{ font: '700 13.5px/1 var(--font-display)', color: 'var(--text-high)' }}>War games — the field HERMES expects</span>
+          <span style={{ font: '700 13.5px/1 var(--font-display)', color: 'var(--text-high)' }}>War games — the field SHIELDTECH AI expects</span>
           <span style={{ font: '500 11px/1 var(--font-body)', color: 'var(--text-low)' }}>— modeled from public award history in {opp.state}, ±5% bands</span>
         </div>
         {/* price axis */}
@@ -88,7 +88,7 @@ function BrWarGames({ opp, state, update }) {
         })}
       </div>
       <div style={{ font: '400 11.5px/1.6 var(--font-body)', color: 'var(--text-low)' }}>
-        Bands are HERMES's model of each competitor's likely number from public award history and their bidding style — a planning tool, not a guarantee. Red band = they likely beat the selected tier.
+        Bands are SHIELDTECH AI's model of each competitor's likely number from public award history and their bidding style — a planning tool, not a guarantee. Red band = they likely beat the selected tier.
       </div>
     </div>
   );

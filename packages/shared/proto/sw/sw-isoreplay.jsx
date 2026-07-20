@@ -1,5 +1,5 @@
 // ============================================================
-// Leads engine — Isometric site model + HERMES agent replay
+// Leads engine — Isometric site model + SHIELDTECH AI agent replay
 // BrIsoView: 3D-ish building with AI device placement.
 // BrAgentReplay: watch the overnight run rebuild this bid.
 // ============================================================
@@ -113,7 +113,7 @@ function BrIsoView({ opp, state }) {
   );
 }
 
-/* ─────────── Agent replay — watch HERMES build the bid ─────────── */
+/* ─────────── Agent replay — watch SHIELDTECH AI build the bid ─────────── */
 function BrAgentReplay({ opp, onClose }) {
   const h = brHash(opp.id);
   const counts = brDeviceCounts(opp, brDefaultState());
@@ -151,7 +151,7 @@ function BrAgentReplay({ opp, onClose }) {
         <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)' }}><Icon name="sparkles" size={14} color="var(--brand)" /></span>
           <div style={{ flex: 1 }}>
-            <div style={{ font: '700 13px/1 var(--font-display)', color: 'var(--text-high)' }}>How HERMES built this bid</div>
+            <div style={{ font: '700 13px/1 var(--font-display)', color: 'var(--text-high)' }}>How SHIELDTECH AI built this bid</div>
             <div style={{ font: '500 10px/1 var(--font-mono)', color: 'var(--text-low)', letterSpacing: '0.08em', marginTop: 4 }}>OVERNIGHT RUN · {new Date(window.SW.TODAY + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase()} · 3M 11S TOTAL</div>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}><Icon name="x" size={16} color="var(--text-low)" /></button>

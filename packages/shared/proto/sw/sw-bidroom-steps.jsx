@@ -90,7 +90,7 @@ function BrStepScope({ opp, state, update }) {
       <Card style={{ padding: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <Icon name="doc" size={15} color="var(--brand)" />
-          <span style={{ font: '700 13px/1 var(--font-display)', color: 'var(--text-high)' }}>Scope of work — written by HERMES, approved by you</span>
+          <span style={{ font: '700 13px/1 var(--font-display)', color: 'var(--text-high)' }}>Scope of work — written by SHIELDTECH AI, approved by you</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {opp.trades.map(trade => {
@@ -128,7 +128,7 @@ function BrStepScope({ opp, state, update }) {
         {docTab === 'rfp'
           ? <BrRfpDoc opp={opp} compact />
           : <BrDrawings opp={opp} marked={docTab === 'marked'} activeSheet={sheet} onSheet={setSheet} />}
-        {docTab === 'marked' && <div style={{ font: '400 11.5px/1.5 var(--font-body)', color: 'var(--text-low)', marginTop: 7 }}>Device symbols and callouts placed by HERMES from the RFP schedules — flip to Unmarked to see the sheet exactly as the buyer issued it.</div>}
+        {docTab === 'marked' && <div style={{ font: '400 11.5px/1.5 var(--font-body)', color: 'var(--text-low)', marginTop: 7 }}>Device symbols and callouts placed by SHIELDTECH AI from the RFP schedules — flip to Unmarked to see the sheet exactly as the buyer issued it.</div>}
       </div>
 
       {/* Conflicts */}
@@ -227,7 +227,7 @@ function BrStepBom({ opp, state, update }) {
       <Card style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
         <Icon name="sparkles" size={16} color="var(--brand)" />
         <div style={{ flex: 1, minWidth: 220, font: '400 12.5px/1.55 var(--font-body)', color: 'var(--text-mid)' }}>
-          <span style={{ color: 'var(--text-high)', fontWeight: 600 }}>HERMES built this BOM from the approved scope</span> — {lines.length} lines across {Object.keys(grouped).length} trades. Verify every line; edit a quantity and it flows through pricing and the proposal.
+          <span style={{ color: 'var(--text-high)', fontWeight: 600 }}>SHIELDTECH AI built this BOM from the approved scope</span> — {lines.length} lines across {Object.keys(grouped).length} trades. Verify every line; edit a quantity and it flows through pricing and the proposal.
         </div>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           <div style={{ textAlign: 'right' }}>
@@ -308,7 +308,7 @@ function BrStepPricing({ opp, state, update }) {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
           <span style={{ font: '700 13.5px/1 var(--font-display)', color: 'var(--text-high)' }}>Pick your number</span>
-          {intel && <span style={{ font: '500 11.5px/1.4 var(--font-body)', color: 'var(--text-low)' }}>— ~{intel.bidders} likely bidders{intel.incumbent ? ', incumbent in the field' : ', no incumbent'} → HERMES recommends <span style={{ color: 'var(--brand)', fontWeight: 600 }}>{BR_TIERS.find(t => t.id === rec).label}</span></span>}
+          {intel && <span style={{ font: '500 11.5px/1.4 var(--font-body)', color: 'var(--text-low)' }}>— ~{intel.bidders} likely bidders{intel.incumbent ? ', incumbent in the field' : ', no incumbent'} → SHIELDTECH AI recommends <span style={{ color: 'var(--brand)', fontWeight: 600 }}>{BR_TIERS.find(t => t.id === rec).label}</span></span>}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
           {BR_TIERS.map(t => {

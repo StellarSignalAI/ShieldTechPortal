@@ -7,7 +7,7 @@
 
 const BR_PHASES = [
   { id: 'qualify', label: 'Qualify', icon: 'target', blurb: 'Verify the source is real, score the pursuit, and make the go / no-go call.' },
-  { id: 'scope', label: 'Scope', icon: 'doc', blurb: 'HERMES already wrote the scope and marked every device on the drawings. Review the markups against the clean sheets and approve each trade.' },
+  { id: 'scope', label: 'Scope', icon: 'doc', blurb: 'SHIELDTECH AI already wrote the scope and marked every device on the drawings. Review the markups against the clean sheets and approve each trade.' },
   { id: 'bom', label: 'BOM', icon: 'list', blurb: 'The bill of materials is built from the approved scope — verify every line: part, quantity, unit cost.' },
   { id: 'pricing', label: 'Pricing', icon: 'dollar', blurb: 'Internal numbers first, then pick a tier — Low, Medium, or Aggressive — based on the field.' },
   { id: 'proposal', label: 'Proposal', icon: 'send', blurb: 'The customer-facing proposal is assembled from your selections. Review it exactly as the buyer will see it.' },

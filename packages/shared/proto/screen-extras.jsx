@@ -599,7 +599,7 @@ function AuditTrailView() {
   const [query, setQuery] = React.useState('');
   const logs = [
     { time: '14:22:08', user: 'Mike Reyes', role: 'Tech', action: 'Completed job J-4201', target: 'Acme Dental', severity: 'info', ip: '10.1.4.55' },
-    { time: '14:18:32', user: 'Hermes AI', role: 'System', action: 'Auto-triaged ticket TKT-2847 → High Priority', target: 'System', severity: 'info', ip: '—' },
+    { time: '14:18:32', user: 'ShieldTech AI', role: 'System', action: 'Auto-triaged ticket TKT-2847 → High Priority', target: 'System', severity: 'info', ip: '—' },
     { time: '14:15:01', user: 'John Mitchell', role: 'Admin', action: 'Approved email draft → Acme Dental', target: 'Approvals', severity: 'ok', ip: '192.168.1.10' },
     { time: '14:10:44', user: 'System', role: 'System', action: 'Remote session RS-0043 expired (2h limit)', target: 'Acme Dental', severity: 'warn', ip: '—' },
     { time: '13:58:12', user: 'Sarah Chen', role: 'Sales', action: 'Created proposal Q-2851 — $215,000', target: 'Pacific Rim Hotels', severity: 'info', ip: '192.168.1.22' },

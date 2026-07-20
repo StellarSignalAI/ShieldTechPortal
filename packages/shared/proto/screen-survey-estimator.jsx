@@ -1,5 +1,5 @@
 /* Screen — AI Site Survey Estimator
-   Floor plan / walkthrough photos in → Hermes detects devices, builds BOM from
+   Floor plan / walkthrough photos in → ShieldTech AI detects devices, builds BOM from
    price book, estimates labor from skills matrix, drafts the proposal. */
 
 const SURVEY_STEPS = [
@@ -87,7 +87,7 @@ function SurveyEstimatorScreen() {
               </div>
             </div>
             <button onClick={run} style={{ width: '100%', marginTop: 14, padding: '11px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 9, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 4px 18px rgba(63,169,245,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <Icon name="hermes" size={15} color="#fff" /> Run Hermes Site Analysis
+              <Icon name="hermes" size={15} color="#fff" /> Run ShieldTech AI Site Analysis
             </button>
           </div>
           <div className="glass" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -118,7 +118,7 @@ function SurveyEstimatorScreen() {
         <div className="glass" style={{ padding: 40, maxWidth: 560, margin: '40px auto', width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
             <Icon name="hermes" size={20} color="var(--brand)" />
-            <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-high)' }}>Hermes is analyzing {customer}…</span>
+            <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-high)' }}>ShieldTech AI is analyzing {customer}…</span>
           </div>
           {SURVEY_STEPS.map((s, i) => (
             <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', opacity: i <= stepIdx ? 1 : 0.3, transition: 'opacity 0.3s' }}>
