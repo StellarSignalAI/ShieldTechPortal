@@ -2,7 +2,7 @@
    Ports the inline App shell from the prototype's "ShieldTech Portal.html"
    verbatim: same screen map, same tweaks wiring, same toast host. */
 
-import './globals.js';
+import '@shared/globals.js';
 
 /* Fonts (self-hosted; same families/weights the design's Google Fonts import used) */
 import '@fontsource/montserrat/200.css';
@@ -19,11 +19,11 @@ import '@fontsource/jetbrains-mono/300.css';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
 
-import './styles/styles.css';
-import './styles/widget-studio.css';
+import '@shared/styles/styles.css';
+import '@shared/styles/widget-studio.css';
 
 /* Prototype modules in shell load order (attach components to window) */
-import './proto-manifest.js';
+import '@shared/proto-manifest.js';
 
 const React = window.React;
 const ReactDOM = window.ReactDOM;
