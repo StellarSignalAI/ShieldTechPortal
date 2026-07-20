@@ -130,12 +130,9 @@ function LoginScreen() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ display: 'inline-flex', animation: 'fade-up 0.6s ease 0.1s both' }}>
-            <ShieldLogo size={48} />
+            <img src="uploads/ShieldTech Logo Transparent MK3.png" alt="ShieldTech"
+              style={{ height: 56, objectFit: 'contain' }} />
           </div>
-          <h1 className="display" style={{
-            fontSize: 22, fontWeight: 200, letterSpacing: '0.1em',
-            color: 'var(--text-high)', marginTop: 16, animation: 'fade-up 0.6s ease 0.2s both'
-          }}>SHIELDTECH</h1>
           <p style={{
             fontSize: 12, color: 'var(--text-low)', marginTop: 6, letterSpacing: '0.04em',
             animation: 'fade-up 0.6s ease 0.3s both'
