@@ -37,7 +37,10 @@ Latest run: **68/68 screens rendered, 0 blank, 0 runtime errors.**
 
 See [INVENTORY.md](INVENTORY.md) for the full checklist of all 68 wired screens.
 
+## Live preview
+
+Pushes to `main` (and the implementation branch) deploy the production build to GitHub Pages via `.github/workflows/deploy-pages.yml`. Or run it locally: `npm install && npm run dev`.
+
 ## Known gaps
 
-- `sw/shieldtech-emblem.png` (and its duplicate under `uploads/`) exceeds the design-sync 256 KiB file-read cap and could not be exported intact; the Secret Weapon `ShieldMark` component falls back to alt text. Drop the original PNG into `public/sw/shieldtech-emblem.png` to restore it.
 - Other surfaces from the design project (Mobile, Technician, Customer portal, standalone Secret Weapon app) are follow-up passes using the same vendoring pattern.
