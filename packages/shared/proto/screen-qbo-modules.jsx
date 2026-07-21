@@ -173,14 +173,6 @@ function IntegrationsScreen() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <h2 className="display" style={{ fontSize: 20, fontWeight: 300, marginRight: 'auto' }}>Integrations</h2>
-        <button onClick={async () => {
-          if (!window.__shieldAI) { showToast('AI client not loaded'); return; }
-          showToast('Testing ShieldTech AI…');
-          const st = await window.__shieldAI.aiStatus(true);
-          if (!st.configured) { showToast('AI not configured — set OPENAI_API_KEY'); return; }
-          const r = await window.__shieldAI.shieldAIChat('assistant', [{ role: 'user', content: 'Reply with exactly: ShieldTech AI online.' }]);
-          showToast(r.live ? `✓ ${st.model}: ${r.text.slice(0, 60)}` : r.text.slice(0, 80));
-        }} style={{ padding: '7px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⟡ Test ShieldTech AI</button>
         <QboSyncBadge state={demo === 'stale' ? 'stale' : demo === 'error' ? 'error' : 'synced'} />
       </div>
       <QboSubTabs tabs={[{ id: 'connections', label: 'Connections', count: conns.length }, { id: 'activity', label: 'Sync Activity' }, { id: 'import', label: 'Import' }, { id: 'export', label: 'Export' }]} val={sub} set={setSub} />
@@ -193,7 +185,21 @@ function IntegrationsScreen() {
                 <GlassPanel key={i} className="st-rowcard" style={{ cursor: 'pointer', animation: `fade-up 0.3s ease ${i * 40}ms both` }} onClick={() => shieldModal({
                   kind: 'detail', title: c.name, subtitle: c.kind,
                   sections: [{ label: 'Connection', rows: [{ k: 'Status', v: label, mono: false }, { k: 'Last sync', v: c.last, mono: false }, { k: 'Notes', v: c.note, mono: false, full: true }] }],
-                  actions: c.state === 'failed' || c.state === 'credential'
+                  actions: c.name.indexOf('ShieldTech AI') === 0
+                    ? [{ label: 'Test connection', primary: true, close: true, onClick: async () => {
+                          if (!window.__shieldAI) { showToast('AI client not loaded'); return; }
+                          showToast('Testing ShieldTech AI…');
+                          const st = await window.__shieldAI.aiStatus(true);
+                          if (!st.configured) { showToast('AI not configured — set OPENAI_API_KEY'); return; }
+                          const r = await window.__shieldAI.shieldAIChat('assistant', [{ role: 'user', content: 'Reply with exactly: ShieldTech AI online.' }]);
+                          showToast(r.live ? `✓ ${st.model}: ${r.text.slice(0, 60)}` : r.text.slice(0, 80));
+                        } }]
+                    : c.name.indexOf('Rippling') === 0
+                    ? [{ label: 'Sync now', primary: true, close: true, onClick: () => {
+                          const t = window.__shieldTime;
+                          if (t) t.ripplingSync('both').then(r => showToast(r.ok ? 'Rippling sync complete' : (r.error || 'Sync failed')));
+                        } }]
+                    : c.state === 'failed' || c.state === 'credential'
                     ? [{ label: 'Reconnect', primary: true, successMsg: 'OAuth flow opened', onClick: () => {}, close: true }]
                     : [{ label: c.state === 'paused' ? 'Resume sync' : 'Pause sync', onClick: () => showToast(c.state === 'paused' ? 'Sync resumed' : 'Sync paused'), close: true },
                        { label: 'View sync history', primary: true, onClick: () => setSub('activity'), close: true }] })}>
