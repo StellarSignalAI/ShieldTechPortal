@@ -114,7 +114,18 @@ entries; worker roster + pay rates and PAID/FINALIZED status flow back.
 Until the token exists, hours still collect and approvals still work; entries
 queue with "not configured" sync status and push on first successful sync.
 
-## 8. 🟡 CRON_SECRET (ingest automation)
+## 8. 🟡 Apple Developer Program (true LiDAR scanning)
+
+The web platform's Survey Scan does live AI detection (objects, walls, ceilings)
+from the camera. **True LiDAR mesh capture** requires the native companion app
+in `apps/scanner-ios/` (Apple RoomPlan — 2 Swift files, build steps in its README).
+
+1. Join https://developer.apple.com/programs/ ($99/yr)
+2. Build ShieldTech Scanner in Xcode, distribute via TestFlight to the team
+3. Techs scan on LiDAR iPhones/iPads → AirDrop/share the JSON → Survey Scan →
+   "⌁ Import LiDAR Scan" → full project with measured walls/doors/objects
+
+## 9. 🟡 CRON_SECRET (ingest automation)
 
 Any long random string. Set as a Supabase Edge Function secret: `CRON_SECRET`.
 Lets schedulers call `ingest-alerts`, `ingest-report-text`, `sources-poll`, `sam-poll`
@@ -122,7 +133,7 @@ without a user session (header `x-cron-secret`).
 
 ---
 
-## 9. Bid portals with NO public API
+## 10. Bid portals with NO public API
 
 These cannot be polled directly — no key exists to buy. They are covered by the
 **BD Command Center pattern**: your alert emails / saved searches / BD reports get
@@ -146,7 +157,7 @@ as structured JSON to `ingest-alerts`. All land on the Bid Board deduped. The
 | BidNet Direct | Multi-state municipal | email alerts → ingest |
 | GC bid lists (invited) | Private/commercial | forward → ingest-report-text |
 
-## 10. ⚪ Later-phase integrations (coded as placeholders, not yet wired)
+## 11. ⚪ Later-phase integrations (coded as placeholders, not yet wired)
 
 Per the integrations roadmap — these show as "Not connected" on Settings → Integrations:
 

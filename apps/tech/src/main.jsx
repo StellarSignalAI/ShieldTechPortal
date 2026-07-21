@@ -26,6 +26,7 @@ import '@shared/ai.js';
 import '@shared/time.js';
 import '@shared/camera.js';
 import '@shared/vision.js';
+import '@shared/lidar-import.js';
 import '@shared/proto-manifest-tech.js';
 import '@shared/store-sync.js';
 

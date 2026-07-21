@@ -14,8 +14,24 @@ function MSurveyScan({ onNav }) {
   const totDev = projects.reduce((a, p) => a + ssTotals(p).devices, 0);
   const totIssues = projects.reduce((a, p) => a + p.floors.reduce((s, f) => s + (f.issues || []).length, 0), 0);
 
+  const lidarInputRef = React.useRef(null);
+  const onLidarFile = (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      const r = window.__shieldLidar ? window.__shieldLidar.importScan(rd.result) : { ok: false, error: 'Importer not loaded' };
+      showToast(r.ok ? `LiDAR scan imported — ${r.data.customer}` : r.error, r.ok ? 'ok' : 'warn');
+    };
+    rd.readAsText(f);
+    e.target.value = '';
+  };
   const newBtn = (
-    <button onClick={() => setWizard(true)} style={{ padding: '13px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◉ New Survey Scan</button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <button onClick={() => setWizard(true)} style={{ padding: '13px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◉ New Survey Scan</button>
+      <button onClick={() => lidarInputRef.current && lidarInputRef.current.click()} style={{ padding: '11px 0', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 12, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⌁ Import LiDAR Scan (ShieldTech Scanner)</button>
+      <input ref={lidarInputRef} type="file" accept=".json,application/json" onChange={onLidarFile} style={{ display: 'none' }} />
+    </div>
   );
 
   /* Layout B: capability grid + compact project rows */
