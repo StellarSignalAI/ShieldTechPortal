@@ -391,16 +391,63 @@ function brSetLead(id, v) {
   const st = brLeadState(); st[id] = v;
   try { localStorage.setItem('sw:bidroom:leads', JSON.stringify(st)); } catch {}
   brSyncAcceptedLeads();
+  // Mirror the decision to the backend when this lead came from Supabase.
+  const sb = window.__shieldSupabase;
+  if (sb && BR_LEADS.some(l => l.id === id && l._remote)) {
+    sb.from('opportunities').update({ status: v }).eq('id', id).then(() => {}, () => {});
+  }
   window.dispatchEvent(new CustomEvent('sw:bidroom'));
 }
 function brSyncAcceptedLeads() {
   const st = brLeadState();
   BR_LEADS.forEach(l => {
     const exists = window.SW.OPPS.some(o => o.id === l.id);
-    if (st[l.id] === 'accepted' && !exists) window.SW.OPPS.push({ ...l, industry: 'govmuni', sourceUrl: '#' });
+    if (st[l.id] === 'accepted' && !exists) window.SW.OPPS.push({ ...l, industry: 'govmuni', sourceUrl: l.sourceUrl || '#' });
   });
 }
 brSyncAcceptedLeads();
+
+/* Live lead feed — pull fresh opportunities from Supabase into BR_LEADS.
+   No-op when the backend is unconfigured (board simply shows zero leads). */
+let brLeadsInflight = false;
+function brFetchRemoteLeads() {
+  const sb = window.__shieldSupabase;
+  if (!sb || brLeadsInflight) return;
+  brLeadsInflight = true;
+  sb.from('opportunities')
+    .select('id, title, buyer, state, trades, value_estimate, due_at, fit_score, why, source_id, source_url, status')
+    .in('status', ['fresh', 'accepted'])
+    .order('due_at', { ascending: true })
+    .limit(200)
+    .then(({ data, error }) => {
+      brLeadsInflight = false;
+      if (error || !Array.isArray(data)) return;
+      const st = brLeadState();
+      BR_LEADS.length = 0;
+      data.forEach(r => {
+        BR_LEADS.push({
+          id: r.id,
+          title: r.title,
+          buyer: r.buyer,
+          state: r.state || '—',
+          trades: r.trades || [],
+          value: Number(r.value_estimate) || 0,
+          dueAt: r.due_at ? r.due_at.slice(0, 10) : null,
+          fit: r.fit_score ?? 70,
+          why: r.why || '',
+          sourceRisk: r.source_id === 'sam-gov' ? 'Verified' : 'Unverified',
+          sourceUrl: r.source_url || '#',
+          _remote: true,
+        });
+        if (r.status === 'accepted' && !st[r.id]) st[r.id] = 'accepted';
+      });
+      try { localStorage.setItem('sw:bidroom:leads', JSON.stringify(st)); } catch {}
+      brSyncAcceptedLeads();
+      window.dispatchEvent(new CustomEvent('sw:bidroom'));
+    }, () => { brLeadsInflight = false; });
+}
+brFetchRemoteLeads();
+window.addEventListener('shield:auth', brFetchRemoteLeads);
 
 Object.assign(window, {
   BR_PHASES, brDefaultState, brLoad, brSave, useBidState, brUseAll, brSpecRows, brQty, brAmbiguities,

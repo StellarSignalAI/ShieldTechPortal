@@ -33,6 +33,8 @@ function publish() {
     mustChangePassword: Boolean(p && p.must_change_password),
   } : null;
   listeners.forEach(fn => { try { fn(state); } catch {} });
+  // Window-level signal so vendored proto modules (no imports) can react.
+  try { window.dispatchEvent(new CustomEvent('shield:auth', { detail: { authed: Boolean(u) } })); } catch {}
 }
 
 async function loadProfile() {
