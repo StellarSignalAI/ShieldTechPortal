@@ -121,6 +121,32 @@ function StudioScreen({ onExportToProposal }) {
     setPan({ x: panRef.current.ox + (e.clientX - panRef.current.sx), y: panRef.current.oy + (e.clientY - panRef.current.sy) });
   };
   const onPanUp = () => { panRef.current = null; };
+  // Touch: pointer-event wrappers add finger pan + two-finger pinch zoom.
+  const ptrsRef = React.useRef(new Map());
+  const pinchRef = React.useRef(null);
+  const onPtrDown = (e) => {
+    ptrsRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrsRef.current.size === 2) {
+      const [a, b] = [...ptrsRef.current.values()];
+      pinchRef.current = { d: Math.hypot(a.x - b.x, a.y - b.y), z: zoom };
+      panRef.current = null;
+    } else onPanDown(e);
+  };
+  const onPtrMove = (e) => {
+    if (ptrsRef.current.has(e.pointerId)) ptrsRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrsRef.current.size === 2 && pinchRef.current) {
+      const [a, b] = [...ptrsRef.current.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (d > 0 && pinchRef.current.d > 0) setZoom(Math.min(2.5, Math.max(0.4, +(pinchRef.current.z * d / pinchRef.current.d).toFixed(2))));
+      return;
+    }
+    onPanMove(e);
+  };
+  const onPtrUp = (e) => {
+    ptrsRef.current.delete(e.pointerId);
+    if (ptrsRef.current.size < 2) pinchRef.current = null;
+    if (ptrsRef.current.size === 0) onPanUp();
+  };
 
   const customers = ['Metro Bank Corp', 'Acme Dental', 'City Hall', 'Riverside Medical', 'Pacific Rim Hotels', 'Westfield Mall', 'Harbor View Condos'];
   const categories = [...new Set(deviceCatalog.map((d) => d.cat))];
@@ -201,7 +227,11 @@ function StudioScreen({ onExportToProposal }) {
               draggable
               onDragStart={() => setDragPlaceDevice(device)}
               onDragEnd={() => setDragPlaceDevice(null)}
-              onClick={() => setDeviceDetailOpen(device)}
+              onClick={(e) => {
+                if (e.nativeEvent && e.nativeEvent.__stArmMark) { setDragPlaceDevice(device); showToast(`${device.name} armed — tap the canvas to place`); return; }
+                setDeviceDetailOpen(device);
+              }}
+              onPointerUp={(e) => { if (e.pointerType === 'touch' && dragPlaceDevice !== device) e.nativeEvent.__stArmMark = true; }}
               style={{
                 padding: '8px 12px', cursor: 'grab', borderBottom: '1px solid rgba(63,169,245,0.03)',
                 transition: 'background 0.1s'
@@ -251,12 +281,24 @@ function StudioScreen({ onExportToProposal }) {
         {activeTab === 'photo' && <PhotoQuoteCanvas placedDevices={placedDevices} setPlacedDevices={setPlacedDevices} dragPlaceDevice={dragPlaceDevice} setDragPlaceDevice={setDragPlaceDevice} catColors={catColors} showToast={showToast} onExportToProposal={exportToProposal} />}
 
       {activeTab === 'plan' &&
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', cursor: panRef.current ? 'grabbing' : (activeTool === 'select' ? 'grab' : 'default') }}
-        onMouseDown={onPanDown}
-        onMouseMove={onPanMove}
-        onMouseUp={onPanUp}
-        onMouseLeave={onPanUp}
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', touchAction: 'none', cursor: panRef.current ? 'grabbing' : (activeTool === 'select' ? 'grab' : 'default') }}
+        onPointerDown={onPtrDown}
+        onPointerMove={onPtrMove}
+        onPointerUp={onPtrUp}
+        onPointerCancel={onPtrUp}
+        onPointerLeave={onPtrUp}
         onWheel={onCanvasWheel}
+        onClick={(e) => {
+          // Tap-to-place: a device armed from the catalog lands where you tap.
+          if (!dragPlaceDevice || e.target.closest('[data-device-node]')) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = (e.clientX - rect.left - pan.x) / zoom - 40;
+          const y = (e.clientY - rect.top - pan.y) / zoom - 40;
+          const tag = `${dragPlaceDevice.cat.substring(0, 3).toUpperCase()}-${String(placedDevices.length + 1).padStart(2, '0')}`;
+          setPlacedDevices((prev) => [...prev, { x, y, device: dragPlaceDevice, tag }]);
+          showToast(`Placed ${dragPlaceDevice.name}`);
+          setDragPlaceDevice(null);
+        }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           if (!dragPlaceDevice) return;
@@ -693,9 +735,9 @@ function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClos
 
         {/* Canvas */}
         <div style={{ flex: 1, background: 'rgba(5,7,10,0.6)', position: 'relative', overflow: 'hidden' }}>
-          <svg ref={canvasRef} width="100%" height="100%" style={{ cursor: drawTool === 'wall' || drawTool === 'line' ? 'crosshair' : drawTool === 'text' ? 'text' : 'default' }}
-          onMouseDown={handleCanvasMouseDown}
-          onMouseUp={handleCanvasMouseUp}>
+          <svg ref={canvasRef} width="100%" height="100%" style={{ touchAction: 'none', cursor: drawTool === 'wall' || drawTool === 'line' ? 'crosshair' : drawTool === 'text' ? 'text' : 'default' }}
+          onPointerDown={handleCanvasMouseDown}
+          onPointerUp={handleCanvasMouseUp}>
             <defs>
               <pattern id="drawGrid" width="20" height="20" patternUnits="userSpaceOnUse">
                 <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(63,169,245,0.06)" strokeWidth="0.5" />

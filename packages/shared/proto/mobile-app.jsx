@@ -100,7 +100,7 @@ const M_SCREEN_MAP = {
   dashboard: () => <DashboardScreen />,
   assets: () => <AssetsScreen />,
   'shieldtech-ai': () => <ShieldAIScreen />,
-  crm: () => <CRMScreen />,
+  crm: () => <BidBoardScreen />,
   studio: () => <StudioScreen />,
   'product-library': () => <ProductLibraryScreen />,
   'service-plans': () => <ServicePlansScreen />,
@@ -158,7 +158,16 @@ const M_SCREEN_MAP = {
   'purchase-orders': () => <PurchaseOrdersScreen />,
   skills: () => <SkillsMatrixScreen />,
   knowledge: () => <KnowledgeScreen />,
+  integrations: () => <IntegrationsScreen />,
+  marketing: () => <MarketingScreen />,
+  documents: () => <DocumentsScreen />,
+  'portal-settings': () => <PortalSettingsScreen />,
+  users: () => <UsersScreen />,
 };
+
+/* Ids resolved by purpose-built touch-native views (branches below). Any of
+   these can also open its full desktop screen via the '<id>-full' alias. */
+const M_NATIVE_IDS = ['m-more','calendar','cameras','topology','warroom','floorplan','anomaly','login','helpdesk','incidents','quote-cash','purchase-orders','parts-req','mrr','nps','skills','knowledge','warranty','photos','punchlist','subcontractors','projects','proposals','finance','certs','tools','costing','audit','reports','contracts','sla','commissions','compliance','survey-ai','sitescan'];
 
 const M_TABS = [
   { id: 'custom-dashboard', icon: 'dashboard', label: 'Home' },
@@ -173,6 +182,7 @@ function screenLabel(id) {
   if (id === 'm-more') return 'Everything';
   if (id === 'finance-full') return 'Finance Suite';
   if (id === 'workorder-full') return 'Work Order';
+  if (id.endsWith('-full')) return screenLabel(id.slice(0, -5)) + ' · Full';
   const item = NAV_ITEMS.find(i => i.id === id);
   return item ? item.label : 'ShieldTech';
 }
@@ -274,10 +284,15 @@ function MobilePortalApp() {
   const startLP = () => { lpFired.current = false; lpTimer.current = setTimeout(() => { lpFired.current = true; setTabEditor(true); }, 450); };
   const cancelLP = () => { clearTimeout(lpTimer.current); };
 
+  // '<id>-full' opens the full desktop screen for ids that default to a native view
+  const fullBase = screen.endsWith('-full') && M_SCREEN_MAP[screen.slice(0, -5)] ? screen.slice(0, -5) : null;
+  const hasFullView = !screen.endsWith('-full') && Boolean(M_SCREEN_MAP[screen]) && (Boolean(M_NATIVE[screen]) || M_NATIVE_IDS.includes(screen));
+
   let content;
-  if (screen === 'm-more') content = <MobileDirectory onNav={nav} />;
+  if (fullBase) { const Fn = M_SCREEN_MAP[fullBase]; content = <Fn />; }
+  else if (screen === 'm-more') content = <MobileDirectory onNav={nav} />;
   else if (screen === 'calendar') content = <MobileCalendar onNav={nav} />;
-  else if (screen === 'cameras' || screen === 'topology') content = <MobileMonitoring onNav={nav} />;
+  else if (screen === 'cameras' || screen === 'topology' || screen === 'warroom' || screen === 'floorplan' || screen === 'anomaly') content = <MobileMonitoring onNav={nav} />;
   else if (screen === 'helpdesk') content = <MHelpdesk onNav={nav} />;
   else if (screen === 'incidents') content = <MIncidents onNav={nav} />;
   else if (screen === 'quote-cash') content = <MQuoteToCash onNav={nav} />;
@@ -327,6 +342,13 @@ function MobilePortalApp() {
         </button>
         <img src="uploads/ShieldTech Logo Transparent MK3.png" alt="ShieldTech" style={{ height: 24 }} />
         <div style={{ flex: 1 }} />
+        {(hasFullView || fullBase) && (
+          <button onClick={() => handleNav(fullBase ? fullBase : screen + '-full')}
+            title={fullBase ? 'Back to mobile view' : 'Open full desktop view'}
+            style={{ background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 8, height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', font: '600 10px/1 var(--font-body)', color: 'var(--brand)' }}>
+            {fullBase ? '◱ Mobile' : '⛶ Full'}
+          </button>
+        )}
         <button onClick={() => nav('shieldtech-ai')} title="ShieldTech AI" style={{ background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 8, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
           <Icon name="hermes" size={15} color="var(--brand)" />
         </button>
@@ -334,7 +356,7 @@ function MobilePortalApp() {
       </header>
 
       {/* Content */}
-      <div className="m-screen" data-desk={!(['m-more','calendar','cameras','topology','login','helpdesk','incidents','quote-cash','purchase-orders','parts-req','mrr','nps','skills','knowledge','warranty','photos','punchlist','subcontractors','projects','proposals','finance','certs','tools','costing','audit','reports','contracts','sla','commissions','compliance','survey-ai','sitescan'].includes(screen) || !!M_NATIVE[screen])} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
+      <div className="m-screen" data-desk={Boolean(fullBase) || !(M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen])} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
         {content}
       </div>
 

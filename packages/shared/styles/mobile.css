@@ -72,3 +72,23 @@ body { max-width: 430px; margin: 0 auto; }
 /* First cell reads as the card title */
 .m-screen table.m-cards td.m-cards-title { font-size: 14px; font-weight: 600; color: var(--text-high); padding-bottom: 4px !important; }
 .m-screen table.m-cards td.m-cards-title::before { content: none; }
+
+/* ── Touch create/interact parity (phones only — desktop surface never loads this file) ── */
+@media (max-width: 700px) {
+  /* Global modal (shieldModal): full usable width, single-column forms,
+     16px inputs so iOS never auto-zooms, comfortable tap targets. */
+  [role="dialog"] { width: 94vw !important; }
+  [role="dialog"] input, [role="dialog"] select, [role="dialog"] textarea { font-size: 16px !important; min-height: 42px; }
+  [role="dialog"] textarea { min-height: 96px; }
+  [role="dialog"] [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+  [role="dialog"] button { min-height: 38px; }
+  /* Ad-hoc fixed-width dialogs inside screens (manual entry, chat modals…) */
+  .m-screen [style*="position: fixed"] [style*="width: 380"],
+  .m-screen [style*="position: fixed"] [style*="width: 420"],
+  .m-screen [style*="position: fixed"] [style*="width: 460"],
+  .m-screen [style*="position: fixed"] [style*="width: 520"],
+  .m-screen [style*="position: fixed"] [style*="width: 560"],
+  .m-screen [style*="position: fixed"] [style*="width: 640"] { width: 94vw !important; max-width: 94vw !important; max-height: 86dvh; overflow-y: auto; }
+  /* Row/action buttons keep a usable hit area on touch */
+  .m-screen button { min-height: 30px; }
+}

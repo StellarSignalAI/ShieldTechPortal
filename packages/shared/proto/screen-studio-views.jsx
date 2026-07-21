@@ -150,7 +150,7 @@ function InterconnectCanvas({ placedDevices, connections, setConnections, brands
       </div>
       {picker && <StudioDevicePicker deviceCatalog={deviceCatalog} brands={brands} title="Add Device to Diagram" onClose={() => setPicker(false)} onPick={(d) => { studioAddDevice(setPlacedDevices, placedDevices, d, showToast); setPicker(false); }} />}
 
-      <div ref={wrapRef} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={() => setDrag(null)}
+      <div ref={wrapRef} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={() => setDrag(null)}
         style={{ flex: 1, position: 'relative', overflow: 'auto', background: 'rgba(5,7,10,0.6)', cursor: drag?.type === 'node' ? 'grabbing' : 'default' }}>
         <div style={{ position: 'relative', width: 760, height: Math.max(480, (Math.max(...Object.values(pos).map(p => p.y), 0) + 120)) }}>
           {/* tier labels */}
@@ -211,8 +211,8 @@ function InterconnectCanvas({ placedDevices, connections, setConnections, brands
             return (
               <div key={idx}
                 onMouseEnter={() => setHoverNode(idx)} onMouseLeave={() => setHoverNode(null)}
-                onMouseDown={(e) => { const { x, y } = localXY(e); setDrag({ type: 'node', idx, dx: x - p.x, dy: y - p.y }); }}
-                style={{ position: 'absolute', left: p.x, top: p.y, width: NODE_W, height: NODE_H, borderRadius: 9, background: 'rgba(10,14,20,0.95)', border: `1.5px solid ${linkTarget && isHover ? 'var(--brand)' : color}`, boxShadow: (linkTarget && isHover) ? '0 0 14px var(--brand)' : `0 0 6px ${color}40`, display: 'flex', alignItems: 'center', gap: 8, padding: '0 10px', cursor: 'grab', userSelect: 'none', zIndex: drag?.idx === idx ? 10 : 2 }}>
+                onPointerDown={(e) => { const { x, y } = localXY(e); setDrag({ type: 'node', idx, dx: x - p.x, dy: y - p.y }); }}
+                style={{ position: 'absolute', left: p.x, top: p.y, width: NODE_W, height: NODE_H, borderRadius: 9, background: 'rgba(10,14,20,0.95)', border: `1.5px solid ${linkTarget && isHover ? 'var(--brand)' : color}`, boxShadow: (linkTarget && isHover) ? '0 0 14px var(--brand)' : `0 0 6px ${color}40`, display: 'flex', alignItems: 'center', gap: 8, padding: '0 10px', cursor: 'grab', userSelect: 'none', touchAction: 'none', zIndex: drag?.idx === idx ? 10 : 2 }}>
                 <div style={{ width: 26, height: 26, borderRadius: 6, background: `${color}1f`, border: `1px solid ${color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   {typeof Icon !== 'undefined' && <Icon name={(window.__studioSubcatIcons && window.__studioSubcatIcons[pd.device.subcat]) || 'cam-dome'} size={14} color={color} />}
                 </div>
@@ -223,7 +223,7 @@ function InterconnectCanvas({ placedDevices, connections, setConnections, brands
                 {/* left in-port */}
                 <div style={{ position: 'absolute', left: -6, top: NODE_H / 2 - 6, width: 12, height: 12, borderRadius: '50%', background: 'rgba(10,14,20,0.95)', border: `2px solid ${color}`, opacity: 0.6 }} />
                 {/* right out-port (drag handle) */}
-                <div onMouseDown={(e) => { e.stopPropagation(); const { x, y } = localXY(e); setMouse({ x, y }); setDrag({ type: 'link', idx }); }}
+                <div onPointerDown={(e) => { e.stopPropagation(); const { x, y } = localXY(e); setMouse({ x, y }); setDrag({ type: 'link', idx }); }}
                   title="Drag to connect"
                   style={{ position: 'absolute', right: -7, top: NODE_H / 2 - 7, width: 14, height: 14, borderRadius: '50%', background: color, border: '2px solid rgba(10,14,20,0.95)', cursor: 'crosshair', boxShadow: `0 0 6px ${color}` }} />
               </div>
@@ -379,7 +379,7 @@ function RackElevationView({ placedDevices, catColors, showToast, setPlacedDevic
           </div>
           {/* rack frame */}
           <div style={{ position: 'relative', width: 300, background: '#0a0e14', border: '3px solid #1a2230', borderRadius: 6, height: RACK_U * UPX }}
-            ref={stackRef} onMouseMove={onStackMove} onMouseUp={onStackUp} onMouseLeave={onStackUp}>
+            ref={stackRef} onPointerMove={onStackMove} onPointerUp={onStackUp} onPointerLeave={onStackUp}>
             {/* empty slot lines */}
             {Array.from({ length: RACK_U }).map((_, i) => <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: i * UPX, height: UPX, borderBottom: '1px solid rgba(63,169,245,0.04)' }} />)}
             {/* mounted units */}
@@ -388,8 +388,8 @@ function RackElevationView({ placedDevices, catColors, showToast, setPlacedDevic
               const h = heights[pos]; const color = catColors[pd.device.cat] || 'var(--brand)';
               const isDrag = dragPos === pos;
               return (
-                <div key={idx} data-rack-node onMouseDown={(e) => onUnitDown(e, pos)}
-                  style={{ position: 'absolute', left: 4, right: 4, top: tops[pos] * UPX + 1, height: h * UPX - 2, zIndex: isDrag ? 10 : 2, transition: isDrag ? 'none' : 'top 0.12s ease' }}>
+                <div key={idx} data-rack-node onPointerDown={(e) => onUnitDown(e, pos)}
+                  style={{ touchAction: 'none', position: 'absolute', left: 4, right: 4, top: tops[pos] * UPX + 1, height: h * UPX - 2, zIndex: isDrag ? 10 : 2, transition: isDrag ? 'none' : 'top 0.12s ease' }}>
                   <div style={{ position: 'relative', height: '100%' }}>
                     <RackFaceplate device={pd.device} color={color} hpx={h * UPX - 2} dragging={isDrag} />
                     <span className="mono" style={{ position: 'absolute', top: 2, right: 18, fontSize: 7, color: 'var(--text-low)' }}>{pd.tag} · {h}U</span>
@@ -454,7 +454,7 @@ function PhotoQuoteCanvas({ placedDevices, setPlacedDevices, dragPlaceDevice, se
         <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{ display: 'none' }} />
         <button onClick={() => onExportToProposal ? onExportToProposal() : (showToast && showToast('Photo markups added to proposal'))} style={studioBtn(true)}>↗ Export to Proposal</button>
       </div>
-      <div onDragOver={e => e.preventDefault()} onDrop={drop}
+      <div onDragOver={e => e.preventDefault()} onDrop={drop} onClick={(e) => { if (dragPlaceDevice && photo) drop(e); }}
         style={{ flex: 1, position: 'relative', overflow: 'hidden', background: photo ? '#000' : 'rgba(5,7,10,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {!photo ? (
           <div style={{ textAlign: 'center', color: 'var(--text-low)' }}>

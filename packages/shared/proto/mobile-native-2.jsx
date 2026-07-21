@@ -2,10 +2,10 @@
 
 function MPipelineView({ onNav }) {
   const stages = [
-    { name: 'Lead', total: '$240K', deals: [{ t: 'Sutter Health — 3 clinics', v: 86000 }, { t: 'Presidio Storage — CCTV', v: 34000 }, { t: 'Embarcadero Partners', v: 120000 }] },
-    { name: 'Proposal', total: '$180K', deals: [{ t: 'Pinnacle Financial — access', v: 96000 }, { t: 'Mission Bay Dental', v: 22000 }, { t: 'Golden Gate Logistics ph2', v: 62000 }] },
-    { name: 'Negotiate', total: '$128K', deals: [{ t: 'City Hall — annex expansion', v: 84000 }, { t: 'Westfield — analog refresh', v: 44000 }] },
-    { name: 'Closed', total: '$420K', deals: [{ t: 'Metro Bank — vault upgrade', v: 156000 }, { t: 'Riverside Medical — ICU', v: 98000 }] },
+    { name: 'Lead', total: '$0', deals: [] },
+    { name: 'Proposal', total: '$0', deals: [] },
+    { name: 'Negotiate', total: '$0', deals: [] },
+    { name: 'Closed', total: '$0', deals: [] },
   ];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -18,6 +18,12 @@ function MPipelineView({ onNav }) {
           </div>
         ))}
       </div>
+      {stages.every(x => x.deals.length === 0) && (
+        <div className="glass" style={{ padding: '22px 16px', borderRadius: 14, textAlign: 'center' }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Pipeline is empty</div>
+          <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 4 }}>Accepted leads from the Bid Board land here.</div>
+        </div>
+      )}
       <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollSnapType: 'x mandatory', margin: '0 -14px', padding: '0 14px 6px' }}>
         {stages.map(s => (
           <div key={s.name} style={{ flexShrink: 0, width: 264, scrollSnapAlign: 'start' }}>
@@ -44,18 +50,16 @@ function MPipelineView({ onNav }) {
 
 function MInventoryView() {
   const [q, setQ] = React.useState('');
-  const items = [
-    { sku: 'CAM-AXS-P32', name: 'Axis P3245-V dome', stock: 14, min: 6 },
-    { sku: 'CAM-HIK-4K', name: 'Hikvision 4K bullet', stock: 3, min: 6 },
-    { sku: 'NVR-HW-16', name: 'Hanwha 16-ch NVR', stock: 2, min: 2 },
-    { sku: 'RDR-HID-SE', name: 'HID iCLASS SE reader', stock: 22, min: 8 },
-    { sku: 'PNL-DSC-NEO', name: 'DSC PowerSeries Neo', stock: 5, min: 4 },
-    { sku: 'CBL-CAT6A', name: 'CAT6A spool (1000ft)', stock: 1, min: 3 },
-    { sku: 'UPS-1500', name: 'CyberPower 1500VA UPS', stock: 7, min: 4 },
-  ].filter(i => (i.name + i.sku).toLowerCase().includes(q.toLowerCase()));
+  const items = [].filter(i => (i.name + i.sku).toLowerCase().includes(q.toLowerCase()));
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search SKU or item…" style={{ background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '10px 13px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+      {items.length === 0 && (
+        <div className="glass" style={{ padding: '22px 16px', borderRadius: 14, textAlign: 'center' }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>No stock items yet</div>
+          <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 4 }}>Inventory synced from the desktop portal appears here.</div>
+        </div>
+      )}
       {items.map(i => {
         const low = i.stock <= i.min;
         return (
@@ -120,6 +124,14 @@ function MWorkOrdersView({ onNav }) {
   const woPhotos = wo ? photos.filter(p => p.wo === wo.id) : [];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {wos.length === 0 && (
+        <div className="glass" style={{ padding: '26px 18px', borderRadius: 14, textAlign: 'center' }}>
+          <div style={{ fontSize: 22, marginBottom: 8 }}>▤</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>No work orders yet</div>
+          <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 5 }}>New jobs land here — open the full suite to create one.</div>
+          <button onClick={() => onNav('workorder-full')} style={{ marginTop: 12, padding: '9px 18px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open Work Order Suite</button>
+        </div>
+      )}
       {wos.map(w => {
         const c = photoCompliance(w, photos);
         return (
@@ -143,7 +155,7 @@ function MWorkOrdersView({ onNav }) {
       {wo && (
         <MSheet title={`${wo.id} — ${wo.customer}`} onClose={() => setOpen(null)}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {[['Site', wo.site], ['Type', wo.type], ['Status', (wo.status || 'open').replace('-', ' ')], ['Tech', wo.tech || 'Mike Reyes']].map(([k, v]) => (
+            {[['Site', wo.site], ['Type', wo.type], ['Status', (wo.status || 'open').replace('-', ' ')], ['Tech', wo.tech || 'Unassigned']].map(([k, v]) => (
               <div key={k} style={{ display: 'flex', gap: 12 }}>
                 <span style={{ fontSize: 10, color: 'var(--text-low)', width: 60, textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>{k}</span>
                 <span style={{ fontSize: 13, color: 'var(--text-high)', textTransform: k === 'Status' ? 'capitalize' : 'none' }}>{v}</span>
