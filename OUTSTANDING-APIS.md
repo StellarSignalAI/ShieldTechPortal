@@ -23,9 +23,9 @@ The backbone: profiles/roles, invites, opportunities, AI logs, all Edge Function
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase Edge Function secrets | `service_role` key (never in frontend) |
 
 3. Run the migrations in `supabase/migrations/` (SQL editor or `supabase db push`):
-   `0001_profiles.sql`, `0002_ai_runs.sql`, `0003_opportunities.sql`, `0004_time_entries.sql`, `0005_app_state.sql`
+   `0001` … `0007` (profiles, ai_runs, opportunities, time_entries, app_state, storage, bid_sweep)
 4. Deploy the Edge Functions in `supabase/functions/`:
-   `invite-user`, `ai`, `ingest-alerts`, `ingest-report-text`, `sources-poll`, `sam-poll`, `rippling-sync`
+   `invite-user`, `ai`, `ingest-alerts`, `ingest-report-text`, `ingest-email`, `bid-sweep`, `sources-poll`, `sam-poll`, `rippling-sync`
    (`supabase functions deploy <name>`)
 
 ## 2. 🔴 Vercel + DNS (three apps, three subdomains)
@@ -125,11 +125,26 @@ in `apps/scanner-ios/` (Apple RoomPlan — 2 Swift files, build steps in its REA
 3. Techs scan on LiDAR iPhones/iPads → AirDrop/share the JSON → Survey Scan →
    "⌁ Import LiDAR Scan" → full project with measured walls/doors/objects
 
-## 9. 🟡 CRON_SECRET (ingest automation)
+## 9. 🟡 CRON_SECRET + schedules (the always-on AI lead machine)
 
-Any long random string. Set as a Supabase Edge Function secret: `CRON_SECRET`.
-Lets schedulers call `ingest-alerts`, `ingest-report-text`, `sources-poll`, `sam-poll`
-without a user session (header `x-cron-secret`).
+Any long random string as Edge Function secret `CRON_SECRET`, then schedule the
+pollers (Supabase Dashboard → Edge Functions → <fn> → Schedules, or any cron
+service POSTing with header `x-cron-secret`):
+
+| Function | Suggested schedule | What it does automatically |
+|---|---|---|
+| `sam-poll` | nightly 02:00 | SAM.gov API → verified federal leads (NAICS-filtered to your trades) |
+| `bid-sweep` | every 4 hours | AI reads every registered portal's PUBLIC listing page (eVA, eMMA, NJSTART, PA eMarketplace, PennBid, DASNY, NYSCR, eBuy, DIBBS) and extracts low-voltage/CCTV/access/fire/cabling solicitations — each lead links to the platform |
+| `sources-poll` | hourly | portal reachability status on the Integrations screen |
+| `rippling-sync` | hourly | two-way payroll/time sync |
+
+**Hands-free email lane** (covers login-only alerts the sweep can't see):
+1. Resend → Domains → enable **inbound** on shieldtechsolutions.com (or Mailgun inbound route)
+2. Point the inbound webhook at
+   `https://<ref>.supabase.co/functions/v1/ingest-email?secret=<CRON_SECRET>`
+3. Set every portal's saved-search alerts to email `bids@shieldtechsolutions.com`
+   → AI extracts each opportunity automatically, deduped onto the Bid Board with
+   the platform link preserved.
 
 ---
 

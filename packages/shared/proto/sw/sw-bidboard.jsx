@@ -19,7 +19,7 @@ function BbLeadCard({ lead, onAccept, onDismiss }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', font: '500 11.5px/1 var(--font-mono)', color: 'var(--text-mid)' }}>
         <span style={{ color: 'var(--text-high)', fontWeight: 600 }}>{swK(lead.value)}</span>
         <span>due {swDueLabel(lead.dueAt)}</span>
-        <span style={{ color: lead.sourceRisk === 'Verified' ? 'var(--status-ok)' : 'var(--status-warn)' }}>{lead.sourceRisk}</span>
+        <a href={lead.sourceUrl && lead.sourceUrl !== '#' ? lead.sourceUrl : undefined} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ color: lead.sourceRisk === 'Verified' ? 'var(--status-ok)' : 'var(--status-warn)', textDecoration: lead.sourceUrl && lead.sourceUrl !== '#' ? 'underline' : 'none' }}>{lead.sourceRisk} ↗</a>
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <Btn kind="primary" size="sm" icon="plus" full onClick={onAccept}>Add to board</Btn>
