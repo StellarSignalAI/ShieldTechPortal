@@ -1,0 +1,18 @@
+// Technician App manifest — mirrors the <script> order of "Technician App.html".
+import './proto/icons.jsx';
+import './proto/shared-components.jsx';
+import './proto/shared-state.jsx';
+import './proto/photos-shared.jsx';
+import './proto/shell.jsx';
+import './proto/screen-customer-expanded.jsx';
+import './proto/screen-tech-app.jsx';
+import './proto/screen-tech-v2.jsx';
+import './proto/screen-customers.jsx';
+import './proto/screen-networkglue.jsx';
+import './proto/screen-assets-v2.jsx';
+import './proto/screen-tech-photos.jsx';
+import './proto/screen-tech-punch.jsx';
+import './proto/screen-tech-truck.jsx';
+import './proto/screen-tech-tools1.jsx';
+import './proto/screen-tech-tools2.jsx';
+import './proto/tweaks-panel.jsx';
