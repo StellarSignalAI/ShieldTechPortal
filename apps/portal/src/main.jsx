@@ -5,6 +5,8 @@
    for the session). The choice re-evaluates on orientation/resize. */
 
 import '@shared/globals.js';
+import '@shared/supabase.js';
+import '@shared/auth.js';
 
 /* Fonts (self-hosted; same families/weights the design's Google Fonts import used) */
 import '@fontsource/montserrat/200.css';

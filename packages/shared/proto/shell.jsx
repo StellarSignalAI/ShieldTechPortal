@@ -70,6 +70,7 @@ const NAV_GROUPS = [
 },
 { id: 'admin', label: 'ADMIN', collapsible: true, items: [
   { id: 'employees', icon: 'employees', label: 'Team', useSvg: true },
+  { id: 'users', icon: 'credential', label: 'Users & Invites', useSvg: true },
   { id: 'approvals', icon: 'check', label: 'Approvals', useSvg: true },
   { id: 'integrations', icon: 'topology', label: 'Integrations', useSvg: true },
   { id: 'documents', icon: 'note', label: 'Documents', useSvg: true },

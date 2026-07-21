@@ -7,4 +7,7 @@ const React = window.React;
 const ReactDOM = window.ReactDOM;
 
 const MobilePortalApp = window.MobilePortalApp;
-ReactDOM.createRoot(document.getElementById('root')).render(<MobilePortalApp />);
+const ShieldAuthGate = window.ShieldAuthGate;
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <ShieldAuthGate appId="portal"><MobilePortalApp /></ShieldAuthGate>
+);

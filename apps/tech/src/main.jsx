@@ -20,6 +20,7 @@ import '@fontsource/jetbrains-mono/500.css';
 import '@shared/styles/styles.css';
 import '@shared/styles/mobile.css';
 import '@shared/supabase.js';
+import '@shared/auth.js';
 import '@shared/proto-manifest-tech.js';
 
 const React = window.React;
@@ -234,4 +235,7 @@ function TechApp() {
 
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<TechApp />);
+const ShieldAuthGate = window.ShieldAuthGate;
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <ShieldAuthGate appId="tech"><TechApp /></ShieldAuthGate>
+);

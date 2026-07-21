@@ -106,3 +106,4 @@ import './proto/sw/sw-wargames.jsx';
 import './proto/sw/sw-review.jsx';
 import './proto/sw/sw-bidroom-v3.jsx';
 import './proto/screen-bidboard.jsx';
+import './proto/screen-auth.jsx';

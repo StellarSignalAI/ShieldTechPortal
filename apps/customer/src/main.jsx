@@ -19,6 +19,7 @@ import '@fontsource/jetbrains-mono/500.css';
 
 import '@shared/styles/styles.css';
 import '@shared/supabase.js';
+import '@shared/auth.js';
 import '@shared/proto-manifest-customer.js';
 
 const React = window.React;
@@ -335,4 +336,7 @@ function CustomerPortalApp() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<CustomerPortalApp />);
+const ShieldAuthGate = window.ShieldAuthGate;
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <ShieldAuthGate appId="customer"><CustomerPortalApp /></ShieldAuthGate>
+);

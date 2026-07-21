@@ -33,7 +33,7 @@ const SCREEN_LIST = [
   'photos', 'punchlist', 'digest', 'survey-ai', 'survey-cloud', 'copilot', 'intel',
   'margin-xray', 'rr-builder', 'rfp', 'wallboard',
   'helpdesk', 'workorder', 'parts-req', 'subcontractors', 'purchase-orders',
-  'skills', 'knowledge', 'integrations', 'marketing', 'documents', 'portal-settings',
+  'skills', 'knowledge', 'integrations', 'marketing', 'documents', 'portal-settings', 'users',
 ];
 
 /* screen id → window component name (same mapping as the prototype shell) */
@@ -105,6 +105,7 @@ const SCREEN_COMPONENTS = {
   marketing: 'MarketingScreen',
   documents: 'DocumentsScreen',
   'portal-settings': 'PortalSettingsScreen',
+  users: 'UsersScreen',
 };
 
 function MissingScreen({ id }) {
@@ -176,6 +177,13 @@ function App() {
         onChange={(v) => setTweak('screen', v)} />
     </React.Fragment>
   );
+
+  // Once really signed in, the prototype login screen auto-forwards.
+  useEffect(() => {
+    if (screen === 'login' && window.__shieldSupabaseConfigured && window.__shieldAuthed) {
+      handleNav('custom-dashboard');
+    }
+  }, [screen]);
 
   // Login screen — no shell
   if (screen === 'login') {
@@ -275,7 +283,10 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+const ShieldAuthGate = window.ShieldAuthGate;
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <ShieldAuthGate appId="portal"><App /></ShieldAuthGate>
+);
 
 /* ── Toast notification system (ported from the shell's second inline script) ── */
 function ToastHost() {

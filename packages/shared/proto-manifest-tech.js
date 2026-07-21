@@ -16,3 +16,5 @@ import './proto/screen-tech-truck.jsx';
 import './proto/screen-tech-tools1.jsx';
 import './proto/screen-tech-tools2.jsx';
 import './proto/tweaks-panel.jsx';
+import './proto/screen-login.jsx';
+import './proto/screen-auth.jsx';

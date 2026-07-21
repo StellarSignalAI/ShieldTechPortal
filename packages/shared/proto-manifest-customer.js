@@ -7,3 +7,5 @@ import './proto/screen-customer-expanded.jsx';
 import './proto/screen-customer-flagship1.jsx';
 import './proto/screen-customer-flagship2.jsx';
 import './proto/tweaks-panel.jsx';
+import './proto/screen-login.jsx';
+import './proto/screen-auth.jsx';
