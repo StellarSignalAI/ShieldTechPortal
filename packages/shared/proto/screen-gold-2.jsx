@@ -4,11 +4,7 @@
 function ServiceReportScreen() {
   const [generating, setGenerating] = React.useState(false);
 
-  const reports = [
-    { id: 'SR-4201', job: 'J-4201', customer: 'Acme Dental Group', tech: 'Mike Reyes', date: 'Jun 5, 2026', type: 'Repair', status: 'draft', summary: 'NVR cable re-termination at rear exit camera. Replaced Cat6A run from IDF to camera location. Tested 24h — stable.', photos: 4, duration: '1h 45m', aiGenerated: true },
-    { id: 'SR-4198', job: 'J-4198', customer: 'Metro Bank Corp', date: 'Jun 3, 2026', tech: 'Jessica Liu', type: 'PM', status: 'sent', summary: 'Quarterly preventive maintenance. Cleaned 16 camera domes, verified NVR health, updated 4 firmware versions, tested all access readers.', photos: 8, duration: '4h 30m', aiGenerated: true },
-    { id: 'SR-4195', job: 'J-4195', customer: 'Harbor View Condos', date: 'Jun 1, 2026', tech: 'Mike Reyes', type: 'Install', status: 'approved', summary: '4-camera addition to existing system. Mounted cameras at pool area, gym entrance, mail room, and elevator lobby. Extended NVR storage to 8TB.', photos: 12, duration: '6h', aiGenerated: true },
-  ];
+  const reports = [];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -47,6 +43,7 @@ function ServiceReportScreen() {
       </GlassPanel>
 
       {/* Reports */}
+      {reports.length === 0 && <EmptyState icon="doc" title="No service reports yet" accent="var(--brand)" body="Reports are auto-drafted from completed jobs and appear here for review." />}
       {reports.map((r, i) => (
         <GlassPanel key={i} style={{ animation: `fade-up 0.3s ease ${i * 60}ms both` }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
@@ -84,28 +81,7 @@ function ServiceReportScreen() {
 
 /* ── Vendor Price Book ── */
 function VendorPriceBookScreen() {
-  const products = [
-    { name: 'Axis P3265-V', cat: 'Camera', vendors: [
-      { vendor: 'ADI', price: 842, stock: 'In Stock', ship: '1-2 days', preferred: true },
-      { vendor: 'Anixter', price: 878, stock: 'In Stock', ship: '2-3 days', preferred: false },
-      { vendor: 'Tri-Ed', price: 910, stock: '3 left', ship: '1 day', preferred: false },
-    ]},
-    { name: 'Hanwha XNR-6410', cat: 'NVR', vendors: [
-      { vendor: 'ADI', price: 2680, stock: 'In Stock', ship: '2-3 days', preferred: true },
-      { vendor: 'Anixter', price: 2750, stock: 'Backorder', ship: '2-3 weeks', preferred: false },
-      { vendor: 'ScanSource', price: 2620, stock: 'In Stock', ship: '3-5 days', preferred: false },
-    ]},
-    { name: 'HID iCLASS SE RK40', cat: 'Access', vendors: [
-      { vendor: 'ADI', price: 312, stock: 'In Stock', ship: '1-2 days', preferred: true },
-      { vendor: 'Tri-Ed', price: 328, stock: 'In Stock', ship: '1 day', preferred: false },
-      { vendor: 'Anixter', price: 340, stock: 'In Stock', ship: '2-3 days', preferred: false },
-    ]},
-    { name: 'Ubiquiti USW-Pro-24-PoE', cat: 'Network', vendors: [
-      { vendor: 'Streakwave', price: 599, stock: 'In Stock', ship: '2-3 days', preferred: false },
-      { vendor: 'ADI', price: 699, stock: 'In Stock', ship: '1-2 days', preferred: true },
-      { vendor: 'Amazon Biz', price: 649, stock: 'In Stock', ship: '1 day (Prime)', preferred: false },
-    ]},
-  ];
+  const products = [];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -114,14 +90,15 @@ function VendorPriceBookScreen() {
         <div style={{ display: 'flex', gap: 8 }}>
           <input placeholder="Search products…" style={{ padding: '6px 14px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 200 }} />
           <button onClick={() => shieldModal({ kind: 'form', title: 'Add Product', subtitle: 'Add an item to the vendor price book', submitLabel: 'Add Product', successMsg: 'Product added to price book', fields: [
-            { key: 'name', label: 'Product Name', placeholder: 'Axis P3265-V', required: true, full: true },
+            { key: 'name', label: 'Product Name', placeholder: 'Product name', required: true, full: true },
             { key: 'cat', label: 'Category', type: 'select', options: ['Camera','NVR','Access','Cable','Alarm','Other'] },
             { key: 'vendor', label: 'Preferred Vendor', type: 'select', options: ['ADI','Anixter','Tri-Ed','ScanSource'] },
-            { key: 'price', label: 'List Price ($)', type: 'number', placeholder: '842', required: true }
+            { key: 'price', label: 'List Price ($)', type: 'number', placeholder: '0', required: true }
           ] })} style={{ padding: '6px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Product</button>
         </div>
       </div>
 
+      {products.length === 0 && <EmptyState icon="assets" title="Price book is empty" accent="var(--brand)" body="Add a product to start comparing vendor pricing, stock and ship times." />}
       {products.map((prod, pi) => (
         <GlassPanel key={pi} style={{ padding: 0 }}>
           <div style={{ padding: '12px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -292,7 +269,7 @@ function ROICalculatorScreen() {
 
 /* ── Internal Team Chat V2 — Google Chat Style ── */
 function TeamChatScreen() {
-  const [activeChannel, setActiveChannel] = React.useState('field-ops');
+  const [activeChannel, setActiveChannel] = React.useState('general');
   const [activeDM, setActiveDM] = React.useState(null);
   const [inputText, setInputText] = React.useState('');
   const [emojiOpen, setEmojiOpen] = React.useState(false);
@@ -304,41 +281,12 @@ function TeamChatScreen() {
   const msgEndRef = React.useRef(null);
 
   const [channels, setChannels] = React.useState([
-    { id: 'general', name: 'general', desc: 'Company-wide announcements', unread: 0, members: 12, pinned: true },
-    { id: 'field-ops', name: 'field-ops', desc: 'Field operations coordination', unread: 3, members: 8, pinned: true },
-    { id: 'sales', name: 'sales', desc: 'Sales team discussions', unread: 1, members: 5, pinned: false },
-    { id: 'urgent', name: 'urgent', desc: 'Critical alerts and escalations', unread: 0, members: 12, pinned: true },
-    { id: 'projects', name: 'projects', desc: 'Active project discussions', unread: 0, members: 7, pinned: false },
-    { id: 'random', name: 'random', desc: 'Off-topic, water cooler', unread: 0, members: 12, pinned: false },
+    { id: 'general', name: 'general', desc: 'Company-wide announcements', unread: 0, members: 1, pinned: true },
   ]);
 
-  const dmContacts = [
-    { id: 'dm-mike', name: 'Mike Reyes', initials: 'MR', status: 'online', role: 'Lead Tech', lastMsg: 'On my way to Metro Bank' },
-    { id: 'dm-jessica', name: 'Jessica Liu', initials: 'JL', status: 'online', role: 'Tech II', lastMsg: 'NVR swap is done' },
-    { id: 'dm-sarah', name: 'Sarah Chen', initials: 'SC', status: 'online', role: 'Sales Manager', lastMsg: 'Pacific Rim approved!' },
-    { id: 'dm-kevin', name: 'Kevin White', initials: 'KW', status: 'busy', role: 'Tech II', lastMsg: 'Access panel update...' },
-    { id: 'dm-tony', name: 'Tony Garcia', initials: 'TG', status: 'offline', role: 'Tech I', lastMsg: 'See you tomorrow' },
-    { id: 'dm-diana', name: 'Diana Patel', initials: 'DP', status: 'online', role: 'Tech II', lastMsg: 'Training finished' },
-  ];
+  const dmContacts = [];
 
-  const [chatMessages, setChatMessages] = React.useState({
-    'field-ops': [
-      { id: 'm1', user: 'Mike Reyes', initials: 'MR', time: '2:14 PM', text: 'NVR cable re-termination done at Acme Dental. Camera back online and stable. Heading to Metro Bank now.', type: 'message', reactions: [{ emoji: '👍', users: ['JM', 'JL'] }] },
-      { id: 'm2', user: 'John Mitchell', initials: 'JM', time: '2:16 PM', text: 'Nice work Mike. Let me know if you need anything for the Metro Bank PM.', type: 'message', reactions: [] },
-      { id: 'm3', user: 'AI Assistant', initials: '⟡', time: '2:18 PM', text: 'Auto-update: Acme Dental rear exit camera has been online for 4 minutes. Monitoring for stability over next 24h.', type: 'system', reactions: [] },
-      { id: 'm4', user: 'Jessica Liu', initials: 'JL', time: '2:22 PM', text: 'Finished Metro Bank camera install. All 4 cameras configured and recording. Customer signed off. Photos uploaded to J-4202.', type: 'message', reactions: [{ emoji: '🎉', users: ['SC', 'JM'] }, { emoji: '💪', users: ['MR'] }] },
-      { id: 'm5', user: 'Sarah Chen', initials: 'SC', time: '2:30 PM', text: 'Heads up team — Pacific Rim Hotels just approved the proposal. $215K deal! Kickoff meeting next Tuesday.', type: 'message', reactions: [{ emoji: '🎉', users: ['JM', 'MR', 'KW', 'JL'] }, { emoji: '⚠', users: ['MR', 'TG'] }] },
-      { id: 'm6', user: 'Kevin White', initials: 'KW', time: '2:35 PM', text: 'Great news Sarah! I can take point on the install if we start at Property 1.', type: 'message', reactions: [] },
-      { id: 'm7', user: 'John Mitchell', initials: 'JM', time: '2:38 PM', text: "Amazing work everyone. Sarah, set up the kickoff meeting. I'll pull the project plan together.", type: 'message', reactions: [{ emoji: '✅', users: ['SC'] }] },
-    ],
-    'general': [
-      { id: 'g1', user: 'John Mitchell', initials: 'JM', time: '9:00 AM', text: 'Good morning team! Reminder — all-hands at 3 PM today. Agenda: Q2 review, new tool rollout, and Pacific Rim kickoff.', type: 'message', reactions: [{ emoji: '👍', users: ['MR', 'JL', 'SC'] }] },
-      { id: 'g2', user: 'Sarah Chen', initials: 'SC', time: '9:15 AM', text: "I'll present the Q2 sales numbers. Spoiler: we crushed it.", type: 'message', reactions: [{ emoji: '⚠', users: ['JM'] }] },
-    ],
-    'sales': [
-      { id: 's1', user: 'Sarah Chen', initials: 'SC', time: '11:00 AM', text: 'Pinnacle Financial site survey is scheduled for Thursday. Mike, can you join?', type: 'message', reactions: [] },
-    ],
-  });
+  const [chatMessages, setChatMessages] = React.useState({});
 
   const currentId = activeDM || activeChannel;
   const currentMessages = chatMessages[currentId] || [];
@@ -359,7 +307,7 @@ function TeamChatScreen() {
 
   const sendMessage = () => {
     if (!inputText.trim()) return;
-    const newMsg = { id: 'm' + Date.now(), user: 'John Mitchell', initials: 'JM', time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), text: inputText, type: 'message', reactions: [] };
+    const newMsg = { id: 'm' + Date.now(), user: me.name, initials: me.initials, time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), text: inputText, type: 'message', reactions: [] };
     setChatMessages(prev => ({ ...prev, [currentId]: [...(prev[currentId] || []), newMsg] }));
     setInputText('');
     setEmojiOpen(false);
@@ -389,7 +337,7 @@ function TeamChatScreen() {
   };
 
   const sendGif = (gif) => {
-    const newMsg = { id: 'm' + Date.now(), user: 'John Mitchell', initials: 'JM', time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), text: `[GIF: ${gif.label}] ${gif.url}`, type: 'message', reactions: [] };
+    const newMsg = { id: 'm' + Date.now(), user: me.name, initials: me.initials, time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), text: `[GIF: ${gif.label}] ${gif.url}`, type: 'message', reactions: [] };
     setChatMessages(prev => ({ ...prev, [currentId]: [...(prev[currentId] || []), newMsg] }));
     setGifOpen(false);
   };
@@ -405,15 +353,8 @@ function TeamChatScreen() {
   const [composeSearch, setComposeSearch] = React.useState('');
   const [composeMessages, setComposeMessages] = React.useState([]);
 
-  const allContacts = [
-    { id: 'MR', name: 'Mike Reyes', role: 'Lead Tech', status: 'online' },
-    { id: 'JL', name: 'Jessica Liu', role: 'Tech II', status: 'online' },
-    { id: 'SC', name: 'Sarah Chen', role: 'Sales Manager', status: 'online' },
-    { id: 'KW', name: 'Kevin White', role: 'Tech II', status: 'busy' },
-    { id: 'TG', name: 'Tony Garcia', role: 'Tech I', status: 'offline' },
-    { id: 'DP', name: 'Diana Patel', role: 'Tech II', status: 'online' },
-    { id: 'RJ', name: 'Ray Johnson', role: 'Lead Tech', status: 'offline' },
-  ];
+  const me = window.__shieldUser || { name: 'You', initials: 'ME' };
+  const allContacts = ((window.SW && window.SW.USERS) || []).map(u => ({ id: u.initials || u.id, name: u.name, role: u.role || 'Team', status: 'online' }));
 
   const filteredContacts = allContacts.filter(c =>
     !composeRecipients.find(r => r.id === c.id) &&
@@ -439,7 +380,7 @@ function TeamChatScreen() {
 
   const sendComposeMessage = () => {
     if (!inputText.trim() || composeRecipients.length === 0) return;
-    const newMsg = { id: 'm' + Date.now(), user: 'John Mitchell', initials: 'JM', time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), text: inputText, type: 'message', reactions: [] };
+    const newMsg = { id: 'm' + Date.now(), user: me.name, initials: me.initials, time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), text: inputText, type: 'message', reactions: [] };
     setComposeMessages(prev => [...prev, newMsg]);
 
     // If first message, create the conversation
@@ -888,21 +829,7 @@ function CreateChatModal({ onClose, onCreate, showToast }) {
 
 /* ── Customer-Facing Status Page ── */
 function StatusPageScreen() {
-  const customers = [
-    { name: 'Acme Dental Group', sites: [
-      { name: 'Site A — 1247 Market St', status: 'operational', uptime: 99.7, devices: 24, online: 23, lastIncident: '5d ago' },
-    ]},
-    { name: 'Metro Bank Corp', sites: [
-      { name: 'Site A — 500 Montgomery St', status: 'operational', uptime: 99.9, devices: 18, online: 18, lastIncident: '14d ago' },
-      { name: 'Site B — 200 Pine St', status: 'degraded', uptime: 94.1, devices: 12, online: 9, lastIncident: 'Now' },
-    ]},
-    { name: 'Riverside Medical', sites: [
-      { name: 'Main Campus', status: 'operational', uptime: 99.8, devices: 32, online: 32, lastIncident: '21d ago' },
-    ]},
-    { name: 'Westfield Mall', sites: [
-      { name: 'Main Property', status: 'operational', uptime: 99.7, devices: 48, online: 48, lastIncident: '8d ago' },
-    ]},
-  ];
+  const customers = [];
 
   const statusColors = { operational: 'var(--status-ok)', degraded: 'var(--status-warn)', outage: 'var(--status-critical)', maintenance: 'var(--brand)' };
 
@@ -932,19 +859,23 @@ function StatusPageScreen() {
           <p style={{ fontSize: 12, color: 'var(--text-mid)', marginTop: 4 }}>Customer-facing status dashboards — each customer gets a unique URL</p>
         </div>
         <button onClick={() => shieldModal({ kind: 'form', title: 'Create Status Page', subtitle: 'Publish a live status dashboard for a customer', submitLabel: 'Create Page', successMsg: 'Status page published', fields: [
-          { key: 'customer', label: 'Customer', placeholder: 'Acme Dental Group', required: true, full: true },
-          { key: 'slug', label: 'URL Slug', placeholder: 'acme-dental' },
+          { key: 'customer', label: 'Customer', placeholder: 'Customer name', required: true, full: true },
+          { key: 'slug', label: 'URL Slug', placeholder: 'customer-name' },
           { key: 'visibility', label: 'Visibility', type: 'select', options: ['Private link','Public','Password protected'] }
         ] })} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Create Status Page</button>
       </div>
 
       {/* Overall system status */}
       <GlassPanel style={{ borderTop: '2px solid var(--status-ok)', textAlign: 'center', padding: 20 }}>
+        {(() => { const allSites = customers.flatMap(c => c.sites); const dev = allSites.reduce((a, x) => a + x.devices, 0); const on = allSites.reduce((a, x) => a + x.online, 0); return (
+        <>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
           <StatusDot status="online" size={8} pulse />
-          <span style={{ fontSize: 18, fontWeight: 300, color: 'var(--status-ok)', fontFamily: 'var(--font-display)' }}>All Systems Operational</span>
+          <span style={{ fontSize: 18, fontWeight: 300, color: 'var(--status-ok)', fontFamily: 'var(--font-display)' }}>{dev ? (on === dev ? 'All Systems Operational' : 'Partial Degradation') : 'No Monitored Sites Yet'}</span>
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-low)' }}>134 of 134 devices online across all monitored sites · Last checked 12s ago</div>
+        <div style={{ fontSize: 12, color: 'var(--text-low)' }}>{dev ? `${on} of ${dev} devices online across all monitored sites` : 'Create a status page once a customer site is being monitored.'}</div>
+        </>
+        ); })()}
       </GlassPanel>
 
       {/* Per-customer status */}

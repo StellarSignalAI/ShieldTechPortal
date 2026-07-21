@@ -2,18 +2,11 @@
 
 /* ── Customer Health Score + Churn Prediction ── */
 function CustomerHealthScreen() {
-  const customers = [
-    { name: 'Acme Dental Group', score: 94, trend: 'stable', mrr: 2400, tenure: '2.5 yr', tickets: 1, uptime: 99.7, payDays: 2, lastContact: '2d ago', nps: 9, churnRisk: 4, factors: { engagement: 92, system: 96, financial: 98, satisfaction: 90 } },
-    { name: 'Metro Bank Corp', score: 88, trend: 'up', mrr: 4800, tenure: '1.8 yr', tickets: 0, uptime: 99.2, payDays: 5, lastContact: '1w ago', nps: 8, churnRisk: 8, factors: { engagement: 82, system: 94, financial: 95, satisfaction: 82 } },
-    { name: 'Riverside Medical', score: 76, trend: 'down', mrr: 2800, tenure: '3.1 yr', tickets: 2, uptime: 99.8, payDays: 16, lastContact: '3w ago', nps: 7, churnRisk: 22, factors: { engagement: 58, system: 92, financial: 72, satisfaction: 80 } },
-    { name: 'City Hall', score: 82, trend: 'stable', mrr: 3200, tenure: '1.2 yr', tickets: 0, uptime: 99.9, payDays: 8, lastContact: '2w ago', nps: 8, churnRisk: 12, factors: { engagement: 74, system: 98, financial: 82, satisfaction: 76 } },
-    { name: 'Westfield Mall', score: 91, trend: 'up', mrr: 5200, tenure: '2.0 yr', tickets: 0, uptime: 99.7, payDays: 3, lastContact: '3d ago', nps: 9, churnRisk: 5, factors: { engagement: 88, system: 94, financial: 96, satisfaction: 86 } },
-    { name: 'Harbor View Condos', score: 62, trend: 'down', mrr: 1800, tenure: '0.8 yr', tickets: 3, uptime: 98.1, payDays: 24, lastContact: '4w ago', nps: 5, churnRisk: 38, factors: { engagement: 42, system: 78, financial: 58, satisfaction: 68 } },
-    { name: 'Golden Gate Logistics', score: 85, trend: 'up', mrr: 0, tenure: 'Prospect', tickets: 0, uptime: 0, payDays: 0, lastContact: '5d ago', nps: 0, churnRisk: 0, factors: { engagement: 85, system: 0, financial: 0, satisfaction: 0 } },
-  ];
+  const customers = [];
 
   const atRisk = customers.filter(c => c.churnRisk > 20);
-  const avgScore = Math.round(customers.filter(c => c.score > 0).reduce((s,c) => s + c.score, 0) / customers.filter(c => c.score > 0).length);
+  const scored = customers.filter(c => c.score > 0);
+  const avgScore = scored.length ? Math.round(scored.reduce((s,c) => s + c.score, 0) / scored.length) : 0;
 
   const openCustomer = (c) => shieldModal({
     kind: 'detail', title: c.name, subtitle: `Health ${c.score} · ${c.churnRisk}% churn risk · ${c.tenure} tenure`,
@@ -47,7 +40,7 @@ function CustomerHealthScreen() {
           <StatCard label="CUSTOMERS" value={customers.filter(c => c.mrr > 0).length} delay={0} />
           <StatCard label="AT-RISK" value={atRisk.length} delay={80} />
           <StatCard label="AT-RISK MRR" value={`$${(atRisk.reduce((s,c) => s + c.mrr,0)/1000).toFixed(1)}K`} mono={false} delay={160} />
-          <StatCard label="AVG NPS" value={(customers.filter(c => c.nps > 0).reduce((s,c) => s + c.nps,0) / customers.filter(c => c.nps > 0).length).toFixed(1)} mono={false} delay={240} />
+          <StatCard label="AVG NPS" value={customers.filter(c => c.nps > 0).length ? (customers.filter(c => c.nps > 0).reduce((s,c) => s + c.nps,0) / customers.filter(c => c.nps > 0).length).toFixed(1) : '—'} mono={false} delay={240} />
         </div>
       </div>
 
@@ -64,6 +57,7 @@ function CustomerHealthScreen() {
       )}
 
       {/* Customer cards */}
+      {customers.length === 0 && <EmptyState icon="users" title="No customers yet" accent="var(--brand)" body="Health scores appear here once customers are onboarded." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {customers.filter(c => c.mrr > 0).sort((a,b) => a.score - b.score).map((c, i) => (
           <GlassPanel key={i} onClick={() => openCustomer(c)} className="st-rowcard" style={{ padding: '16px 20px', cursor: 'pointer', borderLeft: `3px solid ${c.score >= 85 ? 'var(--status-ok)' : c.score >= 70 ? 'var(--status-warn)' : 'var(--status-critical)'}` }}>
@@ -106,17 +100,12 @@ function CustomerHealthScreen() {
 /* ── Revenue Forecasting ── */
 function RevenueForecastScreen() {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const actual = [218, 245, 238, 265, 284, null, null, null, null, null, null, null];
-  const forecast = [null, null, null, null, null, 298, 312, 305, 328, 342, 318, 355];
-  const optimistic = [null, null, null, null, null, 315, 335, 330, 360, 380, 350, 395];
-  const pessimistic = [null, null, null, null, null, 278, 288, 280, 295, 305, 285, 310];
+  const actual = months.map(() => null);
+  const forecast = months.map(() => null);
+  const optimistic = months.map(() => null);
+  const pessimistic = months.map(() => null);
 
-  const pipelineWeighted = [
-    { stage: 'Proposal Sent', deals: 3, raw: 341000, weighted: 204600, prob: 60 },
-    { stage: 'Negotiation', deals: 2, raw: 162500, weighted: 130000, prob: 80 },
-    { stage: 'Verbal Commit', deals: 1, raw: 24800, weighted: 22320, prob: 90 },
-    { stage: 'Qualified', deals: 4, raw: 205000, weighted: 82000, prob: 40 },
-  ];
+  const pipelineWeighted = [];
 
   const totalWeighted = pipelineWeighted.reduce((s,p) => s + p.weighted, 0);
 
@@ -124,9 +113,9 @@ function RevenueForecastScreen() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* KPIs */}
       <div style={{ display: 'flex', gap: 12 }}>
-        <StatCard label="YTD REVENUE" value="$1.25M" mono={false} trend="+11.2%" trendDir="up" delay={0} />
-        <StatCard label="FORECAST (EOY)" value="$3.06M" mono={false} delay={80} />
-        <StatCard label="MRR GROWTH" value="+3.8%" mono={false} trend="MoM" delay={160} />
+        <StatCard label="YTD REVENUE" value="—" mono={false} delay={0} />
+        <StatCard label="FORECAST (EOY)" value="—" mono={false} delay={80} />
+        <StatCard label="MRR GROWTH" value="—" mono={false} delay={160} />
         <StatCard label="WEIGHTED PIPELINE" value={`$${(totalWeighted/1000).toFixed(0)}K`} mono={false} delay={240} />
       </div>
 
@@ -160,12 +149,14 @@ function RevenueForecastScreen() {
               {/* Actual line */}
               {(() => {
                 const pts = actual.map((v, i) => v ? { x: (i / 11) * 580 + 10, y: 190 - ((v - 200) / 200) * 180 } : null).filter(Boolean);
+                if (!pts.length) return null;
                 return <polyline points={pts.map(p => `${p.x},${p.y}`).join(' ')} fill="none" stroke="var(--brand)" strokeWidth="2.5" strokeLinejoin="round" />;
               })()}
               {/* Forecast line */}
               {(() => {
                 const pts = forecast.map((v, i) => v ? { x: (i / 11) * 580 + 10, y: 190 - ((v - 200) / 200) * 180 } : null).filter(Boolean);
                 const last = actual.filter(Boolean);
+                if (!last.length || !pts.length) return null;
                 const lastPt = { x: ((last.length - 1) / 11) * 580 + 10, y: 190 - ((last[last.length-1] - 200) / 200) * 180 };
                 return <polyline points={`${lastPt.x},${lastPt.y} ${pts.map(p => `${p.x},${p.y}`).join(' ')}`} fill="none" stroke="var(--brand)" strokeWidth="2" strokeDasharray="6 4" strokeLinejoin="round" opacity="0.6" />;
               })()}
@@ -195,6 +186,7 @@ function RevenueForecastScreen() {
         {/* Pipeline Breakdown */}
         <GlassPanel>
           <SectionHeader title="Weighted Pipeline" icon="flag" />
+          {pipelineWeighted.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-low)', padding: '14px 0' }}>No open pipeline yet — deals appear here from the CRM.</div>}
           {pipelineWeighted.map((p, i) => (
             <div key={i} style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -213,12 +205,6 @@ function RevenueForecastScreen() {
             <span style={{ fontSize: 13, fontWeight: 500 }}>Total Weighted</span>
             <span className="mono" style={{ fontSize: 16, fontWeight: 600, color: 'var(--brand)' }}>${(totalWeighted/1000).toFixed(0)}K</span>
           </div>
-          <div style={{ marginTop: 10, padding: '8px 10px', borderRadius: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span>⟡</span>
-              <span style={{ fontSize: 11, color: 'var(--brand)' }}>ShieldTech AI: At current close rates, Q3 revenue will hit $942K — 4% above target.</span>
-            </div>
-          </div>
         </GlassPanel>
       </div>
     </div>
@@ -227,21 +213,11 @@ function RevenueForecastScreen() {
 
 /* ── Commission Tracker ── */
 function CommissionScreen() {
-  const reps = [
-    { name: 'Sarah Chen', initials: 'SC', role: 'Sales Manager', closed: 4, revenue: 296300, commission: 29630, rate: 10, quota: 300000, quotaPct: 98.8, pending: 215000 },
-    { name: 'John Mitchell', initials: 'JM', role: 'Owner / Closer', closed: 2, revenue: 92500, commission: 6475, rate: 7, quota: 150000, quotaPct: 61.7, pending: 128500 },
-  ];
+  const reps = [];
 
-  const deals = [
-    { rep: 'SC', customer: 'Pacific Rim Hotels', value: 215000, commission: 21500, stage: 'Proposal', status: 'pending', closeDate: 'Jun 15' },
-    { rep: 'SC', customer: 'Marina District Dental', value: 24800, commission: 2480, stage: 'Won', status: 'earned', closeDate: 'Jun 2' },
-    { rep: 'SC', customer: 'Metro Bank Corp', value: 67500, commission: 6750, stage: 'Won', status: 'earned', closeDate: 'May 28' },
-    { rep: 'JM', customer: 'Embarcadero Partners', value: 67500, commission: 4725, stage: 'Qualified', status: 'pending', closeDate: 'Jun 20' },
-    { rep: 'JM', customer: 'Bayshore Medical', value: 94200, commission: 6594, stage: 'Contacted', status: 'pending', closeDate: 'Jul 10' },
-    { rep: 'SC', customer: 'Riverside Medical', value: 28400, commission: 2840, stage: 'Won', status: 'paid', closeDate: 'May 15' },
-  ];
+  const deals = [];
 
-  const repName = { SC: 'Sarah Chen', JM: 'John Mitchell' };
+  const repName = {};
 
   const openRep = (rep) => shieldModal({
     kind: 'detail', title: rep.name, subtitle: `${rep.role} · ${rep.rate}% commission rate`,
@@ -282,6 +258,7 @@ function CommissionScreen() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Rep Cards */}
+      {reps.length === 0 && <EmptyState icon="users" title="No sales reps yet" accent="var(--brand)" body="Invite your team from Admin → Users & Invites to start tracking commissions." />}
       <div style={{ display: 'flex', gap: 16 }}>
         {reps.map((rep, i) => (
           <GlassPanel key={i} onClick={() => openRep(rep)} className="st-rowcard" style={{ flex: 1, cursor: 'pointer' }}>
@@ -348,15 +325,7 @@ function CommissionScreen() {
 
 /* ── Compliance Calendar ── */
 function ComplianceScreen() {
-  const items = [
-    { type: 'inspection', title: 'NFPA 72 Annual Fire Inspection', customer: 'Riverside Medical', due: 'Jun 12, 2026', daysLeft: 7, status: 'upcoming', authority: 'State Fire Marshal', icon: '⚠' },
-    { type: 'inspection', title: 'UL Monitoring Certificate Renewal', customer: 'All Monitored Sites', due: 'Jun 30, 2026', daysLeft: 25, status: 'upcoming', authority: 'UL / CSAA', icon: '✦' },
-    { type: 'permit', title: 'Low-Voltage Contractor License Renewal', customer: 'ShieldTech', due: 'Jul 15, 2026', daysLeft: 40, status: 'upcoming', authority: 'CSLB', icon: '▤' },
-    { type: 'testing', title: 'Quarterly Fire Alarm Test — City Hall', customer: 'City Hall', due: 'Jun 20, 2026', daysLeft: 15, status: 'scheduled', authority: 'AHJ', icon: '⚗' },
-    { type: 'testing', title: 'Annual Intrusion Panel Test', customer: 'Acme Dental', due: 'Jul 5, 2026', daysLeft: 30, status: 'upcoming', authority: 'Central Station', icon: '🛡' },
-    { type: 'insurance', title: 'COI Renewal — General Liability', customer: 'ShieldTech', due: 'Aug 1, 2026', daysLeft: 57, status: 'upcoming', authority: 'Insurance Co', icon: '▤' },
-    { type: 'inspection', title: 'NFPA 25 Sprinkler Inspection', customer: 'Westfield Mall', due: 'May 28, 2026', daysLeft: -8, status: 'overdue', authority: 'State Fire Marshal', icon: '⚠' },
-  ];
+  const items = [];
 
   const overdue = items.filter(i => i.status === 'overdue');
   const upcoming7 = items.filter(i => i.daysLeft > 0 && i.daysLeft <= 7);
@@ -399,6 +368,7 @@ function ComplianceScreen() {
         </div>
       )}
 
+      {items.length === 0 && <EmptyState icon="checkCircle" title="Nothing tracked yet" accent="var(--status-ok)" body="Inspections, permits, tests and renewals will appear here as they are added." />}
       <GlassPanel style={{ padding: 0 }}>
         {items.sort((a,b) => a.daysLeft - b.daysLeft).map((item, i) => (
           <div key={i} onClick={() => openItem(item)} className="st-clickrow" style={{
@@ -427,49 +397,21 @@ function ComplianceScreen() {
 
 /* ── Customer Onboarding Wizard ── */
 function OnboardingScreen() {
-  const workflows = [
-    { customer: 'Golden Gate Logistics', started: 'Jun 3', progress: 25, stage: 'Contract Signed', steps: [
-      { label: 'Contract signed', done: true, date: 'Jun 3' },
-      { label: 'Welcome packet sent', done: true, date: 'Jun 3' },
-      { label: 'Site survey scheduled', done: false },
-      { label: 'System design approved', done: false },
-      { label: 'Equipment ordered', done: false },
-      { label: 'Installation scheduled', done: false },
-      { label: 'Installation complete', done: false },
-      { label: 'Customer training', done: false },
-      { label: 'Monitoring activated', done: false },
-      { label: 'Portal access sent', done: false },
-      { label: '30-day check-in', done: false },
-      { label: 'Handoff complete', done: false },
-    ]},
-    { customer: 'Pinnacle Financial Group', started: 'May 25', progress: 58, stage: 'Design Phase', steps: [
-      { label: 'Contract signed', done: true, date: 'May 25' },
-      { label: 'Welcome packet sent', done: true, date: 'May 25' },
-      { label: 'Site survey completed', done: true, date: 'May 28' },
-      { label: 'System design approved', done: true, date: 'Jun 1' },
-      { label: 'Equipment ordered', done: true, date: 'Jun 2' },
-      { label: 'Permit application filed', done: true, date: 'Jun 2' },
-      { label: 'Installation Phase 1', done: true, date: 'Jun 4' },
-      { label: 'Installation Phase 2', done: false },
-      { label: 'Network configuration', done: false },
-      { label: 'Customer training', done: false },
-      { label: 'Monitoring activated', done: false },
-      { label: 'Handoff complete', done: false },
-    ]},
-  ];
+  const workflows = [];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 className="display" style={{ fontSize: 20, fontWeight: 300 }}>Customer Onboarding</h2>
         <button onClick={() => shieldModal({ kind: 'form', title: 'Start New Onboarding', subtitle: 'Kick off the onboarding workflow for a new customer', submitLabel: 'Start Onboarding', successMsg: 'Onboarding workflow created', fields: [
-          { key: 'customer', label: 'Customer', placeholder: 'Golden Gate Logistics', required: true, full: true },
+          { key: 'customer', label: 'Customer', placeholder: 'Customer name', required: true, full: true },
           { key: 'plan', label: 'Service Plan', type: 'select', options: ['Essential','Professional','Enterprise'] },
-          { key: 'pm', label: 'Project Manager', type: 'select', options: ['John Mitchell','Sarah Chen','Mike Reyes'] },
+          { key: 'pm', label: 'Project Manager', type: 'select', options: (window.SW && window.SW.USERS && window.SW.USERS.length) ? window.SW.USERS.map(u => u.name) : ['Unassigned'] },
           { key: 'start', label: 'Target Start', type: 'date' }
         ] })} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Start New Onboarding</button>
       </div>
 
+      {workflows.length === 0 && <EmptyState icon="flag" title="No onboarding workflows yet" accent="var(--brand)" body="Start a new onboarding to track every step from contract to handoff." />}
       {workflows.map((wf, wi) => (
         <GlassPanel key={wi}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>

@@ -6,15 +6,7 @@
    • Cameras   — live-style camera grid, tap for detail
    • Alerts    — critical alert feed */
 
-const MM_CUSTOMERS = [
-  { id: 'metro-bank', name: 'Metro Bank Corp', sites: 3, devices: 42, status: 'healthy' },
-  { id: 'acme-dental', name: 'Acme Dental', sites: 1, devices: 18, status: 'warning' },
-  { id: 'city-hall', name: 'City Hall', sites: 2, devices: 36, status: 'healthy' },
-  { id: 'riverside-med', name: 'Riverside Medical', sites: 1, devices: 24, status: 'critical' },
-  { id: 'pacific-rim', name: 'Pacific Rim Hotels', sites: 5, devices: 128, status: 'healthy' },
-  { id: 'harbor-view', name: 'Harbor View Condos', sites: 1, devices: 14, status: 'healthy' },
-  { id: 'westfield', name: 'Westfield Mall', sites: 1, devices: 52, status: 'warning' },
-];
+const MM_CUSTOMERS = [];
 
 const MM_TYPE_COLOR = {
   ISP: '#5c6f86', Gateway: 'var(--brand)', Switch: 'var(--brand)', 'Access Point': '#a78bfa',
@@ -22,43 +14,11 @@ const MM_TYPE_COLOR = {
   NVR: '#60a5fa', Server: '#818cf8',
 };
 
-const MM_NODES = [
-  { id: 'isp', parent: null, glyph: '☁', label: 'Comcast Business', sub: 'WAN1 · 1 Gbps', type: 'ISP', status: 'online' },
-  { id: 'gw', parent: 'isp', glyph: '🛡', label: 'USG-Pro-4', sub: '10.1.1.1', type: 'Gateway', status: 'online', model: 'Ubiquiti USG-Pro-4', mac: 'fc:ec:da:12:34:56', uptime: '42d 6h', cpu: 12, mem: 34, throughput: '245 Mbps' },
-  { id: 'core', parent: 'gw', glyph: '⊞', label: 'Core Switch', sub: 'USW-Pro-48 · 10.1.1.2', type: 'Switch', status: 'online', model: 'USW-Pro-48-PoE', ports: 48, poeUsed: 185, poeTotal: 400, uptime: '42d 6h' },
-  { id: 'sw-f1', parent: 'core', glyph: '⊞', label: 'Floor 1 PoE', sub: 'USW-24 · 10.1.4.2', type: 'Switch', status: 'online', model: 'USW-24-PoE', ports: 24, poeUsed: 142, poeTotal: 250 },
-  { id: 'ap-f1', parent: 'sw-f1', glyph: '⊚', label: 'AP-Floor1', sub: 'U6-Pro · 8 clients', type: 'Access Point', status: 'online', model: 'U6-Pro', clients: 8, channel: '36 / 80MHz' },
-  { id: 'cam1', parent: 'sw-f1', glyph: '◉', label: 'CAM-01 Main Entry', sub: 'Axis P3265-V', type: 'Camera', status: 'online', vendor: 'Axis', vlan: 'Security', poe: 12.4 },
-  { id: 'cam2', parent: 'sw-f1', glyph: '◉', label: 'CAM-02 Lobby', sub: 'Verkada CD52', type: 'Camera', status: 'online', vendor: 'Verkada', vlan: 'Security', poe: 25.5 },
-  { id: 'cam3', parent: 'sw-f1', glyph: '◉', label: 'CAM-03 Parking', sub: 'Axis P3265-V', type: 'Camera', status: 'online', vendor: 'Axis', vlan: 'Security', poe: 12.4 },
-  { id: 'cam4', parent: 'sw-f1', glyph: '◉', label: 'CAM-04 Rear Exit', sub: 'Hikvision DS-2CD', type: 'Camera', status: 'offline', vendor: 'Hikvision', vlan: 'Security', poe: 12 },
-  { id: 'sw-f2', parent: 'core', glyph: '⊞', label: 'Floor 2 PoE', sub: 'USW-24 · 10.1.5.2', type: 'Switch', status: 'online', model: 'USW-24-PoE', ports: 24, poeUsed: 98, poeTotal: 250 },
-  { id: 'ap-f2', parent: 'sw-f2', glyph: '⊚', label: 'AP-Floor2', sub: 'U6-LR · 12 clients', type: 'Access Point', status: 'online', model: 'U6-LR', clients: 12, channel: '149 / 80MHz' },
-  { id: 'acr1', parent: 'sw-f2', glyph: '⊠', label: 'ACR-01 Main Door', sub: 'HID iCLASS SE', type: 'Access', status: 'online', vendor: 'HID', poe: 3.8 },
-  { id: 'acr2', parent: 'sw-f2', glyph: '⊠', label: 'ACR-02 Server Rm', sub: 'HID iCLASS SE', type: 'Access', status: 'online', vendor: 'HID', poe: 3.8 },
-  { id: 'panel', parent: 'sw-f2', glyph: '⚠', label: 'Alarm Panel', sub: 'DSC PowerSeries', type: 'Alarm', status: 'online', vendor: 'DSC' },
-  { id: 'sw-srv', parent: 'core', glyph: '⊞', label: 'Server Room', sub: 'USW-16 · 10.1.1.3', type: 'Switch', status: 'online', model: 'USW-16', ports: 16 },
-  { id: 'nvr', parent: 'sw-srv', glyph: '⊟', label: 'NVR-01', sub: 'Axis S3008', type: 'NVR', status: 'online', storage: '6TB / 8TB' },
-  { id: 'server', parent: 'sw-srv', glyph: '▢', label: 'App Server', sub: 'Dell R740', type: 'Server', status: 'online' },
-];
+const MM_NODES = [];
 
-const MM_CAMERAS = [
-  { id: 'c1', name: 'Main Entrance', model: 'Axis P3265-V', status: 'online', fps: 30, bitrate: '4.2', storage: '14d', resolution: '4MP', recording: true },
-  { id: 'c2', name: 'Parking Lot A', model: 'Axis P3265-V', status: 'online', fps: 30, bitrate: '5.1', storage: '14d', resolution: '4MP', recording: true },
-  { id: 'c3', name: 'Server Room', model: 'Axis M3075-V', status: 'online', fps: 15, bitrate: '2.8', storage: '30d', resolution: '2MP', recording: true },
-  { id: 'c4', name: 'Rear Exit', model: 'Hikvision DS-2CD2143', status: 'offline', fps: 0, bitrate: '0', storage: '14d', resolution: '4MP', recording: false },
-  { id: 'c5', name: 'Lobby', model: 'Verkada CD52', status: 'online', fps: 30, bitrate: '3.9', storage: '30d', resolution: '5MP', recording: true },
-  { id: 'c6', name: 'Hallway B', model: 'Axis P3265-V', status: 'online', fps: 25, bitrate: '3.5', storage: '14d', resolution: '4MP', recording: true },
-  { id: 'c7', name: 'Loading Dock', model: 'Axis Q6135-LE', status: 'online', fps: 30, bitrate: '6.2', storage: '14d', resolution: '2MP', recording: true },
-  { id: 'c8', name: 'Stairwell', model: 'Axis M3075-V', status: 'warning', fps: 15, bitrate: '1.2', storage: '30d', resolution: '2MP', recording: true },
-];
+const MM_CAMERAS = [];
 
-const MM_ALERTS = [
-  { id: 1, sev: 'critical', title: 'CAM-04 Rear Exit — signal lost', sub: 'Floor 1 · offline 6m ago · PoE port down', device: 'cam4' },
-  { id: 2, sev: 'warning', title: 'Stairwell camera — low bitrate', sub: '1.2 Mbps · possible cabling fault', device: null },
-  { id: 3, sev: 'warning', title: 'Core Switch PoE budget 78%', sub: '185W / 400W · nearing capacity', device: 'core' },
-  { id: 4, sev: 'info', title: 'Firmware available — 3 Axis cameras', sub: 'v11.9.x · schedule maintenance window', device: null },
-];
+const MM_ALERTS = [];
 
 const mmDot = (status) => status === 'online' ? 'var(--status-ok)' : status === 'offline' ? 'var(--status-critical)' : 'var(--status-warn)';
 const mmSevColor = (s) => s === 'critical' ? 'var(--status-critical)' : s === 'warning' ? 'var(--status-warn)' : 'var(--brand)';
@@ -402,12 +362,19 @@ function MMPortMap() {
 
 /* ── Console shell ── */
 function MobileMonitoring({ onNav }) {
-  const [custId, setCustId] = React.useState('metro-bank');
+  const [custId, setCustId] = React.useState(MM_CUSTOMERS[0] ? MM_CUSTOMERS[0].id : null);
   const [tab, setTab] = React.useState('Map');
   const [custPick, setCustPick] = React.useState(false);
   const [node, setNode] = React.useState(null);
   const [cam, setCam] = React.useState(null);
   const cust = MM_CUSTOMERS.find(c => c.id === custId);
+  if (!cust) return (
+    <div className="glass" style={{ padding: '26px 18px', borderRadius: 14, textAlign: 'center' }}>
+      <div style={{ fontSize: 22, marginBottom: 8 }}>&#9678;</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>No monitored customers yet</div>
+      <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 5 }}>Connect a site collector from the desktop Monitoring Console to bring networks, cameras and alerts online here.</div>
+    </div>
+  );
   const online = MM_NODES.filter(n => n.status === 'online').length;
   const offline = MM_NODES.filter(n => n.status === 'offline').length;
   const sColor = cust.status === 'healthy' ? 'var(--status-ok)' : cust.status === 'warning' ? 'var(--status-warn)' : 'var(--status-critical)';
