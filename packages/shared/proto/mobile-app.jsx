@@ -326,6 +326,21 @@ function MobilePortalApp() {
     const Fn = M_SCREEN_MAP[screen] || (() => <MHomeView onNav={nav} />);
     content = <Fn />;
   }
+  // Bespoke mobile = native touch view + the COMPLETE desktop toolset inline,
+  // reflowed for the phone. One surface, nothing missing, no mode toggle.
+  const FULL_INLINE_SKIP = ['m-more', 'login', 'sitescan', 'cameras', 'topology', 'warroom', 'floorplan', 'anomaly', 'custom-dashboard'];
+  if (!fullBase && hasFullView && !FULL_INLINE_SKIP.includes(screen)) {
+    const FullFn = M_SCREEN_MAP[screen];
+    content = (
+      <>
+        {content}
+        <div style={{ margin: '18px -14px 0', borderTop: '1px solid var(--border-subtle)' }}>
+          <div style={{ padding: '14px 14px 2px', fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--text-low)', textTransform: 'uppercase' }}>{screenLabel(screen)} — full suite</div>
+          <div className="m-screen" data-desk="true" style={{ padding: 14 }}><FullFn /></div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="m-app-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--canvas)', position: 'relative', overflow: 'hidden' }}>
@@ -342,13 +357,6 @@ function MobilePortalApp() {
         </button>
         <img src="uploads/ShieldTech Logo Transparent MK3.png" alt="ShieldTech" style={{ height: 24 }} />
         <div style={{ flex: 1 }} />
-        {(hasFullView || fullBase) && (
-          <button onClick={() => handleNav(fullBase ? fullBase : screen + '-full')}
-            title={fullBase ? 'Back to mobile view' : 'Open full desktop view'}
-            style={{ background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 8, height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', font: '600 10px/1 var(--font-body)', color: 'var(--brand)' }}>
-            {fullBase ? '◱ Mobile' : '⛶ Full'}
-          </button>
-        )}
         <button onClick={() => nav('shieldtech-ai')} title="ShieldTech AI" style={{ background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 8, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
           <Icon name="hermes" size={15} color="var(--brand)" />
         </button>

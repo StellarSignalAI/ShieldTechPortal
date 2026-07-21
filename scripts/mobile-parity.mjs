@@ -35,21 +35,15 @@ for (const id of SCREENS) {
   else if (fellBack) bad.push({ id, why: 'fell back to Home' });
 }
 
-// Full-view toggle smoke: dispatch is native and has a desktop map entry.
-current = 'full-toggle';
+// Bespoke smoke: native screens must include the inline full desktop suite.
+current = 'full-suite';
 await page.evaluate(() => window.__shieldNav('dispatch'));
-await page.waitForTimeout(400);
-const fullBtn = page.locator('button', { hasText: 'Full' }).first();
-let fullOk = false;
-if (await fullBtn.count()) {
-  await fullBtn.click(); await page.waitForTimeout(600);
-  const t = await page.evaluate(() => document.querySelector('.m-screen').innerText.trim());
-  fullOk = t.length > 20;
-}
+await page.waitForTimeout(900);
+const fullOk = await page.evaluate(() => /full suite/i.test(document.querySelector('.m-screen').innerText));
 
 console.log('screens driven:', SCREENS.length - 2);
 console.log('unreachable/fallback:', JSON.stringify(bad));
-console.log('full-view toggle:', fullOk ? 'OK' : 'FAIL');
+console.log('bespoke full suite:', fullOk ? 'OK' : 'FAIL');
 console.log('console errors:', JSON.stringify(errors.slice(0, 15), null, 1));
 await browser.close();
 process.exit(bad.length || !fullOk || errors.length ? 1 : 0);

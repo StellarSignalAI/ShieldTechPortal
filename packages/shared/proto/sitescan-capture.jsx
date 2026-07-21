@@ -4,7 +4,10 @@
    confirm → multi-room session → Configure Floor Plan (object categories, session replay) → generate.
    AR feed = real device camera via getUserMedia (environment), simulated room as fallback. */
 
-const ssOverlay = { position: 'fixed', inset: 0, maxWidth: 430, margin: '0 auto', zIndex: 990, background: '#04070c', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)' };
+function ssPortal(node) {
+  return (window.ReactDOM && window.ReactDOM.createPortal) ? window.ReactDOM.createPortal(node, document.body) : node;
+}
+const ssOverlay = { position: 'fixed', inset: 0, maxWidth: 430, margin: '0 auto', zIndex: 3000, paddingBottom: 'env(safe-area-inset-bottom, 0px)', boxSizing: 'border-box', background: '#04070c', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)' };
 
 /* ── simulated passthrough (fallback when camera unavailable/denied) ── */
 function SSFakeFeed() {
@@ -351,7 +354,7 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
   const recording = stage === 'scanning' && mode === 'auto' && !closing;
 
   /* ══ tips screen ══ */
-  if (stage === 'tips') return (
+  if (stage === 'tips') return ssPortal(
     <div style={ssOverlay}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
         <button onClick={onCancel} style={{ background: 'none', border: 'none', color: 'var(--text-mid)', fontSize: 20, cursor: 'pointer', lineHeight: 1, padding: 0 }}>✕</button>
@@ -375,7 +378,7 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
   );
 
   /* ══ configure floor plan ══ */
-  if (stage === 'configure') return (
+  if (stage === 'configure') return ssPortal(
     <div style={ssOverlay}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
         <button onClick={() => setStage('ready')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 20, cursor: 'pointer', padding: 0 }}>‹</button>
@@ -411,7 +414,7 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
   );
 
   /* ══ live AR view (calibrate / ready / scanning / ceiling / roomdone) ══ */
-  return (
+  return ssPortal(
     <div style={ssOverlay}>
       {/* top bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', zIndex: 4, background: 'linear-gradient(180deg, rgba(3,6,11,0.85), rgba(3,6,11,0.4))' }}>
