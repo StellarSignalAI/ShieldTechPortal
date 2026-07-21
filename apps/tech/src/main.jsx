@@ -19,6 +19,7 @@ import '@fontsource/jetbrains-mono/500.css';
 
 import '@shared/styles/styles.css';
 import '@shared/styles/mobile.css';
+import '@shared/styles/viewport-lock.css';
 import '@shared/supabase.js';
 import '@shared/auth.js';
 import '@shared/ai.js';
@@ -57,7 +58,7 @@ function TechShellV2({ tab, setTab, children }) {
 
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--canvas)' }}>
+    <div className="m-app-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--canvas)' }}>
           {/* Top bar */}
           <header style={{
         padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',

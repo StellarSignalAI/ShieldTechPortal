@@ -1,6 +1,7 @@
 /* ShieldTech Portal — mobile surface (ported from "ShieldTech Mobile.html").
    Loaded by main.jsx when a mobile device is detected on the portal domain. */
 import '@shared/styles/mobile.css';
+import '@shared/styles/viewport-lock.css';
 import '@shared/proto-manifest-mobile.js';
 
 const React = window.React;

@@ -1,0 +1,34 @@
+/* Mobile viewport — true device ratio + locked-in-place shell (iOS + Android).
+   The page itself never scrolls, bounces, or zooms; only the shell's internal
+   scroll containers move. Safe-area insets keep the design clear of notches,
+   home indicators, and gesture bars without altering the design itself. */
+html { height: 100%; }
+body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  touch-action: pan-x pan-y;
+}
+#root { height: 100%; }
+
+.m-app-shell {
+  height: 100% !important;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+/* Dynamic viewport height where supported: tracks Android URL-bar collapse
+   and iOS toolbar show/hide exactly. */
+@supports (height: 100dvh) {
+  .m-app-shell { height: 100dvh !important; }
+}
+.m-app-shell [style*="overflow: auto"],
+.m-app-shell [style*="overflow-y: auto"] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.m-app-shell { -webkit-tap-highlight-color: transparent; }

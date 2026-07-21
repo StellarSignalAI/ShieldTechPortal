@@ -313,7 +313,7 @@ function MobilePortalApp() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--canvas)', position: 'relative', overflow: 'hidden' }}>
+    <div className="m-app-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--canvas)', position: 'relative', overflow: 'hidden' }}>
       {/* Top bar */}
       <header style={{
         padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,

@@ -18,6 +18,7 @@ import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
 
 import '@shared/styles/styles.css';
+import '@shared/styles/viewport-lock.css';
 import '@shared/supabase.js';
 import '@shared/auth.js';
 import '@shared/ai.js';
@@ -272,7 +273,7 @@ function CustomerPortalApp() {
   const me = window.__shieldUser || {};
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--canvas)' }}>
+    <div className="m-app-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--canvas)' }}>
       {/* Header */}
       <header style={{
         height: 56, flexShrink: 0,
