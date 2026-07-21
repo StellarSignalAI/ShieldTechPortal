@@ -7,6 +7,7 @@
 import '@shared/globals.js';
 import '@shared/supabase.js';
 import '@shared/auth.js';
+import '@shared/ai.js';
 
 /* Fonts (self-hosted; same families/weights the design's Google Fonts import used) */
 import '@fontsource/montserrat/200.css';

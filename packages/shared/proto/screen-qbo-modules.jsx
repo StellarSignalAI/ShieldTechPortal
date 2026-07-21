@@ -153,38 +153,33 @@ function IntegrationsScreen() {
   }, []);
   const [toast, setToast] = React.useState(null);
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 3000); };
+  const supaOn = Boolean(window.__shieldSupabaseConfigured);
+  const aiOn = Boolean(window.__shieldAIModel);
   const conns = [
-    { name: 'QuickBooks Online', kind: 'Accounting', state: 'connected', last: '2 min ago', note: '153 screens mapped · bidirectional' },
-    { name: 'Stripe', kind: 'Payments', state: 'connected', last: '6 min ago', note: 'Payouts + payment links' },
-    { name: 'ADI Global EDI', kind: 'Vendor / purchasing', state: 'polling', last: 'syncing now', note: 'Price book + PO acknowledgments' },
-    { name: 'Shopify Store', kind: 'Sales channel', state: 'paused', last: 'Jun 30', note: 'Paused during catalog cleanup' },
-    { name: 'Verkada Command', kind: 'Monitoring', state: 'connected', last: '1 min ago', note: 'Device health + alerts' },
-    { name: 'Amazon Business', kind: 'Sales channel', state: 'credential', last: 'never', note: 'Awaiting API credentials' },
-    { name: 'Google Workspace', kind: 'Calendar / mail', state: 'failed', last: 'Jul 4', note: 'OAuth token revoked — reconnect' },
+    { name: 'Supabase (platform backend)', kind: 'Database · Auth · Functions', state: supaOn ? 'connected' : 'credential', last: supaOn ? 'live' : 'never', note: supaOn ? 'Profiles, stores, Edge Functions' : 'Set VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY' },
+    { name: 'ShieldTech AI (OpenAI)', kind: 'AI service layer', state: aiOn ? 'connected' : 'credential', last: aiOn ? 'live' : 'never', note: aiOn ? `Model: ${window.__shieldAIModel}` : 'Set OPENAI_API_KEY on the ai Edge Function' },
+    { name: 'SAM.gov (Get Opportunities v2)', kind: 'Bid / lead source', state: 'credential', last: 'never', note: 'Set SAM_GOV_API_KEY — see OUTSTANDING-APIS.md' },
+    { name: 'Resend (invite & reset email)', kind: 'Email delivery', state: 'credential', last: 'never', note: 'Set RESEND_API_KEY on Edge Functions' },
+    { name: 'Google OAuth', kind: 'Sign-in provider', state: 'credential', last: 'never', note: 'Configure the Google provider in Supabase Auth' },
+    { name: 'QuickBooks Online', kind: 'Accounting', state: 'credential', last: 'never', note: 'Later phase — see 07-INTEGRATIONS' },
+    { name: 'Stripe', kind: 'Payments', state: 'credential', last: 'never', note: 'Later phase — see 07-INTEGRATIONS' },
   ];
   const stateCfg = { connected: ['var(--status-ok)', 'Connected'], polling: ['var(--brand)', 'Polling'], paused: ['var(--status-warn)', 'Paused'], failed: ['var(--status-critical)', 'Failed'], credential: ['var(--text-mid)', 'Needs credentials'] };
-  const syncLog = [
-    { t: '09:41', src: 'QuickBooks Online', ev: 'Imported 14 bank transactions → Finance / Bank Feed', ok: true },
-    { t: '09:38', src: 'Stripe', ev: 'Payout $17,868 matched to clearing account', ok: true },
-    { t: '09:12', src: 'ADI Global EDI', ev: 'PO-2214 acknowledgment received → Inventory / Purchase Orders', ok: true },
-    { t: '08:55', src: 'Google Workspace', ev: 'Calendar sync failed — token revoked (GW-401)', ok: false },
-    { t: '08:30', src: 'QuickBooks Online', ev: 'Pushed 3 invoices, 1 credit memo', ok: true },
-    { t: '07:02', src: 'Shopify Store', ev: 'Sync skipped — connection paused', ok: null },
-  ];
-  const imports = [
-    { name: 'QBO Desktop company file (2019–2022 history)', kind: 'Desktop import', rows: '48,211 rows', status: 'Complete · Jun 12' },
-    { name: 'customers-legacy.csv', kind: 'CSV import', rows: '312 rows', status: 'Complete · May 8' },
-    { name: 'products-adi-catalog.csv', kind: 'CSV import', rows: '1,884 rows', status: 'Queued — runs tonight 02:00' },
-  ];
-  const exports_ = [
-    { name: 'Full GL export — accountant (FY2026 H1)', fmt: 'XLSX', status: 'Ready', date: 'Jul 1' },
-    { name: 'A/R aging snapshot', fmt: 'CSV', status: 'Ready', date: 'Jul 5' },
-    { name: 'Spreadsheet Sync — live P&L workbook', fmt: 'Google Sheets', status: 'Auto-refresh hourly', date: 'live' },
-  ];
+  const syncLog = [];
+  const imports = [];
+  const exports_ = [];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <h2 className="display" style={{ fontSize: 20, fontWeight: 300, marginRight: 'auto' }}>Integrations</h2>
+        <button onClick={async () => {
+          if (!window.__shieldAI) { showToast('AI client not loaded'); return; }
+          showToast('Testing ShieldTech AI…');
+          const st = await window.__shieldAI.aiStatus(true);
+          if (!st.configured) { showToast('AI not configured — set OPENAI_API_KEY'); return; }
+          const r = await window.__shieldAI.shieldAIChat('assistant', [{ role: 'user', content: 'Reply with exactly: ShieldTech AI online.' }]);
+          showToast(r.live ? `✓ ${st.model}: ${r.text.slice(0, 60)}` : r.text.slice(0, 80));
+        }} style={{ padding: '7px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⟡ Test ShieldTech AI</button>
         <QboSyncBadge state={demo === 'stale' ? 'stale' : demo === 'error' ? 'error' : 'synced'} />
       </div>
       <QboSubTabs tabs={[{ id: 'connections', label: 'Connections', count: conns.length }, { id: 'activity', label: 'Sync Activity' }, { id: 'import', label: 'Import' }, { id: 'export', label: 'Export' }]} val={sub} set={setSub} />

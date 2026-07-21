@@ -306,24 +306,25 @@ function FinanceCopilot() {
     'What\'s my burn rate?',
   ];
 
-  const answers = {
-    'What\'s my cash position?': { text: 'Your current cash position is **$482,600** in checking + **$125,000** in savings = **$607,600 total liquid**. You have $36,220 in AP due within 30 days and $175,950 in AR outstanding. Net liquid position after AP: **$571,380**. This is a strong position — 4.2 months of operating runway.', chart: 'cash' },
-    'Who\'s overdue?': { text: 'You have **2 overdue invoices** totaling **$19,450**:\n\n• **INV-2847** — Acme Dental Group: **$14,250** (38 days overdue, Net 30 terms)\n• **INV-2858** — Harbor View Condos: **$5,200** (24 days overdue, Net 15 terms)\n\nAcme Dental has historically paid within 5 days of reminder. Harbor View\'s card on file expired — they need to update their payment method. Want me to draft reminders?', chart: null },
-    'Profitability by service line last quarter?': { text: 'Q1 2026 profitability by service line:\n\n• **Managed Services (RMR)**: 68.2% margin — your highest margin line\n• **Alarm / Intrusion**: 35.4% margin — strong, low materials cost\n• **CCTV / Video**: 32.1% margin — volume leader\n• **Access Control**: 28.7% margin — above 25% target\n• **Fire / Life Safety**: 22.8% margin — below target, driven by subcontractor costs on Riverside Medical\n\n**Recommendation**: Fire/Life Safety margins improve 6-8% if you bring fire panel programming in-house (Kevin White is NICET II certified). That would add ~$18K to annual gross profit.', chart: 'profitability' },
-    'Project cash flow 90 days': { text: '90-day cash flow projection:\n\n• **30 days**: +$62K net (inflows: $186K from AR + new invoices; outflows: $124K payroll + AP)\n• **60 days**: +$94K net cumulative\n• **90 days**: +$125K net cumulative\n\nKey assumptions: Pacific Rim $48K deposit collected by Jun 15, Westfield expansion $31.8K by Jul 1, and continued MRR collection at 97% rate.\n\n**Risk**: If Acme Dental ($14.2K) and Harbor View ($5.2K) don\'t pay within 30 days, net drops to +$43K at 30 days. I recommend escalating collection efforts today.', chart: 'cashflow' },
-  };
 
-  const handleSend = (q) => {
+
+  const handleSend = async (q) => {
     const question = q || query;
-    if (!question.trim()) return;
+    if (!question.trim() || loading) return;
+    const history = [...convo.filter(m => m.role !== 'ai' || convo.indexOf(m) > 0)
+      .map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text })), { role: 'user', content: question }];
     setConvo(prev => [...prev, { role: 'user', text: question }]);
     setQuery('');
     setLoading(true);
-    setTimeout(() => {
-      const answer = answers[question] || { text: `Based on your books, I can see the relevant data. Let me analyze this for you...\n\nYour total revenue YTD is $1.25M with a 28.4% gross margin. Cash position is strong at $482,600. I'd recommend reviewing the AR aging report for any items that need attention.`, chart: null };
-      setConvo(prev => [...prev, { role: 'ai', text: answer.text, chart: answer.chart }]);
-      setLoading(false);
-    }, 1200);
+    const ctx = {
+      invoices: (typeof qtcStore !== 'undefined' && qtcStore.get) ? qtcStore.get() : undefined,
+      mrr: (typeof mrrStore !== 'undefined' && mrrStore.get) ? mrrStore.get() : undefined,
+    };
+    const reply = window.__shieldAI
+      ? await window.__shieldAI.shieldAIChat('finance', history, ctx)
+      : { text: 'ShieldTech AI is not configured yet — connect Supabase and set OPENAI_API_KEY.' };
+    setConvo(prev => [...prev, { role: 'ai', text: reply.text, chart: null }]);
+    setLoading(false);
   };
 
   return (

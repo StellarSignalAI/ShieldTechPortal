@@ -20,6 +20,7 @@ import '@fontsource/jetbrains-mono/500.css';
 import '@shared/styles/styles.css';
 import '@shared/supabase.js';
 import '@shared/auth.js';
+import '@shared/ai.js';
 import '@shared/proto-manifest-customer.js';
 
 const React = window.React;

@@ -7,12 +7,18 @@ function TechCopilotView() {
   const scrollRef = React.useRef(null);
 
   const push = (msg) => setThread(t => [...t, msg]);
+  const ask = async (q, prior) => {
+    const history = [...prior.map(m => ({ role: m.from === 'me' ? 'user' : 'assistant', content: m.text })), { role: 'user', content: q }];
+    const reply = window.__shieldAI
+      ? await window.__shieldAI.shieldAIChat('tech-copilot', history)
+      : { text: 'ShieldTech AI responses appear here once the AI service is configured in Settings → Integrations.' };
+    push({ from: 'hermes', text: reply.text });
+  };
   const send = () => {
     if (!input.trim()) return;
+    const prior = thread;
     push({ from: 'me', text: input });
-    setTimeout(() => {
-      push({ from: 'hermes', text: 'ShieldTech AI responses appear here once the AI service is configured in Settings → Integrations.' });
-    }, 400);
+    ask(input, prior);
     setInput('');
   };
 
@@ -28,7 +34,7 @@ function TechCopilotView() {
       {/* Quick diagnostics */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
         {['NVR not recording', 'Reader won’t beep', 'Zone won’t clear', 'Camera no PoE'].map(s => (
-          <button key={s} onClick={() => { push({ from: 'me', text: s }); setTimeout(() => push({ from: 'hermes', text: 'Guided diagnostics run through the ShieldTech AI service — configure it to enable this.' }), 400); }}
+          <button key={s} onClick={() => { const prior = thread; push({ from: 'me', text: s }); ask('Start a guided diagnostic: ' + s, prior); }}
             style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 14, background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⚡ {s}</button>
         ))}
       </div>

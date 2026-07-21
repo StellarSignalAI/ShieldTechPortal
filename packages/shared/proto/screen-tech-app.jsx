@@ -477,7 +477,7 @@ function TechAIChatView() {
           border: '1px solid var(--border-subtle)', borderRadius: 8,
           color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none'
         }} />
-        <button onClick={() => shieldToast('ShieldTech AI service not configured yet', 'warn')} style={{
+        <button onClick={() => shieldToast(window.__shieldAIModel ? 'Use the AI tab — the Field Copilot has full chat' : 'ShieldTech AI service not configured yet', window.__shieldAIModel ? 'ok' : 'warn')} style={{
           background: 'var(--brand)', border: 'none', borderRadius: 8,
           padding: '8px 14px', color: '#fff', fontSize: 13, cursor: 'pointer'
         }}>→</button>

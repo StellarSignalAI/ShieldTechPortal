@@ -4,11 +4,21 @@ function ShieldAIScreen() {
   const [typing, setTyping] = React.useState(true);
   const [draftOpen, setDraftOpen] = React.useState(false);
   const [input, setInput] = React.useState('');
+  const [thread, setThread] = React.useState([]);
+  const [busy, setBusy] = React.useState(false);
+  const scrollRef = React.useRef(null);
+  React.useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [thread, busy]);
 
-  const send = () => {
-    if (!input.trim()) return;
-    shieldToast('ShieldTech AI is thinking…');
-    setInput('');
+  const send = async (preset) => {
+    const q = (preset || input).trim();
+    if (!q || busy) return;
+    const next = [...thread, { role: 'user', content: q }];
+    setThread(next); setInput(''); setBusy(true);
+    const reply = window.__shieldAI
+      ? await window.__shieldAI.shieldAIChat('assistant', next)
+      : { text: 'ShieldTech AI is not configured yet — connect Supabase and set OPENAI_API_KEY.', live: false };
+    setThread(t => [...t, { role: 'assistant', content: reply.text }]);
+    setBusy(false);
   };
 
   React.useEffect(() => {
@@ -76,14 +86,21 @@ function ShieldAIScreen() {
         </div>
 
         {/* Chat area */}
-        <div style={{ flex: 1, overflow: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div ref={scrollRef} style={{ flex: 1, overflow: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {thread.map((m, i) => (
+            <div key={i} style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%', display: 'flex', gap: 8 }}>
+              {m.role !== 'user' && <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>⟡</div>}
+              <div style={{ padding: '10px 14px', borderRadius: m.role === 'user' ? '12px 12px 3px 12px' : '12px 12px 12px 3px', background: m.role === 'user' ? 'rgba(63,169,245,0.14)' : 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)', fontSize: 13, color: 'var(--text-high)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{m.content}</div>
+            </div>
+          ))}
+          {busy && <div style={{ alignSelf: 'flex-start', fontSize: 12, color: 'var(--brand)', paddingLeft: 34 }}>ShieldTech AI is thinking…</div>}
           {/* Empty conversation state */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 220 }}>
+          {thread.length === 0 && <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 220 }}>
             <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>⟡</div>
             <div style={{ fontSize: 13, color: 'var(--text-high)', fontWeight: 500 }}>Ask ShieldTech AI anything</div>
             <div style={{ fontSize: 11.5, color: 'var(--text-low)', maxWidth: 320, textAlign: 'center', lineHeight: 1.5 }}>Grounded answers about your customers, tickets, jobs, and bids — once your data and AI key are configured.</div>
             <div className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{window.__shieldAIModel || 'model not configured'}</div>
-          </div>
+          </div>}
 
           {/* Skill chips */}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingLeft: 34 }}>
@@ -96,7 +113,7 @@ function ShieldAIScreen() {
               }}
               onMouseEnter={e => { e.target.style.background = 'rgba(63,169,245,0.12)'; e.target.style.borderColor = 'var(--border-strong)'; }}
               onMouseLeave={e => { e.target.style.background = 'rgba(63,169,245,0.06)'; e.target.style.borderColor = 'var(--border-subtle)'; }}
-              onClick={() => shieldToast(`ShieldTech AI: working on “${chip}”…`)}
+              onClick={() => send(chip)}
               >{chip}</button>
             ))}
           </div>
@@ -115,7 +132,7 @@ function ShieldAIScreen() {
             borderRadius: 8, color: 'var(--text-high)', fontSize: 13,
             fontFamily: 'var(--font-body)', outline: 'none'
           }} />
-          <button onClick={send} style={{
+          <button onClick={() => send()} style={{
             background: 'var(--brand)', border: 'none', borderRadius: 8,
             padding: '8px 16px', color: '#fff', fontSize: 13, cursor: 'pointer',
             fontFamily: 'var(--font-body)', fontWeight: 500,

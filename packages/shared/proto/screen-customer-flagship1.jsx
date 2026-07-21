@@ -121,14 +121,16 @@ function CustConciergeView() {
   const [input, setInput] = useState('');
   const ref = React.useRef(null);
   React.useEffect(() => { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight; }, [thread]);
-  const send = (text) => {
+  const send = async (text) => {
     const msg = text || input;
     if (!msg.trim()) return;
+    const history = [...thread.map(m => ({ role: m.from === 'me' ? 'user' : 'assistant', content: m.text })), { role: 'user', content: msg }];
     setThread(t => [...t, { from: 'me', text: msg }]);
     setInput('');
-    setTimeout(() => {
-      setThread(t => [...t, { from: 'ai', text: 'The concierge answers and acts on requests like these once the ShieldTech AI service is configured for your account.' }]);
-    }, 500);
+    const reply = window.__shieldAI
+      ? await window.__shieldAI.shieldAIChat('concierge', history)
+      : { text: 'The concierge answers and acts on requests like these once the ShieldTech AI service is configured for your account.' };
+    setThread(t => [...t, { from: 'ai', text: reply.text }]);
   };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 280px)', minHeight: 420 }}>
