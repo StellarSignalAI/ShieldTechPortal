@@ -6,6 +6,7 @@ function MSurveyScan({ onNav }) {
   const [prefs] = useShieldStore(surveyPrefsStore);
   const [openId, setOpenId] = React.useState(null);
   const [wizard, setWizard] = React.useState(false);
+  const lidarInputRef = React.useRef(null);
   if (openId) {
     const p = projects.find(x => x.id === openId);
     if (p) return <SV2Project project={p} onClose={() => setOpenId(null)} onNav={onNav} />;
@@ -14,7 +15,6 @@ function MSurveyScan({ onNav }) {
   const totDev = projects.reduce((a, p) => a + ssTotals(p).devices, 0);
   const totIssues = projects.reduce((a, p) => a + p.floors.reduce((s, f) => s + (f.issues || []).length, 0), 0);
 
-  const lidarInputRef = React.useRef(null);
   const onLidarFile = (e) => {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
