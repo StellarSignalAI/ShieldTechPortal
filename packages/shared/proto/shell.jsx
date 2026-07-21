@@ -239,10 +239,10 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
       {/* Footer links */}
       {!collapsed &&
       <div style={{ padding: '8px 16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <a href="Technician App.html" style={{ fontSize: 11, color: 'var(--text-low)', textDecoration: 'none', padding: '4px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <a href={(window.__shieldAppUrls && window.__shieldAppUrls.tech) || '#'} style={{ fontSize: 11, color: 'var(--text-low)', textDecoration: 'none', padding: '4px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
             <Icon name="phone" size={12} color="var(--text-low)" /> Tech App
           </a>
-          <a href="Customer Portal.html" style={{ fontSize: 11, color: 'var(--text-low)', textDecoration: 'none', padding: '4px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <a href={(window.__shieldAppUrls && window.__shieldAppUrls.customer) || '#'} style={{ fontSize: 11, color: 'var(--text-low)', textDecoration: 'none', padding: '4px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
             <Icon name="customers" size={12} color="var(--text-low)" /> Customer Portal
           </a>
         </div>
@@ -590,4 +590,4 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
 
 }
 
-Object.assign(window, { ShieldLogo, NavRail, TopBar, AppShell, NAV_ITEMS });
+Object.assign(window, { ShieldLogo, NavRail, TopBar, AppShell, NAV_ITEMS, NAV_GROUPS });
