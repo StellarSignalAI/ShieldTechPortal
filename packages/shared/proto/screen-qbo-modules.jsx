@@ -160,6 +160,7 @@ function IntegrationsScreen() {
     { name: 'ShieldTech AI (OpenAI)', kind: 'AI service layer', state: aiOn ? 'connected' : 'credential', last: aiOn ? 'live' : 'never', note: aiOn ? `Model: ${window.__shieldAIModel}` : 'Set OPENAI_API_KEY on the ai Edge Function' },
     { name: 'SAM.gov (Get Opportunities v2)', kind: 'Bid / lead source', state: 'credential', last: 'never', note: 'Set SAM_GOV_API_KEY — see OUTSTANDING-APIS.md' },
     { name: 'Resend (invite & reset email)', kind: 'Email delivery', state: 'credential', last: 'never', note: 'Set RESEND_API_KEY on Edge Functions' },
+    { name: 'Rippling (payroll & time)', kind: 'Time entries · labor payout', state: 'credential', last: 'never', note: 'Set RIPPLING_API_TOKEN — approved tech hours sync both ways' },
     { name: 'Google OAuth', kind: 'Sign-in provider', state: 'credential', last: 'never', note: 'Configure the Google provider in Supabase Auth' },
     { name: 'QuickBooks Online', kind: 'Accounting', state: 'credential', last: 'never', note: 'Later phase — see 07-INTEGRATIONS' },
     { name: 'Stripe', kind: 'Payments', state: 'credential', last: 'never', note: 'Later phase — see 07-INTEGRATIONS' },

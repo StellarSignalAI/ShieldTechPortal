@@ -23,9 +23,9 @@ The backbone: profiles/roles, invites, opportunities, AI logs, all Edge Function
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase Edge Function secrets | `service_role` key (never in frontend) |
 
 3. Run the migrations in `supabase/migrations/` (SQL editor or `supabase db push`):
-   `0001_profiles.sql`, `0002_ai_runs.sql`, `0003_opportunities.sql`
+   `0001_profiles.sql`, `0002_ai_runs.sql`, `0003_opportunities.sql`, `0004_time_entries.sql`
 4. Deploy the Edge Functions in `supabase/functions/`:
-   `invite-user`, `ai`, `ingest-alerts`, `ingest-report-text`, `sources-poll`, `sam-poll`
+   `invite-user`, `ai`, `ingest-alerts`, `ingest-report-text`, `sources-poll`, `sam-poll`, `rippling-sync`
    (`supabase functions deploy <name>`)
 
 ## 2. 🔴 Vercel + DNS (three apps, three subdomains)
@@ -92,7 +92,25 @@ cron (e.g. nightly), sending header `x-cron-secret: <CRON_SECRET>`.
 Without this, invites still work — the temp password is shown on-screen to the Admin
 instead of being emailed.
 
-## 7. 🟡 CRON_SECRET (ingest automation)
+## 7. 🟡 Rippling (technician hours → payroll, two-way)
+
+Technicians log hours in the Tech app → Admin/Staff approve in the portal
+(Approvals Center or Team → Time) → approved hours push to Rippling as time
+entries; worker roster + pay rates and PAID/FINALIZED status flow back.
+
+1. Rippling admin → **Settings → API Access** (Custom API integration) → create an API token
+2. Grant scopes: **workers read**, **time entries read/write**, compensation read
+3. Supabase Edge Function secret: `RIPPLING_API_TOKEN`
+4. Deploy `supabase/functions/rippling-sync` and schedule it (cron with
+   `x-cron-secret`, e.g. hourly) — or rely on the automatic push that fires
+   when a timesheet is approved in the portal
+5. Workers link to platform users by matching work email — invite technicians
+   with the same email they have in Rippling
+
+Until the token exists, hours still collect and approvals still work; entries
+queue with "not configured" sync status and push on first successful sync.
+
+## 8. 🟡 CRON_SECRET (ingest automation)
 
 Any long random string. Set as a Supabase Edge Function secret: `CRON_SECRET`.
 Lets schedulers call `ingest-alerts`, `ingest-report-text`, `sources-poll`, `sam-poll`
@@ -100,7 +118,7 @@ without a user session (header `x-cron-secret`).
 
 ---
 
-## 8. Bid portals with NO public API
+## 9. Bid portals with NO public API
 
 These cannot be polled directly — no key exists to buy. They are covered by the
 **BD Command Center pattern**: your alert emails / saved searches / BD reports get
@@ -124,7 +142,7 @@ as structured JSON to `ingest-alerts`. All land on the Bid Board deduped. The
 | BidNet Direct | Multi-state municipal | email alerts → ingest |
 | GC bid lists (invited) | Private/commercial | forward → ingest-report-text |
 
-## 9. ⚪ Later-phase integrations (coded as placeholders, not yet wired)
+## 10. ⚪ Later-phase integrations (coded as placeholders, not yet wired)
 
 Per the integrations roadmap — these show as "Not connected" on Settings → Integrations:
 
@@ -147,4 +165,5 @@ Per the integrations roadmap — these show as "Not connected" on Settings → I
 - [ ] `SAM_GOV_API_KEY` secret set → `sam-poll` scheduled nightly
 - [ ] Resend domain verified → Supabase SMTP + `RESEND_API_KEY`
 - [ ] `CRON_SECRET` set → ingest schedulers configured
+- [ ] `RIPPLING_API_TOKEN` set → rippling-sync scheduled; technicians invited with their Rippling work email
 - [ ] First Admin signs in with Google (@shieldtechsolutions.com) → invites the team

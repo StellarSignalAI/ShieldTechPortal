@@ -182,23 +182,66 @@ function TeamScreenPlus() {
     const h = (e) => { if (e.detail.screen === 'employees' && e.detail.params.teamTab) setSub(e.detail.params.teamTab); };
     window.addEventListener('qbo-nav', h); return () => window.removeEventListener('qbo-nav', h);
   }, []);
-  const payHistory = [
-    { run: 'Jun 16–30, 2026', type: 'Regular · 7 employees', gross: 58200, taxes: 14260, net: 43940, status: 'cleared' },
-    { run: 'Jun 1–15, 2026', type: 'Regular · 7 employees', gross: 56800, taxes: 13910, net: 42890, status: 'cleared' },
-    { run: 'May 16–31, 2026', type: 'Regular + OT · 7 employees', gross: 61400, taxes: 15040, net: 46360, status: 'cleared' },
-  ];
-  const timeRows = [
-    { tech: 'Mike Reyes', week: 'Jun 29–Jul 5', reg: 38.5, ot: 4.0, jobs: 'Bayview (22h) · Service (16.5h)', status: 'pending' },
-    { tech: 'Jessica Liu', week: 'Jun 29–Jul 5', reg: 40.0, ot: 2.5, jobs: 'Harbor rollout (34h) · Admin (8.5h)', status: 'pending' },
-    { tech: 'Kevin White', week: 'Jun 29–Jul 5', reg: 36.0, ot: 0, jobs: 'Sunrise punch list (30h) · Training (6h)', status: 'approved' },
-    { tech: 'Diana Patel', week: 'Jun 29–Jul 5', reg: 39.5, ot: 1.5, jobs: 'Service calls (28h) · Shop (13h)', status: 'approved' },
-    { tech: 'Tony Garcia', week: 'Jun 29–Jul 5', reg: 40.0, ot: 6.0, jobs: 'Fire inspections (40h) · Emergency (6h)', status: 'pending' },
-  ];
-  const contractors = [
-    { name: 'Volt Bros Electrical LLC', trade: 'Electrical', active: 'Harbor Logistics rollout', ytd: 48200, w9: 'On file', ins: 'COI valid → Feb 2027' },
-    { name: 'SafeWire Security Consulting', trade: 'Design/eng', active: 'RFP support', ytd: 22400, w9: 'On file', ins: 'COI valid → Nov 2026' },
-    { name: 'Ramirez Concrete Coring', trade: 'Coring', active: '—', ytd: 9600, w9: 'MISSING', ins: 'COI valid → Sep 2026' },
-  ];
+  // Live labor data: technician time entries + Rippling worker rates.
+  const [labor, setLabor] = React.useState({ entries: [], workers: [] });
+  const refreshLabor = React.useCallback(() => {
+    const t = window.__shieldTime;
+    if (t) t.laborLedger().then(r => { if (r.ok) setLabor(r.data); });
+  }, []);
+  React.useEffect(() => { refreshLabor(); }, [refreshLabor]);
+
+  const rateFor = (techId) => {
+    const w = labor.workers.find(x => x.profile_id === techId);
+    return w && w.pay_rate ? Number(w.pay_rate) : 0;
+  };
+  const weekKeyOf = (dateStr) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow);
+    const end = new Date(d.getTime() + 6 * 86400000);
+    const f = (x) => x.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${f(d)}\u2013${f(end)}`;
+  };
+  const timeRows = (() => {
+    const byKey = {};
+    labor.entries.forEach(e => {
+      if (!['submitted', 'approved', 'synced', 'paid'].includes(e.status)) return;
+      const week = weekKeyOf(e.work_date);
+      const name = (e.tech && e.tech.name) || 'Technician';
+      const k = name + '|' + week;
+      if (!byKey[k]) byKey[k] = { tech: name, techId: e.tech_id, week, total: 0, jobs: {}, pending: [], anySubmitted: false };
+      byKey[k].total += Number(e.hours);
+      const j = e.job_ref || 'General';
+      byKey[k].jobs[j] = (byKey[k].jobs[j] || 0) + Number(e.hours);
+      if (e.status === 'submitted') { byKey[k].pending.push(e.id); byKey[k].anySubmitted = true; }
+    });
+    return Object.values(byKey).map(g => ({
+      tech: g.tech, week: g.week,
+      reg: +Math.min(g.total, 40).toFixed(1), ot: +Math.max(0, g.total - 40).toFixed(1),
+      jobs: Object.entries(g.jobs).map(([j, h]) => `${j} (${(+h).toFixed(1)}h)`).join(' \u00b7 '),
+      status: g.anySubmitted ? 'pending' : 'approved',
+      pendingIds: g.pending,
+    }));
+  })();
+  const approveWeek = (row) => {
+    const t = window.__shieldTime;
+    if (!t || !row.pendingIds.length) { showToast('Timesheet approved \u2014 ' + row.tech); return; }
+    Promise.all(row.pendingIds.map(id => t.setEntryStatus(id, 'approved'))).then(() => {
+      showToast('Timesheet approved \u2014 ' + row.tech);
+      t.ripplingSync('push').then(sr => { if (sr.ok) showToast('Synced to Rippling \u2014 ' + row.tech); });
+      refreshLabor();
+    });
+  };
+  const pendingCount = labor.entries.filter(e => e.status === 'submitted').length;
+  const payableEntries = labor.entries.filter(e => ['approved', 'synced'].includes(e.status));
+  const estGross = payableEntries.reduce((s2, e) => s2 + Number(e.hours) * rateFor(e.tech_id), 0);
+  const nextPayRun = (() => {
+    const d = new Date();
+    const next = d.getDate() <= 15 ? new Date(d.getFullYear(), d.getMonth(), 15) : new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    return next.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  })();
+  const employeeCount = new Set(labor.entries.map(e => e.tech_id)).size;
+  const payHistory = [];
+  const contractors = [];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <QboSubTabs tabs={[{ id: 'employees', label: 'Employees' }, { id: 'payroll', label: 'Payroll' }, { id: 'time', label: 'Time', count: timeRows.filter(t => t.status === 'pending').length }, { id: 'contractors', label: 'Contractors' }]} val={sub} set={setSub} />
@@ -206,17 +249,17 @@ function TeamScreenPlus() {
       {sub === 'payroll' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', gap: 12 }}>
-            <StatCard label="NEXT PAY RUN" value="Jul 15" mono={false} delay={0} />
-            <StatCard label="EST. GROSS" value="$59,400" delay={60} />
-            <StatCard label="PAYROLL TAX DUE JUL 15" value="$14,580" delay={120} />
-            <StatCard label="PENDING TIME APPROVALS" value={3} delay={180} />
+            <StatCard label="NEXT PAY RUN" value={nextPayRun} mono={false} delay={0} />
+            <StatCard label="EST. GROSS" value={qboMoney(Math.round(estGross))} delay={60} />
+            <StatCard label="PAYROLL TAX DUE" value={qboMoney(Math.round(estGross * 0.245))} delay={120} />
+            <StatCard label="PENDING TIME APPROVALS" value={pendingCount} delay={180} />
           </div>
           <GlassPanel style={{ borderColor: 'rgba(63,169,245,0.3)' }}>
-            <SectionHeader title="Pay run — Jul 1–15, 2026" icon="dollar" />
-            <div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginBottom: 12 }}>7 employees · 3 timesheets still pending approval. Approving time first keeps job costing accurate.</div>
+            <SectionHeader title={`Pay run — ending ${nextPayRun}`} icon="dollar" />
+            <div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginBottom: 12 }}>{employeeCount} technician{employeeCount === 1 ? '' : 's'} with hours · {pendingCount} timesheet{pendingCount === 1 ? '' : 's'} still pending approval. Approving time first keeps job costing accurate.</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => setSub('time')} style={{ padding: '6px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11.5, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Review time first</button>
-              <button onClick={() => shieldModal({ kind: 'confirm', title: 'Run payroll for Jul 1–15?', message: 'Direct deposits total ≈ $44,800 and post to the ledger on settle. Payroll tax liabilities accrue automatically. This cannot be un-sent after 5:00 PM PT.', confirmLabel: 'Run payroll', onConfirm: () => showToast('Payroll submitted — deposits land Jul 15') })} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Run payroll…</button>
+              <button onClick={() => shieldModal({ kind: 'confirm', title: `Sync approved hours to Rippling?`, message: `Approved hours (est. gross ${qboMoney(Math.round(estGross))}) push to Rippling as time entries; Rippling runs the actual payroll and this screen reflects paid status back.`, confirmLabel: 'Sync to Rippling', onConfirm: () => { const t = window.__shieldTime; if (t) t.ripplingSync('both').then(r => showToast(r.ok ? 'Rippling sync complete' : (r.error || 'Sync failed'))); } })} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Run payroll…</button>
             </div>
           </GlassPanel>
           <QboTable cols={['Pay period', 'Type', 'Gross', 'Taxes & withholding', 'Net pay', 'Status']}
@@ -229,7 +272,7 @@ function TeamScreenPlus() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <QboTable cols={['Technician', 'Week', 'Regular', 'OT', 'Job attribution', 'Status', '']}
             rows={timeRows.map((t, i) => ({ cells: [t.tech, t.week, t.reg + 'h', t.ot ? <span style={{ color: 'var(--status-warn)' }}>{t.ot}h</span> : '—', t.jobs, <QboStatus s={t.status} />,
-              t.status === 'pending' ? <button onClick={(e) => { e.stopPropagation(); showToast('Timesheet approved — ' + t.tech); }} style={{ padding: '3px 12px', background: 'var(--brand)', border: 'none', borderRadius: 5, color: '#fff', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Approve</button> : ''] }))}
+              t.status === 'pending' ? <button onClick={(e) => { e.stopPropagation(); approveWeek(t); }} style={{ padding: '3px 12px', background: 'var(--brand)', border: 'none', borderRadius: 5, color: '#fff', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Approve</button> : ''] }))}
             onRow={(r, i) => showToast(timeRows[i].tech + ' — weekly timesheet opened')} />
           <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Single time entries and weekly timesheets share this workspace. Approved hours feed <LinkChip screen="employees" params={{ teamTab: 'payroll' }} label="Payroll" /> and <LinkChip screen="costing" label="Job Costing" />. Field entry lives in <LinkChip screen="timesheets" label="Timesheet Approval" />.</div>
         </div>

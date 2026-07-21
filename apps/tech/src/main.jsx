@@ -23,6 +23,7 @@ import '@shared/styles/viewport-lock.css';
 import '@shared/supabase.js';
 import '@shared/auth.js';
 import '@shared/ai.js';
+import '@shared/time.js';
 import '@shared/proto-manifest-tech.js';
 
 const React = window.React;

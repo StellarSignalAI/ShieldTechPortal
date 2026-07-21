@@ -4,8 +4,41 @@ function ApprovalsScreen() {
   const ALL_APPROVALS = [];
 
   const [approvals, setApprovals] = React.useState(ALL_APPROVALS);
+
+  // Submitted technician timesheets flow into the same queue.
+  React.useEffect(() => {
+    const t = window.__shieldTime;
+    if (!t) return;
+    t.pendingEntries().then(r => {
+      if (!r.ok || !Array.isArray(r.data)) return;
+      const cards = r.data.map(e => ({
+        id: 'te-' + e.id, entryId: e.id, tag: 'timesheet',
+        title: `${(e.tech && e.tech.name) || 'Technician'} \u2014 ${Number(e.hours).toFixed(1)}h on ${e.work_date}`,
+        risk: 'low', time: e.work_date,
+        who: (e.tech && (e.tech.name + ' (' + e.tech.email + ')')) || 'Technician',
+        summary: `${e.job_ref || 'General'}${e.notes ? ' \u2014 ' + e.notes : ''} \u00b7 ${Number(e.hours).toFixed(2)}h${e.break_minutes ? ' \u00b7 ' + e.break_minutes + 'm break' : ''}. Approving sends this to Rippling as a time entry.`,
+        meta: 'Rippling \u00b7 pending sync',
+      }));
+      setApprovals(prev => [...cards, ...prev.filter(a => a.tag !== 'timesheet')]);
+    });
+  }, []);
+
   const resolve = (a, action) => {
     setApprovals(prev => prev.filter(x => x.id !== a.id));
+    if (a.tag === 'timesheet' && a.entryId && window.__shieldTime) {
+      window.__shieldTime.setEntryStatus(a.entryId, action === 'approve' ? 'approved' : 'rejected')
+        .then(r => {
+          if (!r.ok) { shieldToast(r.error || 'Update failed', 'warn'); return; }
+          if (action === 'approve') {
+            shieldToast(`Approved: ${a.title}`, 'ok');
+            window.__shieldTime.ripplingSync('push').then(sr => {
+              if (sr.ok) shieldToast('Synced to Rippling', 'ok');
+              else if (sr.error && !String(sr.error).includes('not configured')) shieldToast('Rippling sync: ' + sr.error, 'warn');
+            });
+          } else shieldToast(`Rejected: ${a.title}`, 'warn');
+        });
+      return;
+    }
     if (action === 'approve') shieldToast(`Approved: ${a.title}`, 'ok');
     else shieldToast(`Rejected: ${a.title}`, 'warn');
   };
@@ -16,6 +49,7 @@ function ApprovalsScreen() {
     contract: { bg: 'rgba(192,132,252,0.12)', color: '#c084fc', border: 'rgba(192,132,252,0.25)' },
     alarm: { bg: 'rgba(244,63,94,0.12)', color: 'var(--status-critical)', border: 'rgba(244,63,94,0.25)' },
     refund: { bg: 'rgba(52,211,153,0.12)', color: 'var(--status-ok)', border: 'rgba(52,211,153,0.25)' },
+    timesheet: { bg: 'rgba(52,211,153,0.12)', color: 'var(--status-ok)', border: 'rgba(52,211,153,0.25)' },
   };
 
   const riskIcons = { low: '○', medium: '◐', high: '●' };
@@ -144,7 +178,7 @@ function ApprovalsScreen() {
                     )}
                   </div>
                   <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>
-                    {a.model} · {a.tokens} tok · {a.cost}
+                    {a.meta || `${a.model} · ${a.tokens} tok · ${a.cost}`}
                   </span>
                 </div>
               </div>

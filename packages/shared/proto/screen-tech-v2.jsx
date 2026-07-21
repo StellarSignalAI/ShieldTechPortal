@@ -2,13 +2,25 @@
 
 /* ── Enhanced Time View (Clockify-style) ── */
 function TimeViewV2() {
-  const [running, setRunning] = React.useState(true);
-  const [elapsed, setElapsed] = React.useState(4344); // 1h 12m 24s
-  const [activeProject, setActiveProject] = React.useState('Metro Bank — PM');
-  const [activeTask, setActiveTask] = React.useState('Camera Cleaning');
+  const [running, setRunning] = React.useState(false);
+  const [elapsed, setElapsed] = React.useState(0);
+  const [activeProject, setActiveProject] = React.useState('General');
+  const [activeTask, setActiveTask] = React.useState('Installation');
+  const [liveEntries, setLiveEntries] = React.useState([]);
+  const [gps, setGps] = React.useState('\u2014');
+  const refreshEntries = React.useCallback(() => {
+    const t = window.__shieldTime;
+    if (t) t.myEntries().then(r => { if (r.ok) setLiveEntries(r.data || []); });
+  }, []);
+  React.useEffect(() => { refreshEntries(); }, [refreshEntries]);
+  React.useEffect(() => {
+    if (navigator.geolocation) navigator.geolocation.getCurrentPosition(
+      pos => setGps(`${pos.coords.latitude.toFixed(4)}\u00b0, ${pos.coords.longitude.toFixed(4)}\u00b0`),
+      () => {}, { timeout: 4000 });
+  }, []);
   const [viewMode, setViewMode] = React.useState('today'); // today | week | pay-period
   const [manualEntryOpen, setManualEntryOpen] = React.useState(false);
-  const [manualEntry, setManualEntry] = React.useState({ project: 'Metro Bank', task: 'Installation', date: '2026-06-08', startTime: '08:00', endTime: '12:00', billable: true, notes: '' });
+  const [manualEntry, setManualEntry] = React.useState({ project: 'General', task: 'Installation', date: new Date().toISOString().slice(0, 10), startTime: '08:00', endTime: '12:00', billable: true, notes: '' });
   const [toast, setToast] = React.useState(null);
   const [activeTag, setActiveTag] = React.useState('on-site');
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 3000); };
@@ -32,17 +44,21 @@ function TimeViewV2() {
     { project: 'Metro Bank', task: 'Camera Cleaning', start: '10:30 AM', end: '—', dur: elapsed, billable: true, type: 'work', tags: ['pm','on-site'], active: true },
   ];
 
-  const weekData = [
-    { day: 'Mon', date: 'Jun 2', work: 7.5, drive: 1.2, break_: 0.5, total: 9.2 },
-    { day: 'Tue', date: 'Jun 3', work: 6.8, drive: 0.8, break_: 0.5, total: 8.1 },
-    { day: 'Wed', date: 'Jun 4', work: 5.2, drive: 1.5, break_: 0.5, total: 7.2 },
-    { day: 'Thu', date: 'Jun 5', work: 3.2, drive: 0.5, break_: 0, total: 3.7 },
-    { day: 'Fri', date: 'Jun 6', work: 0, drive: 0, break_: 0, total: 0 },
-  ];
+  const monday = (() => { const d = new Date(); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return d; })();
+  const dayLabel = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const weekData = ['Mon','Tue','Wed','Thu','Fri'].map((day, i) => {
+    const d = new Date(monday); d.setDate(monday.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    const dayEntries = liveEntries.filter(e => e.work_date === key);
+    const work = dayEntries.filter(e => e.job_ref !== 'Travel').reduce((s2, e) => s2 + Number(e.hours), 0);
+    const drive = dayEntries.filter(e => e.job_ref === 'Travel').reduce((s2, e) => s2 + Number(e.hours), 0);
+    const break_ = dayEntries.reduce((s2, e) => s2 + (e.break_minutes || 0), 0) / 60;
+    return { day, date: dayLabel(d), work: +work.toFixed(1), drive: +drive.toFixed(1), break_: +break_.toFixed(1), total: +(work + drive).toFixed(1) };
+  });
+  const weekLabel = `Week of ${dayLabel(monday)} \u2014 ${dayLabel(new Date(monday.getTime() + 4 * 86400000))}`;
 
-  const projects = ['Acme Dental','Metro Bank','Harbor View','City Hall','Travel','Admin','Training'];
+  const projects = ['General','Travel','Admin','Training'];
   const tasks = {
-    'Metro Bank': ['Camera Cleaning','Cable Testing','NVR Health Check','Firmware Updates','Documentation'],
     default: ['Installation','Repair','Maintenance','Survey','Programming','Testing','Documentation']
   };
 
@@ -107,7 +123,14 @@ function TimeViewV2() {
             boxShadow: running ? '0 0 16px -4px rgba(244,63,94,0.2)' : '0 0 16px -4px rgba(52,211,153,0.2)'
           }}>{running ? '⏸' : '▶'}</button>
           {running && (
-            <button onClick={() => { setRunning(false); setElapsed(0); }} style={{
+            <button onClick={() => {
+              const hrs = elapsed / 3600;
+              setRunning(false); setElapsed(0);
+              if (hrs > 0.01 && window.__shieldTime) {
+                window.__shieldTime.submitHours({ workDate: new Date().toISOString().slice(0, 10), hours: hrs, jobRef: activeProject, notes: activeTask })
+                  .then(r => { showToast(r.ok ? `Logged ${hrs.toFixed(2)}h \u2014 sent for approval` : (r.error || 'Could not save entry')); refreshEntries(); });
+              }
+            }} style={{
               width: 44, height: 44, borderRadius: '50%', alignSelf: 'center',
               background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)',
               color: 'var(--text-mid)', fontSize: 14, cursor: 'pointer'
@@ -223,13 +246,26 @@ function TimeViewV2() {
             </tfoot>
           </table>
           <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border-subtle)' }}>
-            <button onClick={() => shieldToast('Timesheet submitted for approval', 'ok')} style={{ width: '100%', padding: '10px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Submit Timesheet for Approval</button>
+            <button onClick={() => {
+              const n = weekData.reduce((s2, d) => s2 + d.total, 0);
+              shieldToast(n > 0 ? `Timesheet submitted for approval \u2014 ${n.toFixed(1)}h this week` : 'No hours logged this week yet', n > 0 ? 'ok' : 'info');
+            }} style={{ width: '100%', padding: '10px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Submit Timesheet for Approval</button>
           </div>
         </GlassPanel>
       )}
 
       {/* Pay Period */}
-      {viewMode === 'pay-period' && (
+      {viewMode === 'pay-period' && (() => {
+        const ppEnd = new Date(); const ppStart = new Date(ppEnd.getTime() - 13 * 86400000);
+        const ppDays = Array.from({ length: 14 }, (_, i) => {
+          const d = new Date(ppStart.getTime() + i * 86400000);
+          const key = d.toISOString().slice(0, 10);
+          return liveEntries.filter(e => e.work_date === key).reduce((s2, e) => s2 + Number(e.hours), 0);
+        });
+        const ppWork = liveEntries.filter(e => { const d = e.work_date; return d >= ppStart.toISOString().slice(0,10) && d <= ppEnd.toISOString().slice(0,10) && e.job_ref !== 'Travel'; }).reduce((s2, e) => s2 + Number(e.hours), 0);
+        const ppDrive = liveEntries.filter(e => { const d = e.work_date; return d >= ppStart.toISOString().slice(0,10) && d <= ppEnd.toISOString().slice(0,10) && e.job_ref === 'Travel'; }).reduce((s2, e) => s2 + Number(e.hours), 0);
+        const ppLabel = `${ppStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} \u2014 ${ppEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+        return (
         <GlassPanel>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div>
@@ -240,21 +276,21 @@ function TimeViewV2() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
             <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(63,169,245,0.03)', borderRadius: 6 }}>
-              <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--brand)' }}>68.2h</div>
+              <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--brand)' }}>{ppWork.toFixed(1)}h</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>Billable</div>
             </div>
             <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(63,169,245,0.03)', borderRadius: 6 }}>
-              <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--status-warn)' }}>8.4h</div>
+              <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--status-warn)' }}>{ppDrive.toFixed(1)}h</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>Drive</div>
             </div>
             <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(63,169,245,0.03)', borderRadius: 6 }}>
-              <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-high)' }}>76.6h</div>
+              <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-high)' }}>{(ppWork + ppDrive).toFixed(1)}h</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>Total</div>
             </div>
           </div>
           {/* Day-by-day mini bars */}
           <div style={{ display: 'flex', gap: 3, height: 60, alignItems: 'flex-end' }}>
-            {[8.2,7.5,9.1,8.0,7.8,0,0,8.4,8.1,7.2,3.7,0,0,0].map((h, i) => (
+            {ppDays.map((h, i) => (
               <div key={i} style={{
                 flex: 1, height: h > 0 ? `${(h/10)*100}%` : 2,
                 background: h > 8 ? 'var(--status-warn)' : h > 0 ? 'var(--brand)' : 'rgba(63,169,245,0.05)',
@@ -264,8 +300,8 @@ function TimeViewV2() {
             ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-            <span style={{ fontSize: 8, color: 'var(--text-low)' }}>May 26</span>
-            <span style={{ fontSize: 8, color: 'var(--text-low)' }}>Jun 8</span>
+            <span style={{ fontSize: 8, color: 'var(--text-low)' }}>{ppStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+            <span style={{ fontSize: 8, color: 'var(--text-low)' }}>{ppEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
           </div>
           <div style={{ marginTop: 12, padding: '8px 10px', borderRadius: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -274,7 +310,7 @@ function TimeViewV2() {
             </div>
           </div>
         </GlassPanel>
-      )}
+      ); })()}
 
       {/* Manual Time Entry Modal */}
       {manualEntryOpen && (
