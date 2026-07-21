@@ -40,6 +40,8 @@ function push(key) {
   const stores = window.__shieldStores || {};
   const store = stores[key];
   if (!store || !uid) return;
+  // Guard: oversized state (e.g. offline photo dataURLs) stays device-local.
+  try { if (JSON.stringify(store.get()).length > 400_000) return; } catch { return; }
   const now = new Date().toISOString();
   lastSeen.set(key, now);
   supabase.from('app_state').upsert({

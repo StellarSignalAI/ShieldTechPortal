@@ -41,8 +41,10 @@ function photoBg(look) {
 
 /* The "photo" itself. children = annotation markers etc. */
 function MockPhoto({ photo, stamp = true, style, children, onClick }) {
+  const src = photo.url || photo.dataUrl;
   return (
-    <div onClick={onClick} style={{ position: 'relative', overflow: 'hidden', background: photoBg(photo.look), ...style }}>
+    <div onClick={onClick} style={{ position: 'relative', overflow: 'hidden', background: src ? '#000' : photoBg(photo.look), ...style }}>
+      {src && <img src={src} alt={photo.label || 'site photo'} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
       {children}
       {stamp && (
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '14px 8px 5px', background: 'linear-gradient(transparent, rgba(0,0,0,0.75))', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', pointerEvents: 'none' }}>

@@ -51,6 +51,10 @@ mobile surface on phones/tablets (`?desktop=1` / `?mobile=1` to override).
 2. Consent screen: Internal (or External + your domain)
 3. Authorized redirect URI: `https://<your-supabase-ref>.supabase.co/auth/v1/callback`
 4. Supabase Dashboard → Authentication → Providers → Google → paste Client ID + Secret
+5. Supabase Dashboard → Authentication → URL Configuration → **Redirect URLs**: add all three app
+   domains (`https://portal.shieldtechsolutions.com`, `https://tech.shieldtechsolutions.com`,
+   `https://customer.shieldtechsolutions.com`) so Google sign-in returns to whichever app started it —
+   the Tech and Customer apps use the same OAuth + invite/temp-password auth as the portal
 
 Behavior already wired: any `@shieldtechsolutions.com` Google account is auto-allowed;
 any other Google account only gets in if it was pre-invited from **Admin → Users & Invites**.

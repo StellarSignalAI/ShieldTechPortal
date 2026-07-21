@@ -24,6 +24,8 @@ import '@shared/supabase.js';
 import '@shared/auth.js';
 import '@shared/ai.js';
 import '@shared/time.js';
+import '@shared/camera.js';
+import '@shared/vision.js';
 import '@shared/proto-manifest-tech.js';
 import '@shared/store-sync.js';
 

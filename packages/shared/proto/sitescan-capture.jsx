@@ -194,6 +194,58 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
     return () => clearTimeout(t);
   }, [stage, calStep, speed]);
 
+  /* ── LIVE AI DETECTION (real camera + on-device models) ──
+     Objects/furniture via COCO-SSD; wall/ceiling/floor/door/window coverage via
+     DeepLab ADE20k. Runs whenever the camera is on during a scan and feeds the
+     same boxes/found/objects state the scripted pump used. */
+  const seenLive = React.useRef({});
+  const segTick = React.useRef(0);
+  React.useEffect(() => {
+    if (stage !== 'scanning' || cam !== 'on' || closing) return;
+    const V = window.__shieldVision;
+    if (!V) return;
+    let stop = false;
+    V.depthCapability().then(capMode => {
+      if (!stop) setCoach(capMode === 'ar-depth'
+        ? 'AR depth available — scanning with live AI detection'
+        : 'Live AI detection on — LiDAR-class depth uses the native capture app; objects, walls & ceilings are identified from the camera feed');
+    });
+    const loop = async () => {
+      while (!stop) {
+        try {
+          const dets = await V.detectObjects(videoRef.current);
+          if (stop) return;
+          if (dets.length) {
+            setBoxes(dets.map(d => ({ x: d.x, y: d.y, w: d.w, h: d.h, label: d.label, conf: d.conf, color: '#34D399' })));
+            dets.forEach(d => {
+              const key = d.label;
+              const n = (seenLive.current[key] || 0) + 1;
+              seenLive.current[key] = n;
+              if (n === 2) { // confirmed across frames → log + add to scan objects
+                const [w, hh] = (typeof SS_OBJ_SIZE !== 'undefined' && SS_OBJ_SIZE[d.type]) || [3, 2];
+                setExtras(x => x.length < 24 ? [...x, { type: d.type, w, h: hh, x: 2 + (x.length % 5) * 2, y: 2 + (x.length % 3) * 2, conf: d.conf }] : x);
+                setFound(f => [{ label: d.label, detail: `AI-detected · ${d.conf}%`, color: '#34D399' }, ...f].slice(0, 40));
+              }
+            });
+          }
+          segTick.current += 1;
+          if (segTick.current % 4 === 0) {
+            const surf = await V.segmentSurfaces(videoRef.current);
+            if (stop) return;
+            if (surf) {
+              Object.entries(surf).forEach(([name, pct]) => {
+                if (pct >= 8) setFound(f => (f[0] && f[0].label === `Surface: ${name}`) ? f : [{ label: `Surface: ${name}`, detail: `${pct}% of view · plane mapped`, color: 'var(--brand)' }, ...f].slice(0, 40));
+              });
+            }
+          }
+        } catch { /* model still loading or frame not ready */ }
+        await new Promise(r => setTimeout(r, 1200));
+      }
+    };
+    loop();
+    return () => { stop = true; };
+  }, [stage, cam, closing]);
+
   /* scan clock — runs until YOU stop the scan */
   React.useEffect(() => {
     if (stage !== 'scanning' || mode !== 'auto' || closing) return;

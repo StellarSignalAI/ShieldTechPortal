@@ -123,6 +123,17 @@ function TechCaptureView({ setTab }) {
   const [phase, setPhase] = React.useState('progress');
   const [flash, setFlash] = React.useState(false);
   const [lastShot, setLastShot] = React.useState(null);
+  const videoRef = React.useRef(null);
+  const [live, setLive] = React.useState(false);
+  const [facing, setFacing] = React.useState('environment');
+  React.useEffect(() => {
+    let mounted = true;
+    const cam = window.__shieldCamera;
+    if (cam && videoRef.current) {
+      cam.startStream(videoRef.current, facing).then(r => { if (mounted) setLive(!!r.ok); });
+    }
+    return () => { mounted = false; if (cam && videoRef.current) cam.stopStream(videoRef.current); };
+  }, [facing]);
 
   const activeWo = wos.find(w => w.id === cam.wo) || wos[0];
   if (!activeWo) {
@@ -136,15 +147,22 @@ function TechCaptureView({ setTab }) {
   const comp = photoCompliance(activeWo, photos);
   const slot = cam.slot && comp.missing.includes(cam.slot) ? cam.slot : null;
 
-  const capture = () => {
+  const capture = async () => {
     const id = genId('PH');
     const me = techMe();
+    const cam = window.__shieldCamera;
+    let shot = null;
+    if (live && cam && videoRef.current) {
+      const frame = cam.captureFrame(videoRef.current);
+      if (frame) shot = await cam.savePhoto(frame, { id, wo: activeWo.id });
+    }
     const photo = {
       id, wo: activeWo.id, customer: activeWo.customer, site: activeWo.site,
       tech: me.initials || '—', techName: me.name || 'Technician',
       phase: slot ? (slot.toLowerCase().includes('before') || slot === 'Issue found' || slot === 'Site — before' ? 'before' : slot.toLowerCase().includes('after') || slot.toLowerCase().includes('complete') || slot.toLowerCase().includes('final') ? 'after' : 'progress') : phase,
       slot, label: slot || `Field photo — ${activeWo.customer}`,
       day: 'Today', time: nowTime(), look: scene, pair: null, annotations: [],
+      url: shot && shot.url || null, dataUrl: shot && shot.dataUrl || null,
     };
     photoStore.set(prev => [photo, ...prev]);
     setFlash(true); setTimeout(() => setFlash(false), 180);
@@ -187,6 +205,8 @@ function TechCaptureView({ setTab }) {
       {/* Viewfinder */}
       <div style={{ position: 'relative', flex: 1, minHeight: 320, margin: '0 16px', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)' }}>
         <div style={{ position: 'absolute', inset: 0, background: photoBg(scene), transition: 'background 0.3s' }}></div>
+        <video ref={videoRef} playsInline muted style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: live ? 'block' : 'none' }} />
+        {!live && <div style={{ position: 'absolute', top: 10, right: 10, padding: '3px 9px', borderRadius: 9, background: 'rgba(0,0,0,0.55)', font: '600 9px/1.4 var(--font-body)', color: 'rgba(255,255,255,0.75)' }}>camera off — allow access for live capture</div>}
         {/* rule-of-thirds grid */}
         {[33.3, 66.6].map(p => <div key={'v' + p} style={{ position: 'absolute', top: 0, bottom: 0, left: `${p}%`, width: 1, background: 'rgba(255,255,255,0.12)' }}></div>)}
         {[33.3, 66.6].map(p => <div key={'h' + p} style={{ position: 'absolute', left: 0, right: 0, top: `${p}%`, height: 1, background: 'rgba(255,255,255,0.12)' }}></div>)}
@@ -216,7 +236,7 @@ function TechCaptureView({ setTab }) {
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
-          <button onClick={() => setScene(randomLook())} title="Reframe" style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 15, cursor: 'pointer' }}>↻</button>
+          <button onClick={() => { if (live) setFacing(f => f === 'environment' ? 'user' : 'environment'); else setScene(randomLook()); }} title="Flip camera" style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 15, cursor: 'pointer' }}>↻</button>
           <button onClick={capture} style={{ width: 66, height: 66, borderRadius: '50%', background: 'transparent', border: '3px solid #fff', padding: 4, cursor: 'pointer', display: 'flex' }}>
             <div style={{ flex: 1, borderRadius: '50%', background: '#fff', transition: 'transform 0.1s' }}
               onMouseDown={e => e.currentTarget.style.transform = 'scale(0.85)'}
