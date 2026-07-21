@@ -69,14 +69,34 @@ function MSpark({ data, color = 'var(--brand)', w = 64, h = 22 }) {
 
 /* Bottom sheet */
 function MSheet({ title, onClose, children }) {
-  /* Portaled to <body>: ancestor transforms/filters and the screen's scroll
-     container can otherwise trap the fixed sheet UNDER the bottom tab bar,
-     cutting off the last fields and the primary button. Safe-area padding
-     keeps the CTA above the iOS home indicator / Android gesture bar. */
+  /* Portaled to <body> and driven by the visualViewport API: the sheet pins to
+     the TRUE visible area on every device — iOS Safari toolbar show/hide, the
+     on-screen keyboard (which pans the layout viewport out from under fixed
+     elements), Android keyboard resize, notches and gesture bars. Without this,
+     large iPhones and many Androids clip the last fields and the CTA. */
+  const [vv, setVv] = React.useState(() => ({ bottom: 0, h: window.innerHeight }));
+  React.useEffect(() => {
+    const v = window.visualViewport;
+    if (!v) return;
+    const upd = () => setVv({
+      bottom: Math.max(0, window.innerHeight - v.height - v.offsetTop),
+      h: Math.round(v.height),
+    });
+    upd();
+    v.addEventListener('resize', upd);
+    v.addEventListener('scroll', upd);
+    return () => { v.removeEventListener('resize', upd); v.removeEventListener('scroll', upd); };
+  }, []);
+  const onFocusField = (e) => {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT')) {
+      setTimeout(() => { try { t.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch {} }, 250);
+    }
+  };
   const sheet = (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 4000, backdropFilter: 'blur(3px)' }}></div>
-      <div style={{ position: 'fixed', left: 0, right: 0, margin: '0 auto', bottom: 0, width: '100%', maxWidth: 430, maxHeight: '86dvh', zIndex: 4001, background: 'var(--modal, #0d1420)', border: '1px solid var(--border-strong)', borderBottom: 'none', borderRadius: '18px 18px 0 0', display: 'flex', flexDirection: 'column', animation: 'fade-up 0.22s ease both', boxShadow: '0 -16px 50px rgba(0,0,0,0.6)' }}>
+      <div onFocusCapture={onFocusField} style={{ position: 'fixed', left: 0, right: 0, margin: '0 auto', bottom: vv.bottom, width: '100%', maxWidth: 430, maxHeight: Math.round(vv.h * 0.9), zIndex: 4001, background: 'var(--modal, #0d1420)', border: '1px solid var(--border-strong)', borderBottom: 'none', borderRadius: '18px 18px 0 0', display: 'flex', flexDirection: 'column', animation: 'fade-up 0.22s ease both', boxShadow: '0 -16px 50px rgba(0,0,0,0.6)', transition: 'bottom 0.15s ease' }}>
         <div style={{ padding: '10px 18px 0', flexShrink: 0 }}>
           <div style={{ width: 38, height: 4, borderRadius: 2, background: 'rgba(148,163,184,0.3)', margin: '0 auto 10px' }}></div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
