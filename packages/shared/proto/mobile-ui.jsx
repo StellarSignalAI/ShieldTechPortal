@@ -69,10 +69,14 @@ function MSpark({ data, color = 'var(--brand)', w = 64, h = 22 }) {
 
 /* Bottom sheet */
 function MSheet({ title, onClose, children }) {
-  return (
+  /* Portaled to <body>: ancestor transforms/filters and the screen's scroll
+     container can otherwise trap the fixed sheet UNDER the bottom tab bar,
+     cutting off the last fields and the primary button. Safe-area padding
+     keeps the CTA above the iOS home indicator / Android gesture bar. */
+  const sheet = (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 900, backdropFilter: 'blur(3px)' }}></div>
-      <div style={{ position: 'fixed', left: 0, right: 0, margin: '0 auto', bottom: 0, width: '100%', maxWidth: 430, maxHeight: '82vh', zIndex: 901, background: 'var(--modal, #0d1420)', border: '1px solid var(--border-strong)', borderBottom: 'none', borderRadius: '18px 18px 0 0', display: 'flex', flexDirection: 'column', animation: 'fade-up 0.22s ease both', boxShadow: '0 -16px 50px rgba(0,0,0,0.6)' }}>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 4000, backdropFilter: 'blur(3px)' }}></div>
+      <div style={{ position: 'fixed', left: 0, right: 0, margin: '0 auto', bottom: 0, width: '100%', maxWidth: 430, maxHeight: '86dvh', zIndex: 4001, background: 'var(--modal, #0d1420)', border: '1px solid var(--border-strong)', borderBottom: 'none', borderRadius: '18px 18px 0 0', display: 'flex', flexDirection: 'column', animation: 'fade-up 0.22s ease both', boxShadow: '0 -16px 50px rgba(0,0,0,0.6)' }}>
         <div style={{ padding: '10px 18px 0', flexShrink: 0 }}>
           <div style={{ width: 38, height: 4, borderRadius: 2, background: 'rgba(148,163,184,0.3)', margin: '0 auto 10px' }}></div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -80,10 +84,11 @@ function MSheet({ title, onClose, children }) {
             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 19, lineHeight: 1, padding: 0 }}>×</button>
           </div>
         </div>
-        <div style={{ overflowY: 'auto', padding: '0 18px 22px' }}>{children}</div>
+        <div style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', padding: '0 18px', paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))' }}>{children}</div>
       </div>
     </>
   );
+  return (window.ReactDOM && window.ReactDOM.createPortal) ? window.ReactDOM.createPortal(sheet, document.body) : sheet;
 }
 
 function MActionBtn({ label, icon, onClick, primary }) {
