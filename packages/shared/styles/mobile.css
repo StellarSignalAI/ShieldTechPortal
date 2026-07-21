@@ -1,0 +1,74 @@
+/* ShieldTech Mobile — frame + adaptation styles (verbatim from "ShieldTech Mobile.html") */
+body { max-width: 430px; margin: 0 auto; }
+@media (min-width: 500px) {
+  body {
+    border-left: 1px solid var(--border-subtle);
+    border-right: 1px solid var(--border-subtle);
+    box-shadow: 0 0 60px -20px rgba(0,0,0,0.5);
+  }
+}
+/* Mobile adaptations for desktop-built screens */
+.m-screen table { display: block; overflow-x: auto; white-space: nowrap; scrollbar-width: thin; }
+.m-screen { font-size: 13px; }
+.m-screen ::-webkit-scrollbar { height: 5px; }
+/* Collapse wide fixed grids to 2-up */
+.m-screen[data-desk="true"] [style*="repeat(3, 1fr)"],
+.m-screen[data-desk="true"] [style*="repeat(4, 1fr)"],
+.m-screen[data-desk="true"] [style*="repeat(5, 1fr)"],
+.m-screen[data-desk="true"] [style*="repeat(6, 1fr)"],
+.m-screen[data-desk="true"] [style*="grid-template-columns: 1fr 1fr 1fr"] { grid-template-columns: 1fr 1fr !important; }
+/* Stack sidebar / two-pane grid layouts */
+.m-screen[data-desk="true"] [style*="grid-template-columns: 200px"],
+.m-screen[data-desk="true"] [style*="grid-template-columns: 220px"],
+.m-screen[data-desk="true"] [style*="grid-template-columns: 240px"],
+.m-screen[data-desk="true"] [style*="grid-template-columns: 260px"],
+.m-screen[data-desk="true"] [style*="grid-template-columns: 280px"],
+.m-screen[data-desk="true"] [style*="grid-template-columns: 300px"],
+.m-screen[data-desk="true"] [style*="grid-template-columns: 320px"],
+.m-screen[data-desk="true"] [style*="grid-template-columns: 340px"],
+.m-screen[data-desk="true"] [style*="grid-template-columns: 360px"],
+.m-screen[data-desk="true"] [style*="1.2fr 1fr"], .m-screen[data-desk="true"] [style*="1fr 1.2fr"],
+.m-screen[data-desk="true"] [style*="1.5fr 1fr"], .m-screen[data-desk="true"] [style*="1fr 1.5fr"],
+.m-screen[data-desk="true"] [style*="1.6fr 1fr"], .m-screen[data-desk="true"] [style*="1fr 1.6fr"],
+.m-screen[data-desk="true"] [style*="2fr 1fr"], .m-screen[data-desk="true"] [style*="1fr 2fr"] { grid-template-columns: 1fr !important; }
+/* Stat-card rows and toolbar rows: wrap instead of overflowing */
+.m-screen[data-desk="true"] [style*="display: flex"][style*="gap: 8px"]:not([style*="overflow-x"]):not([style*="flex-direction: column"]),
+.m-screen[data-desk="true"] [style*="display: flex"][style*="gap: 10px"]:not([style*="overflow-x"]):not([style*="flex-direction: column"]),
+.m-screen[data-desk="true"] [style*="display: flex"][style*="gap: 12px"]:not([style*="overflow-x"]):not([style*="flex-direction: column"]) { flex-wrap: wrap !important; }
+.m-screen[data-desk="true"] [style*="display: flex"] > :not(button) { min-width: 0; }
+.m-screen[data-desk="true"] [style*="display: flex"] > button { flex-shrink: 0; }
+/* Grid items also need min-width:0 or fixed inner content forces columns past the viewport */
+.m-screen[data-desk="true"] [style*="display: grid"] > * { min-width: 0; }
+.m-screen[data-desk="true"] [style*="display: flex"][style*="gap: 12px"] > .glass { min-width: 130px; }
+/* KPI / stat strips: glass cards must stay readable and wrap, not crush to fit one row */
+.m-screen[data-desk="true"] [style*="display: flex"] > .glass { min-width: 116px !important; }
+
+/* Wrap every horizontal flex row so toolbars / stat rows never punch out of the frame */
+.m-screen[data-desk="true"] [style*="display: flex"]:not([style*="flex-direction: column"]):not([style*="overflow-x"]):not([style*="overflow-y"]):not([style*="overflow: auto"]):not([style*="overflow:auto"]) { flex-wrap: wrap; }
+/* Hard safety net: nothing inside a screen may exceed the frame width */
+.m-screen img, .m-screen canvas, .m-screen svg, .m-screen pre { max-width: 100%; }
+
+/* ── Universal data-table → stacked cards (mobile-native presentation) ── */
+.m-screen table.m-cards { display: block; width: 100%; border: none; border-collapse: collapse; white-space: normal; overflow: visible; }
+.m-screen table.m-cards thead { display: none; }
+.m-screen table.m-cards tbody { display: flex; flex-direction: column; gap: 8px; }
+.m-screen table.m-cards tr {
+  display: flex; flex-direction: column; gap: 5px;
+  background: var(--glass-bg); border: 1px solid var(--border-subtle);
+  border-radius: 11px; padding: 11px 13px; white-space: normal;
+}
+.m-screen table.m-cards td {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  border: none !important; padding: 2px 0 !important; white-space: normal;
+  font-size: 12.5px; text-align: right; min-width: 0; height: auto !important;
+}
+.m-screen table.m-cards td::before {
+  content: attr(data-label); flex-shrink: 0; text-align: left;
+  color: var(--text-low); font-size: 9.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em; max-width: 45%;
+}
+.m-screen table.m-cards td[data-label=""]::before { content: none; }
+.m-screen table.m-cards td:empty { display: none; }
+/* First cell reads as the card title */
+.m-screen table.m-cards td.m-cards-title { font-size: 14px; font-weight: 600; color: var(--text-high); padding-bottom: 4px !important; }
+.m-screen table.m-cards td.m-cards-title::before { content: none; }
