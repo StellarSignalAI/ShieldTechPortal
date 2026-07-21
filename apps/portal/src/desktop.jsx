@@ -1,5 +1,6 @@
 /* ShieldTech Portal — desktop surface (ported inline App shell). */
 import '@shared/proto-manifest.js';
+import '@shared/store-sync.js';
 
 const React = window.React;
 const ReactDOM = window.ReactDOM;

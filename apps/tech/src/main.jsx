@@ -25,6 +25,7 @@ import '@shared/auth.js';
 import '@shared/ai.js';
 import '@shared/time.js';
 import '@shared/proto-manifest-tech.js';
+import '@shared/store-sync.js';
 
 const React = window.React;
 const ReactDOM = window.ReactDOM;

@@ -3,6 +3,7 @@
 import '@shared/styles/mobile.css';
 import '@shared/styles/viewport-lock.css';
 import '@shared/proto-manifest-mobile.js';
+import '@shared/store-sync.js';
 
 const React = window.React;
 const ReactDOM = window.ReactDOM;

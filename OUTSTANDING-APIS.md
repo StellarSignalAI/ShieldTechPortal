@@ -23,7 +23,7 @@ The backbone: profiles/roles, invites, opportunities, AI logs, all Edge Function
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase Edge Function secrets | `service_role` key (never in frontend) |
 
 3. Run the migrations in `supabase/migrations/` (SQL editor or `supabase db push`):
-   `0001_profiles.sql`, `0002_ai_runs.sql`, `0003_opportunities.sql`, `0004_time_entries.sql`
+   `0001_profiles.sql`, `0002_ai_runs.sql`, `0003_opportunities.sql`, `0004_time_entries.sql`, `0005_app_state.sql`
 4. Deploy the Edge Functions in `supabase/functions/`:
    `invite-user`, `ai`, `ingest-alerts`, `ingest-report-text`, `sources-poll`, `sam-poll`, `rippling-sync`
    (`supabase functions deploy <name>`)

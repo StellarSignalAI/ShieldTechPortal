@@ -47,6 +47,17 @@ function createShieldStore(key, initial) {
       notify();
     } catch {}
   });
+  /* ── Cross-DEVICE sync hook ──
+     The Supabase sync layer (packages/shared/store-sync.js) discovers stores
+     through this registry and applies remote values via applyRemote (persists
+     + notifies without echoing a push back to the backend). */
+  store.applyRemote = (v) => {
+    state = v;
+    try { localStorage.setItem('st2_' + key, JSON.stringify(v)); } catch {}
+    notify();
+  };
+  window.__shieldStores = window.__shieldStores || {};
+  window.__shieldStores[key] = store;
   return store;
 }
 
