@@ -71,6 +71,10 @@ const NAV_GROUPS = [
 { id: 'admin', label: 'ADMIN', collapsible: true, items: [
   { id: 'employees', icon: 'employees', label: 'Team', useSvg: true },
   { id: 'users', icon: 'credential', label: 'Users & Invites', useSvg: true },
+  { id: 'fleet', icon: 'dispatch', label: 'Fleet GPS', useSvg: true },
+  { id: 'invoices', icon: 'expenses', label: 'Invoices', useSvg: true },
+  { id: 'estimates', icon: 'proposals', label: 'Estimates', useSvg: true },
+  { id: 'outbox', icon: 'chat', label: 'Email Outbox', useSvg: true },
   { id: 'approvals', icon: 'check', label: 'Approvals', useSvg: true },
   { id: 'integrations', icon: 'topology', label: 'Integrations', useSvg: true },
   { id: 'documents', icon: 'note', label: 'Documents', useSvg: true },

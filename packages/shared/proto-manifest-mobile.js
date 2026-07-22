@@ -33,3 +33,9 @@ import './proto/surveyscan-hub.jsx';
 /* QBO mobile mirror + the mobile app shell itself */
 import './proto/mobile-finance-qbo.jsx';
 import './proto/mobile-app.jsx';
+import './proto/shared-invoicing.jsx';
+import './proto/screen-estimates-invoices.jsx';
+import './proto/screen-invoice-builder.jsx';
+import './proto/screen-fleet.jsx';
+import './proto/screen-fleet-share.jsx';
+import './proto/screen-outbox.jsx';

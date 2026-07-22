@@ -163,6 +163,10 @@ const M_SCREEN_MAP = {
   documents: () => <DocumentsScreen />,
   'portal-settings': () => <PortalSettingsScreen />,
   users: () => <UsersScreen />,
+  fleet: () => <FleetMapScreen />,
+  invoices: () => <InvoicesDirectScreen />,
+  estimates: () => <EstimatesDirectScreen />,
+  outbox: () => <OutboxScreen />,
 };
 
 /* Ids resolved by purpose-built touch-native views (branches below). Any of
