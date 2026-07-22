@@ -12,14 +12,10 @@ function DispatchScreen() {
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
-  const techs = [
-    { id: 'MR', name: 'Mike Reyes', role: 'Lead Tech', status: 'on-site', job: 'Metro Bank — Camera Install', jobAddr: '1450 Market St', eta: '—', hours: '6h 12m', x: 38, y: 32, heading: 135, speed: 0, phone: '(215) 555-0142' },
-    { id: 'JL', name: 'Jessica Liu', role: 'Tech II', status: 'driving', job: 'Acme Dental — NVR Swap', jobAddr: '820 Walnut St', eta: '12 min', hours: '4h 45m', x: 52, y: 48, heading: 45, speed: 34, phone: '(215) 555-0198' },
-    { id: 'KW', name: 'Kevin White', role: 'Tech II', status: 'on-site', job: 'City Hall — Access Panel', jobAddr: '1401 JFK Blvd', eta: '—', hours: '7h 02m', x: 44, y: 58, heading: 0, speed: 0, phone: '(215) 555-0167' },
-    { id: 'TG', name: 'Tony Garcia', role: 'Tech I', status: 'driving', job: 'Harbor View — Camera Add', jobAddr: '200 S Columbus Blvd', eta: '8 min', hours: '3h 30m', x: 62, y: 28, heading: 270, speed: 28, phone: '(215) 555-0203' },
-    { id: 'DP', name: 'Diana Patel', role: 'Tech II', status: 'idle', job: 'Unassigned', jobAddr: '—', eta: '—', hours: '5h 18m', x: 30, y: 65, heading: 90, speed: 0, phone: '(215) 555-0189' },
-    { id: 'RJ', name: 'Ray Johnson', role: 'Lead Tech', status: 'clocked-out', job: '—', jobAddr: '—', eta: '—', hours: '0h', x: 15, y: 80, heading: 0, speed: 0, phone: '(215) 555-0221' },
-  ];
+  /* Blank canvas: dispatch shows the SAME live technicians as the Fleet map.
+     Techs appear the moment they sign in and their app shares GPS — no seed data. */
+  const [fleet] = useShieldStore(fleetStore);
+  const techs = React.useMemo(() => deriveDispatchTechs(fleet.techs), [fleet]);
 
   /* Unassigned queue = the same backlog the Calendar's "Unscheduled" tray uses */
   const [dispatchBacklog] = useShieldStore(backlogStore);
@@ -31,21 +27,19 @@ function DispatchScreen() {
     sla: p.sla || '1d', assigned: null, addr: p.addr || '—',
   }));
 
-  const drivingEvents = [
-    { tech: 'JL', event: 'Hard brake', time: '2:14 PM', severity: 'moderate', location: 'I-76 W @ 30th St' },
-    { tech: 'TG', event: 'Speeding (42 in 25)', time: '1:50 PM', severity: 'severe', location: 'Broad St @ Vine' },
-    { tech: 'JL', event: 'Rapid acceleration', time: '12:30 PM', severity: 'minor', location: 'Walnut @ 15th' },
-  ];
+  /* Blank canvas: driving-safety events stream in from the telematics seam
+     (phone GPS / Samsara / Geotab) — none fabricated. */
+  const drivingEvents = [];
 
-  // Simulate geofence arrival alert
+  // Geofence arrival alert — fires when an armed tech is being watched
   React.useEffect(() => {
-    if (notifyOnSite['MR']) {
-      const t = setTimeout(() => {
-        setGeofenceAlert({ tech: techs[0], type: 'arrived', site: 'Metro Bank — Camera Install', time: 'Just now' });
-      }, 3000);
-      return () => clearTimeout(t);
-    }
-  }, [notifyOnSite]);
+    const armed = techs.find(t => notifyOnSite[t.id]);
+    if (!armed || armed.job === '—') return;
+    const t = setTimeout(() => {
+      setGeofenceAlert({ tech: armed, type: 'arrived', site: armed.job, time: 'Just now' });
+    }, 3000);
+    return () => clearTimeout(t);
+  }, [notifyOnSite, techs]);
 
   const handleContextMenu = (e, tech) => {
     e.preventDefault();
@@ -62,8 +56,8 @@ function DispatchScreen() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', overflow: 'hidden' }} onClick={closeContext}>
       {/* Dispatch Toolbar */}
-      <div style={{ display: 'flex', gap: 6, padding: '0 0 10px', flexShrink: 0, justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: 4 }}>
+      <div style={{ display: 'flex', gap: 6, padding: '0 0 10px', flexShrink: 0, justifyContent: 'space-between', flexWrap: 'wrap', rowGap: 8 }}>
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', maxWidth: '100%', paddingBottom: 2 }}>
           {[{id:'map',label:'Live Map'},{id:'schedule',label:'Schedule Board'},{id:'queue',label:'Dispatch Queue'},{id:'driving',label:'Driving Safety'},{id:'owner',label:'Where Are My Techs?'}].map(t => (
             <button key={t.id} onClick={() => setView(t.id)} style={{
               padding: '5px 14px', borderRadius: 6, fontSize: 11, fontWeight: view===t.id?600:400,
@@ -76,7 +70,7 @@ function DispatchScreen() {
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <div style={{ padding: '4px 10px', borderRadius: 4, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-low)' }}>
-            GPS: Phone + Samsara seam ready
+            GPS: live phone positions
           </div>
           <button onClick={() => showToast('ShieldTech AI optimizing routes...')} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
             <span>⟡</span> Optimize Routes
@@ -141,168 +135,90 @@ function DispatchScreen() {
   );
 }
 
-/* ── Live Map View ── */
+/* ── Live Map View ──
+   Full-bleed real street map (Leaflet + CARTO dark, shared with Fleet) with a
+   floating roster overlay that scrolls independently. No fixed 2-column grid, so
+   it never squishes on a phone. Tap a tech to select; tap "⋯" for actions
+   (right-click still works on desktop). */
 function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMenu, statusColors, setDrawerOpen, showToast, notifyOnSite, notifyLeave }) {
+  const active = techs.filter(t => t.status !== 'clocked-out');
+  const openActions = (e, tech) => { e.preventDefault(); e.stopPropagation(); handleContextMenu(e, tech); };
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 12, height: '100%' }}>
-      {/* Map Canvas */}
-      <div style={{ borderRadius: 10, overflow: 'hidden', position: 'relative', background: '#0a0e14', border: '1px solid var(--border-subtle)' }}>
-        {/* Dark map background with grid */}
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, rgba(63,169,245,0.03) 0%, transparent 70%)' }}>
-          {/* Grid lines */}
-          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-            {Array.from({length: 20}).map((_, i) => (
-              <React.Fragment key={i}>
-                <line x1={`${i*5}%`} y1="0" x2={`${i*5}%`} y2="100%" stroke="rgba(63,169,245,0.04)" strokeWidth="0.5" />
-                <line x1="0" y1={`${i*5}%`} x2="100%" y2={`${i*5}%`} stroke="rgba(63,169,245,0.04)" strokeWidth="0.5" />
-              </React.Fragment>
-            ))}
-            {/* Mock streets */}
-            <line x1="10%" y1="30%" x2="90%" y2="30%" stroke="rgba(63,169,245,0.08)" strokeWidth="2" />
-            <line x1="10%" y1="55%" x2="85%" y2="55%" stroke="rgba(63,169,245,0.08)" strokeWidth="2" />
-            <line x1="10%" y1="75%" x2="70%" y2="75%" stroke="rgba(63,169,245,0.06)" strokeWidth="1.5" />
-            <line x1="25%" y1="10%" x2="25%" y2="90%" stroke="rgba(63,169,245,0.08)" strokeWidth="2" />
-            <line x1="50%" y1="15%" x2="50%" y2="85%" stroke="rgba(63,169,245,0.08)" strokeWidth="2" />
-            <line x1="70%" y1="10%" x2="70%" y2="90%" stroke="rgba(63,169,245,0.06)" strokeWidth="1.5" />
-            {/* Diagonal */}
-            <line x1="15%" y1="20%" x2="60%" y2="80%" stroke="rgba(63,169,245,0.05)" strokeWidth="1.5" />
-          </svg>
+    <div className="glass" style={{ position: 'relative', height: '100%', minHeight: 340, overflow: 'hidden', borderRadius: 12 }}>
+      {/* Real map fills the whole surface; roster + legend float on top */}
+      <FleetStreetMap techs={Object.fromEntries(techs.filter(t => t.lat != null).map(t => [t.id, t]))} />
 
-          {/* Job site markers */}
-          {techs.filter(t => t.status !== 'clocked-out' && t.jobAddr !== '—').map(t => (
-            <div key={`site-${t.id}`} style={{ position: 'absolute', left: `${t.x - 1}%`, top: `${t.y - 1}%`, width: 32, height: 32, zIndex: 1 }}>
-              {/* Geofence radius ring */}
-              {(notifyOnSite[t.id] || notifyLeave[t.id]) && (
-                <div style={{
-                  position: 'absolute', left: -18, top: -18,
-                  width: 68, height: 68, borderRadius: '50%',
-                  border: '1.5px dashed rgba(63,169,245,0.3)',
-                  background: 'rgba(63,169,245,0.03)',
-                  animation: 'pulse-online 3s ease-in-out infinite'
-                }} />
-              )}
-              <div style={{
-                width: 8, height: 8, borderRadius: '50%',
-                background: 'rgba(63,169,245,0.3)', border: '1px solid rgba(63,169,245,0.5)',
-                position: 'absolute', left: 12, top: 12
-              }} />
-            </div>
-          ))}
-
-          {/* Tech markers */}
-          {techs.filter(t => t.status !== 'clocked-out').map(tech => (
-            <div key={tech.id}
-              onClick={() => setSelectedTech(tech.id === selectedTech ? null : tech.id)}
-              onContextMenu={(e) => handleContextMenu(e, tech)}
-              style={{
-                position: 'absolute', left: `${tech.x}%`, top: `${tech.y}%`,
-                transform: 'translate(-50%, -50%)', zIndex: 10, cursor: 'pointer',
-                transition: 'all 0.5s ease'
-              }}
-            >
-              {/* Pulse ring for on-site */}
-              {tech.status === 'on-site' && (
-                <div style={{
-                  position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
-                  width: 48, height: 48, borderRadius: '50%',
-                  border: '1px solid rgba(52,211,153,0.3)',
-                  animation: 'pulse-online 2s ease-in-out infinite'
-                }} />
-              )}
-              {/* Heading arrow for driving */}
-              {tech.status === 'driving' && (
-                <div style={{
-                  position: 'absolute', left: '50%', top: -8, transform: `translateX(-50%) rotate(${tech.heading}deg)`,
-                  width: 0, height: 0, borderLeft: '4px solid transparent', borderRight: '4px solid transparent',
-                  borderBottom: '8px solid var(--brand)', transformOrigin: 'center 22px'
-                }} />
-              )}
-              {/* Glass marker */}
-              <div style={{
-                width: 32, height: 32, borderRadius: 8,
-                background: selectedTech === tech.id ? 'rgba(63,169,245,0.2)' : 'var(--glass-bg)',
-                border: `1.5px solid ${statusColors[tech.status]}`,
-                backdropFilter: 'blur(8px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: selectedTech === tech.id ? `0 0 16px ${statusColors[tech.status]}` : `0 0 8px rgba(0,0,0,0.4)`,
-                transition: 'all 0.2s'
-              }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: statusColors[tech.status] }}>{tech.id}</span>
-              </div>
-              {/* Label */}
-              <div style={{
-                position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-                marginTop: 4, whiteSpace: 'nowrap', textAlign: 'center'
-              }}>
-                <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-high)', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>{tech.name.split(' ')[0]}</div>
-                {tech.status === 'driving' && <div className="mono" style={{ fontSize: 8, color: 'var(--brand)', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>ETA {tech.eta}</div>}
-              </div>
-            </div>
-          ))}
-
-          {/* Map labels */}
-          <div style={{ position: 'absolute', bottom: 12, left: 12, padding: '4px 10px', borderRadius: 4, background: 'rgba(5,7,10,0.8)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-low)' }}>
-            Philadelphia Metro · {techs.filter(t=>t.status!=='clocked-out').length} active · Right-click marker for actions
-          </div>
-          <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {[{status:'on-site',label:'On-Site',color:'var(--status-ok)'},{status:'driving',label:'Driving',color:'var(--brand)'},{status:'idle',label:'Idle',color:'var(--status-warn)'}].map(s => (
-              <div key={s.status} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 8px', borderRadius: 4, background: 'rgba(5,7,10,0.8)', border: '1px solid var(--border-subtle)' }}>
-                <StatusDot status={s.status==='on-site'?'online':s.status==='driving'?'info':'warning'} size={6} />
-                <span style={{ fontSize: 9, color: 'var(--text-mid)' }}>{s.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Side Panel — Active Techs */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflow: 'auto' }}>
-        <div className="label-sm" style={{ marginBottom: 2 }}>ACTIVE TECHNICIANS</div>
-        {techs.map(tech => (
-          <div key={tech.id}
-            onClick={() => { setSelectedTech(tech.id); }}
-            onContextMenu={(e) => handleContextMenu(e, tech)}
-            style={{
-              padding: 12, borderRadius: 8, cursor: 'pointer',
-              background: selectedTech === tech.id ? 'rgba(63,169,245,0.06)' : 'var(--glass-bg)',
-              border: `1px solid ${selectedTech === tech.id ? 'var(--brand)' : 'var(--border-subtle)'}`,
-              transition: 'all 0.15s'
-            }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: 6,
-                background: `${statusColors[tech.status]}15`,
-                border: `1px solid ${statusColors[tech.status]}40`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 10, fontWeight: 700, color: statusColors[tech.status]
-              }}>{tech.id}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 500 }}>{tech.name}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{tech.role}</div>
-              </div>
-              <StatusBadge status={tech.status==='on-site'?'online':tech.status==='driving'?'info':tech.status==='idle'?'warning':'offline'} label={tech.status} />
-            </div>
-            {tech.job !== '—' && (
-              <div style={{ fontSize: 11, color: 'var(--text-mid)', marginBottom: 4 }}>{tech.job}</div>
-            )}
-            <div style={{ display: 'flex', gap: 12, fontSize: 10, color: 'var(--text-low)' }}>
-              {tech.eta !== '—' && <span>ETA: {tech.eta}</span>}
-              <span>Hours: {tech.hours}</span>
-              {tech.speed > 0 && <span className="mono">{tech.speed} mph</span>}
-            </div>
-            {(notifyOnSite[tech.id] || notifyLeave[tech.id]) && (
-              <div style={{ marginTop: 6, display: 'flex', gap: 4 }}>
-                {notifyOnSite[tech.id] && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(52,211,153,0.08)', color: 'var(--status-ok)', border: '1px solid rgba(52,211,153,0.15)' }}>⊙ Notify on arrival</span>}
-                {notifyLeave[tech.id] && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(251,191,36,0.08)', color: 'var(--status-warn)', border: '1px solid rgba(251,191,36,0.15)' }}>⊙ Notify on departure</span>}
-              </div>
-            )}
+      {/* Legend — top-left */}
+      <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 500, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {[{status:'on-site',label:'On-Site',color:'var(--status-ok)'},{status:'driving',label:'Driving',color:'var(--brand)'},{status:'idle',label:'Idle',color:'var(--status-warn)'}].map(s => (
+          <div key={s.status} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 8px', borderRadius: 4, background: 'rgba(5,7,10,0.8)', border: '1px solid var(--border-subtle)' }}>
+            <StatusDot status={s.status==='on-site'?'online':s.status==='driving'?'info':'warning'} size={6} />
+            <span style={{ fontSize: 9, color: 'var(--text-mid)' }}>{s.label}</span>
           </div>
         ))}
+      </div>
 
-        {/* Quick Actions */}
-        <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
-          <button onClick={() => showToast('Broadcast sent to all techs')} style={{ width: '100%', padding: '7px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast All Techs</button>
-          <button onClick={() => showToast('Geofence report generated')} style={{ width: '100%', padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Today's Geofence Report</button>
+      {/* Roster overlay — top-right, collapsible, independently scrolling */}
+      <div style={{ position: 'absolute', top: 12, right: 12, bottom: 12, zIndex: 500, width: 'min(300px, 82vw)', display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
+        <div className="glass" style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', minHeight: 0, background: 'rgba(4,10,16,0.86)', borderRadius: 12, overflow: 'hidden' }}>
+          <div style={{ padding: '9px 13px 8px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span className="label-sm">Active Technicians</span>
+            <span className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{active.length}</span>
+          </div>
+          <div style={{ overflowY: 'auto', padding: 8, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {techs.length === 0 && (
+              <div style={{ padding: '16px 6px', fontSize: 11, color: 'var(--text-low)', lineHeight: 1.5 }}>
+                No technicians on the map yet. Techs appear here the moment they sign in and their app shares location.
+              </div>
+            )}
+            {techs.map(tech => (
+              <div key={tech.id}
+                onClick={() => setSelectedTech(tech.id === selectedTech ? null : tech.id)}
+                onContextMenu={(e) => handleContextMenu(e, tech)}
+                style={{
+                  padding: 10, borderRadius: 8, cursor: 'pointer',
+                  background: selectedTech === tech.id ? 'rgba(63,169,245,0.1)' : 'var(--glass-bg)',
+                  border: `1px solid ${selectedTech === tech.id ? 'var(--brand)' : 'var(--border-subtle)'}`,
+                  transition: 'all 0.15s'
+                }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 6,
+                    background: `${statusColors[tech.status]}15`,
+                    border: `1px solid ${statusColors[tech.status]}40`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 10, fontWeight: 700, color: statusColors[tech.status], flexShrink: 0
+                  }}>{tech.id}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tech.name}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{tech.role}</div>
+                  </div>
+                  <button onClick={(e) => openActions(e, tech)} title="Actions" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 15, cursor: 'pointer', padding: '0 4px', lineHeight: 1, flexShrink: 0 }}>⋯</button>
+                </div>
+                {tech.job !== '—' && (
+                  <div style={{ fontSize: 11, color: 'var(--text-mid)', marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tech.job}</div>
+                )}
+                <div style={{ display: 'flex', gap: 10, fontSize: 10, color: 'var(--text-low)', flexWrap: 'wrap' }}>
+                  {tech.eta !== '—' && <span>ETA: {tech.eta}</span>}
+                  <span>Hours: {tech.hours}</span>
+                  {tech.speed > 0 && <span className="mono">{tech.speed} mph</span>}
+                  <StatusBadge status={tech.status==='on-site'?'online':tech.status==='driving'?'info':tech.status==='idle'?'warning':'offline'} label={tech.status} />
+                </div>
+                {(notifyOnSite[tech.id] || notifyLeave[tech.id]) && (
+                  <div style={{ marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    {notifyOnSite[tech.id] && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(52,211,153,0.08)', color: 'var(--status-ok)', border: '1px solid rgba(52,211,153,0.15)' }}>⊙ Notify on arrival</span>}
+                    {notifyLeave[tech.id] && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(251,191,36,0.08)', color: 'var(--status-warn)', border: '1px solid rgba(251,191,36,0.15)' }}>⊙ Notify on departure</span>}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Quick Actions */}
+            <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <button onClick={() => showToast(active.length ? 'Broadcast sent to all techs' : 'No techs online to broadcast')} style={{ width: '100%', padding: '8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast All Techs</button>
+              <button onClick={() => showToast('Geofence report generated')} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Today's Geofence Report</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -386,13 +302,9 @@ function DispatchScheduleBoard({ techs, showToast }) {
   const hours = ['7 AM','8 AM','9 AM','10 AM','11 AM','12 PM','1 PM','2 PM','3 PM','4 PM','5 PM','6 PM'];
   const activeTechs = techs.filter(t => t.status !== 'clocked-out');
 
-  const [schedule, setSchedule] = React.useState({
-    'MR': [{ id: 'b1', start: 1, dur: 4, job: 'Metro Bank — Camera Install', type: 'install', priority: 'high', customer: 'Metro Bank Corp' }, { id: 'b2', start: 6, dur: 2, job: 'Acme Dental — Follow-up', type: 'service', priority: 'normal', customer: 'Acme Dental' }],
-    'JL': [{ id: 'b3', start: 0, dur: 3, job: 'Riverside Medical — PM', type: 'pm', priority: 'normal', customer: 'Riverside Medical' }, { id: 'b4', start: 4, dur: 3, job: 'Acme Dental — NVR Swap', type: 'install', priority: 'high', customer: 'Acme Dental' }],
-    'KW': [{ id: 'b5', start: 0, dur: 5, job: 'City Hall — Access Panel', type: 'install', priority: 'normal', customer: 'City Hall' }, { id: 'b6', start: 6, dur: 3, job: 'Open', type: 'open', priority: 'low', customer: '—' }],
-    'TG': [{ id: 'b7', start: 2, dur: 2, job: 'Harbor View — Camera Add', type: 'install', priority: 'normal', customer: 'Harbor View' }, { id: 'b8', start: 5, dur: 3, job: 'Westfield Mall — PM', type: 'pm', priority: 'normal', customer: 'Westfield Mall' }],
-    'DP': [{ id: 'b9', start: 0, dur: 2, job: 'Training', type: 'internal', priority: 'low', customer: '—' }],
-  });
+  /* Blank canvas: the board starts empty — jobs are added here or arrive from
+     the Calendar's unscheduled tray. Click a slot / "+ Add Job" to schedule. */
+  const [schedule, setSchedule] = React.useState({});
 
   const [dragging, setDragging] = React.useState(null);
   const [dragOver, setDragOver] = React.useState(null);
@@ -524,6 +436,9 @@ function DispatchScheduleBoard({ techs, showToast }) {
       <div style={{ padding: '4px 10px 6px 150px', fontSize: 9, color: 'var(--text-low)', fontStyle: 'italic' }}>
         {schedView === 'day' ? 'Click empty slot to add · Drag blocks to reassign · Right-click for options' : 'Click any cell to add a job · Right-click for options'}
       </div>
+      {activeTechs.length === 0 && (
+        <GlassPanel style={{ padding: 18, marginBottom: 8 }}><div style={{ fontSize: 12, color: 'var(--text-low)' }}>No technicians on shift yet — the board fills in as techs sign in. Use “+ Add Job” to schedule work ahead of time.</div></GlassPanel>
+      )}
 
       <GlassPanel style={{ padding: 0 }} ref={boardRef}>
         {schedView === 'day' ? (
@@ -675,14 +590,24 @@ function DispatchScheduleBoard({ techs, showToast }) {
       </div>
 
       {/* ShieldTech AI suggestion */}
-      <GlassPanel style={{ marginTop: 8, borderLeft: '3px solid var(--brand)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span>⟡</span>
-          <span style={{ fontSize: 12, color: 'var(--brand)', flex: 1 }}>ShieldTech AI: Diana Patel is open after 9 AM. Bayshore Medical (J-402) has a critical SLA at 45m — assign her? Travel: 18 min.</span>
-          <button onClick={() => { addBlock('DP', 'Bayshore Medical — Emergency Service', 3, 3, 'emergency', 'high', 'Bayshore Medical'); }} style={{ padding: '5px 12px', background: 'var(--brand)', border: 'none', borderRadius: 5, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Assign</button>
-          <button onClick={() => showToast('Dismissed')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Dismiss</button>
-        </div>
-      </GlassPanel>
+      {(() => {
+        const idle = activeTechs.find(t => t.status === 'idle');
+        return (
+          <GlassPanel style={{ marginTop: 8, borderLeft: '3px solid var(--brand)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span>⟡</span>
+              <span style={{ fontSize: 12, color: 'var(--brand)', flex: 1, minWidth: 180 }}>
+                {idle
+                  ? `ShieldTech AI: ${idle.name.split(' ')[0]} is idle — assign the next SLA-critical job to balance the board.`
+                  : 'ShieldTech AI watches the board for SLA risk and open capacity — suggestions appear here once techs and jobs are scheduled.'}
+              </span>
+              {idle && (
+                <button onClick={() => setAddModal({ techId: idle.id, start: 4 })} style={{ padding: '5px 12px', background: 'var(--brand)', border: 'none', borderRadius: 5, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Assign job</button>
+              )}
+            </div>
+          </GlassPanel>
+        );
+      })()}
 
       {/* Context Menu */}
       {ctxMenu && (
@@ -857,22 +782,27 @@ function DispatchQueue({ jobs, techs, showToast }) {
 
 /* ── Driving Safety Dashboard ── */
 function DispatchDriving({ events, techs }) {
+  const speeding = events.filter(e => /speed/i.test(e.event)).length;
+  const brakes = events.filter(e => /brake/i.test(e.event)).length;
   return (
     <div style={{ maxWidth: 1200 }}>
-      <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-        <StatCard label="FLEET SAFETY SCORE" value="88" suffix="/100" delay={0} />
+      <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+        <StatCard label="FLEET SAFETY SCORE" value="—" delay={0} />
         <StatCard label="EVENTS TODAY" value={events.length} delay={80} />
-        <StatCard label="SPEEDING EVENTS" value="1" delay={160} />
-        <StatCard label="HARD BRAKES" value="1" delay={240} />
+        <StatCard label="SPEEDING EVENTS" value={speeding} delay={160} />
+        <StatCard label="HARD BRAKES" value={brakes} delay={240} />
       </div>
       <GlassPanel style={{ marginBottom: 14, borderLeft: '3px solid var(--status-warn)', padding: 12 }}>
-        <div style={{ fontSize: 11, color: 'var(--text-low)', marginBottom: 4 }}>Telematics source: Phone GPS (mock) · Samsara / Verizon Connect / Geotab / Azuga integration ready</div>
-        <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>Live driving behavior uses a fleet-telematics provider. Design works on mock + phone GPS now with a seam to live data.</div>
+        <div style={{ fontSize: 11, color: 'var(--text-low)', marginBottom: 4 }}>Telematics source: phone GPS · Samsara / Verizon Connect / Geotab / Azuga integration ready</div>
+        <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>Live driving behavior streams from the connected fleet-telematics provider. Events appear here as they occur.</div>
       </GlassPanel>
       <GlassPanel style={{ padding: 0 }}>
         <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
           <SectionHeader title="Driving Events" icon="warning-tri" />
         </div>
+        {events.length === 0 && (
+          <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-low)' }}>No driving events recorded. Connect a telematics provider or keep the tech app open to stream phone-GPS behavior.</div>
+        )}
         {events.map((e, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid rgba(63,169,245,0.04)', background: e.severity==='severe'?'rgba(244,63,94,0.02)':'transparent' }}>
             <StatusDot status={e.severity==='severe'?'critical':e.severity==='moderate'?'warning':'info'} size={7} />
@@ -893,7 +823,10 @@ function DispatchOwnerView({ techs, statusColors, notifyOnSite, setNotifyOnSite,
   return (
     <div style={{ maxWidth: 1200 }}>
       <SectionHeader title="Where Are My Techs?" icon="◎" />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340, 1fr))', gap: 12 }}>
+      {techs.length === 0 && (
+        <GlassPanel style={{ padding: 20 }}><div style={{ fontSize: 12, color: 'var(--text-low)' }}>No technicians on shift. Once a tech signs in and shares location, their live status, ETA, hours and geofence controls appear here.</div></GlassPanel>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
         {techs.map(tech => (
           <GlassPanel key={tech.id} style={{ borderLeft: `3px solid ${statusColors[tech.status]}` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>

@@ -357,6 +357,7 @@ function MobilePortalApp() {
   else if (screen === 'survey-ai') content = <MSurvey onNav={nav} />;
   else if (screen === 'sitescan') content = <MSurveyScan onNav={nav} />;
   else if (screen === 'fleet') content = <div style={{ height: 'calc(100dvh - 118px)', minHeight: 360, margin: -14 }}><FleetMapScreen /></div>;
+  else if (screen === 'dispatch') content = <MDispatchView onNav={nav} />;
   else if (screen === 'login') content = <LoginScreen />;
   else if (M_NATIVE[screen]) { const Native = M_NATIVE[screen]; content = <Native onNav={nav} />; }
   else {
@@ -365,7 +366,7 @@ function MobilePortalApp() {
   }
   // Bespoke mobile = native touch view + the COMPLETE desktop toolset inline,
   // reflowed for the phone. One surface, nothing missing, no mode toggle.
-  const FULL_INLINE_SKIP = ['m-more', 'login', 'sitescan', 'cameras', 'topology', 'warroom', 'floorplan', 'anomaly', 'custom-dashboard', 'fleet'];
+  const FULL_INLINE_SKIP = ['m-more', 'login', 'sitescan', 'cameras', 'topology', 'warroom', 'floorplan', 'anomaly', 'custom-dashboard', 'fleet', 'dispatch'];
   if (!fullBase && hasFullView && !FULL_INLINE_SKIP.includes(screen)) {
     const FullFn = M_SCREEN_MAP[screen];
     content = (

@@ -233,5 +233,37 @@ function FleetMapScreen() {
   );
 }
 
-Object.assign(window, { fleetStore, FleetTransport, startFleetSharing, stopFleetSharing, startFleetSim, FleetMapScreen, fleetIsStale, fleetAge, FLEET_STALE_MS });
+/* ── Shared dispatch derivation ──
+   Dispatch and Fleet are the SAME technicians — Dispatch reads the live fleet
+   store and maps it to the richer dispatch tech shape. Blank canvas: empty until
+   a tech signs in and shares GPS (then they appear on both screens at once). */
+function deriveDispatchTechs(fleetTechs, now = Date.now()) {
+  return Object.keys(fleetTechs || {}).map(id => {
+    const t = fleetTechs[id] || {};
+    const status = !t.onDuty ? 'clocked-out'
+      : t.status === 'driving' ? 'driving'
+      : t.status === 'idle' ? 'idle'
+      : 'on-site';
+    return {
+      id,
+      name: t.name || id,
+      role: t.role || 'Technician',
+      status,
+      job: t.job || '—',
+      jobAddr: t.jobAddr || '—',
+      eta: t.eta || '—',
+      hours: t.hours || fleetAge(t.updatedAt || now, now).replace(' ago', ''),
+      x: t.x != null ? t.x : 50,
+      y: t.y != null ? t.y : 50,
+      lat: t.lat, lng: t.lng,
+      heading: t.heading || 0,
+      speed: t.speed || 0,
+      phone: t.phone || '—',
+      updatedAt: t.updatedAt || now,
+      onDuty: !!t.onDuty,
+    };
+  });
+}
+
+Object.assign(window, { fleetStore, FleetTransport, startFleetSharing, stopFleetSharing, startFleetSim, FleetMapScreen, FleetStreetMap, fleetIsStale, fleetAge, FLEET_STALE_MS, deriveDispatchTechs });
 

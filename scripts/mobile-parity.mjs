@@ -35,9 +35,11 @@ for (const id of SCREENS) {
   else if (fellBack) bad.push({ id, why: 'fell back to Home' });
 }
 
-// Bespoke smoke: native screens must include the inline full desktop suite.
+// Bespoke smoke: native screens that use the inline pattern must include the
+// full desktop suite below the touch view. (Dispatch/Fleet use a dedicated
+// full-height native branch instead and link to their full board separately.)
 current = 'full-suite';
-await page.evaluate(() => window.__shieldNav('dispatch'));
+await page.evaluate(() => window.__shieldNav('inventory'));
 await page.waitForTimeout(900);
 const fullOk = await page.evaluate(() => /full suite/i.test(document.querySelector('.m-screen').innerText));
 

@@ -110,42 +110,58 @@ function MMissionView({ onNav }) {
 }
 
 function MDispatchView({ onNav }) {
-  const techs = [
-    { id: 'MR', name: 'Mike Reyes', role: 'Lead Tech', status: 'ON-SITE', job: 'Metro Bank — Camera Install', hrs: '6h 12m', c: 'var(--status-ok)' },
-    { id: 'JL', name: 'Jessica Liu', role: 'Tech II', status: 'DRIVING', job: 'Acme Dental — NVR Swap · ETA 12m', hrs: '4h 45m', c: 'var(--brand)' },
-    { id: 'KW', name: 'Kevin White', role: 'Tech II', status: 'ON-SITE', job: 'City Hall — Access Panel', hrs: '7h 02m', c: 'var(--status-ok)' },
-    { id: 'TG', name: 'Tony Garcia', role: 'Tech I', status: 'DRIVING', job: 'Harbor View — Camera Add · ETA 8m', hrs: '3h 30m', c: 'var(--brand)' },
-    { id: 'DP', name: 'Diana Patel', role: 'Tech II', status: 'IDLE', job: 'Unassigned — nearest gap 1:00 PM', hrs: '5h 18m', c: 'var(--status-warn)' },
-  ];
+  /* Blank canvas: the SAME live technicians as the Fleet map and the desktop
+     dispatch board. Techs appear the moment they sign in and share GPS. */
+  const [fleet] = useShieldStore(fleetStore);
+  const techs = (window.deriveDispatchTechs ? window.deriveDispatchTechs(fleet.techs) : []).map(t => ({
+    ...t,
+    STATUS: (t.status || '').toUpperCase(),
+    c: t.status === 'driving' ? 'var(--brand)' : t.status === 'idle' ? 'var(--status-warn)' : t.status === 'clocked-out' ? 'var(--text-low)' : 'var(--status-ok)',
+  }));
+  const onSite = techs.filter(t => t.status === 'on-site').length;
+  const driving = techs.filter(t => t.status === 'driving').length;
+  const idle = techs.filter(t => t.status === 'idle').length;
+  const accent = (id) => (MN_TECH && MN_TECH[id]) || 'var(--brand)';
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-        <MStat label="ON SITE" value="2" accent="var(--status-ok)" />
-        <MStat label="DRIVING" value="2" accent="var(--brand)" delay={60} />
-        <MStat label="IDLE" value="1" accent="var(--status-warn)" delay={120} />
+        <MStat label="ON SITE" value={String(onSite)} accent="var(--status-ok)" />
+        <MStat label="DRIVING" value={String(driving)} accent="var(--brand)" delay={60} />
+        <MStat label="IDLE" value={String(idle)} accent="var(--status-warn)" delay={120} />
       </div>
+
+      {/* Live fleet map — same real map the dispatcher sees */}
+      <div className="glass" style={{ height: 260, borderRadius: 14, overflow: 'hidden', padding: 0 }}>
+        <div style={{ height: '100%' }}>{window.FleetMapScreen ? <FleetMapScreen /> : null}</div>
+      </div>
+
       <MSection title="Active technicians">
+        {techs.length === 0 && (
+          <div className="glass" style={{ padding: '16px 14px', borderRadius: 12, fontSize: 12, color: 'var(--text-low)', lineHeight: 1.5 }}>
+            No technicians on shift yet. They appear here automatically when they sign in and their app shares location.
+          </div>
+        )}
         {techs.map(t => (
           <div key={t.id} className="glass" style={{ padding: '12px 13px', borderRadius: 12, marginBottom: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ width: 34, height: 34, borderRadius: '50%', background: `${MN_TECH[t.id]}28`, border: `1px solid ${MN_TECH[t.id]}55`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: MN_TECH[t.id], flexShrink: 0 }}>{t.id}</span>
+              <span style={{ width: 34, height: 34, borderRadius: '50%', background: `${accent(t.id)}28`, border: `1px solid ${accent(t.id)}55`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: accent(t.id), flexShrink: 0 }}>{t.id.slice(0, 2).toUpperCase()}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{t.name} <span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-low)' }}>· {t.role}</span></div>
-                <div style={{ fontSize: 10, color: 'var(--text-low)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.job}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-low)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.job !== '—' ? t.job : 'Unassigned'}{t.eta !== '—' ? ` · ETA ${t.eta}` : ''}</div>
               </div>
-              <MBadge color={t.c}>{t.status}</MBadge>
+              <MBadge color={t.c}>{t.STATUS}</MBadge>
             </div>
             <div style={{ display: 'flex', gap: 7, marginTop: 9 }}>
               <button onClick={() => showToast(`Message sent to ${t.name.split(' ')[0]}`, 'ok')} style={mDispBtn}>Message</button>
-              <button onClick={() => showToast(`${t.name.split(' ')[0]}'s location pinned`, 'ok')} style={mDispBtn}>Locate</button>
-              {t.status === 'IDLE' && <button onClick={() => onNav('calendar')} style={{ ...mDispBtn, color: 'var(--status-warn)', borderColor: 'rgba(251,191,36,0.3)' }}>Assign job</button>}
-              <span className="mono" style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-low)', alignSelf: 'center' }}>{t.hrs}</span>
+              <button onClick={() => onNav('fleet')} style={mDispBtn}>Locate</button>
+              {t.status === 'idle' && <button onClick={() => onNav('calendar')} style={{ ...mDispBtn, color: 'var(--status-warn)', borderColor: 'rgba(251,191,36,0.3)' }}>Assign job</button>}
+              <span className="mono" style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-low)', alignSelf: 'center' }}>{t.hours}</span>
             </div>
           </div>
         ))}
       </MSection>
-      <button onClick={() => showToast('Broadcast sent to all field techs', 'ok')} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast all techs</button>
-      <MRow icon="dispatch" title="Geofence report — today" sub="9 auto check-ins · 0 anomalies" onClick={() => showToast('Geofence log opened', 'ok')} />
+      <button onClick={() => showToast(techs.length ? 'Broadcast sent to all field techs' : 'No techs online to broadcast', techs.length ? 'ok' : 'warn')} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast all techs</button>
+      <MRow icon="dispatch" title="Full dispatch board" sub="Schedule · queue · driving safety" onClick={() => onNav('dispatch-full')} />
     </div>
   );
 }
