@@ -167,6 +167,7 @@ const M_SCREEN_MAP = {
   invoices: () => <InvoicesDirectScreen />,
   estimates: () => <EstimatesDirectScreen />,
   outbox: () => <OutboxScreen />,
+  'secret-weapon': () => <SecretWeaponScreen />,
 };
 
 /* Ids resolved by purpose-built touch-native views (branches below). Any of

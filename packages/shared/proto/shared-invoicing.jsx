@@ -22,6 +22,12 @@ const outboxStore = createShieldStore('outbox', []);
 function queueEmail({ to, customer, subject, body, invoice, payLink, kind }) {
   const rec = { id: genId('EM'), to, customer, subject, body, invoice: invoice || null, payLink: payLink || null, kind: kind || 'invoice', at: Date.now(), status: 'queued' };
   outboxStore.set(prev => [rec, ...prev]);
+  // Real delivery when the email backend is configured; status updates honestly.
+  if (window.__shieldEmail) {
+    window.__shieldEmail.send({ to, subject, html: (body || '').replace(/\n/g, '<br/>') }).then(r => {
+      outboxStore.set(prev => prev.map(e => e.id === rec.id ? { ...e, status: r.ok ? 'sent' : 'queued', error: r.ok ? null : r.error } : e));
+    });
+  }
   return rec;
 }
 /* Merge an invoice into the branded email template ({customer}/{amount}/{due_date}/{link}) */

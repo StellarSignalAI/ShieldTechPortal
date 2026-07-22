@@ -35,7 +35,7 @@ const SCREEN_LIST = [
   'margin-xray', 'rr-builder', 'rfp', 'wallboard',
   'helpdesk', 'workorder', 'parts-req', 'subcontractors', 'purchase-orders',
   'skills', 'knowledge', 'integrations', 'marketing', 'documents', 'portal-settings', 'users',
-, 'fleet', 'invoices', 'estimates', 'outbox', 'pay'];
+, 'fleet', 'invoices', 'estimates', 'outbox', 'pay', 'secret-weapon'];
 
 /* screen id → window component name (same mapping as the prototype shell) */
 const SCREEN_COMPONENTS = {
@@ -112,6 +112,7 @@ const SCREEN_COMPONENTS = {
   estimates: 'EstimatesDirectScreen',
   outbox: 'OutboxScreen',
   pay: 'PayPageScreen',
+  'secret-weapon': 'SecretWeaponScreen',
 };
 
 function MissingScreen({ id }) {
@@ -155,10 +156,6 @@ function App() {
   }, []);
 
   const handleNav = (id) => {
-    if (id === 'secret-weapon') {
-      window.shieldToast && window.shieldToast('Secret Weapon surface ships in a later phase', 'info');
-      return;
-    }
     setTweak('screen', id);
   };
   window.__shieldNav = handleNav;

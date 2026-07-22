@@ -13,6 +13,7 @@ import '@shared/camera.js';
 import '@shared/vision.js';
 import '@shared/lidar-import.js';
 import '@shared/live-map.js';
+import '@shared/email.js';
 
 /* Fonts (self-hosted; same families/weights the design's Google Fonts import used) */
 import '@fontsource/montserrat/200.css';
