@@ -584,7 +584,10 @@ function ShieldModalHost() {
           <button onClick={close} style={{ padding: '8px 18px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12.5, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{kind === 'doc' || kind === 'detail' ? 'Close' : 'Cancel'}</button>
           {kind === 'form' && <ModalPrimary busy={busy} onClick={submitForm} label={cfg.submitLabel || 'Save'} />}
           {kind === 'editor' && <ModalPrimary busy={busy} onClick={submitEditor} label={cfg.submitLabel || 'Save'} />}
-          {kind === 'doc' && <ModalPrimary busy={busy} onClick={() => finish(cfg.downloadMsg || 'Download started')} label={cfg.downloadLabel || 'Download PDF'} />}
+          {kind === 'doc' && <ModalPrimary busy={busy} onClick={() => {
+            if (window.__shieldPdf) window.__shieldPdf.exportDoc({ kind: 'proposal', number: cfg.docTitle || '', date: cfg.meta || '', customer: '', sections: (cfg.paragraphs || []).map(pp => typeof pp === 'string' ? { title: '', body: pp } : { title: pp.k, body: pp.v }) });
+            finish(cfg.downloadMsg || 'Document exported');
+          }} label={cfg.downloadLabel || 'Download PDF'} />}
           {kind === 'confirm' && <ModalPrimary busy={busy} danger={cfg.danger} onClick={confirmAction} label={cfg.confirmLabel || 'Confirm'} />}
           {kind === 'signature' && <ModalPrimary busy={busy} onClick={() => { if (!hasInk.current) { shieldToast('Please capture a signature first', 'warn'); return; } if (cfg.onSave) cfg.onSave(); finish(cfg.successMsg || 'Signature captured'); }} label={cfg.submitLabel || 'Save & Complete'} />}
           {kind === 'detail' && (cfg.actions || []).map((a, ai) => (

@@ -439,6 +439,7 @@ function BrStepProposal({ opp, state, update }) {
           <Icon name="doc" size={14} color="var(--brand)" />
           <Eyebrow color="var(--brand)">Exactly what the buyer receives</Eyebrow>
           {state.coverLetter && <Pill tone="Done" label="Approved" small dot />}
+          <button onClick={() => { const est = brEstimate(opp, state); if (window.__shieldPdf) window.__shieldPdf.exportDoc({ kind: 'proposal', number: opp.id || 'Proposal', customer: opp.buyer || opp.title || '', date: new Date().toLocaleDateString(), sections: [{ title: 'Project', body: opp.title || '' }, { title: 'Scope of Work', body: (typeof brScopeText === 'function' ? brScopeText(opp, state) : 'Full scope as specified.') }], lineItems: (typeof brBOM === 'function' ? (brBOM(opp, state) || []).map(b => ({ desc: b.label || b.name || b.desc, qty: b.qty || 1, rate: b.unit || b.price || 0 })) : []), total: est && est.total }); else swToast('Export unavailable', 'warn'); }} style={{ marginLeft: 'auto', padding: '5px 13px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', font: '600 11px/1 var(--font-body)', cursor: 'pointer' }}>↓ Download proposal PDF</button>
         </div>
         <BrProposalDoc opp={opp} state={state} />
       </div>

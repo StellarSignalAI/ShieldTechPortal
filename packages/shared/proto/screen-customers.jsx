@@ -621,14 +621,23 @@ function CustomerSelector({ value, onChange, showToast, style }) {
   const customers = allCusts.map(c => c.name);
   const filtered = search ? customers.filter(c => c.toLowerCase().includes(search.toLowerCase())) : customers;
 
+  const [qcName, setQcName] = React.useState('');
   if (quickCreate) {
+    const saveQc = () => {
+      const nm = qcName.trim();
+      if (!nm) { showToast?.('Enter a company name', 'warn'); return; }
+      const rec = { id: 'cust-' + Date.now(), name: nm, status: 'active', createdAt: Date.now() };
+      customerStore.set(list => [rec, ...list]);
+      setQuickCreate(false); setQcName('');
+      onChange?.(nm); showToast?.(nm + ' created & selected');
+    };
     return (
       <div style={{ ...style }}>
         <div className="label-sm" style={{ marginBottom: 4 }}>QUICK-CREATE CUSTOMER</div>
         <div style={{ display: 'flex', gap: 6 }}>
-          <input autoFocus placeholder="Company name..." style={{ flex: 1, padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--brand)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
-          <button onClick={() => { setQuickCreate(false); onChange?.('New Customer'); showToast?.('Customer created & selected'); }} style={{ padding: '6px 12px', background: 'var(--brand)', border: 'none', borderRadius: 5, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save</button>
-          <button onClick={() => setQuickCreate(false)} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
+          <input autoFocus value={qcName} onChange={e => setQcName(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveQc()} placeholder="Company name..." style={{ flex: 1, padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--brand)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+          <button onClick={saveQc} style={{ padding: '6px 12px', background: 'var(--brand)', border: 'none', borderRadius: 5, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save</button>
+          <button onClick={() => { setQuickCreate(false); setQcName(''); }} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
         </div>
       </div>
     );
