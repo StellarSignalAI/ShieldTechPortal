@@ -416,11 +416,18 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
     <div style={ssOverlay}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
         <button onClick={onCancel} style={{ background: 'none', border: 'none', color: 'var(--text-mid)', fontSize: 20, cursor: 'pointer', lineHeight: 1, padding: 0 }}>✕</button>
-        <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-high)' }}>AR Scan — {floorLabel}</span>
+        <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-high)' }}>AI Camera Scan — {floorLabel}</span>
       </div>
       <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ height: 120, borderRadius: 14, background: 'radial-gradient(ellipse at 50% 100%, rgba(63,169,245,0.25), rgba(5,10,17,0.9) 70%)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, color: 'var(--brand)' }}>◉</div>
         <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-high)' }}>Before you scan</div>
+        <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.25)' }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--status-warn)', marginBottom: 3 }}>This is the AI camera estimate</div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-mid)', lineHeight: 1.5 }}>
+            Builds a fast sketch from your camera, compass sweep and on-device AI — great for quick documentation. It is <b>not</b> LiDAR and dimensions are estimates.
+            For <b>survey-grade measured walls, ceilings & furniture locked in 3D</b>, use the <b>ShieldTech Scanner</b> app (LiDAR · Apple RoomPlan) and tap <b>Import LiDAR Scan</b> on the Survey hub.
+          </div>
+        </div>
         {[['◫', 'Close room doors', 'so the scan doesn\'t capture adjoining rooms'], ['◔', 'Move slowly, one wall at a time', 'white lines show wall detection — walls turn green when captured'], ['▦', 'Obstructions are fine', 'AI classifies cabinets, counters, desks & racks and sees through them to the wall'], ['⚠', 'Orange wall = not captured', 'rescan it or the room won\'t close']].map(([g, t, s]) => (
           <div key={t} style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
             <span style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--brand)', flexShrink: 0 }}>{g}</span>

@@ -1,42 +1,37 @@
 // ShieldTech Scanner — LiDAR room capture (Apple RoomPlan).
-// Scans walls, ceilings, doors, windows and furniture with true dimensions,
-// then exports JSON that the ShieldTech platform imports as a Survey Scan.
+// Real-time LiDAR scanning: walls, ceilings, doors, windows and furniture build
+// live in the AR view as you walk the space, world-locked in 3D. Exports a
+// measured JSON (+ USDZ) that the ShieldTech platform imports as a Survey Scan.
+//
+// Requires: iOS 16+, a LiDAR device (iPhone 12 Pro+ / iPad Pro 2020+),
+// NSCameraUsageDescription in Info.plist, Apple Developer signing.
 import SwiftUI
 
 @main
 struct ShieldTechScannerApp: App {
+    @StateObject private var session = ScanSession()
     var body: some Scene {
-        WindowGroup { ContentView() }
+        WindowGroup {
+            ContentView().environmentObject(session)
+        }
     }
 }
 
-struct ContentView: View {
-    @State private var scanning = false
-    @State private var exportURL: URL?
-    @State private var customer = ""
-    @State private var site = ""
+/// Holds the multi-room capture in progress and the finished export.
+final class ScanSession: ObservableObject {
+    @Published var customer: String = ""
+    @Published var site: String = ""
+    @Published var rooms: [ScannedRoom] = []           // completed rooms this visit
+    @Published var lastExportURL: URL?
 
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                TextField("Customer", text: $customer).textFieldStyle(.roundedBorder)
-                TextField("Site", text: $site).textFieldStyle(.roundedBorder)
-                Button("◉ Start LiDAR Scan") { scanning = true }
-                    .buttonStyle(.borderedProminent)
-                if let url = exportURL {
-                    ShareLink(item: url) { Label("Share scan to ShieldTech", systemImage: "square.and.arrow.up") }
-                    Text("AirDrop / share this file, then use 'Import LiDAR Scan' in Survey Scan.")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
-            }
-            .padding()
-            .navigationTitle("ShieldTech Scanner")
-            .fullScreenCover(isPresented: $scanning) {
-                RoomScanView(customer: customer, site: site) { url in
-                    exportURL = url
-                    scanning = false
-                }
-            }
-        }
+    struct ScannedRoom: Identifiable {
+        let id = UUID()
+        let name: String
+        let json: Data                                 // CapturedRoom JSON
+        let wallCount: Int
+        let objectCount: Int
+        let areaFt2: Double
     }
+
+    func reset() { rooms.removeAll(); lastExportURL = nil }
 }

@@ -66,12 +66,38 @@ export function convertRoomPlan(cap, { customer = 'Imported scan', site = 'LiDAR
 export function importScan(jsonText, meta) {
   let cap;
   try { cap = JSON.parse(jsonText); } catch { return { ok: false, error: 'Not a valid scan file' }; }
-  // Accept either a bare CapturedRoom or the app's wrapper {capturedRoom, customer, site}
-  const room = cap.capturedRoom || cap;
-  if (!room.walls && !room.objects) return { ok: false, error: 'No walls or objects in this scan — expected a RoomPlan export' };
-  const project = convertRoomPlan(room, { ...(meta || {}), customer: (meta && meta.customer) || cap.customer || 'Imported scan', site: (meta && meta.site) || cap.site || 'LiDAR capture' });
   const store = window.__shieldStores && window.__shieldStores.sitescans;
   if (!store) return { ok: false, error: 'Survey store not loaded' };
+  const customer = (meta && meta.customer) || cap.customer || 'Imported scan';
+  const site = (meta && meta.site) || cap.site || 'LiDAR capture';
+
+  // Multi-room envelope from the ShieldTech Scanner app: one project, many rooms.
+  if (Array.isArray(cap.rooms) && cap.rooms.length) {
+    const rooms = [], doors = [], objects = [];
+    cap.rooms.forEach((r, i) => {
+      const cr = r.capturedRoom || r;
+      if (!cr.walls && !cr.objects) return;
+      const proj = convertRoomPlan(cr, { customer, site, name: r.name || `Room ${i + 1}` });
+      const f = proj.floors[0];
+      f.rooms.forEach((rm, k) => { if (i > 0) { rm.poly = rm.poly.map(p2 => [p2[0] + i * 2, p2[1]]); } rooms.push(rm); });
+      (f.doors || []).forEach(d => doors.push(d));
+      (f.objects || []).forEach(o => objects.push(o));
+    });
+    if (!rooms.length) return { ok: false, error: 'No rooms with geometry in this scan' };
+    const project = {
+      id: 'SS-' + (Math.floor(Math.random() * 800) + 2100),
+      customer, site, created: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      status: 'in-progress', pushed: [], projectLink: null, source: 'lidar',
+      floors: [{ id: 'F1', label: 'Scanned Floor', rooms, doors, devices: [], cables: [], photos: [], objects }],
+    };
+    store.set(list => [project, ...list]);
+    return { ok: true, data: project, rooms: rooms.length };
+  }
+
+  // Single-room: bare CapturedRoom or {capturedRoom} wrapper.
+  const room = cap.capturedRoom || cap;
+  if (!room.walls && !room.objects) return { ok: false, error: 'No walls or objects in this scan — expected a RoomPlan export' };
+  const project = convertRoomPlan(room, { ...(meta || {}), customer, site });
   store.set(list => [project, ...list]);
   return { ok: true, data: project };
 }
