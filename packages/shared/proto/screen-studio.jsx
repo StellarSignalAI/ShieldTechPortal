@@ -148,7 +148,7 @@ function StudioScreen({ onExportToProposal }) {
     if (ptrsRef.current.size === 0) onPanUp();
   };
 
-  const customers = ['Metro Bank Corp', 'Acme Dental', 'City Hall', 'Riverside Medical', 'Pacific Rim Hotels', 'Westfield Mall', 'Harbor View Condos'];
+  const customers = shieldCustomerNames();
   const categories = [...new Set(deviceCatalog.map((d) => d.cat))];
   const brandNames = [...new Set(deviceCatalog.map((d) => d.brand))];
 
@@ -192,8 +192,10 @@ function StudioScreen({ onExportToProposal }) {
         {/* Customer + Project Header */}
         <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-            <select value={customer} onChange={(e) => setCustomer(e.target.value)} style={{ flex: 1, padding: '5px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+            <select value={customer} onChange={(e) => { if (e.target.value === '__new__') { openNewCustomer(rec => setCustomer(rec.name)); return; } setCustomer(e.target.value); }} style={{ flex: 1, padding: '5px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+              <option value="">Select customer…</option>
               {customers.map((c) => <option key={c} value={c}>{c}</option>)}
+              <option value="__new__">＋ New customer…</option>
             </select>
             <button onClick={() => setLeftCollapsed(true)} title="Hide catalog" style={{ flexShrink: 0, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>«</button>
           </div>

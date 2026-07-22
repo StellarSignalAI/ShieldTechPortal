@@ -116,7 +116,6 @@ function TechShellV2({ tab, setTab, children }) {
               <span style={{ fontSize: 10, color: 'var(--text-low)', marginLeft: 4 }}>Tech</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {window.ShieldContextPill && <ShieldContextPill compact />}
               <div style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '3px 10px', borderRadius: 100,

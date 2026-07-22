@@ -713,9 +713,10 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{ flex: 2 }}>
                 <div style={labelStyle}>Customer</div>
-                <select value={customer} onChange={e => handleCustomerSelect(e.target.value)} style={selectStyle}>
+                <select value={customer} onChange={e => { if (e.target.value === '__new__') { openNewCustomer(rec => handleCustomerSelect(rec.name)); return; } handleCustomerSelect(e.target.value); }} style={selectStyle}>
                   <option value="">Select customer...</option>
-                  {customers.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                  {[...new Set([...customers.map(c => c.name), ...shieldCustomerNames()])].map(n => <option key={n} value={n}>{n}</option>)}
+                  <option value="__new__">＋ New customer…</option>
                 </select>
               </div>
               <div style={{ flex: 1 }}>

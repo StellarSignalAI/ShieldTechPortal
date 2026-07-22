@@ -61,8 +61,7 @@ function SSWizard({ onClose, onCreate }) {
     <MSheet title="New SiteScan" onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <label><span style={lbl}>Prospect / Customer *</span>
-          <input list="ss-custs" value={customer} onChange={e => setCustomer(e.target.value)} placeholder="Select or type…" style={inp} />
-          <datalist id="ss-custs">{custs.map(c => <option key={c.id} value={c.name} />)}</datalist>
+          <CustomerSelect value={customer} onChange={(v) => setCustomer(v)} style={inp} placeholder="Select or add customer…" />
         </label>
         <label><span style={lbl}>Site / Building</span><input value={site} onChange={e => setSite(e.target.value)} placeholder="e.g. Main Campus — Bldg A" style={inp} /></label>
         <label><span style={lbl}>First floor name</span><input value={floorLabel} onChange={e => setFloorLabel(e.target.value)} style={inp} /></label>
