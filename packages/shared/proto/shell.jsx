@@ -46,6 +46,7 @@ const NAV_GROUPS = [
 },
 { id: 'fieldops', label: 'FIELD OPERATIONS', collapsible: true, items: [
   { id: 'dispatch', icon: 'dispatch', label: 'Dispatch', useSvg: true },
+  { id: 'fleet', icon: 'dispatch', label: 'Fleet GPS', useSvg: true },
   { id: 'survey-cloud', icon: 'floorplan', label: 'Survey Cloud', useSvg: true },
   { id: 'photos', icon: 'cameras', label: 'Site Photos', useSvg: true },
   { id: 'punchlist', icon: 'approvals', label: 'Punch Lists', useSvg: true },
@@ -61,6 +62,9 @@ const NAV_GROUPS = [
 },
 { id: 'finance', label: 'FINANCE & BILLING', collapsible: true, items: [
   { id: 'finance', icon: 'finance', label: 'Finance Suite', useSvg: true },
+  { id: 'invoices', icon: 'expenses', label: 'Invoices', useSvg: true },
+  { id: 'estimates', icon: 'proposals', label: 'Estimates', useSvg: true },
+  { id: 'outbox', icon: 'chat', label: 'Email Outbox', useSvg: true },
   { id: 'purchase-orders', icon: 'cart', label: 'Purchase Orders', useSvg: true },
   { id: 'expenses', icon: 'expenses', label: 'Expense Approval', useSvg: true },
   { id: 'contracts', icon: 'contracts', label: 'Contracts', useSvg: true },
@@ -71,10 +75,6 @@ const NAV_GROUPS = [
 { id: 'admin', label: 'ADMIN', collapsible: true, items: [
   { id: 'employees', icon: 'employees', label: 'Team', useSvg: true },
   { id: 'users', icon: 'credential', label: 'Users & Invites', useSvg: true },
-  { id: 'fleet', icon: 'dispatch', label: 'Fleet GPS', useSvg: true },
-  { id: 'invoices', icon: 'expenses', label: 'Invoices', useSvg: true },
-  { id: 'estimates', icon: 'proposals', label: 'Estimates', useSvg: true },
-  { id: 'outbox', icon: 'chat', label: 'Email Outbox', useSvg: true },
   { id: 'approvals', icon: 'check', label: 'Approvals', useSvg: true },
   { id: 'integrations', icon: 'topology', label: 'Integrations', useSvg: true },
   { id: 'documents', icon: 'note', label: 'Documents', useSvg: true },
