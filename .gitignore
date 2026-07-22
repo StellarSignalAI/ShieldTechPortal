@@ -3,3 +3,6 @@ dist
 .DS_Store
 .env
 .env.local
+
+# local go-live secrets (never commit)
+scripts/go-live.env
