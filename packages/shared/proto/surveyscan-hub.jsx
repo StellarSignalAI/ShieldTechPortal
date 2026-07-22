@@ -7,6 +7,16 @@ function MSurveyScan({ onNav }) {
   const [openId, setOpenId] = React.useState(null);
   const [wizard, setWizard] = React.useState(false);
   const lidarInputRef = React.useRef(null);
+  const [arReady, setArReady] = React.useState(false);
+  React.useEffect(() => { if (window.__shieldWebXR) window.__shieldWebXR.supported().then(setArReady); }, []);
+  const startArScan = async () => {
+    if (!window.__shieldWebXR) { showToast('AR scanning not available here', 'warn'); return; }
+    showToast('Starting AR — tap each room corner on the floor', 'info');
+    const r = await window.__shieldWebXR.scanRoom({});
+    if (!r.ok) { showToast(r.error || 'Scan cancelled', 'warn'); return; }
+    const imp = window.__shieldLidar.importScan(JSON.stringify({ customer: 'AR scan', site: 'WebXR capture', capturedRoom: r.capturedRoom }));
+    showToast(imp.ok ? 'AR room captured & imported' : (imp.error || 'Import failed'), imp.ok ? 'ok' : 'warn');
+  };
   if (openId) {
     const p = projects.find(x => x.id === openId);
     if (p) return <SV2Project project={p} onClose={() => setOpenId(null)} onNav={onNav} />;
@@ -29,6 +39,7 @@ function MSurveyScan({ onNav }) {
   const newBtn = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <button onClick={() => setWizard(true)} style={{ padding: '13px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◉ New Survey Scan</button>
+      {arReady && <button onClick={startArScan} style={{ padding: '11px 0', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 12, color: 'var(--status-ok)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◈ AR Scan a Room (live · Android)</button>}
       <button onClick={() => lidarInputRef.current && lidarInputRef.current.click()} style={{ padding: '11px 0', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 12, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⌁ Import LiDAR Scan (ShieldTech Scanner)</button>
       <input ref={lidarInputRef} type="file" accept=".json,application/json" onChange={onLidarFile} style={{ display: 'none' }} />
     </div>

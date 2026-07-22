@@ -114,11 +114,21 @@ entries; worker roster + pay rates and PAID/FINALIZED status flow back.
 Until the token exists, hours still collect and approvals still work; entries
 queue with "not configured" sync status and push on first successful sync.
 
-## 8. 🟡 Apple Developer Program (true LiDAR scanning)
+## 8. Scanning coverage by device (no key needed for Android)
+
+The platform picks the best scan mode each device can run, automatically:
+
+| Device | Mode | How |
+|---|---|---|
+| **iPhone/iPad Pro (LiDAR)** | Survey-grade measured 3D | Native **ShieldTech Scanner** app (RoomPlan) → Import — needs Apple Developer (below) |
+| **Android + ARCore (Chrome)** | Live world-locked AR room capture | **In-browser WebXR** — no app, no key. "◈ AR Scan a Room" appears on the Survey hub when the device supports it. Tap floor corners; walls + ceiling lock in 3D; imports automatically. |
+| **Any other phone** | AI camera estimate | Camera + compass + on-device AI (the default Survey Scan) |
+
+### 8a. 🟡 Apple Developer Program (iOS LiDAR only)
 
 The web platform's Survey Scan does live AI detection (objects, walls, ceilings)
 from the camera. **True LiDAR mesh capture** requires the native companion app
-in `apps/scanner-ios/` (Apple RoomPlan — 2 Swift files, build steps in its README).
+in `apps/scanner-ios/` (Apple RoomPlan — 4 Swift files, multi-room; build steps in its README).
 
 1. Join https://developer.apple.com/programs/ ($99/yr)
 2. Build ShieldTech Scanner in Xcode, distribute via TestFlight to the team
