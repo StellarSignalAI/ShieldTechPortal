@@ -247,6 +247,7 @@ function MobileDirectory({ onNav }) {
         <a href="?desktop=1" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Desktop Portal →</a>
         <a href={appUrls.tech || '#'} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Technician App →</a>
         <a href={appUrls.customer || '#'} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Customer Portal →</a>
+        <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)', paddingTop: 10, opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}</div>
       </div>
     </div>
   );
