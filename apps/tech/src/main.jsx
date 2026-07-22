@@ -34,6 +34,17 @@ const React = window.React;
 const ReactDOM = window.ReactDOM;
 const { useState } = React;
 
+/* Auto-GPS: request permission once per device; when granted, this tech's
+   live position streams to the Fleet map whenever the app is open. */
+window.addEventListener('shield:auth', function techAutoGps() {
+  const u = window.__shieldUser;
+  if (!u || !navigator.geolocation) return;
+  window.removeEventListener('shield:auth', techAutoGps);
+  navigator.geolocation.getCurrentPosition(
+    () => { try { if (window.startFleetSharing) window.startFleetSharing(u.initials || u.id); localStorage.setItem('st2:gps-on', '1'); } catch {} },
+    () => {}, { timeout: 8000 });
+});
+
 requestAnimationFrame(function () {
   requestAnimationFrame(function () {
     document.documentElement.classList.add('anim-ready');
@@ -49,6 +60,32 @@ window.__shieldAppUrls = {
 const TWEAK_DEFAULTS = {
   "view": "today"
 };
+
+/* Avatar dropdown — profile, GPS status, sign out */
+function TechAvatarMenu() {
+  const [open, setOpen] = useState(false);
+  const u = window.__shieldUser;
+  const item = { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '10px 12px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' };
+  return (
+    <div style={{ position: 'relative' }}>
+      <button onClick={() => setOpen(o => !o)} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>{(u && u.initials) || '·'}</button>
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 4000 }} />
+          <div style={{ position: 'absolute', top: 34, right: 0, zIndex: 4001, width: 220, background: 'var(--modal, #0d1420)', border: '1px solid var(--border-strong)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 16px 44px rgba(0,0,0,0.6)' }}>
+            <div style={{ padding: '12px 12px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{(u && u.name) || 'Technician'}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{(u && u.role) || 'Tech'} · {(u && u.email) || 'not signed in'}</div>
+            </div>
+            <button style={item} onClick={() => { setOpen(false); if (navigator.geolocation) navigator.geolocation.getCurrentPosition(() => { if (window.startFleetSharing && u) window.startFleetSharing(u.initials || u.id); }, () => {}); }}>⌖ Share GPS with dispatch</button>
+            <button style={item} onClick={() => { setOpen(false); if (window.__shieldAuth) window.__shieldAuth.signOut(); }}>← Sign out</button>
+            <div className="mono" style={{ padding: '6px 12px 10px', fontSize: 9, color: 'var(--text-low)', opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}</div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 /* Extended shell with 7 tabs */
 function TechShellV2({ tab, setTab, children }) {
@@ -85,7 +122,7 @@ function TechShellV2({ tab, setTab, children }) {
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--status-ok)', animation: 'pulse-online 3s ease-in-out infinite' }} />
                 <span style={{ fontSize: 10, color: 'var(--status-ok)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>On Duty</span>
               </div>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff' }}>{(window.__shieldUser && window.__shieldUser.initials) || '·'}</div>
+              <TechAvatarMenu />
             </div>
           </header>
 

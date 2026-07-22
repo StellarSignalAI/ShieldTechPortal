@@ -253,6 +253,36 @@ function MobileDirectory({ onNav }) {
   );
 }
 
+/* Top-right avatar → account & settings dropdown */
+function MAvatarMenu({ onNav }) {
+  const [open, setOpen] = useState(false);
+  const u = window.__shieldUser;
+  const go = (id) => { setOpen(false); onNav(id); };
+  const item = { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '11px 13px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' };
+  return (
+    <div style={{ position: 'relative' }}>
+      <button onClick={() => setOpen(o => !o)} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>{(u && u.initials) || '·'}</button>
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 4000 }} />
+          <div style={{ position: 'absolute', top: 34, right: 0, zIndex: 4001, width: 236, background: 'var(--modal, #0d1420)', border: '1px solid var(--border-strong)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 16px 44px rgba(0,0,0,0.6)' }}>
+            <div style={{ padding: '12px 13px 9px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{(u && u.name) || 'ShieldTech'}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{(u && u.role) || ''} {(u && u.email) || 'not signed in'}</div>
+            </div>
+            <button style={item} onClick={() => go('portal-settings')}>⚙ Settings</button>
+            <button style={item} onClick={() => go('users')}>◈ Users & Invites</button>
+            <button style={item} onClick={() => go('integrations')}>⇄ Integrations</button>
+            <button style={item} onClick={() => go('fleet')}>⌖ Fleet GPS</button>
+            {u && <button style={item} onClick={() => { setOpen(false); if (window.__shieldAuth) window.__shieldAuth.signOut(); }}>← Sign out</button>}
+            <div className="mono" style={{ padding: '6px 13px 10px', fontSize: 9, color: 'var(--text-low)', opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}</div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function MobilePortalApp() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   let screen = t.mscreen || 'custom-dashboard';
@@ -365,7 +395,7 @@ function MobilePortalApp() {
         <button onClick={() => nav('shieldtech-ai')} title="ShieldTech AI" style={{ background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 8, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
           <Icon name="hermes" size={15} color="var(--brand)" />
         </button>
-        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff' }}>{(window.__shieldUser && window.__shieldUser.initials) || '·'}</div>
+        <MAvatarMenu onNav={nav} />
       </header>
 
       {/* Content */}
