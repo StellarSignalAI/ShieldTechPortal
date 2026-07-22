@@ -22,14 +22,7 @@ function AssetsScreen() {
     { id: 'types', label: 'Asset Types', icon: '⊡' },
   ];
 
-  const configs = [
-    { id: 'CFG-001', name: 'CAM-01 (Lobby)', tag: 'ST-40012', type: 'IP Camera', mfg: 'Axis', model: 'P3265-V', serial: 'ACCC8EF01234', mac: 'AC:CC:8E:F0:12:34', hostname: 'cam-lobby-01', ip: '192.168.1.101', subnet: '/24', gateway: '192.168.1.1', vlan: 10, ports: { http: 80, https: 443, rtsp: 554, onvif: 8080 }, rtsp: 'rtsp://192.168.1.101:554/axis-media/media.amp', firmware: '11.8.64', fwUpdate: true, poe: true, mount: '10ft ceiling', cable: 'Cat6A', switch: 'SW-01 Port 3', installDate: 'Jan 15, 2025', purchaseDate: 'Dec 20, 2024', warranty: 'Jan 15, 2028', customer: 'Metro Bank Corp', site: 'Main Office', room: 'Lobby', floor: 1, status: 'online', uptime: 99.8, cost: 520, installCost: 280, notes: 'Covers main entrance + ATM area' },
-    { id: 'CFG-002', name: 'CAM-02 (Parking N)', tag: 'ST-40013', type: 'IP Camera', mfg: 'Axis', model: 'P3265-V', serial: 'ACCC8EF01235', mac: 'AC:CC:8E:F0:12:35', hostname: 'cam-parking-n', ip: '192.168.1.102', subnet: '/24', gateway: '192.168.1.1', vlan: 10, ports: { http: 80, https: 443, rtsp: 554, onvif: 8080 }, rtsp: 'rtsp://192.168.1.102:554/axis-media/media.amp', firmware: '11.8.64', fwUpdate: false, poe: true, mount: '15ft pole', cable: 'Cat6A', switch: 'SW-01 Port 4', installDate: 'Jan 15, 2025', purchaseDate: 'Dec 20, 2024', warranty: 'Jan 15, 2028', customer: 'Metro Bank Corp', site: 'Main Office', room: 'Parking N', floor: 0, status: 'online', uptime: 99.6, cost: 520, installCost: 350, notes: '' },
-    { id: 'CFG-003', name: 'NVR-01 (Server Room)', tag: 'ST-40020', type: 'NVR', mfg: 'Hanwha', model: 'XNR-6410', serial: 'HWV2605001234', mac: '00:09:18:A0:12:34', hostname: 'nvr-main', ip: '192.168.1.100', subnet: '/24', gateway: '192.168.1.1', vlan: 10, ports: { http: 80, https: 443 }, rtsp: '', firmware: '2.01.04', fwUpdate: true, poe: false, mount: 'Rack U4', cable: 'Cat6A', switch: 'SW-01 Port 1', installDate: 'Jan 15, 2025', purchaseDate: 'Dec 18, 2024', warranty: 'Jan 15, 2028', customer: 'Metro Bank Corp', site: 'Main Office', room: 'Server Room', floor: 1, status: 'online', uptime: 99.9, cost: 1650, installCost: 400, notes: '8TB RAID5, 30-day retention' },
-    { id: 'CFG-004', name: 'RDR-01 (Front Door)', tag: 'ST-40030', type: 'Access Reader', mfg: 'HID', model: 'iCLASS SE RK40', serial: 'HID8820001234', mac: '', hostname: '', ip: '', subnet: '', gateway: '', vlan: 0, ports: {}, rtsp: '', firmware: 'R3.4', fwUpdate: false, poe: false, mount: '48in AFF', cable: '18/4 + 22/6', switch: '', installDate: 'Mar 10, 2025', purchaseDate: 'Mar 1, 2025', warranty: 'Mar 10, 2027', customer: 'Metro Bank Corp', site: 'Main Office', room: 'Main Entrance', floor: 1, status: 'online', uptime: 100, cost: 180, installCost: 120, notes: 'Wiegand to VertX V1000' },
-    { id: 'CFG-005', name: 'SW-01 (IDF)', tag: 'ST-40040', type: 'Network Switch', mfg: 'Cisco', model: 'CBS350-24P-4G', serial: 'FCW12345678', mac: '00:1A:2B:3C:4D:5E', hostname: 'sw-idf-01', ip: '192.168.1.2', subnet: '/24', gateway: '192.168.1.1', vlan: 1, ports: { http: 80, https: 443 }, rtsp: '', firmware: '3.2.0.84', fwUpdate: false, poe: true, mount: 'Rack U10', cable: 'Cat6A', switch: 'Core Port 24', installDate: 'Jan 12, 2025', purchaseDate: 'Dec 10, 2024', warranty: 'Jan 12, 2030', customer: 'Metro Bank Corp', site: 'Main Office', room: 'Server Room', floor: 1, status: 'online', uptime: 99.95, cost: 680, installCost: 200, notes: '24-port PoE+, 370W budget' },
-    { id: 'CFG-006', name: 'CAM-10 (ER Entrance)', tag: 'ST-50001', type: 'IP Camera', mfg: 'Axis', model: 'P3265-V', serial: 'ACCC8EF05678', mac: 'AC:CC:8E:F0:56:78', hostname: 'cam-er-01', ip: '10.0.1.101', subnet: '/24', gateway: '10.0.1.1', vlan: 20, ports: { http: 80, https: 443, rtsp: 554 }, rtsp: 'rtsp://10.0.1.101:554/axis-media/media.amp', firmware: '11.6.42', fwUpdate: true, poe: true, mount: '12ft ceiling', cable: 'Cat6A', switch: 'SW-RM-01 Port 2', installDate: 'Feb 1, 2024', purchaseDate: 'Jan 15, 2024', warranty: 'Feb 1, 2027', customer: 'Riverside Medical', site: 'Main Campus', room: 'ER Entrance', floor: 1, status: 'warning', uptime: 97.2, cost: 520, installCost: 300, notes: 'Intermittent packet loss — check cable run' },
-  ];
+  const [configs] = useShieldStore(assetStore);;
 
   const filteredConfigs = customerScope ? configs.filter(c => c.customer === customerScope) : configs;
   const siteScopedConfigs = siteScope ? filteredConfigs.filter(c => c.site === siteScope) : filteredConfigs;
@@ -76,8 +69,31 @@ function AssetsScreen() {
           }}><span style={{ fontSize: 12, opacity: 0.7 }}>{t.icon}</span>{t.label}</button>
         ))}
         <div style={{ flex: 1 }} />
-        <button onClick={() => showToast('Export: asset list PDF/CSV')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export</button>
-        <button onClick={() => showToast('Bulk import CSV')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Import</button>
+        <button onClick={() => {
+          const rows = siteScopedConfigs.length ? siteScopedConfigs : configs;
+          if (!rows.length) { showToast('No assets to export yet'); return; }
+          const cols = ['id','name','type','mfg','model','serial','ip','customer','site','room','status'];
+          const csv = [cols.join(','), ...rows.map(r => cols.map(c => `"${String(r[c] ?? '').replace(/"/g,'""')}"`).join(','))].join('\n');
+          const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'shieldtech-assets.csv'; a.click();
+          showToast('Assets exported (CSV)', 'ok');
+        }} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export</button>
+        <button onClick={() => document.getElementById('asset-import-inp').click()} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Import</button>
+        <input id="asset-import-inp" type="file" accept=".csv" style={{ display: 'none' }} onChange={(e) => {
+          const f = e.target.files && e.target.files[0]; if (!f) return;
+          const rd = new FileReader();
+          rd.onload = () => {
+            const lines = String(rd.result).split(/\r?\n/).filter(Boolean);
+            if (lines.length < 2) { showToast('Empty or invalid CSV', 'warn'); return; }
+            const hdr = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').trim());
+            const recs = lines.slice(1).map((ln, k) => {
+              const vals = ln.match(/("([^"]|"")*"|[^,]*)/g).filter((_,ix)=>ix%2===0).map(v => v.replace(/^"|"$/g,'').replace(/""/g,'"'));
+              const o = { id: 'CFG-' + Date.now() + '-' + k }; hdr.forEach((h,ix) => o[h] = vals[ix] || ''); o.status = o.status || 'online'; return o;
+            });
+            assetStore.set(prev => [...recs, ...prev]);
+            showToast(recs.length + ' assets imported', 'ok');
+          };
+          rd.readAsText(f); e.target.value = '';
+        }} />
         <button onClick={() => setCreateAssetModal(true)} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Asset</button>
       </div>
 

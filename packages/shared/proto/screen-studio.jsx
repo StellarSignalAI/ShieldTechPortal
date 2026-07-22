@@ -106,6 +106,7 @@ function StudioScreen({ onExportToProposal }) {
   const [leftCollapsed, setLeftCollapsed] = React.useState(false);
   const [zoom, setZoom] = React.useState(1);
   const [pan, setPan] = React.useState({ x: 0, y: 0 });
+  const [planBg, setPlanBg] = React.useState(null);
   const panRef = React.useRef(null);
   const zoomBy = (d) => setZoom((z) => Math.min(2.5, Math.max(0.4, +(z + d).toFixed(2))));
   const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
@@ -327,7 +328,8 @@ function StudioScreen({ onExportToProposal }) {
               )}
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <button onClick={() => {/* upload */showToast('Upload floor plan image...');}} style={{ padding: '4px 10px', background: 'rgba(10,14,20,0.7)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', backdropFilter: 'blur(8px)' }}>◉ Upload Plan</button>
+            <button onClick={() => document.getElementById('studio-plan-inp').click()} style={{ padding: '4px 10px', background: 'rgba(10,14,20,0.7)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', backdropFilter: 'blur(8px)' }}>◉ Upload Plan</button>
+            <input id="studio-plan-inp" type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files && e.target.files[0]; if (!f) return; const u = URL.createObjectURL(f); setPlanBg(u); showToast('Floor plan loaded — drop devices onto it'); }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'rgba(10,14,20,0.7)', border: '1px solid var(--border-subtle)', borderRadius: 4, backdropFilter: 'blur(8px)' }}>
               <button onClick={() => zoomBy(-0.1)} title="Zoom out" style={{ padding: '3px 9px', background: 'transparent', border: 'none', color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>−</button>
               <button onClick={resetView} title="Reset view" className="mono" style={{ padding: '3px 4px', minWidth: 38, background: 'transparent', border: 'none', borderLeft: '1px solid var(--border-subtle)', borderRight: '1px solid var(--border-subtle)', color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>{Math.round(zoom * 100)}%</button>
@@ -341,6 +343,7 @@ function StudioScreen({ onExportToProposal }) {
           <button onClick={() => setLeftCollapsed(false)} title="Show catalog" style={{ position: 'absolute', top: 10, left: 10, zIndex: 6, display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', background: 'rgba(10,14,20,0.85)', border: '1px solid var(--brand)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', backdropFilter: 'blur(8px)' }}>» Catalog</button>
         }
 
+        {planBg && <img src={planBg} alt="floor plan" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', opacity: 0.5, pointerEvents: 'none' }} />}
         {/* Floor Plan SVG Canvas */}
         <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
           <defs>

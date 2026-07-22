@@ -175,8 +175,15 @@ function NetworkDiscoveryView({ showToast }) {
 function PortMapView({ showToast }) {
   const [sw, setSw] = React.useState('sw01');
   const [sel, setSel] = React.useState(null);
-  const cur = NG_SWITCHES.find(s => s.id === sw);
-  const map = NG_PORTMAP[sw] || {};
+  const cur = NG_SWITCHES.find(s => s.id === sw) || NG_SWITCHES[0];
+  if (!cur) return (
+    <div className="glass" style={{ padding: '40px 24px', textAlign: 'center', borderRadius: 12 }}>
+      <div style={{ fontSize: 24, marginBottom: 10, opacity: 0.5 }}>⊡</div>
+      <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-high)' }}>No switches discovered yet</div>
+      <div style={{ fontSize: 12, color: 'var(--text-mid)', marginTop: 5 }}>Port maps auto-document once a network collector is connected from the desktop Monitoring Console.</div>
+    </div>
+  );
+  const map = NG_PORTMAP[cur.id] || {};
   const ports = Array.from({ length: cur.ports }, (_, i) => i + 1);
   const half = cur.ports / 2;
   const used = Object.keys(map).length;

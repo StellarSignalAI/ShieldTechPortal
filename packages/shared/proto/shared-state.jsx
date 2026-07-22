@@ -241,6 +241,7 @@ const PHOTO_CHECKLISTS = {
    look: {h: hue, p: pattern (ceiling|rack|wall|exterior|panel), s: seed}
    pair: id shared by a before/after pair · slot: required-checklist slot name */
 const photoStore = createShieldStore('photos', []);
+const assetStore = createShieldStore('assets', []);
 
 /* ── Punch List Store ──
    pin: {x,y} percent coords on the site floor plan */
@@ -288,7 +289,7 @@ Object.assign(window, {
   createShieldStore, useShieldStore,
   ticketStore, workOrderStore, incidentStore, jobStore,
   npsStore, poStore, skillsStore, qtcStore, mrrStore, partsReqStore,
-  photoStore, PHOTO_CHECKLISTS, punchStore, PUNCH_STATUS, PUNCH_TECHS,
+  photoStore, assetStore, PHOTO_CHECKLISTS, punchStore, PUNCH_STATUS, PUNCH_TECHS,
   backlogStore, woFocusStore, truckStore,
   customerStore, subCustomerStore, buildCustomer,
   mobileTabsStore, M_ALL_TAB, approvalStore,
