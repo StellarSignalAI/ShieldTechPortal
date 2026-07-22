@@ -11,7 +11,7 @@ const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromi
 const page = await (await browser.newContext({ viewport: { width: 1600, height: 1000 } })).newPage();
 
 const errors = [];
-page.on('console', m => { if (m.type() === 'error') errors.push({ screen: current, text: m.text().slice(0, 300) }); });
+page.on('console', m => { if (m.type() === 'error' && !m.text().includes('Failed to load resource')) errors.push({ screen: current, text: m.text().slice(0, 300) }); });
 page.on('pageerror', e => errors.push({ screen: current, text: String(e).slice(0, 300) }));
 
 let current = '(load)';

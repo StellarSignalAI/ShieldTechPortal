@@ -175,6 +175,11 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
   const [cats, setCats] = React.useState({ furniture: true, appliance: true, plumbing: true, electrical: true });
   const [replay, setReplay] = React.useState(true);
   const vfRef = React.useRef(null);
+  /* LIVE WALL CAPTURE — compass/gyro-driven: as you sweep the phone across a
+     wall, the sweep commits a wall segment and the plan builds in real time. */
+  const [liveWalls, setLiveWalls] = React.useState([]);   // {heading, len}
+  const [headingNow, setHeadingNow] = React.useState(null);
+  const sweepRef = React.useRef(null);                     // {startH, lastH, swept}
   const videoRef = React.useRef(null);
   const streamRef = React.useRef(null);
 
@@ -197,6 +202,41 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
     return () => clearTimeout(t);
   }, [stage, calStep, speed]);
 
+  /* orientation → wall segments (runs while scanning with the camera on) */
+  React.useEffect(() => {
+    if (stage !== 'scanning' || cam !== 'on' || closing) return;
+    const norm = (h) => ((h % 360) + 360) % 360;
+    const onOri = (e) => {
+      let h = (e.webkitCompassHeading != null) ? e.webkitCompassHeading : (e.alpha != null ? 360 - e.alpha : null);
+      if (h == null) return;
+      h = norm(h);
+      setHeadingNow(Math.round(h));
+      const sw = sweepRef.current;
+      if (!sw) { sweepRef.current = { startH: h, lastH: h, swept: 0 }; return; }
+      let d = h - sw.lastH;
+      if (d > 180) d -= 360; if (d < -180) d += 360;
+      sw.swept += Math.abs(d); sw.lastH = h;
+      if (sw.swept >= 38) {  // one wall's worth of sweep
+        const wallHeading = norm(sw.startH + (sw.swept / 2));
+        setLiveWalls(w => {
+          if (w.length >= 12) return w;
+          const nw = [...w, { heading: wallHeading, len: 10 + Math.round(sw.swept / 12) }];
+          setFound(f => [{ label: `Wall ${nw.length}`, detail: `captured · live sweep ${Math.round(sw.swept)}°`, color: '#34D399' }, ...f].slice(0, 40));
+          setWallsDone(x => [...x, nw.length - 1]);
+          setCoach(nw.length < 3 ? `Wall ${nw.length} locked — keep turning through the room` : `${nw.length} walls locked — tap ■ when the room is closed`);
+          return nw;
+        });
+        sweepRef.current = { startH: h, lastH: h, swept: 0 };
+      }
+    };
+    window.addEventListener('deviceorientationabsolute', onOri, true);
+    window.addEventListener('deviceorientation', onOri, true);
+    return () => {
+      window.removeEventListener('deviceorientationabsolute', onOri, true);
+      window.removeEventListener('deviceorientation', onOri, true);
+    };
+  }, [stage, cam, closing]);
+
   /* ── LIVE AI DETECTION (real camera + on-device models) ──
      Objects/furniture via COCO-SSD; wall/ceiling/floor/door/window coverage via
      DeepLab ADE20k. Runs whenever the camera is on during a scan and feeds the
@@ -213,10 +253,13 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
         ? 'AR depth available — scanning with live AI detection'
         : 'Live AI detection on — LiDAR-class depth uses the native capture app; objects, walls & ceilings are identified from the camera feed');
     });
+    let firstDet = false;
     const loop = async () => {
+      setCoach(c => c || 'Loading AI vision models…');
       while (!stop) {
         try {
           const dets = await V.detectObjects(videoRef.current);
+          if (!firstDet) { firstDet = true; setCoach('AI detection active — sweep each wall slowly'); }
           if (stop) return;
           if (dets.length) {
             setBoxes(dets.map(d => ({ x: d.x, y: d.y, w: d.w, h: d.h, label: d.label, conf: d.conf, color: '#34D399' })));
@@ -303,7 +346,20 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
     setClosing(true); setScanWall(null); setCoach('Closing room geometry…');
     setTimeout(() => {
       const orange = Math.max(0, script.walls - wallsDone.length);
-      setResult({ name: name || script.guess, mode: 'auto', poly: script.poly, h: script.h, doors: detDoors, objects: [...detObjs, ...extras], orange });
+      let poly = script.poly;
+      if (cam === 'on' && liveWalls.length >= 3) {
+        // Build the room polygon from the walls actually swept on-site.
+        let x = 0, y = 0; const pts = [[0, 0]];
+        liveWalls.forEach(w => {
+          const a = (w.heading + 90) * Math.PI / 180;
+          x += Math.cos(a) * w.len; y += Math.sin(a) * w.len;
+          pts.push([x, y]);
+        });
+        const xs = pts.map(p2 => p2[0]), ys = pts.map(p2 => p2[1]);
+        const mx = Math.min(...xs), my = Math.min(...ys);
+        poly = pts.slice(0, -1).map(p2 => [Math.round((p2[0] - mx) * 2) / 2 + 1, Math.round((p2[1] - my) * 2) / 2 + 1]);
+      }
+      setResult({ name: name || script.guess, mode: 'auto', poly, h: script.h, doors: detDoors, objects: [...detObjs, ...extras], orange });
       setName(n => n || script.guess);
       setClosing(false);
       setStage('roomdone');
@@ -312,6 +368,8 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
 
   const record = () => {
     if (stage === 'scanning') { finishScan(); return; }
+    try { if (window.DeviceOrientationEvent && DeviceOrientationEvent.requestPermission) DeviceOrientationEvent.requestPermission().catch(() => {}); } catch {}
+    setLiveWalls([]); sweepRef.current = null;
     const seed = roomCount + session.length + 1;
     setScript(ssBuildAutoRoom(seed));
     setEvIdx(0); setWallsDone([]); setBoxes([]); setFound([]); setCoach(''); setScanWall(null); setName('');
@@ -498,6 +556,44 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
             {Array.from({ length: script.walls }, (_, i) => (
               <span key={i} style={{ width: 18, height: 5, borderRadius: 3, background: wallsDone.includes(i) ? '#34D399' : scanWall === i ? '#fff' : 'rgba(255,255,255,0.2)', boxShadow: scanWall === i ? '0 0 8px #fff' : 'none', transition: 'background 0.3s' }}></span>
             ))}
+          </div>
+        )}
+
+        {/* LIVE PLAN — the room builds in real time as walls are swept */}
+        {stage === 'scanning' && cam === 'on' && (
+          <div style={{ position: 'absolute', left: 10, bottom: 104, zIndex: 3, width: 148, borderRadius: 12, background: 'rgba(4,10,16,0.82)', border: '1px solid var(--border-strong)', padding: '8px 9px 6px', backdropFilter: 'blur(6px)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.1em', color: '#34D399' }}>LIVE PLAN</span>
+              <span className="mono" style={{ fontSize: 8, color: 'var(--text-low)' }}>{headingNow != null ? headingNow + '°' : '—'}</span>
+            </div>
+            <div style={{ perspective: 320 }}>
+              <svg width="130" height="96" viewBox="0 0 130 96" style={{ transform: 'rotateX(38deg)', transformOrigin: '50% 70%' }}>
+                {(() => {
+                  if (!liveWalls.length) return <text x="65" y="52" textAnchor="middle" fill="rgba(159,178,200,0.4)" fontSize="8">sweep a wall to start</text>;
+                  let x = 0, y = 0; const pts = [[0, 0]];
+                  liveWalls.forEach(w => { const a = (w.heading + 90) * Math.PI / 180; x += Math.cos(a) * w.len; y += Math.sin(a) * w.len; pts.push([x, y]); });
+                  const xs = pts.map(p2 => p2[0]), ys = pts.map(p2 => p2[1]);
+                  const mnx = Math.min(...xs), mxx = Math.max(...xs), mny = Math.min(...ys), mxy = Math.max(...ys);
+                  const sc = Math.min(110 / Math.max(1, mxx - mnx), 74 / Math.max(1, mxy - mny));
+                  const P = pts.map(p2 => [10 + (p2[0] - mnx) * sc, 10 + (p2[1] - mny) * sc]);
+                  const closed = liveWalls.length >= 3;
+                  return (
+                    <g>
+                      {closed && <polygon points={P.map(p2 => p2.join(',')).join(' ')} fill="rgba(52,211,153,0.10)" />}
+                      {P.slice(0, -1).map((p2, i) => (
+                        <g key={i}>
+                          <line x1={p2[0]} y1={p2[1]} x2={P[i + 1][0]} y2={P[i + 1][1]} stroke="#34D399" strokeWidth="2.4" strokeLinecap="round" />
+                          <line x1={p2[0]} y1={p2[1] - 5} x2={P[i + 1][0]} y2={P[i + 1][1] - 5} stroke="rgba(52,211,153,0.35)" strokeWidth="1.2" />
+                          <line x1={p2[0]} y1={p2[1]} x2={p2[0]} y2={p2[1] - 5} stroke="rgba(52,211,153,0.35)" strokeWidth="1" />
+                        </g>
+                      ))}
+                      {P.length > 1 && <line x1={P[P.length - 1][0]} y1={P[P.length - 1][1]} x2={P[0][0]} y2={P[0][1]} stroke={closed ? 'rgba(52,211,153,0.5)' : 'rgba(251,191,36,0.6)'} strokeWidth="1.4" strokeDasharray="3 3" />}
+                    </g>
+                  );
+                })()}
+              </svg>
+            </div>
+            <div style={{ fontSize: 8, color: 'var(--text-low)', textAlign: 'center' }}>{liveWalls.length} wall{liveWalls.length === 1 ? '' : 's'} · {detObjs.length + extras.length} objects</div>
           </div>
         )}
 

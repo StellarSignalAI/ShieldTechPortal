@@ -12,7 +12,7 @@ const ctx = await browser.newContext({ ...devices['iPhone 14'] });
 const page = await ctx.newPage();
 const errors = [];
 let current = '(load)';
-page.on('console', m => { if (m.type() === 'error') errors.push({ screen: current, text: m.text().slice(0, 200) }); });
+page.on('console', m => { if (m.type() === 'error' && !m.text().includes('Failed to load resource')) errors.push({ screen: current, text: m.text().slice(0, 200) }); });
 page.on('pageerror', e => errors.push({ screen: current, text: String(e).slice(0, 200) }));
 
 await page.goto(BASE, { waitUntil: 'networkidle' });

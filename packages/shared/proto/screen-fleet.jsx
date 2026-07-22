@@ -57,10 +57,13 @@ const FleetTransport = {
   publish(techId, { lat, lng, accuracy, source }) {
     const { x, y } = fleetProject(lat, lng);
     fleetStore.set(prev => {
-      const t = prev.techs[techId];
-      if (!t) return prev;
+      let t = prev.techs[techId];
+      if (!t) {
+        const u = window.__shieldUser;
+        t = { name: (u && u.name) || techId, role: (u && u.role) || 'Technician', x: 50, y: 50, onDuty: true, status: 'on-site', job: '—', sharing: true, source: 'geolocation', updatedAt: Date.now(), trail: [] };
+      }
       const now = Date.now();
-      const trail = [...(t.trail || []), { x, y, t: now }].slice(-FLEET_TRAIL_MAX);
+      const trail = [...(t.trail || []), { x, y, lat, lng, t: now }].slice(-FLEET_TRAIL_MAX);
       return { ...prev, techs: { ...prev.techs, [techId]: { ...t, x, y, lat, lng, accuracy, updatedAt: now, trail, sharing: true, source: source || 'geolocation' } } };
     });
   },
@@ -113,6 +116,32 @@ function fleetAge(updatedAt, now) {
 function fleetIsStale(t, now) { return t.onDuty && now - t.updatedAt > FLEET_STALE_MS; }
 
 /* ── Fleet Map Screen ── */
+/* Real dark street map (Leaflet + CARTO dark). Renders when the browser can —
+   the schematic canvas below remains the fallback and the site-plan layer. */
+function FleetStreetMap({ techs }) {
+  const elRef = React.useRef(null);
+  const apiRef = React.useRef(null);
+  const hasGeo = Object.values(techs || {}).some(t => t.lat != null);
+  React.useEffect(() => {
+    if (!elRef.current || !window.__shieldLiveMap || apiRef.current) return;
+    try { apiRef.current = window.__shieldLiveMap.mount(elRef.current); apiRef.current.fit(techs); } catch {}
+    return () => { try { apiRef.current && apiRef.current.destroy(); } catch {} apiRef.current = null; };
+  }, []);
+  React.useEffect(() => { try { apiRef.current && apiRef.current.update(techs); } catch {} }, [techs]);
+  return (
+    <div style={{ position: 'relative', height: '100%', borderRadius: 12, overflow: 'hidden' }}>
+      <div ref={elRef} style={{ position: 'absolute', inset: 0, background: '#0b1420' }} />
+      {!hasGeo && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 500, pointerEvents: 'none' }}>
+          <div style={{ padding: '10px 16px', borderRadius: 10, background: 'rgba(4,10,16,0.85)', border: '1px solid var(--border-strong)', fontSize: 12, color: 'var(--text-mid)' }}>
+            No live positions yet — techs appear here the moment their app shares GPS
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FleetMapScreen() {
   const [fleet, setFleet] = useShieldStore(fleetStore);
   const [now, setNow] = React.useState(Date.now());
@@ -159,7 +188,11 @@ function FleetMapScreen() {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 14, alignItems: 'start' }}>
-        {/* Map */}
+        {/* Map — real dark street map with live tech pins & trails */}
+        <div className="glass" style={{ position: 'relative', height: 520, overflow: 'hidden', borderRadius: 12 }}>
+          <FleetStreetMap techs={fleet.techs} />
+        </div>
+        <div style={{ display: 'none' }} className="glass-schematic-retired">
         <div className="glass" style={{ position: 'relative', height: 520, overflow: 'hidden', borderRadius: 12, background: 'linear-gradient(160deg, #0b1420, #0d1826 60%, #0b1322)' }}>
           {/* dark tile grid */}
           <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
@@ -211,6 +244,7 @@ function FleetMapScreen() {
           })}
           <style>{'@keyframes fleetPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4);} 50% { box-shadow: 0 0 0 8px rgba(251,191,36,0);} }'}</style>
           <div style={{ position: 'absolute', left: 12, bottom: 10, fontSize: 9, color: 'var(--text-low)' }}>Philadelphia · dark tiles · trails = last {FLEET_TRAIL_MAX} fixes</div>
+        </div>
         </div>
 
         {/* Side panel */}

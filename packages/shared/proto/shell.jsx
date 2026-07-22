@@ -289,6 +289,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
       {/* Left: breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <span className="display" style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-high)', letterSpacing: '-0.01em' }}>{title}</span>
+        {window.ShieldContextPill && <ShieldContextPill />}
       </div>
 
       {/* Center: search */}

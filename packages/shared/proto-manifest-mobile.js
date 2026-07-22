@@ -39,3 +39,4 @@ import './proto/screen-invoice-builder.jsx';
 import './proto/screen-fleet.jsx';
 import './proto/screen-fleet-share.jsx';
 import './proto/screen-outbox.jsx';
+import './proto/shared-context.jsx';

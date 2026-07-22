@@ -391,6 +391,7 @@ function MobilePortalApp() {
           <span style={{ height: 2, width: 19, borderRadius: 2, background: 'var(--text-high)' }} />
         </button>
         <img src="uploads/ShieldTech Logo Transparent MK3.png" alt="ShieldTech" style={{ height: 24 }} />
+        <ShieldContextPill compact />
         <div style={{ flex: 1 }} />
         <button onClick={() => nav('shieldtech-ai')} title="ShieldTech AI" style={{ background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 8, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
           <Icon name="hermes" size={15} color="var(--brand)" />

@@ -6,6 +6,7 @@
 import './proto/icons.jsx';
 import './proto/shared-components.jsx';
 import './proto/shared-state.jsx';
+import './proto/shared-context.jsx';
 import './proto/shell.jsx';
 import './proto/photos-shared.jsx';
 
