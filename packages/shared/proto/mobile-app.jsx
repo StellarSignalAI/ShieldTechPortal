@@ -172,7 +172,7 @@ const M_SCREEN_MAP = {
 
 /* Ids resolved by purpose-built touch-native views (branches below). Any of
    these can also open its full desktop screen via the '<id>-full' alias. */
-const M_NATIVE_IDS = ['m-more','calendar','cameras','topology','warroom','floorplan','anomaly','login','helpdesk','incidents','quote-cash','purchase-orders','parts-req','mrr','nps','skills','knowledge','warranty','photos','punchlist','subcontractors','projects','proposals','finance','certs','tools','costing','audit','reports','contracts','sla','commissions','compliance','survey-ai','sitescan'];
+const M_NATIVE_IDS = ['m-more','calendar','cameras','topology','warroom','floorplan','anomaly','login','helpdesk','incidents','quote-cash','purchase-orders','parts-req','mrr','nps','skills','knowledge','warranty','photos','punchlist','subcontractors','projects','proposals','finance','certs','tools','costing','audit','reports','contracts','sla','commissions','compliance','survey-ai','sitescan','fleet'];
 
 const M_TABS = [
   { id: 'custom-dashboard', icon: 'dashboard', label: 'Home' },
@@ -356,6 +356,7 @@ function MobilePortalApp() {
   else if (screen === 'compliance') content = <MCompliance onNav={nav} />;
   else if (screen === 'survey-ai') content = <MSurvey onNav={nav} />;
   else if (screen === 'sitescan') content = <MSurveyScan onNav={nav} />;
+  else if (screen === 'fleet') content = <div style={{ height: 'calc(100dvh - 118px)', minHeight: 360, margin: -14 }}><FleetMapScreen /></div>;
   else if (screen === 'login') content = <LoginScreen />;
   else if (M_NATIVE[screen]) { const Native = M_NATIVE[screen]; content = <Native onNav={nav} />; }
   else {
@@ -364,7 +365,7 @@ function MobilePortalApp() {
   }
   // Bespoke mobile = native touch view + the COMPLETE desktop toolset inline,
   // reflowed for the phone. One surface, nothing missing, no mode toggle.
-  const FULL_INLINE_SKIP = ['m-more', 'login', 'sitescan', 'cameras', 'topology', 'warroom', 'floorplan', 'anomaly', 'custom-dashboard'];
+  const FULL_INLINE_SKIP = ['m-more', 'login', 'sitescan', 'cameras', 'topology', 'warroom', 'floorplan', 'anomaly', 'custom-dashboard', 'fleet'];
   if (!fullBase && hasFullView && !FULL_INLINE_SKIP.includes(screen)) {
     const FullFn = M_SCREEN_MAP[screen];
     content = (

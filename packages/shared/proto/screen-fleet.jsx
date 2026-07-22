@@ -172,128 +172,59 @@ function FleetMapScreen() {
     : t.status === 'driving' ? 'var(--brand)' : 'var(--status-ok)';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, height: '100%', minHeight: 'min(78vh, 640px)' }} data-screen-label="Fleet Map">
       {/* Compliance banner */}
       {staleIds.filter(id => fleet.ackAlerts?.[id] !== fleet.techs[id].updatedAt).length > 0 && (
-        <div className="glass" style={{ padding: '10px 16px', borderLeft: '3px solid var(--status-warn)', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <Icon name="anomaly" size={16} color="var(--status-warn)" />
-          <div style={{ fontSize: 12, color: 'var(--text-high)', fontWeight: 600 }}>Location compliance</div>
+        <div className="glass" style={{ padding: '9px 14px', borderLeft: '3px solid var(--status-warn)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', flexShrink: 0 }}>
+          <Icon name="anomaly" size={15} color="var(--status-warn)" />
+          <span style={{ fontSize: 12, color: 'var(--text-high)', fontWeight: 600 }}>Location compliance</span>
           {staleIds.map(id => (
-            <span key={id} style={{ fontSize: 11, color: 'var(--text-mid)', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              {fleet.techs[id].name} — no location for <b style={{ color: 'var(--status-warn)' }}>{fleetAge(fleet.techs[id].updatedAt, now)}</b> while on duty
-              <button onClick={() => ackStale(id)} style={{ padding: '2px 8px', fontSize: 10, background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Acknowledge</button>
+            <span key={id} style={{ fontSize: 11, color: 'var(--text-mid)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              {fleet.techs[id].name} — stale <b style={{ color: 'var(--status-warn)' }}>{fleetAge(fleet.techs[id].updatedAt, now)}</b>
+              <button onClick={() => ackStale(id)} style={{ padding: '2px 8px', fontSize: 10, background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Ack</button>
             </span>
           ))}
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 14, alignItems: 'start' }}>
-        {/* Map — real dark street map with live tech pins & trails */}
-        <div className="glass" style={{ position: 'relative', height: 520, overflow: 'hidden', borderRadius: 12 }}>
-          <FleetStreetMap techs={fleet.techs} />
-        </div>
-        <div style={{ display: 'none' }} className="glass-schematic-retired">
-        <div className="glass" style={{ position: 'relative', height: 520, overflow: 'hidden', borderRadius: 12, background: 'linear-gradient(160deg, #0b1420, #0d1826 60%, #0b1322)' }}>
-          {/* dark tile grid */}
-          <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
-            {Array.from({ length: 20 }).map((_, i) => (
-              <React.Fragment key={i}>
-                <line x1={`${i * 5}%`} y1="0" x2={`${i * 5}%`} y2="100%" stroke="rgba(63,169,245,0.05)" strokeWidth="1" />
-                <line x1="0" y1={`${i * 5}%`} x2="100%" y2={`${i * 5}%`} stroke="rgba(63,169,245,0.05)" strokeWidth="1" />
-              </React.Fragment>
-            ))}
-            {/* streets flavor */}
-            <line x1="0" y1="40%" x2="100%" y2="34%" stroke="rgba(63,169,245,0.12)" strokeWidth="3" />
-            <line x1="30%" y1="0" x2="36%" y2="100%" stroke="rgba(63,169,245,0.10)" strokeWidth="2.5" />
-            <line x1="0" y1="68%" x2="100%" y2="74%" stroke="rgba(63,169,245,0.08)" strokeWidth="2" />
-          </svg>
-          {/* last-seen trails — percent-units viewBox */}
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-            {techIds.map(id => {
-              const t = fleet.techs[id];
-              if (!t.trail || t.trail.length < 2 || !t.onDuty) return null;
-              const pts = [...t.trail.map(p => `${p.x},${p.y}`), `${t.x},${t.y}`].join(' ');
-              return <polyline key={id} points={pts} fill="none" stroke={statusColor(t)} strokeWidth="0.35" strokeDasharray="1.2 1" opacity="0.5" />;
-            })}
-          </svg>
-          {/* markers */}
-          {techIds.map(id => {
-            const t = fleet.techs[id];
-            const stale = fleetIsStale(t, now);
-            return (
-              <div key={id} onClick={() => setSel(sel === id ? null : id)}
-                style={{ position: 'absolute', left: `${t.x}%`, top: `${t.y}%`, transform: 'translate(-50%,-50%)', cursor: 'pointer', textAlign: 'center', zIndex: sel === id ? 5 : 2 }}>
-                <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(10,18,30,0.9)', border: `2px solid ${statusColor(t)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: statusColor(t), boxShadow: sel === id ? `0 0 0 5px rgba(63,169,245,0.15)` : 'none', opacity: t.onDuty ? 1 : 0.5, animation: stale ? 'fleetPulse 1.6s ease-in-out infinite' : 'none' }}>
-                  {id}
-                </div>
-                <div style={{ fontSize: 8, color: stale ? 'var(--status-warn)' : 'var(--text-low)', marginTop: 2, whiteSpace: 'nowrap' }}>
-                  {stale ? `⚠ ${fleetAge(t.updatedAt, now)}` : fleetAge(t.updatedAt, now)}
-                </div>
-                {sel === id && (
-                  <div className="glass" style={{ position: 'absolute', top: 38, left: '50%', transform: 'translateX(-50%)', width: 190, padding: 10, textAlign: 'left', zIndex: 9 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{t.name}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-mid)', margin: '2px 0' }}>{t.role} · {t.status}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{t.job}</div>
-                    <div style={{ fontSize: 10, color: stale ? 'var(--status-warn)' : 'var(--status-ok)', marginTop: 4 }}>
-                      {t.sharing ? '● streaming live' : stale ? '⚠ stale' : '● last fix'} · {fleetAge(t.updatedAt, now)}{t.accuracy ? ` · ±${Math.round(t.accuracy)}m` : ''}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          <style>{'@keyframes fleetPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4);} 50% { box-shadow: 0 0 0 8px rgba(251,191,36,0);} }'}</style>
-          <div style={{ position: 'absolute', left: 12, bottom: 10, fontSize: 9, color: 'var(--text-low)' }}>Philadelphia · dark tiles · trails = last {FLEET_TRAIL_MAX} fixes</div>
-        </div>
-        </div>
+      {/* Full-bleed dispatcher map with a floating roster overlay */}
+      <div className="glass" style={{ position: 'relative', flex: 1, minHeight: 380, overflow: 'hidden', borderRadius: 14 }}>
+        <FleetStreetMap techs={fleet.techs} />
 
-        {/* Side panel */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div className="glass" style={{ padding: 14 }}>
-            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 8 }}>On-duty compliance</div>
-            {techIds.map(id => {
-              const t = fleet.techs[id];
-              const stale = fleetIsStale(t, now);
-              return (
-                <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor(t), flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-high)' }}>{t.name}</div>
-                    <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{t.onDuty ? t.status : 'clocked out'}</div>
-                  </div>
-                  <span className="mono" style={{ fontSize: 9, color: stale ? 'var(--status-warn)' : 'var(--text-mid)' }}>{stale ? '⚠ ' : ''}{fleetAge(t.updatedAt, now)}</span>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="glass" style={{ padding: 14 }}>
-            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 8 }}>Tech-side sharing (demo)</div>
-            <div style={{ fontSize: 10, color: 'var(--text-mid)', lineHeight: 1.5, marginBottom: 8 }}>
-              Streams this device's real GPS into the fleet as <b>{(window.__shieldUser && window.__shieldUser.name) || 'this device'}</b> — the same code path the tech app runs while open.
+        {/* Stat strip — top-left */}
+        <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 500, display: 'flex', gap: 8, flexWrap: 'wrap', maxWidth: 'calc(100% - 24px)' }}>
+          {[['On duty', techIds.filter(id => fleet.techs[id].onDuty).length, 'var(--status-ok)'],
+            ['Driving', techIds.filter(id => fleet.techs[id].status === 'driving').length, 'var(--brand)'],
+            ['Stale', staleIds.length, staleIds.length ? 'var(--status-warn)' : 'var(--text-low)']].map(([l, v, c]) => (
+            <div key={l} className="glass" style={{ padding: '6px 12px', borderRadius: 10, background: 'rgba(4,10,16,0.72)' }}>
+              <div className="mono" style={{ fontSize: 16, fontWeight: 700, color: c }}>{v}</div>
+              <div style={{ fontSize: 8, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-low)' }}>{l}</div>
             </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button onClick={() => startFleetSharing('JL', setShareState)} style={{ flex: 1, padding: '8px 0', background: shareState === 'live' ? 'rgba(52,211,153,0.15)' : 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 7, color: shareState === 'live' ? 'var(--status-ok)' : '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
-                {shareState === 'live' ? '● Streaming' : shareState === 'requesting' ? 'Requesting…' : 'Share my location'}
-              </button>
-              <button onClick={() => { stopFleetSharing(); setShareState('idle'); }} style={{ padding: '8px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Stop</button>
-            </div>
-            {shareState === 'denied' && (
-              <div style={{ fontSize: 10, color: 'var(--status-warn)', marginTop: 8, lineHeight: 1.5 }}>
-                Location permission denied. Re-enable in Settings → Safari → Location, then tap Share again — the browser remembers the denial.
-              </div>
-            )}
-            {(shareState === 'unsupported' || shareState === 'error') && (
-              <button onClick={() => startFleetSim('JL')} style={{ width: '100%', marginTop: 8, padding: '7px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>No GPS here — run simulated drive</button>
-            )}
-          </div>
+          ))}
+        </div>
 
-          <div className="glass" style={{ padding: 14, borderLeft: '3px solid var(--border-strong)' }}>
-            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 6 }}>Hard limit — read this</div>
-            <div style={{ fontSize: 10, color: 'var(--text-mid)', lineHeight: 1.6 }}>
-              Web tracking runs only while the tech app is open, and a tech can always revoke location permission — iOS/Android enforce both at the OS level.
-              Truly un-disableable background GPS needs the <b>native scanner app</b> extended with always-on location, or <b>MDM-managed devices</b>.
-              The stale-location flag above is the web-maximum compliance control: you know the moment coverage drops.
+        {/* Roster overlay — top-right, collapsible; scrolls independently */}
+        <div style={{ position: 'absolute', top: 12, right: 12, bottom: 12, zIndex: 500, width: 'min(280px, 78vw)', display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
+          <div className="glass" style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', minHeight: 0, background: 'rgba(4,10,16,0.82)', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ padding: '10px 13px 8px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-low)' }}>Fleet roster</span>
+              <span className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{techIds.length}</span>
+            </div>
+            <div style={{ overflowY: 'auto', padding: '4px 0', minHeight: 0 }}>
+              {techIds.length === 0 && <div style={{ padding: '18px 13px', fontSize: 11, color: 'var(--text-low)', lineHeight: 1.5 }}>No techs sharing location yet. Technicians appear here automatically when their app is open (location permission is requested once at sign-in).</div>}
+              {techIds.map(id => {
+                const t = fleet.techs[id]; const stale = fleetIsStale(t, now);
+                return (
+                  <button key={id} onClick={() => setSel(sel === id ? null : id)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 13px', background: sel === id ? 'rgba(63,169,245,0.1)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor(t), flexShrink: 0 }} />
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</span>
+                      <span style={{ display: 'block', fontSize: 9, color: 'var(--text-low)' }}>{t.onDuty ? (t.job || t.status) : 'clocked out'}</span>
+                    </span>
+                    <span className="mono" style={{ fontSize: 9, color: stale ? 'var(--status-warn)' : 'var(--text-mid)', flexShrink: 0 }}>{stale ? '⚠ ' : ''}{fleetAge(t.updatedAt, now)}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
