@@ -124,6 +124,7 @@ const AU_ROLE_DEFAULT_RIGHTS = {
 
 function UsersScreen() {
   const configured = Boolean(window.__shieldSupabaseConfigured);
+  const selfId = (window.__shieldUser && window.__shieldUser.id) || null;
   const [rows, setRows] = React.useState([]);
   const [loading, setLoading] = React.useState(configured);
   const [email, setEmail] = React.useState('');
@@ -221,22 +222,103 @@ function UsersScreen() {
           </div>
         )}
         {rows.map(r => (
-          <div key={r.email} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 20px', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
-              {(r.name || r.email).split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('')}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{r.name || r.email}</div>
-              <div className="mono" style={{ fontSize: 11, color: 'var(--text-low)' }}>{r.email}</div>
-            </div>
-            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', color: r.role === 'Admin' ? 'var(--status-critical)' : 'var(--brand)', background: 'rgba(63,169,245,0.08)', borderRadius: 8, padding: '3px 10px' }}>{r.role.toUpperCase()}</span>
-            <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', width: 170, textAlign: 'right' }}>
-              {AU_APPS.filter(([id]) => r.app_rights && r.app_rights[id]).map(([, l]) => l).join(' · ') || 'no apps'}
-            </span>
-            {r.must_change_password && <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--status-warn)', background: 'rgba(251,191,36,0.08)', borderRadius: 8, padding: '3px 9px' }}>TEMP PW</span>}
-          </div>
+          <UserRow key={r.email} r={r} isSelf={selfId === r.id} onChange={load} />
         ))}
       </GlassPanel>
+    </div>
+  );
+}
+
+/* ── One user row: view + inline management (role, app access, reset, resend, remove).
+   Responsive — the header wraps and the manage panel is full-width, so it works
+   on a phone as well as desktop. ── */
+function UserRow({ r, isSelf, onChange }) {
+  const [open, setOpen] = React.useState(false);
+  const [role, setRole] = React.useState(r.role);
+  const [rights, setRights] = React.useState(r.app_rights || {});
+  const [busy, setBusy] = React.useState('');
+  const [pw, setPw] = React.useState(null);
+  const dirty = role !== r.role || AU_APPS.some(([id]) => Boolean(rights[id]) !== Boolean(r.app_rights && r.app_rights[id]));
+
+  const save = async () => {
+    setBusy('save');
+    const { error } = await window.__shieldSupabase.from('profiles')
+      .update({ role, app_rights: { portal: !!rights.portal, tech: !!rights.tech, customer: !!rights.customer } })
+      .eq('id', r.id);
+    setBusy('');
+    if (error) { showToast(error.message, 'error'); return; }
+    showToast(`Updated ${r.email}`, 'ok');
+    onChange();
+  };
+
+  const callManage = async (action, confirmMsg) => {
+    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    setBusy(action); setPw(null);
+    const { data, error } = await window.__shieldSupabase.functions.invoke('manage-user', { body: { action, userId: r.id } });
+    setBusy('');
+    if (error || !data || !data.ok) { showToast((data && data.error) || (error && error.message) || 'Action failed', 'error'); return; }
+    if (action === 'remove') { showToast(`Removed ${r.email}`, 'ok'); onChange(); return; }
+    if (data.data.emailed) showToast(`New temporary password emailed to ${r.email}`, 'ok');
+    else { setPw(data.data.temp_password); showToast('Temporary password generated — copy it below', 'ok'); }
+    onChange();
+  };
+
+  const initials = (r.name || r.email).split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  const smallBtn = (bg, color, bd) => ({ padding: '7px 12px', background: bg, border: `1px solid ${bd}`, borderRadius: 6, color, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' });
+
+  return (
+    <div style={{ borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+      {/* Header row */}
+      <div onClick={() => setOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', flexWrap: 'wrap' }}>
+        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0 }}>{initials}</div>
+        <div style={{ flex: 1, minWidth: 140 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{r.name || r.email}{isSelf && <span style={{ fontSize: 9, color: 'var(--text-low)', marginLeft: 6 }}>(you)</span>}</div>
+          <div className="mono" style={{ fontSize: 11, color: 'var(--text-low)' }}>{r.email}</div>
+        </div>
+        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', color: r.role === 'Admin' ? 'var(--status-critical)' : 'var(--brand)', background: 'rgba(63,169,245,0.08)', borderRadius: 8, padding: '3px 10px' }}>{r.role.toUpperCase()}</span>
+        <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{AU_APPS.filter(([id]) => r.app_rights && r.app_rights[id]).map(([, l]) => l).join(' · ') || 'no apps'}</span>
+        {r.must_change_password && <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--status-warn)', background: 'rgba(251,191,36,0.08)', borderRadius: 8, padding: '3px 9px' }}>TEMP PW</span>}
+        <span style={{ fontSize: 12, color: 'var(--text-low)', transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}>›</span>
+      </div>
+
+      {/* Manage panel */}
+      {open && (
+        <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div style={{ minWidth: 150 }}>
+              <label style={authLabel}>Role</label>
+              <select value={role} onChange={e => { const nr = e.target.value; setRole(nr); setRights(AU_ROLE_DEFAULT_RIGHTS[nr]); }} style={{ ...authInput, appearance: 'none', cursor: 'pointer' }}>
+                {['Admin', 'Staff', 'Technician', 'Client'].map(x => <option key={x} value={x}>{x}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={authLabel}>App access</label>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', paddingBottom: 8 }}>
+                {AU_APPS.map(([id, label]) => (
+                  <label key={id} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12.5, color: 'var(--text-high)', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={Boolean(rights[id])} onChange={e => setRights(x => ({ ...x, [id]: e.target.checked }))} style={{ accentColor: 'var(--brand)', width: 15, height: 15 }} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            {dirty && <button onClick={save} disabled={busy === 'save'} style={smallBtn('var(--brand)', '#fff', 'var(--brand)')}>{busy === 'save' ? 'Saving…' : 'Save changes'}</button>}
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button onClick={() => callManage('reset')} disabled={busy === 'reset'} style={smallBtn('rgba(63,169,245,0.06)', 'var(--brand)', 'var(--border-subtle)')}>{busy === 'reset' ? 'Resetting…' : '↺ Reset password'}</button>
+            <button onClick={() => callManage('resend')} disabled={busy === 'resend'} style={smallBtn('rgba(63,169,245,0.06)', 'var(--brand)', 'var(--border-subtle)')}>{busy === 'resend' ? 'Sending…' : '✉ Resend invite'}</button>
+            {!isSelf && <button onClick={() => callManage('remove', `Remove ${r.email}? This deletes their account.`)} disabled={busy === 'remove'} style={smallBtn('rgba(244,63,94,0.06)', 'var(--status-critical)', 'rgba(244,63,94,0.2)')}>{busy === 'remove' ? 'Removing…' : '✕ Remove user'}</button>}
+          </div>
+
+          {pw && (
+            <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.3)', fontSize: 12, color: 'var(--text-high)' }}>
+              Email isn't configured for this address — share securely (shown once): temporary password{' '}
+              <span className="mono" style={{ color: 'var(--status-warn)', fontWeight: 700 }}>{pw}</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
