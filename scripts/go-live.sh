@@ -84,6 +84,18 @@ else
   printf '     VITE_SUPABASE_ANON_KEY = <anon public key from Supabase → Settings → API>\n'
 fi
 
+# ── 6. Vault secrets for the 4 AM lead cron (pg_cron reads these at run time) ─
+info "Arming the daily lead-pull cron (Vault secrets)"
+VAULT_SQL="select vault.create_secret('https://${SUPABASE_PROJECT_REF}.supabase.co','project_url','functions base URL') where not exists (select 1 from vault.secrets where name='project_url');
+select vault.create_secret('${CRON_SECRET}','cron_secret','x-cron-secret for lead functions') where not exists (select 1 from vault.secrets where name='cron_secret');"
+if [ -n "${SUPABASE_DB_URL:-}" ] && command -v psql >/dev/null 2>&1; then
+  printf '%s' "$VAULT_SQL" | psql "$SUPABASE_DB_URL" >/dev/null 2>&1 && ok "Cron secrets set in Vault" \
+    || printf '\033[1;33m!  Could not set Vault secrets automatically — paste the two lines below in the SQL Editor.\033[0m\n'
+else
+  printf '\033[1;33m!  Set SUPABASE_DB_URL (Project Settings → Database → Connection string) to auto-arm the cron,\n   or paste these two lines once in Supabase → SQL Editor:\033[0m\n'
+  printf '   %s\n' "$VAULT_SQL"
+fi
+
 info "Backend is live 🎉"
 cat <<EOF
 
@@ -94,4 +106,6 @@ Still yours to do (browser-only, can't be scripted):
   • If gh wasn't set up above, add the two VITE_ secrets in GitHub, then re-run the Deploy workflow.
 
 Verify: open the site → login screen → Settings → Integrations shows Connected.
+The lead board fills after the first 4 AM cron run — or trigger it now from SQL Editor:
+  select public.invoke_lead_function('sam-poll','{"days":7}'::jsonb);
 EOF

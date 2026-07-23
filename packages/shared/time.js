@@ -24,8 +24,10 @@ export async function myEntries(limit = 50) {
   return error ? { ok: false, error: error.message } : { ok: true, data };
 }
 
-/* Technician: submit hours (status 'submitted' goes straight to approval queue) */
-export async function submitHours({ workDate, startAt, endAt, breakMinutes = 0, hours, jobRef, notes }) {
+/* Technician: log hours. status 'draft' keeps it editable/deletable on the
+   phone; 'submitted' sends it straight to the portal approval queue. Pass
+   { draft: true } to save without submitting (accumulate the week, submit later). */
+export async function submitHours({ workDate, startAt, endAt, breakMinutes = 0, hours, jobRef, notes, draft = false }) {
   if (!supabaseConfigured) return notConfigured;
   const { data: u } = await supabase.auth.getUser();
   if (!u?.user) return { ok: false, error: 'Sign in to submit hours' };
@@ -40,9 +42,32 @@ export async function submitHours({ workDate, startAt, endAt, breakMinutes = 0, 
     hours: Math.round(computed * 100) / 100,
     job_ref: jobRef || null,
     notes: notes || null,
-    status: 'submitted',
+    status: draft ? 'draft' : 'submitted',
   }).select().maybeSingle();
   return error ? { ok: false, error: error.message } : { ok: true, data };
+}
+
+/* Technician: delete one of my own entries (blocked by RLS once approved/paid). */
+export async function deleteEntry(id) {
+  if (!supabaseConfigured) return notConfigured;
+  const { error } = await supabase.from('time_entries').delete().eq('id', id);
+  return error ? { ok: false, error: error.message } : { ok: true };
+}
+
+/* Technician: submit every draft entry in [weekStart, weekEnd] (YYYY-MM-DD)
+   to the approval queue at once. Returns how many were submitted. */
+export async function submitWeek(weekStart, weekEnd) {
+  if (!supabaseConfigured) return notConfigured;
+  const { data: u } = await supabase.auth.getUser();
+  if (!u?.user) return { ok: false, error: 'Sign in to submit hours' };
+  const { data, error } = await supabase.from('time_entries')
+    .update({ status: 'submitted' })
+    .eq('tech_id', u.user.id)
+    .eq('status', 'draft')
+    .gte('work_date', weekStart)
+    .lte('work_date', weekEnd)
+    .select();
+  return error ? { ok: false, error: error.message } : { ok: true, count: (data || []).length };
 }
 
 /* Portal (Admin/Staff): approval queue + full ledger */
@@ -93,4 +118,4 @@ export async function ripplingSync(direction = 'both') {
   }
 }
 
-window.__shieldTime = { myEntries, submitHours, pendingEntries, laborLedger, setEntryStatus, ripplingSync };
+window.__shieldTime = { myEntries, submitHours, deleteEntry, submitWeek, pendingEntries, laborLedger, setEntryStatus, ripplingSync };

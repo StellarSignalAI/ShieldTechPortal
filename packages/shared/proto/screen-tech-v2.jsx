@@ -38,11 +38,28 @@ function TimeViewV2() {
     return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
   };
 
-  const todayEntries = [
-    { project: 'Acme Dental', task: 'NVR Cable Re-termination', start: '8:00 AM', end: '9:45 AM', dur: 6300, billable: true, type: 'work', tags: ['repair','on-site'] },
-    { project: 'Travel', task: 'Acme → Metro Bank', start: '9:45 AM', end: '10:15 AM', dur: 1800, billable: false, type: 'drive', tags: ['travel'] },
-    { project: 'Metro Bank', task: 'Camera Cleaning', start: '10:30 AM', end: '—', dur: elapsed, billable: true, type: 'work', tags: ['pm','on-site'], active: true },
-  ];
+  // Blank canvas: today's entries come straight from Supabase (my draft/logged
+  // hours for today), never seed data.
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const fmtClock = (iso) => iso ? new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—';
+  const todayEntries = liveEntries
+    .filter(e => e.work_date === todayKey)
+    .map(e => ({
+      id: e.id,
+      project: e.job_ref || 'General',
+      task: e.notes || '—',
+      start: fmtClock(e.start_at),
+      end: fmtClock(e.end_at),
+      dur: Math.round(Number(e.hours) * 3600),
+      billable: e.job_ref !== 'Travel',
+      type: e.job_ref === 'Travel' ? 'drive' : 'work',
+      status: e.status,
+      tags: [e.status],
+    }));
+  const delEntry = (id) => {
+    if (!id || !window.__shieldTime) return;
+    window.__shieldTime.deleteEntry(id).then(r => { showToast(r.ok ? 'Entry deleted' : (r.error || 'Could not delete')); refreshEntries(); });
+  };
 
   const monday = (() => { const d = new Date(); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return d; })();
   const dayLabel = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -127,8 +144,8 @@ function TimeViewV2() {
               const hrs = elapsed / 3600;
               setRunning(false); setElapsed(0);
               if (hrs > 0.01 && window.__shieldTime) {
-                window.__shieldTime.submitHours({ workDate: new Date().toISOString().slice(0, 10), hours: hrs, jobRef: activeProject, notes: activeTask })
-                  .then(r => { showToast(r.ok ? `Logged ${hrs.toFixed(2)}h \u2014 sent for approval` : (r.error || 'Could not save entry')); refreshEntries(); });
+                window.__shieldTime.submitHours({ workDate: new Date().toISOString().slice(0, 10), hours: hrs, jobRef: activeProject, notes: activeTask, draft: true })
+                  .then(r => { showToast(r.ok ? `Logged ${hrs.toFixed(2)}h \u2014 saved as draft` : (r.error || 'Could not save entry')); refreshEntries(); });
               }
             }} style={{
               width: 44, height: 44, borderRadius: '50%', alignSelf: 'center',
@@ -171,6 +188,11 @@ function TimeViewV2() {
             <span>TODAY'S ENTRIES</span>
             <span>{(todayEntries.reduce((s, e) => s + e.dur, 0) / 3600).toFixed(1)}h total</span>
           </div>
+          {todayEntries.length === 0 && (
+            <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--text-low)', fontSize: 12, border: '1px dashed var(--border-subtle)', borderRadius: 8 }}>
+              No time logged today yet. Start the timer or add a manual entry with ＋.
+            </div>
+          )}
           {todayEntries.map((e, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0',
@@ -201,6 +223,12 @@ function TimeViewV2() {
                 <div className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{e.start} — {e.end}</div>
               </div>
               {e.billable && <span style={{ fontSize: 9, color: 'var(--status-ok)', fontWeight: 700 }}>$</span>}
+              {e.id && e.status !== 'approved' && e.status !== 'paid' && (
+                <button onClick={() => delEntry(e.id)} title="Delete entry" style={{
+                  background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer',
+                  fontSize: 14, padding: '2px 4px', lineHeight: 1
+                }}>🗑</button>
+              )}
             </div>
           ))}
         </div>
@@ -210,7 +238,7 @@ function TimeViewV2() {
       {viewMode === 'week' && (
         <GlassPanel style={{ padding: 0 }}>
           <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, fontWeight: 500 }}>Week of Jun 2 — Jun 6</span>
+            <span style={{ fontSize: 13, fontWeight: 500 }}>{weekLabel}</span>
             <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{weekData.reduce((s, d) => s + d.total, 0).toFixed(1)}h</span>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -247,8 +275,15 @@ function TimeViewV2() {
           </table>
           <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border-subtle)' }}>
             <button onClick={() => {
-              const n = weekData.reduce((s2, d) => s2 + d.total, 0);
-              shieldToast(n > 0 ? `Timesheet submitted for approval \u2014 ${n.toFixed(1)}h this week` : 'No hours logged this week yet', n > 0 ? 'ok' : 'info');
+              const t = window.__shieldTime;
+              const weekStartKey = monday.toISOString().slice(0, 10);
+              const weekEndKey = new Date(monday.getTime() + 6 * 86400000).toISOString().slice(0, 10);
+              if (!t) { shieldToast('Backend not configured', 'info'); return; }
+              t.submitWeek(weekStartKey, weekEndKey).then(r => {
+                if (!r.ok) { shieldToast(r.error || 'Could not submit timesheet', 'critical'); return; }
+                shieldToast(r.count > 0 ? `Timesheet submitted for approval \u2014 ${r.count} ${r.count === 1 ? 'entry' : 'entries'}` : 'No draft entries to submit this week', r.count > 0 ? 'ok' : 'info');
+                refreshEntries();
+              });
             }} style={{ width: '100%', padding: '10px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Submit Timesheet for Approval</button>
           </div>
         </GlassPanel>
@@ -373,7 +408,14 @@ function TimeViewV2() {
             </div>
             <div style={{ padding: '12px 18px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button onClick={() => setManualEntryOpen(false)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-              <button onClick={() => { showToast(`Time entry added: ${manualEntry.project} — ${manualEntry.task}`); setManualEntryOpen(false); }} style={{ padding: '8px 20px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Entry</button>
+              <button onClick={() => {
+                const t = window.__shieldTime;
+                if (!t) { showToast('Backend not configured'); return; }
+                const startAt = `${manualEntry.date}T${manualEntry.startTime}:00`;
+                const endAt = `${manualEntry.date}T${manualEntry.endTime}:00`;
+                t.submitHours({ workDate: manualEntry.date, startAt, endAt, jobRef: manualEntry.project, notes: manualEntry.task, draft: true })
+                  .then(r => { showToast(r.ok ? `Saved: ${manualEntry.project} — ${manualEntry.task}` : (r.error || 'Could not save entry')); if (r.ok) { setManualEntryOpen(false); refreshEntries(); } });
+              }} style={{ padding: '8px 20px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Entry</button>
             </div>
           </div>
         </div>
