@@ -125,15 +125,26 @@ function TechCaptureView({ setTab }) {
   const [lastShot, setLastShot] = React.useState(null);
   const videoRef = React.useRef(null);
   const [live, setLive] = React.useState(false);
+  const [camErr, setCamErr] = React.useState('');
   const [facing, setFacing] = React.useState('environment');
-  React.useEffect(() => {
-    let mounted = true;
+  const enableCam = React.useCallback(async () => {
     const cam = window.__shieldCamera;
-    if (cam && videoRef.current) {
-      cam.startStream(videoRef.current, facing).then(r => { if (mounted) setLive(!!r.ok); });
-    }
-    return () => { mounted = false; if (cam && videoRef.current) cam.stopStream(videoRef.current); };
+    if (!cam) { setCamErr('Camera not supported in this browser'); return; }
+    if (!videoRef.current) return;
+    setCamErr('');
+    const r = await cam.startStream(videoRef.current, facing);
+    setLive(!!r.ok);
+    if (!r.ok) setCamErr(r.error || 'Could not start camera');
   }, [facing]);
+  React.useEffect(() => {
+    // Auto-attempt on open. If it fails (iOS gesture requirement, denied
+    // permission, or an in-app browser that blocks the camera), the viewfinder
+    // shows a "Tap to start camera" button that retries on a real user gesture
+    // and surfaces the exact reason.
+    enableCam();
+    const v = videoRef.current;
+    return () => { const cam = window.__shieldCamera; if (cam && v) cam.stopStream(v); };
+  }, [enableCam]);
 
   const activeWo = wos.find(w => w.id === cam.wo) || wos[0];
   if (!activeWo) {
@@ -207,10 +218,16 @@ function TechCaptureView({ setTab }) {
       )}
 
       {/* Viewfinder */}
-      <div style={{ position: 'relative', flex: 1, minHeight: 320, margin: '0 16px', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)' }}>
-        <div style={{ position: 'absolute', inset: 0, background: photoBg(scene), transition: 'background 0.3s' }}></div>
-        <video ref={videoRef} playsInline muted style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: live ? 'block' : 'none' }} />
-        {!live && <div style={{ position: 'absolute', top: 10, right: 10, padding: '3px 9px', borderRadius: 9, background: 'rgba(0,0,0,0.55)', font: '600 9px/1.4 var(--font-body)', color: 'rgba(255,255,255,0.75)' }}>camera off — allow access for live capture</div>}
+      <div style={{ position: 'relative', flex: 1, minHeight: 320, margin: '0 16px', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)', background: '#05070a' }}>
+        <video ref={videoRef} playsInline muted autoPlay style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: live ? 'block' : 'none' }} />
+        {!live && (
+          <button onClick={enableCam} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, background: '#05070a', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 20 }}>
+            <div style={{ width: 54, height: 54, borderRadius: '50%', border: '2px solid var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--brand)' }}>◉</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Tap to start camera</div>
+            {camErr && <div style={{ fontSize: 11, color: 'var(--status-warn)', maxWidth: 250, textAlign: 'center', lineHeight: 1.4 }}>{camErr}</div>}
+            <div style={{ fontSize: 10, color: 'var(--text-low)', maxWidth: 260, textAlign: 'center', lineHeight: 1.4 }}>If nothing happens, open <span className="mono">tech.shieldtechsolutions.com</span> directly in Safari or Chrome — in-app browsers block the camera.</div>
+          </button>
+        )}
         {/* rule-of-thirds grid */}
         {[33.3, 66.6].map(p => <div key={'v' + p} style={{ position: 'absolute', top: 0, bottom: 0, left: `${p}%`, width: 1, background: 'rgba(255,255,255,0.12)' }}></div>)}
         {[33.3, 66.6].map(p => <div key={'h' + p} style={{ position: 'absolute', left: 0, right: 0, top: `${p}%`, height: 1, background: 'rgba(255,255,255,0.12)' }}></div>)}
@@ -240,7 +257,7 @@ function TechCaptureView({ setTab }) {
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
-          <button onClick={() => { if (live) setFacing(f => f === 'environment' ? 'user' : 'environment'); else setScene(randomLook()); }} title="Flip camera" style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 15, cursor: 'pointer' }}>↻</button>
+          <button onClick={() => { if (live) setFacing(f => f === 'environment' ? 'user' : 'environment'); else enableCam(); }} title={live ? 'Flip camera' : 'Start camera'} style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 15, cursor: 'pointer' }}>↻</button>
           <button onClick={capture} style={{ width: 66, height: 66, borderRadius: '50%', background: 'transparent', border: '3px solid #fff', padding: 4, cursor: 'pointer', display: 'flex' }}>
             <div style={{ flex: 1, borderRadius: '50%', background: '#fff', transition: 'transform 0.1s' }}
               onMouseDown={e => e.currentTarget.style.transform = 'scale(0.85)'}

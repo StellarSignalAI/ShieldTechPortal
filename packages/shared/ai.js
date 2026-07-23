@@ -14,8 +14,15 @@ export async function aiStatus(force) {
     status = { configured: false, model: null, checked: true };
   }
   window.__shieldAIModel = status.configured ? status.model : null;
+  try { window.dispatchEvent(new CustomEvent('shield:ai-status', { detail: { ...status } })); } catch {}
   return status;
 }
+
+/* Re-check once the user signs in (the status endpoint is public, but a fresh
+   check after auth keeps __shieldAIModel and any listening screens in sync). */
+try {
+  window.addEventListener('shield:auth', (e) => { if (e && e.detail && e.detail.authed) aiStatus(true); });
+} catch {}
 
 /* askShieldAI(feature, messages, context?) → { text, model } | throws Error */
 export async function askShieldAI(feature, messages, context) {
