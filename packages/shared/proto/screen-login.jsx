@@ -117,9 +117,9 @@ function LoginScreen() {
 
   return (
     <div style={{
-      width: '100vw', height: '100vh', background: 'var(--canvas)',
+      position: 'fixed', inset: 0, background: 'var(--canvas)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      position: 'relative', overflow: 'hidden'
+      overflow: 'hidden', zIndex: 1
     }}>
       <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0 }} />
 

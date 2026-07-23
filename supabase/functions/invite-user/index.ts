@@ -1,6 +1,6 @@
-// invite-user — Admin-only Edge Function.
-// Creates an auth user with a generated temporary password, writes the profile
-// (role + per-app rights + must_change_password), and emails the credentials
+// invite-user — Admin-only. Creates the invite PROFILE first (so the invite-only
+// before-insert trigger on auth.users binds it instead of rejecting non-domain
+// emails), then the auth user with a temp password, then emails the credentials
 // via Resend when RESEND_API_KEY is configured. Response shape: {ok, data|error}.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -11,10 +11,7 @@ const cors = {
 };
 
 const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...cors, "Content-Type": "application/json" },
-  });
+  new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
 
 function tempPassword(): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
@@ -54,18 +51,14 @@ Deno.serve(async (req) => {
     return json(400, { ok: false, error: "Unknown role" });
   }
 
-  // ── Create the auth user with a temp password ──
-  const password = tempPassword();
-  const { data: created, error: createErr } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: { full_name: body.name ?? "" },
-  });
-  if (createErr) return json(409, { ok: false, error: createErr.message });
-
-  const { error: profileErr } = await admin.from("profiles").upsert({
-    id: created.user.id,
+  // ── 1) Pre-create the invite profile BEFORE the auth user. ──
+  // The before-insert trigger on auth.users rejects any email that is neither an
+  // @shieldtechsolutions.com address nor an already-invited profile. Creating the
+  // profile first makes the trigger BIND it (works for any non-Google invitee).
+  const { data: existing } = await admin.from("profiles").select("id").eq("email", email).maybeSingle();
+  const placeholderId = existing?.id ?? crypto.randomUUID();
+  const { error: preErr } = await admin.from("profiles").upsert({
+    id: placeholderId,
     email,
     name: body.name ?? "",
     role,
@@ -73,9 +66,34 @@ Deno.serve(async (req) => {
     must_change_password: true,
     invited_by: caller.user.id,
   }, { onConflict: "email" });
+  if (preErr) return json(500, { ok: false, error: preErr.message });
+
+  // ── 2) Create the auth user with a temp password; the trigger binds the profile. ──
+  const password = tempPassword();
+  const { data: created, error: createErr } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { full_name: body.name ?? "" },
+  });
+  if (createErr) {
+    // Roll back the orphan placeholder we just created (only if it was brand new).
+    if (!existing) await admin.from("profiles").delete().eq("id", placeholderId);
+    return json(409, { ok: false, error: createErr.message });
+  }
+
+  // ── 3) Bind the profile to the real auth id + final field values. ──
+  const { error: profileErr } = await admin.from("profiles").update({
+    id: created.user.id,
+    name: body.name ?? "",
+    role,
+    app_rights: appRights,
+    must_change_password: true,
+    invited_by: caller.user.id,
+  }).eq("email", email);
   if (profileErr) return json(500, { ok: false, error: profileErr.message });
 
-  // ── Email the credentials (Resend), best-effort ──
+  // ── 4) Email the credentials (Resend), best-effort. ──
   const resendKey = Deno.env.get("RESEND_API_KEY");
   const portalUrl = Deno.env.get("PORTAL_URL") ?? "https://portal.shieldtechsolutions.com";
   let emailed = false;
@@ -106,8 +124,7 @@ Deno.serve(async (req) => {
       role,
       app_rights: appRights,
       emailed,
-      // Returned so the admin can hand credentials over manually when SMTP
-      // isn't configured yet; shown once in the UI, never stored client-side.
+      // Shown once to the admin when SMTP isn't configured yet; never stored client-side.
       temp_password: emailed ? undefined : password,
     },
   });
