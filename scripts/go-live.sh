@@ -53,7 +53,7 @@ ok "All migrations applied"
 info "Deploying Edge Functions"
 supabase functions deploy \
   invite-user manage-user ai ingest-alerts ingest-report-text ingest-email \
-  bid-sweep contractor-outreach sources-poll sam-poll rippling-sync send-email
+  bid-sweep contractor-outreach sources-poll sam-poll rippling-sync send-email passkey
 ok "All functions deployed"
 
 # ── 4. Secrets ─────────────────────────────────────────────────────────────
