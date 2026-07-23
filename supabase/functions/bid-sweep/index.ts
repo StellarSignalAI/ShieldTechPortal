@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   if (!(await authorize(req, admin))) return json(401, { ok: false, error: "Admin/Staff session or CRON_SECRET required" });
 
-  const { data: sources } = await admin.from("sources").select("id, listing_url").not("listing_url", "is", null);
+  const { data: sources } = await admin.from("sources").select("id, listing_url").eq("lane", "bid").not("listing_url", "is", null);
   const results: Record<string, unknown>[] = [];
   for (const s of sources ?? []) {
     const now = new Date().toISOString();

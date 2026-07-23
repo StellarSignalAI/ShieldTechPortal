@@ -49,11 +49,11 @@ info "Applying database migrations"
 supabase db push
 ok "All migrations applied"
 
-# ── 3. Edge Functions (all 10) ─────────────────────────────────────────────
+# ── 3. Edge Functions (all 12) ─────────────────────────────────────────────
 info "Deploying Edge Functions"
 supabase functions deploy \
-  invite-user ai ingest-alerts ingest-report-text ingest-email \
-  bid-sweep sources-poll sam-poll rippling-sync send-email
+  invite-user manage-user ai ingest-alerts ingest-report-text ingest-email \
+  bid-sweep contractor-outreach sources-poll sam-poll rippling-sync send-email
 ok "All functions deployed"
 
 # ── 4. Secrets ─────────────────────────────────────────────────────────────
