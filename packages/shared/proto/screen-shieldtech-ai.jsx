@@ -90,7 +90,7 @@ function ShieldAIScreen() {
           {thread.map((m, i) => (
             <div key={i} style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%', display: 'flex', gap: 8 }}>
               {m.role !== 'user' && <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>⟡</div>}
-              <div style={{ padding: '10px 14px', borderRadius: m.role === 'user' ? '12px 12px 3px 12px' : '12px 12px 12px 3px', background: m.role === 'user' ? 'rgba(63,169,245,0.14)' : 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)', fontSize: 13, color: 'var(--text-high)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{m.content}</div>
+              <div style={{ padding: '10px 14px', borderRadius: m.role === 'user' ? '12px 12px 3px 12px' : '12px 12px 12px 3px', background: m.role === 'user' ? 'rgba(63,169,245,0.14)' : 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)', fontSize: 13, color: 'var(--text-high)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{m.role === 'assistant' && window.AIMessage ? <window.AIMessage content={m.content} /> : m.content}</div>
             </div>
           ))}
           {busy && <div style={{ alignSelf: 'flex-start', fontSize: 12, color: 'var(--brand)', paddingLeft: 34 }}>ShieldTech AI is thinking…</div>}
