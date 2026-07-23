@@ -148,21 +148,25 @@ function TechCaptureView({ setTab }) {
   const slot = cam.slot && comp.missing.includes(cam.slot) ? cam.slot : null;
 
   const capture = async () => {
+    const cam = window.__shieldCamera;
+    // Real capture only — never fabricate a photo. If the camera isn't live,
+    // tell the tech to grant access instead of silently saving a mock image.
+    if (!live || !cam || !videoRef.current) {
+      showToast('Camera not available — allow camera access in your browser, then try again', 'warn');
+      return;
+    }
+    const frame = cam.captureFrame(videoRef.current);
+    if (!frame) { showToast('Capture failed — hold steady and try again', 'warn'); return; }
     const id = genId('PH');
     const me = techMe();
-    const cam = window.__shieldCamera;
-    let shot = null;
-    if (live && cam && videoRef.current) {
-      const frame = cam.captureFrame(videoRef.current);
-      if (frame) shot = await cam.savePhoto(frame, { id, wo: activeWo.id });
-    }
+    const shot = await cam.savePhoto(frame, { id, wo: activeWo.id });
     const photo = {
       id, wo: activeWo.id, customer: activeWo.customer, site: activeWo.site,
       tech: me.initials || '—', techName: me.name || 'Technician',
       phase: slot ? (slot.toLowerCase().includes('before') || slot === 'Issue found' || slot === 'Site — before' ? 'before' : slot.toLowerCase().includes('after') || slot.toLowerCase().includes('complete') || slot.toLowerCase().includes('final') ? 'after' : 'progress') : phase,
       slot, label: slot || `Field photo — ${activeWo.customer}`,
-      day: 'Today', time: nowTime(), look: scene, pair: null, annotations: [],
-      url: shot && shot.url || null, dataUrl: shot && shot.dataUrl || null,
+      day: 'Today', time: nowTime(), look: null, pair: null, annotations: [],
+      url: (shot && shot.url) || null, dataUrl: (shot && shot.dataUrl) || null,
     };
     photoStore.set(prev => [photo, ...prev]);
     setFlash(true); setTimeout(() => setFlash(false), 180);
