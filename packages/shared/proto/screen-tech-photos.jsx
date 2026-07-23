@@ -15,7 +15,10 @@ const techMe = () => (window.__shieldUser || {});
 /* ── Photo Roll + Checklist ── */
 function TechPhotosView({ setTab }) {
   const [photos] = useShieldStore(photoStore);
-  const [wos] = useShieldStore(workOrderStore);
+  const [allWos] = useShieldStore(workOrderStore);
+  // Only the jobs assigned to me (unassigned WOs stay visible to everyone).
+  const myId = (window.__shieldUser || {}).id;
+  const wos = allWos.filter(w => !w.assignedTo || w.assignedTo === myId);
   const [cam, setCam] = useShieldStore(techCamStore);
   const [lightbox, setLightbox] = React.useState(null);
 
@@ -151,7 +154,9 @@ function TechPhotosView({ setTab }) {
 
 /* ── Capture (mock viewfinder) ── */
 function TechCaptureView({ setTab }) {
-  const [wos] = useShieldStore(workOrderStore);
+  const [allWos] = useShieldStore(workOrderStore);
+  const myId = (window.__shieldUser || {}).id;
+  const wos = allWos.filter(w => !w.assignedTo || w.assignedTo === myId);
   const [photos] = useShieldStore(photoStore);
   const [cam, setCam] = useShieldStore(techCamStore);
   const [scene, setScene] = React.useState(randomLook);

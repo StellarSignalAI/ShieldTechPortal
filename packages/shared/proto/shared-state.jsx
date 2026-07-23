@@ -74,6 +74,44 @@ const ticketStore = createShieldStore('tickets', []);
 /* ── Work Order Store ── */
 const workOrderStore = createShieldStore('workorders', []);
 
+/* Default required-shot + checklist templates by work type (blank-canvas: a new
+   WO carries its own scope/checklist/photoSlots — no shared seed). */
+// Keys mirror PHOTO_CHECKLISTS so the tech app's required-shot list lines up.
+const WO_TEMPLATES = {
+  Install:     { checklist: ['Confirm site contact', 'Review scope', 'Run cable / rough-in', 'Mount devices', 'Terminate & configure', 'Test system', 'Customer walkthrough', 'Collect signature'] },
+  Repair:      { checklist: ['Confirm reported issue', 'Diagnose', 'Repair / replace', 'Verify operation', 'Customer walkthrough', 'Collect signature'] },
+  Maintenance: { checklist: ['Confirm scope', 'Inspect devices', 'Service / clean', 'Test & verify', 'Customer walkthrough', 'Collect signature'] },
+  Survey:      { checklist: ['Meet site contact', 'Tour all areas', 'Document devices / doors', 'Photograph site', 'Submit report'] },
+};
+
+/* Build a complete work-order record from a portal create form. Assigns it to a
+   tech (assignedTo = profile id; tech/techId for display) so it appears in that
+   technician's app. */
+function buildWorkOrder(form) {
+  const existing = workOrderStore.get();
+  const n = existing.reduce((m, w) => { const num = parseInt(String(w.id || '').replace(/\D/g, ''), 10); return isNaN(num) ? m : Math.max(m, num); }, 2843) + 1;
+  const type = form.type || 'Install';
+  const tpl = WO_TEMPLATES[type] || WO_TEMPLATES.Install;
+  return {
+    id: 'WO-' + n,
+    customer: (form.customer || 'New Customer').trim(),
+    site: form.site || '',
+    type,
+    tech: form.techName || 'Unassigned',
+    techId: form.techInitials || '—',
+    assignedTo: form.assignedTo || null,   // profile id the tech app filters on
+    scheduled: form.scheduled || new Date().toISOString().slice(0, 10),
+    status: 'scheduled',
+    scope: form.scope || '',
+    notes: form.notes || '',
+    materials: [],
+    checklist: Array.isArray(form.checklist) && form.checklist.length ? form.checklist : tpl.checklist,
+    photoSlots: (typeof PHOTO_CHECKLISTS !== 'undefined' && PHOTO_CHECKLISTS[type]) || [],
+    checkedItems: {}, timerSeconds: 0, timerRunning: false, signatureSigned: false,
+    createdAt: Date.now(),
+  };
+}
+
 /* ── Incident Store ── */
 const incidentStore = createShieldStore('incidents', []);
 

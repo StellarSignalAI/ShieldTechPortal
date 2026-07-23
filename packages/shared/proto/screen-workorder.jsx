@@ -3,6 +3,7 @@
 function WorkOrderScreen() {
   const [workOrders, setWorkOrders] = useShieldStore(workOrderStore);
   const [activeWO, setActiveWO] = React.useState(0);
+  const [showNew, setShowNew] = React.useState(false);
 
   /* Deep-link: calendar & other screens set woFocusStore before navigating here */
   React.useEffect(() => {
@@ -29,7 +30,14 @@ function WorkOrderScreen() {
   }, []);
 
   const wo = workOrders[activeWO];
-  if (!wo) return null;
+  if (!wo) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, height: 'calc(100vh - 120px)', textAlign: 'center' }}>
+      <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-high)' }}>No work orders yet</div>
+      <div style={{ fontSize: 12, color: 'var(--text-low)', maxWidth: 340 }}>Create a work order, assign it to a technician, and it appears in their app with the required-shot checklist.</div>
+      <button onClick={() => setShowNew(true)} style={{ padding: '9px 18px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Work Order</button>
+      {showNew && <NewWorkOrderModal onClose={() => setShowNew(false)} onCreate={(w) => { workOrderStore.set(prev => [w, ...prev]); setActiveWO(0); setShowNew(false); showToast(`${w.id} created — assigned to ${w.tech}`, 'ok'); }} />}
+    </div>
+  );
 
   const statusColor = { scheduled: 'var(--brand)', 'in-progress': 'var(--status-warn)', completed: 'var(--status-ok)' };
   const updateWO = (id, patch) => setWorkOrders(prev => prev.map(w => w.id === id ? { ...w, ...patch } : w));
@@ -46,38 +54,15 @@ function WorkOrderScreen() {
     updateWO(wo.id, { checkedItems: { ...wo.checkedItems, [key]: !wo.checkedItems[key] } });
   };
 
-  const woDetails = {
-    'WO-2847': {
-      scope: 'Install 8x Axis P3245-V cameras on floors 2 and 3. Run CAT6 to existing NVR. Configure recording profiles per bank compliance spec.',
-      notes: 'All work in server room 8am-12pm. Security escort needed.',
-      materials: [{part:'Axis P3245-V',qty:8,used:8,unitCost:285},{part:'CAT6 Cable 500ft',qty:2,used:1.5,unitCost:89},{part:'PoE Switch 8P',qty:1,used:1,unitCost:210}],
-      checklist: ['Confirm site contact','Review floor plan','Run cable routes','Mount cameras','Terminate connections','Configure cameras','Verify NVR feeds','Test motion zones','Customer walkthrough','Collect signature'],
-      photoSlots: ['Before: Server room','Before: Floor 2','After: Camera install','After: NVR rack']
-    },
-    'WO-2846': {
-      scope: 'Diagnose and repair NVR unit - offline since 6am, UPS failure suspected.',
-      notes: 'UPS 4 years old - recommend replacing all 3 UPS at this site.',
-      materials: [{part:'APC UPS 1500VA',qty:1,used:1,unitCost:320},{part:'SATA Cable',qty:2,used:1,unitCost:8}],
-      checklist: ['Inspect UPS','Replace failed UPS','Verify NVR on','Confirm recording','Customer walkthrough','Collect signature'],
-      photoSlots: ['Before: UPS failed','Before: NVR','After: New UPS','After: Recording OK']
-    },
-    'WO-2845': {
-      scope: 'Install Bosch B9512G fire panel and 12 motion sensors.',
-      notes: 'Scheduled Jun 11 - HIPAA facility, ID required.',
-      materials: [{part:'Bosch B9512G Panel',qty:1,used:0,unitCost:1200},{part:'DS151i Sensor',qty:12,used:0,unitCost:68}],
-      checklist: ['Confirm site contact','Mount panel','Wire sensors','Program zones','Test system','Customer demo','Collect signature'],
-      photoSlots: ['Before: Wall','After: Panel mounted','After: Sensor','After: Test']
-    },
-    'WO-2844': {
-      scope: 'Security survey - access control scope for 3-floor building.',
-      notes: '',
-      materials: [],
-      checklist: ['Meet facilities manager','Tour all floors','Document doors','Photograph site','Submit report'],
-      photoSlots: ['Site: Entrance','Site: Floor 1','Site: Floor 2','Site: Exterior']
-    }
+  // Blank canvas: a WO carries its own scope/checklist/materials — created in the
+  // portal, no shared seed.
+  const data = {
+    scope: wo.scope || '',
+    notes: wo.notes || '',
+    materials: wo.materials || [],
+    checklist: wo.checklist || [],
+    photoSlots: wo.photoSlots || [],
   };
-
-  const data = woDetails[wo.id] || woDetails['WO-2847'];
   const matCost = data.materials.reduce((s, m) => s + m.used * m.unitCost, 0);
   const laborRate = 125;
   const laborCost = ((wo.timerSeconds || 0) / 3600) * laborRate;
@@ -124,7 +109,7 @@ function WorkOrderScreen() {
       <div className="glass" style={{ width: 220, flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>Work Orders</span>
-          <button onClick={() => navTo('calendar')} style={{ ...sBtn, color: 'var(--brand)', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', padding: '3px 9px', fontSize: 11 }}>+ Schedule</button>
+          <button onClick={() => setShowNew(true)} style={{ ...sBtn, color: 'var(--brand)', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', padding: '3px 9px', fontSize: 11 }}>+ New WO</button>
         </div>
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {workOrders.map((w, i) => (
@@ -318,8 +303,90 @@ function WorkOrderScreen() {
 
         </div>
       </div>
+      {showNew && <NewWorkOrderModal onClose={() => setShowNew(false)} onCreate={(w) => { workOrderStore.set(prev => [w, ...prev]); setActiveWO(0); setShowNew(false); showToast(`${w.id} created — assigned to ${w.tech}`, 'ok'); }} />}
     </div>
   );
 }
 
-Object.assign(window, { WorkOrderScreen });
+/* Portal: create a work order and assign it to a technician. The roster loads
+   from Supabase profiles (Tech/Staff) when configured, else the fleet roster. */
+function NewWorkOrderModal({ onClose, onCreate }) {
+  const [customers] = useShieldStore(customerStore);
+  const [roster, setRoster] = React.useState([]);
+  const [f, setF] = React.useState({ customer: '', site: '', type: 'Install', assignedTo: '', scheduled: new Date().toISOString().slice(0, 10), scope: '', notes: '' });
+  const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
+
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      const sb = window.__shieldSupabase;
+      if (sb) {
+        const { data } = await sb.from('profiles').select('id,name,email,role').in('role', ['Tech', 'Technician', 'Staff', 'Admin']);
+        if (alive && Array.isArray(data) && data.length) {
+          setRoster(data.map(p => ({ id: p.id, name: p.name || p.email || 'Technician', role: p.role, initials: (p.name || p.email || 'T').split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') })));
+          return;
+        }
+      }
+      // Fallback: fleet roster (techs who've shared location this session)
+      const fleet = (typeof fleetStore !== 'undefined' && fleetStore.get && fleetStore.get().techs) || {};
+      setRoster(Object.entries(fleet).map(([id, t]) => ({ id, name: t.name || id, role: t.role || 'Technician', initials: (t.name || id).split(/\s+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') })));
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const submit = () => {
+    if (!f.customer.trim()) { showToast('Enter a customer', 'warn'); return; }
+    const tech = roster.find(r => r.id === f.assignedTo);
+    onCreate(buildWorkOrder({
+      customer: f.customer, site: f.site, type: f.type, scheduled: f.scheduled, scope: f.scope, notes: f.notes,
+      assignedTo: tech ? tech.id : null, techName: tech ? tech.name : 'Unassigned', techInitials: tech ? tech.initials : '—',
+    }));
+  };
+
+  const fld = { width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
+  const lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 4 };
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: 460, maxWidth: '94vw', maxHeight: '90vh', overflowY: 'auto', background: 'var(--card)', border: '1px solid var(--border-strong)', borderRadius: 12, boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
+        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 15, fontWeight: 500 }}>New Work Order</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 16, cursor: 'pointer' }}>✕</button>
+        </div>
+        <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div>
+            <div style={lbl}>Customer</div>
+            <input list="wo-cust-list" value={f.customer} onChange={e => set('customer', e.target.value)} placeholder="Customer name" style={fld} />
+            <datalist id="wo-cust-list">{customers.map(c => <option key={c.id} value={c.name} />)}</datalist>
+          </div>
+          <div><div style={lbl}>Site / Address</div><input value={f.site} onChange={e => set('site', e.target.value)} placeholder="Service location" style={fld} /></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div>
+              <div style={lbl}>Type</div>
+              <select value={f.type} onChange={e => set('type', e.target.value)} style={fld}>
+                {['Install', 'Repair', 'Maintenance', 'Survey'].map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div><div style={lbl}>Scheduled</div><input type="date" value={f.scheduled} onChange={e => set('scheduled', e.target.value)} style={fld} /></div>
+          </div>
+          <div>
+            <div style={lbl}>Assign to technician</div>
+            <select value={f.assignedTo} onChange={e => set('assignedTo', e.target.value)} style={fld}>
+              <option value="">— Unassigned —</option>
+              {roster.map(r => <option key={r.id} value={r.id}>{r.name}{r.role ? ` · ${r.role}` : ''}</option>)}
+            </select>
+            {roster.length === 0 && <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 3 }}>No team members loaded — invite techs in Team, or leave unassigned for now.</div>}
+          </div>
+          <div><div style={lbl}>Scope of work</div><textarea value={f.scope} onChange={e => set('scope', e.target.value)} rows={3} placeholder="What needs to be done…" style={{ ...fld, resize: 'vertical' }} /></div>
+          <div><div style={lbl}>Notes (optional)</div><input value={f.notes} onChange={e => set('notes', e.target.value)} placeholder="Access, escorts, gotchas…" style={fld} /></div>
+        </div>
+        <div style={{ padding: '12px 18px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onClose} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
+          <button onClick={submit} style={{ padding: '8px 20px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create & Assign</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { WorkOrderScreen, NewWorkOrderModal });
