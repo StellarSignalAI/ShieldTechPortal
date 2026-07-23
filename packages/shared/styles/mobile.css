@@ -1,10 +1,19 @@
 /* ShieldTech Mobile — frame + adaptation styles (verbatim from "ShieldTech Mobile.html") */
 body { max-width: 430px; margin: 0 auto; }
+/* On larger screens present the mobile-first app as a centered, dynamically
+   scaling device frame on a dark backdrop. left:50% + translateX centers
+   reliably even under viewport-lock's `position:fixed; inset:0` body (where
+   `margin:0 auto` does not). Height tracks the viewport, so it resizes live. */
 @media (min-width: 500px) {
+  html { background: #05070a; }
   body {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    max-width: 460px;
     border-left: 1px solid var(--border-subtle);
     border-right: 1px solid var(--border-subtle);
-    box-shadow: 0 0 60px -20px rgba(0,0,0,0.5);
+    box-shadow: 0 0 90px -24px rgba(0,0,0,0.7);
   }
 }
 /* Mobile adaptations for desktop-built screens */
