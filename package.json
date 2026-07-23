@@ -19,6 +19,7 @@
     "@fontsource/ibm-plex-sans": "^5.2.5",
     "@fontsource/jetbrains-mono": "^5.2.5",
     "@fontsource/montserrat": "^5.2.5",
+    "@simplewebauthn/browser": "^13.3.0",
     "@supabase/supabase-js": "^2.49.0",
     "@tensorflow-models/coco-ssd": "^2.2.2",
     "@tensorflow-models/deeplab": "^0.2.2",

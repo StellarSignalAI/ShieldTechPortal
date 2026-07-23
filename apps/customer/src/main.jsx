@@ -21,6 +21,7 @@ import '@shared/styles/styles.css';
 import '@shared/styles/viewport-lock.css';
 import '@shared/supabase.js';
 import '@shared/auth.js';
+import '@shared/passkey.js';
 import '@shared/ai.js';
 import '@shared/time.js';
 import '@shared/email.js';
