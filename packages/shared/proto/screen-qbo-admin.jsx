@@ -14,13 +14,8 @@ function PortalSettingsScreen() {
     { id: 'privacy', label: 'Privacy' }, { id: 'fields', label: 'Custom Fields' }, { id: 'resolution', label: 'Resolution Center' },
     { id: 'desktop', label: 'Desktop App' }, { id: 'updates', label: "What's New" }, { id: 'help', label: 'Help' },
   ];
-  const users = [
-    { name: 'John Mitchell', role: 'Owner / Admin', access: 'Everything', last: 'now', status: 'active' },
-    { name: 'Sarah Chen', role: 'Sales Manager', access: 'Sales, CRM, Finance · View', last: '12 min ago', status: 'active' },
-    { name: 'Mike Reyes', role: 'Lead Technician', access: 'Field Ops, Inventory', last: '1 hr ago', status: 'active' },
-    { name: 'Alma Torres (CPA)', role: 'Accountant', access: 'Finance · Full, Reports', last: 'Jul 1', status: 'active' },
-    { name: 'Kevin White', role: 'Technician', access: 'Field Ops', last: '2 days ago', status: 'active' },
-  ];
+  // Blank canvas — real team members live in Team (loaded from profiles); no filler.
+  const users = [];
   const fields = [
     { name: 'PO Number', on: 'Invoices, Estimates', type: 'Text', visible: 'Print + portal' },
     { name: 'Site / Building', on: 'Invoices, Work Orders', type: 'Dropdown', visible: 'Internal + print' },
