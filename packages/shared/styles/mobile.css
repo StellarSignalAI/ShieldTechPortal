@@ -6,10 +6,10 @@ body { max-width: 430px; margin: 0 auto; }
    `margin:0 auto` does not). Height tracks the viewport, so it resizes live. */
 @media (min-width: 500px) {
   html { background: #05070a; }
+  /* body is `position:fixed; inset:0` (viewport-lock) + `margin:0 auto`, which
+     already centers it. No transform — a transformed body becomes the containing
+     block for the login's position:fixed layer and knocks it off-center. */
   body {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
     max-width: 460px;
     border-left: 1px solid var(--border-subtle);
     border-right: 1px solid var(--border-subtle);
