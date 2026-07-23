@@ -4,22 +4,31 @@
 function TechCopilotView() {
   const [thread, setThread] = React.useState([]);
   const [input, setInput] = React.useState('');
+  const [attachments, setAttachments] = React.useState([]);
+  const fileRef = React.useRef(null);
   const scrollRef = React.useRef(null);
 
   const push = (msg) => setThread(t => [...t, msg]);
-  const ask = async (q, prior) => {
+  const pickFiles = async (fileList) => {
+    if (!fileList || !fileList.length || !window.__shieldAI) return;
+    const read = await window.__shieldAI.readAttachments(fileList);
+    setAttachments(prev => [...prev, ...read]);
+  };
+  const ask = async (q, prior, atts) => {
     const history = [...prior.map(m => ({ role: m.from === 'me' ? 'user' : 'assistant', content: m.text })), { role: 'user', content: q }];
     const reply = window.__shieldAI
-      ? await window.__shieldAI.shieldAIChat('tech-copilot', history)
+      ? await window.__shieldAI.shieldAIChat('tech-copilot', history, undefined, atts)
       : { text: 'ShieldTech AI responses appear here once the AI service is configured in Settings → Integrations.' };
     push({ from: 'hermes', text: reply.text });
   };
   const send = () => {
-    if (!input.trim()) return;
+    const atts = attachments.filter(a => a.dataUrl || a.text);
+    if (!input.trim() && atts.length === 0) return;
     const prior = thread;
-    push({ from: 'me', text: input });
-    ask(input, prior);
-    setInput('');
+    const label = input.trim() || `[${atts.length} attachment${atts.length > 1 ? 's' : ''}: ${atts.map(a => a.name).join(', ')}]`;
+    push({ from: 'me', text: label });
+    ask(input.trim() || 'Please review the attached file(s).', prior, atts);
+    setInput(''); setAttachments([]);
   };
 
   React.useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [thread]);
@@ -53,8 +62,21 @@ function TechCopilotView() {
           </div>
         ))}
       </div>
+      {/* Attachment chips */}
+      {attachments.length > 0 && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {attachments.map((a, i) => (
+            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 7px', borderRadius: 6, background: 'rgba(63,169,245,0.08)', border: `1px solid ${a.error ? 'var(--status-warn)' : 'var(--border-subtle)'}`, fontSize: 10, color: a.error ? 'var(--status-warn)' : 'var(--text-mid)' }}>
+              {a.dataUrl ? '🖼' : '📄'} {a.name}
+              <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1 }}>✕</button>
+            </span>
+          ))}
+        </div>
+      )}
       {/* Input */}
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <input ref={fileRef} type="file" multiple accept="image/*,text/*,.txt,.md,.csv,.json,.log,.yaml,.yml" style={{ display: 'none' }} onChange={e => { pickFiles(e.target.files); e.target.value = ''; }} />
+        <button onClick={() => fileRef.current && fileRef.current.click()} title="Attach a photo or file" style={{ width: 40, height: 40, flexShrink: 0, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 16, cursor: 'pointer' }}>📎</button>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Describe the symptom…"
           style={{ flex: 1, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '10px 14px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={send} style={{ padding: '0 18px', background: 'rgba(63,169,245,0.12)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>↑</button>

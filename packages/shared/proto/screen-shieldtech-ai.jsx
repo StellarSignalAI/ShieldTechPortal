@@ -6,16 +6,26 @@ function ShieldAIScreen() {
   const [input, setInput] = React.useState('');
   const [thread, setThread] = React.useState([]);
   const [busy, setBusy] = React.useState(false);
+  const [attachments, setAttachments] = React.useState([]);
+  const fileRef = React.useRef(null);
   const scrollRef = React.useRef(null);
   React.useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [thread, busy]);
 
+  const pickFiles = async (fileList) => {
+    if (!fileList || !fileList.length || !window.__shieldAI) return;
+    const read = await window.__shieldAI.readAttachments(fileList);
+    setAttachments(prev => [...prev, ...read]);
+  };
+
   const send = async (preset) => {
     const q = (preset || input).trim();
-    if (!q || busy) return;
-    const next = [...thread, { role: 'user', content: q }];
-    setThread(next); setInput(''); setBusy(true);
+    const atts = attachments.filter(a => a.dataUrl || a.text);
+    if ((!q && atts.length === 0) || busy) return;
+    const label = q || (atts.length ? `[${atts.length} attachment${atts.length > 1 ? 's' : ''}: ${atts.map(a => a.name).join(', ')}]` : '');
+    const next = [...thread, { role: 'user', content: label }];
+    setThread(next); setInput(''); setAttachments([]); setBusy(true);
     const reply = window.__shieldAI
-      ? await window.__shieldAI.shieldAIChat('assistant', next)
+      ? await window.__shieldAI.shieldAIChat('assistant', [...thread, { role: 'user', content: q || 'Please review the attached file(s).' }], undefined, atts)
       : { text: 'ShieldTech AI is not configured yet — connect Supabase and set OPENAI_API_KEY.', live: false };
     setThread(t => [...t, { role: 'assistant', content: reply.text }]);
     setBusy(false);
@@ -121,11 +131,29 @@ function ShieldAIScreen() {
           
         </div>
 
+        {/* Attachment chips */}
+        {attachments.length > 0 && (
+          <div style={{ padding: '8px 20px 0', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {attachments.map((a, i) => (
+              <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 6, background: 'rgba(63,169,245,0.08)', border: `1px solid ${a.error ? 'var(--status-warn)' : 'var(--border-subtle)'}`, fontSize: 11, color: a.error ? 'var(--status-warn)' : 'var(--text-mid)' }}>
+                {a.dataUrl ? '🖼' : '📄'} {a.name}{a.error ? ` — ${a.error}` : a.note ? ' — ⚠' : ''}
+                <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 12, padding: 0, lineHeight: 1 }}>✕</button>
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Input */}
         <div style={{
           padding: '12px 20px', borderTop: '1px solid var(--border-subtle)',
-          display: 'flex', gap: 8
+          display: 'flex', gap: 8, alignItems: 'center'
         }}>
+          <input ref={fileRef} type="file" multiple accept="image/*,text/*,.txt,.md,.csv,.json,.log,.yaml,.yml" style={{ display: 'none' }} onChange={e => { pickFiles(e.target.files); e.target.value = ''; }} />
+          <button onClick={() => fileRef.current && fileRef.current.click()} title="Attach a file or image" style={{
+            background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8,
+            width: 38, height: 38, color: 'var(--text-mid)', fontSize: 16, cursor: 'pointer', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>📎</button>
           <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(); }} placeholder="Ask ShieldTech AI anything…" style={{
             flex: 1, padding: '10px 14px',
             background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',

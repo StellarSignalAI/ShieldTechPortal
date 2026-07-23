@@ -49,6 +49,7 @@ Deno.serve(async (req) => {
     feature?: string;
     messages?: Array<{ role: string; content: string }>;
     context?: unknown;
+    attachments?: Array<{ name?: string; mime?: string; dataUrl?: string; text?: string }>;
   };
   try { body = await req.json(); } catch { return json(400, { ok: false, error: "Invalid JSON" }); }
 
@@ -84,9 +85,34 @@ Deno.serve(async (req) => {
     ? [{ role: "system", content: "Workspace context (JSON):\n" + JSON.stringify(body.context).slice(0, 24_000) }]
     : [];
 
+  // Attachments: inline text files into the prompt; attach images as vision parts
+  // on the final user turn (gpt-4o family reads them).
+  const atts = Array.isArray(body.attachments) ? body.attachments : [];
+  const textFiles = atts.filter((a) => typeof a.text === "string" && a.text.length);
+  const imageFiles = atts.filter((a) => typeof a.dataUrl === "string" && /^data:image\//.test(a.dataUrl!));
+  const attachmentTextBlock = textFiles.length
+    ? [{ role: "system", content: "Attached files the user shared:\n" + textFiles.map((a) => `--- ${a.name || "file"} ---\n${a.text}`).join("\n\n").slice(0, 24_000) }]
+    : [];
+
+  // deno-lint-ignore no-explicit-any
+  let outMessages: any[] = [{ role: "system", content: system }, ...contextBlock, ...attachmentTextBlock, ...messages];
+  if (imageFiles.length) {
+    // Find the last user message and turn it into a multimodal content array.
+    for (let i = outMessages.length - 1; i >= 0; i--) {
+      if (outMessages[i].role === "user") {
+        const t = typeof outMessages[i].content === "string" ? outMessages[i].content : "";
+        outMessages[i] = { role: "user", content: [
+          { type: "text", text: t || "Please review the attached image(s)." },
+          ...imageFiles.map((a) => ({ type: "image_url", image_url: { url: a.dataUrl } })),
+        ] };
+        break;
+      }
+    }
+  }
+
   const payload = {
     model,
-    messages: [{ role: "system", content: system }, ...contextBlock, ...messages],
+    messages: outMessages,
     max_tokens: 900,
     temperature: feature === "extract" ? 0 : 0.4,
   };
