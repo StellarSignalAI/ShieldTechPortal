@@ -119,18 +119,66 @@ function TechVoiceView() {
   );
 }
 
-/* ── 3. Model-Sticker Scanner ── */
+/* ── 3. Model-Sticker Scanner — real camera + AI vision OCR ── */
 function TechScannerView() {
+  const videoRef = React.useRef(null);
+  const [live, setLive] = React.useState(false);
+  const [camErr, setCamErr] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const [result, setResult] = React.useState(null);
+
+  const enableCam = React.useCallback(async () => {
+    const cam = window.__shieldCamera;
+    if (!cam) { setCamErr('Camera not supported in this browser'); return; }
+    if (!videoRef.current) return;
+    setCamErr('');
+    const r = await cam.startStream(videoRef.current, 'environment');
+    setLive(!!r.ok);
+    if (!r.ok) setCamErr(r.error || 'Could not start camera');
+  }, []);
+  React.useEffect(() => {
+    enableCam();
+    const v = videoRef.current;
+    return () => { const cam = window.__shieldCamera; if (cam && v) cam.stopStream(v); };
+  }, [enableCam]);
+
+  const scan = async () => {
+    const cam = window.__shieldCamera;
+    if (!live || !cam || !videoRef.current) { showToast('Camera not available — allow camera access, then try again', 'warn'); return; }
+    const frame = cam.captureFrame(videoRef.current);
+    if (!frame) { showToast('Hold steady and try again', 'warn'); return; }
+    if (!window.__shieldAI) { showToast('ShieldTech AI not configured yet', 'warn'); return; }
+    setBusy(true); setResult(null);
+    const prompt = 'This is a photo of an equipment model/spec sticker. Identify the manufacturer, model number, and any key specs (voltage, PoE, resolution, part number). Reply concisely; if the text is unreadable, say so.';
+    const reply = await window.__shieldAI.shieldAIChat('tech-copilot', [{ role: 'user', content: prompt }], undefined, [{ name: 'sticker.jpg', mime: 'image/jpeg', dataUrl: frame }]);
+    setBusy(false);
+    setResult(reply.text);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ fontSize: 16, fontWeight: 500 }}>Model Scanner</div>
-      <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)', aspectRatio: '3/4', background: photoBg({ h: 230, p: 'panel', s: 77 }) }}>
-        <div style={{ position: 'absolute', top: '32%', left: '22%', right: '22%', height: '20%', border: '2px solid var(--brand)', borderRadius: 8, boxShadow: '0 0 0 2000px rgba(0,0,0,0.45)', animation: 'pulse-online 2s ease-in-out infinite' }}>
+      <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)', aspectRatio: '3/4', background: '#05070a' }}>
+        <video ref={videoRef} playsInline muted autoPlay style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: live ? 'block' : 'none' }} />
+        {!live && (
+          <button onClick={enableCam} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#05070a', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 20 }}>
+            <div style={{ width: 48, height: 48, borderRadius: '50%', border: '2px solid var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, color: 'var(--brand)' }}>◉</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>Tap to start camera</div>
+            {camErr && <div style={{ fontSize: 10, color: 'var(--status-warn)', maxWidth: 220, textAlign: 'center' }}>{camErr}</div>}
+          </button>
+        )}
+        {live && <div style={{ position: 'absolute', top: '32%', left: '22%', right: '22%', height: '20%', border: '2px solid var(--brand)', borderRadius: 8, boxShadow: '0 0 0 2000px rgba(0,0,0,0.35)', animation: 'pulse-online 2s ease-in-out infinite' }}>
           <span style={{ position: 'absolute', top: -22, left: 0, fontSize: 9, color: 'var(--brand)', letterSpacing: '0.08em' }}>ALIGN MODEL STICKER</span>
-        </div>
-        <button onClick={() => showToast('Sticker recognition requires the ShieldTech AI service', 'warn')} style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', padding: '10px 26px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 22, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 6px 20px rgba(63,169,245,0.4)' }}>Scan</button>
+        </div>}
+        <button onClick={scan} disabled={busy} style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', padding: '10px 26px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 22, color: '#fff', fontSize: 13, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1, fontFamily: 'var(--font-body)', boxShadow: '0 6px 20px rgba(63,169,245,0.4)' }}>{busy ? 'Reading…' : 'Scan'}</button>
       </div>
-      <div style={{ fontSize: 10, color: 'var(--text-low)', textAlign: 'center', lineHeight: 1.5 }}>Scanning a model sticker pulls specs, manuals, warranty status and known issues for the device.</div>
+      {result && (
+        <div className="glass" style={{ padding: 14, borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--brand)' }}>
+          <div className="label-sm" style={{ marginBottom: 6 }}>IDENTIFIED</div>
+          <div style={{ fontSize: 12.5, color: 'var(--text-high)', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{result}</div>
+        </div>
+      )}
+      <div style={{ fontSize: 10, color: 'var(--text-low)', textAlign: 'center', lineHeight: 1.5 }}>Point the camera at a model/spec sticker and tap Scan — ShieldTech AI reads the make, model and specs.</div>
     </div>
   );
 }
