@@ -74,12 +74,13 @@ export function googleWelcomeEmail(opts: { name?: string; apps: string; portalUr
   const hi = opts.name ? `Hi ${opts.name.split(/\s+/)[0]},` : "Welcome,";
   const inner =
     h("Your ShieldTech account is ready") +
-    p(`${hi} your workspace access has been set up. Because you're on the ShieldTech Solutions
-       domain, just sign in with your Google account — there's no password to manage.`) +
+    p(`${hi} your workspace access has been set up.`) +
+    p(`<strong style="color:${TEXT};">There's no temporary password to enter.</strong> Because you're on
+       the ShieldTech Solutions domain, you'll sign in with your Google account — click the button below,
+       choose <em>Continue with Google</em>, and use your <strong style="color:${TEXT};">@shieldtechsolutions.com</strong>
+       email. That's it.`) +
     p(`<strong style="color:${TEXT};">Access:</strong> ${opts.apps}`) +
-    `<div style="padding:6px 0 4px;">${button("Sign in with Google", opts.portalUrl)}</div>` +
-    p(`On the sign-in screen, choose <em>Continue with Google</em> and use your
-       @shieldtechsolutions.com account.`);
+    `<div style="padding:6px 0 4px;">${button("Sign in with Google", opts.portalUrl)}</div>`;
   return { subject: "Welcome to ShieldTech — sign in with Google", html: shell(inner) };
 }
 

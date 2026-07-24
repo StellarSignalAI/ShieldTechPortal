@@ -3,6 +3,7 @@
 // Pulls recent opportunities matching security-integrator NAICS codes and
 // feeds them through the same dedupe/insert pipeline as ingest-alerts.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { getRegions } from "../_shared/leadConfig.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -51,7 +52,10 @@ Deno.serve(async (req) => {
   const to = new Date();
   const from = new Date(to.getTime() - days * 86_400_000);
 
-  const territories = (Deno.env.get("TERRITORIES") ?? "").split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
+  // Target regions come from the live lead_config (AI-editable), falling back to
+  // the TERRITORIES env var, then to ShieldTech's home region (NJ/PA/MD/VA).
+  const envTerritories = (Deno.env.get("TERRITORIES") ?? "").split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
+  const territories = envTerritories.length ? envTerritories : await getRegions(admin);
   const naics = (Deno.env.get("SAM_NAICS") ?? DEFAULT_NAICS).split(",").map(s => s.trim()).filter(Boolean);
 
   // ── Fetch from SAM.gov ──

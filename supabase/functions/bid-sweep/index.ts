@@ -5,6 +5,7 @@
 // stores each lead with a link back to the platform (detail URL when the page
 // exposes one, otherwise the platform's listing page).
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { getRegions } from "../_shared/leadConfig.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -38,14 +39,14 @@ const stripHtml = (html: string) =>
       .replace(/<a\s+[^>]*href="(https?:[^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, " $2 [link: $1] ")
       .replace(/<[^>]+>/g, " ").replace(/&nbsp;|&amp;|&#\d+;/g, " ").replace(/\s+/g, " ").trim();
 
-async function extract(apiKey: string, text: string) {
+async function extract(apiKey: string, text: string, extraSystem = "") {
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: Deno.env.get("OPENAI_MODEL") ?? "gpt-4o-mini",
       temperature: 0, response_format: { type: "json_object" },
-      messages: [{ role: "system", content: EXTRACT_PROMPT }, { role: "user", content: text.slice(0, 30_000) }],
+      messages: [{ role: "system", content: EXTRACT_PROMPT + extraSystem }, { role: "user", content: text.slice(0, 30_000) }],
     }),
   });
   const out = await res.json();
@@ -92,6 +93,9 @@ Deno.serve(async (req) => {
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   if (!(await authorize(req, admin))) return json(401, { ok: false, error: "Admin/Staff session or CRON_SECRET required" });
 
+  const regions = await getRegions(admin);
+  const regionRule = `\nPRIORITY REGION: this integrator serves ${regions.join(", ")}. Prefer solicitations whose place of performance is in those states; you may still include a clearly high-value out-of-region item, but favor in-region. Grants/funding programs are national — include regardless of state.`;
+
   const { data: sources } = await admin.from("sources").select("id, listing_url").in("lane", ["bid", "grant"]).not("listing_url", "is", null);
   const results: Record<string, unknown>[] = [];
   for (const s of sources ?? []) {
@@ -103,7 +107,7 @@ Deno.serve(async (req) => {
       clearTimeout(t);
       const text = stripHtml(await res.text());
       if (text.length < 200) throw new Error("page too small / blocked");
-      const alerts = await extract(apiKey, text);
+      const alerts = await extract(apiKey, text, regionRule);
       const r = await insertAlerts(admin, alerts, s.id, s.listing_url);
       await admin.from("sources").update({ last_checked: now, last_ok: true, last_error: null, last_found: r.inserted }).eq("id", s.id);
       results.push({ id: s.id, ...r, extracted: alerts.length });
