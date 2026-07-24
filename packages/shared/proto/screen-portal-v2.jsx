@@ -212,6 +212,27 @@ function EmployeeScreen() {
   }, []);
   React.useEffect(() => { load(); }, [load]);
 
+  const isAdmin = ((window.__shieldUser && window.__shieldUser.role) === 'Admin');
+  // Service-role user actions (remove / reset password / resend invite).
+  const manageUser = async (action, emp) => {
+    if (!window.__shieldSupabase) { shieldToast('Backend not configured', 'warn'); return; }
+    const { data, error } = await window.__shieldSupabase.functions.invoke('manage-user', {
+      body: { action, userId: emp.id },
+    });
+    if (error || !data || !data.ok) {
+      shieldToast((data && data.error) || (error && error.message) || 'Action failed', 'error');
+      return;
+    }
+    if (action === 'remove') { shieldToast(`Removed ${emp.name}`, 'ok'); load(); }
+    else shieldToast(data.data && data.data.emailed ? `Email sent to ${emp.email}` : `New temp password: ${data.data && data.data.temp_password}`, 'ok');
+  };
+  const confirmRemove = (emp) => shieldModal({
+    kind: 'confirm', title: 'Remove team member',
+    message: `Remove ${emp.name} from the team? This deletes their login and profile. This can't be undone.`,
+    confirmLabel: 'Remove', danger: true,
+    onConfirm: () => manageUser('remove', emp),
+  });
+
   const openEmployee = (emp) => shieldModal({
     kind: 'detail', title: emp.name, subtitle: `${emp.role} · ${emp.dept}`,
     badge: { status: 'online', label: 'Active' },
@@ -228,7 +249,13 @@ function EmployeeScreen() {
     ],
     actions: [
       { label: 'Message', onClick: () => shieldToast('Message sent to ' + emp.name, 'info'), close: true },
-      { label: 'View Schedule', primary: true, successMsg: 'Opening schedule for ' + emp.name, onClick: () => {} },
+      ...(isAdmin ? [
+        { label: 'Resend Invite', onClick: () => manageUser('resend', emp), close: true },
+        { label: 'Reset Password', onClick: () => manageUser('reset', emp), close: true },
+        { label: 'Remove', danger: true, close: true, onClick: () => confirmRemove(emp) },
+      ] : [
+        { label: 'View Schedule', primary: true, successMsg: 'Opening schedule for ' + emp.name, onClick: () => {} },
+      ]),
     ],
   });
 
