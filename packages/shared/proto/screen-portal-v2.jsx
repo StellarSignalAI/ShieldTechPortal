@@ -324,6 +324,25 @@ function AddEmployeeModal({ onClose, showToast, onDone, team = [] }) {
   });
   const update = (f, v) => setEmp(prev => ({ ...prev, [f]: v }));
 
+  // Upload a team-member document to Supabase Storage and mark it on the record.
+  const uploadDoc = async (label, file) => {
+    if (!file) return;
+    const store = window.__shieldStorage;
+    const entityId = (emp.email || `${emp.firstName} ${emp.lastName}`).trim().toLowerCase() || 'new-hire';
+    showToast(`Uploading ${label}…`);
+    let res = { local: true };
+    if (store && store.uploadFile) {
+      try {
+        res = await store.uploadFile(file, {
+          folder: 'team-documents', entity: 'employee', entityId, name: `${label} — ${file.name}`,
+          shared: true,
+        });
+      } catch { res = { local: true }; }
+    }
+    setEmp(prev => prev.documents.includes(label) ? prev : { ...prev, documents: [...prev.documents, label] });
+    showToast(res && res.local ? `${label} attached` : `${label} saved`, 'ok');
+  };
+
   // Create the user + send the invite (this IS Users & Invites, inside the flow).
   const sendInvite = async () => {
     const email = (emp.email || '').trim();
@@ -539,21 +558,20 @@ function AddEmployeeModal({ onClose, showToast, onDone, team = [] }) {
                 ].map((doc, i) => {
                   const uploaded = emp.documents.includes(doc.label);
                   return (
-                    <div key={i} onClick={() => {
-                      if (uploaded) update('documents', emp.documents.filter(d => d !== doc.label));
-                      else update('documents', [...emp.documents, doc.label]);
-                    }} style={{
+                    <label key={i} style={{
                       display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
                       background: uploaded ? 'rgba(52,211,153,0.04)' : 'transparent',
                       border: `1px solid ${uploaded ? 'rgba(52,211,153,0.15)' : doc.required ? 'rgba(251,191,36,0.15)' : 'var(--border-subtle)'}`
                     }}>
+                      <input type="file" accept="image/*,application/pdf,.doc,.docx,.txt" style={{ display: 'none' }}
+                        onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) uploadDoc(doc.label, f); }} />
                       <Icon name={doc.icon} size={14} color={uploaded ? 'var(--status-ok)' : 'var(--text-low)'} />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 11, color: uploaded ? 'var(--status-ok)' : 'var(--text-high)', fontWeight: uploaded ? 500 : 400 }}>{uploaded ? '✓ ' : ''}{doc.label}</div>
                         {doc.required && !uploaded && <div style={{ fontSize: 8, color: 'var(--status-warn)' }}>Required</div>}
                       </div>
                       <span style={{ fontSize: 9, color: uploaded ? 'var(--status-ok)' : 'var(--brand)' }}>{uploaded ? 'Uploaded' : 'Upload'}</span>
-                    </div>
+                    </label>
                   );
                 })}
               </div>

@@ -93,9 +93,21 @@ function WorkOrderScreen() {
   const handlePhotoUpload = (e, slot) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    setPhotoUrls(prev => ({ ...prev, [wo.id + '-' + slot]: url }));
-    showToast('Photo added', 'ok');
+    const key = wo.id + '-' + slot;
+    // Show immediately, then persist to Supabase Storage and swap in the durable URL.
+    setPhotoUrls(prev => ({ ...prev, [key]: URL.createObjectURL(file) }));
+    showToast('Uploading photo…');
+    const store = window.__shieldStorage;
+    if (store && store.uploadFile) {
+      store.uploadFile(file, { folder: 'work-orders', entity: 'work_order', entityId: wo.id, name: file.name })
+        .then(res => {
+          if (res && res.url) setPhotoUrls(prev => ({ ...prev, [key]: res.url }));
+          showToast(res && res.local ? 'Photo added' : 'Photo saved', 'ok');
+        })
+        .catch(() => showToast('Photo added', 'ok'));
+    } else {
+      showToast('Photo added', 'ok');
+    }
   };
 
   const statusIdx = ['scheduled','in-progress','completed'].indexOf(wo.status);

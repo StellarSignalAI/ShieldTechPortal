@@ -27,6 +27,7 @@ import '@shared/time.js';
 import '@shared/email.js';
 import '@shared/pdf.js';
 import '@shared/camera.js';
+import '@shared/storage.js';
 import '@shared/proto-manifest-customer.js';
 import '@shared/store-sync.js';
 

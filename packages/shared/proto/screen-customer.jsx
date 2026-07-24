@@ -25,7 +25,7 @@ function CustomerScreen() {
       {/* Welcome */}
       <div style={{ marginBottom: 28, animation: 'fade-up 0.5s ease both' }}>
         <h1 className="display" style={{ fontSize: 26, fontWeight: 200, letterSpacing: '-0.01em', color: 'var(--text-high)' }}>
-          Welcome back, <span style={{ fontWeight: 400 }}>Acme Dental Group</span>
+          Welcome back, <span style={{ fontWeight: 400 }}>{(window.__shieldUser && window.__shieldUser.name) || 'Acme Dental Group'}</span>
         </h1>
         <p style={{ fontSize: 14, color: 'var(--text-mid)', marginTop: 6 }}>Your security systems at a glance · Site A — 1247 Market Street</p>
       </div>
