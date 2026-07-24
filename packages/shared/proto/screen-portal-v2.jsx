@@ -103,26 +103,114 @@ function ExpenseApprovalScreen() {
 
 /* ── Timesheet Approval ── */
 function TimesheetApprovalScreen() {
-  const [timesheets, setTimesheets] = React.useState([
-    { tech: 'Mike Reyes', initials: 'MR', period: 'Jun 2–6', total: 38.2, billable: 32.5, drive: 4.2, admin: 1.5, overtime: 0, status: 'pending', jobs: 8 },
-    { tech: 'Jessica Liu', initials: 'JL', period: 'Jun 2–6', total: 41.5, billable: 35.0, drive: 3.8, admin: 2.7, overtime: 1.5, status: 'pending', jobs: 6 },
-    { tech: 'Kevin White', initials: 'KW', period: 'Jun 2–6', total: 36.8, billable: 31.2, drive: 3.6, admin: 2.0, overtime: 0, status: 'pending', jobs: 7 },
-    { tech: 'Diana Patel', initials: 'DP', period: 'Jun 2–6', total: 40.0, billable: 33.8, drive: 4.5, admin: 1.7, overtime: 0, status: 'submitted', jobs: 9 },
-    { tech: 'Tony Garcia', initials: 'TG', period: 'Jun 2–6', total: 42.3, billable: 36.0, drive: 3.2, admin: 3.1, overtime: 2.3, status: 'submitted', jobs: 7 },
-  ]);
+  // Blank canvas: every timesheet here is a REAL technician's logged hours,
+  // pulled from Supabase (time_entries) and grouped by tech + work-week.
+  // Approve/Return write straight back to the database and, on approval, push
+  // to Rippling — so what the tech submits on their phone shows up here and the
+  // decision flows back to them.
+  const [timesheets, setTimesheets] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const setTsStatus = (tech, status, verb) => {
-    setTimesheets(prev => prev.map(t => t.tech === tech ? { ...t, status } : t));
-    shieldToast(`${verb} — ${tech}, week of Jun 2`, status === 'approved' ? 'ok' : 'warn');
+  const initialsOf = (n) => (n || 'Technician').split(/[\s@.]+/).filter(Boolean)
+    .slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'T';
+
+  // Monday-anchored ISO week for a YYYY-MM-DD string.
+  const weekOf = (dateStr) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    const dow = (d.getDay() + 6) % 7;
+    const mon = new Date(d); mon.setDate(d.getDate() - dow);
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    const key = mon.toISOString().slice(0, 10);
+    const f = (x) => x.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return { key, start: key, end: sun.toISOString().slice(0, 10), label: `${f(mon)}–${sun.getDate()}` };
   };
+
+  const load = React.useCallback(() => {
+    const t = window.__shieldTime;
+    if (!t) { setLoading(false); return; }
+    t.laborLedger(500).then(r => {
+      setLoading(false);
+      if (!r.ok || !r.data) return;
+      const entries = r.data.entries || [];
+      const map = new Map();
+      entries.forEach(e => {
+        if (!e.work_date) return;
+        const name = (e.tech && e.tech.name) || (e.tech && e.tech.email) || 'Technician';
+        const wk = weekOf(e.work_date);
+        const gkey = (e.tech_id || name) + '|' + wk.key;
+        if (!map.has(gkey)) map.set(gkey, {
+          key: gkey, techId: e.tech_id, tech: name, initials: initialsOf(name),
+          period: wk.label, weekStart: wk.start, weekEnd: wk.end, entries: [],
+        });
+        map.get(gkey).entries.push(e);
+      });
+      const list = [...map.values()].map(g => {
+        const sum = (pred) => g.entries.filter(pred).reduce((s, e) => s + Number(e.hours || 0), 0);
+        const total = sum(() => true);
+        const drive = sum(e => e.job_ref === 'Travel');
+        const admin = sum(e => e.job_ref === 'Admin');
+        const billable = Math.max(0, total - drive - admin);
+        const overtime = Math.max(0, total - 40);
+        const jobs = new Set(g.entries.map(e => e.job_ref).filter(Boolean)).size;
+        const st = g.entries.map(e => e.status);
+        const status = st.includes('submitted') ? 'submitted'
+          : st.includes('rejected') ? 'returned'
+          : st.every(s => ['approved', 'synced', 'paid'].includes(s)) ? 'approved' : 'draft';
+        return {
+          ...g, total: +total.toFixed(1), billable: +billable.toFixed(1), drive: +drive.toFixed(1),
+          admin: +admin.toFixed(1), overtime: +overtime.toFixed(1), jobs, status,
+        };
+      }).sort((a, b) =>
+        (b.status === 'submitted' ? 1 : 0) - (a.status === 'submitted' ? 1 : 0) ||
+        (a.weekStart < b.weekStart ? 1 : -1));
+      setTimesheets(list);
+    });
+  }, []);
+  React.useEffect(() => { load(); }, [load]);
+
+  // Approve / return EVERY still-pending entry in this tech's week, then refresh.
+  const decideGroup = (g, approve) => {
+    const t = window.__shieldTime;
+    if (!t) { shieldToast('Backend not configured', 'warn'); return; }
+    const pend = g.entries.filter(e => e.status === 'submitted');
+    if (!pend.length) { shieldToast(`Nothing pending for ${g.tech}`, 'info'); return; }
+    Promise.all(pend.map(e => t.setEntryStatus(e.id, approve ? 'approved' : 'rejected', approve ? undefined : 'Returned for correction')))
+      .then(res => {
+        const ok = res.every(r => r && r.ok);
+        if (approve) {
+          shieldToast(ok ? `Approved — ${g.tech}, ${g.period}` : 'Some entries could not be approved', ok ? 'ok' : 'warn');
+          t.ripplingSync('push').then(sr => {
+            if (sr && sr.ok) shieldToast('Synced to Rippling', 'ok');
+            else if (sr && sr.error && !String(sr.error).includes('not configured')) shieldToast('Rippling: ' + sr.error, 'warn');
+          });
+        } else {
+          shieldToast(`Returned — ${g.tech}, ${g.period}`, 'warn');
+        }
+        load();
+      });
+  };
+  const totalHours = timesheets.reduce((s, t) => s + t.total, 0);
+  const totalBillable = timesheets.reduce((s, t) => s + t.billable, 0);
+
+  if (!loading && timesheets.length === 0) {
+    return (
+      <div className="glass" style={{ padding: '48px 24px', textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
+        <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.5 }}>🕑</div>
+        <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-high)', marginBottom: 6 }}>No timesheets yet</div>
+        <div style={{ fontSize: 13, color: 'var(--text-mid)' }}>
+          When a technician logs and submits hours in the Tech app, their weekly timesheet appears here for approval.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Stats */}
       <div style={{ display: 'flex', gap: 12 }}>
-        <StatCard label="PENDING APPROVAL" value={timesheets.filter(t => t.status === 'pending' || t.status === 'submitted').length} delay={0} />
-        <StatCard label="TOTAL HOURS" value={timesheets.reduce((s,t) => s + t.total, 0).toFixed(0) + 'h'} mono={false} delay={80} />
-        <StatCard label="BILLABLE %" value={Math.round(timesheets.reduce((s,t) => s + t.billable, 0) / timesheets.reduce((s,t) => s + t.total, 0) * 100) + '%'} mono={false} delay={160} />
+        <StatCard label="PENDING APPROVAL" value={timesheets.filter(t => t.status === 'submitted').length} delay={0} />
+        <StatCard label="TOTAL HOURS" value={totalHours.toFixed(0) + 'h'} mono={false} delay={80} />
+        <StatCard label="BILLABLE %" value={totalHours > 0 ? Math.round(totalBillable / totalHours * 100) + '%' : '—'} mono={false} delay={160} />
         <StatCard label="OVERTIME" value={timesheets.reduce((s,t) => s + t.overtime, 0).toFixed(1) + 'h'} mono={false} delay={240} />
       </div>
 
@@ -135,7 +223,7 @@ function TimesheetApprovalScreen() {
               <div style={{ fontSize: 14, fontWeight: 500 }}>{ts.tech}</div>
               <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{ts.period} · {ts.jobs} jobs</div>
             </div>
-            <StatusBadge status={ts.status === 'pending' ? 'pending' : 'info'} label={ts.status} />
+            <StatusBadge status={ts.status === 'submitted' ? 'pending' : ts.status === 'approved' ? 'online' : ts.status === 'returned' ? 'warn' : 'info'} label={ts.status === 'submitted' ? 'pending' : ts.status} />
           </div>
 
           {/* Hours breakdown */}
@@ -156,10 +244,10 @@ function TimesheetApprovalScreen() {
 
           {/* Stacked bar */}
           <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', gap: 1, marginBottom: 10 }}>
-            <div style={{ width: `${(ts.billable/ts.total)*100}%`, background: 'var(--brand)' }} />
-            <div style={{ width: `${(ts.drive/ts.total)*100}%`, background: 'var(--status-warn)' }} />
-            <div style={{ width: `${(ts.admin/ts.total)*100}%`, background: 'var(--text-low)', opacity: 0.5 }} />
-            {ts.overtime > 0 && <div style={{ width: `${(ts.overtime/ts.total)*100}%`, background: 'var(--status-critical)' }} />}
+            <div style={{ width: `${(ts.billable/(ts.total||1))*100}%`, background: 'var(--brand)' }} />
+            <div style={{ width: `${(ts.drive/(ts.total||1))*100}%`, background: 'var(--status-warn)' }} />
+            <div style={{ width: `${(ts.admin/(ts.total||1))*100}%`, background: 'var(--text-low)', opacity: 0.5 }} />
+            {ts.overtime > 0 && <div style={{ width: `${(ts.overtime/(ts.total||1))*100}%`, background: 'var(--status-critical)' }} />}
           </div>
 
           {/* Actions */}
@@ -172,8 +260,10 @@ function TimesheetApprovalScreen() {
               { k: 'Total', v: ts.total + 'h' },
               { k: 'Status', v: ts.status }
             ] })} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View Details</button>
-            <button onClick={() => setTsStatus(ts.tech, 'approved', 'Approved')} style={{ padding: '5px 16px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>
-            <button onClick={() => setTsStatus(ts.tech, 'returned', 'Returned')} style={{ padding: '5px 12px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Return</button>
+            {ts.status === 'submitted' && <>
+              <button onClick={() => decideGroup(ts, true)} style={{ padding: '5px 16px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>
+              <button onClick={() => decideGroup(ts, false)} style={{ padding: '5px 12px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Return</button>
+            </>}
           </div>
         </GlassPanel>
       ))}
