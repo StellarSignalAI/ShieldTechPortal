@@ -74,6 +74,44 @@ const ticketStore = createShieldStore('tickets', []);
 /* ── Work Order Store ── */
 const workOrderStore = createShieldStore('workorders', []);
 
+/* Default required-shot + checklist templates by work type (blank-canvas: a new
+   WO carries its own scope/checklist/photoSlots — no shared seed). */
+// Keys mirror PHOTO_CHECKLISTS so the tech app's required-shot list lines up.
+const WO_TEMPLATES = {
+  Install:     { checklist: ['Confirm site contact', 'Review scope', 'Run cable / rough-in', 'Mount devices', 'Terminate & configure', 'Test system', 'Customer walkthrough', 'Collect signature'] },
+  Repair:      { checklist: ['Confirm reported issue', 'Diagnose', 'Repair / replace', 'Verify operation', 'Customer walkthrough', 'Collect signature'] },
+  Maintenance: { checklist: ['Confirm scope', 'Inspect devices', 'Service / clean', 'Test & verify', 'Customer walkthrough', 'Collect signature'] },
+  Survey:      { checklist: ['Meet site contact', 'Tour all areas', 'Document devices / doors', 'Photograph site', 'Submit report'] },
+};
+
+/* Build a complete work-order record from a portal create form. Assigns it to a
+   tech (assignedTo = profile id; tech/techId for display) so it appears in that
+   technician's app. */
+function buildWorkOrder(form) {
+  const existing = workOrderStore.get();
+  const n = existing.reduce((m, w) => { const num = parseInt(String(w.id || '').replace(/\D/g, ''), 10); return isNaN(num) ? m : Math.max(m, num); }, 2843) + 1;
+  const type = form.type || 'Install';
+  const tpl = WO_TEMPLATES[type] || WO_TEMPLATES.Install;
+  return {
+    id: 'WO-' + n,
+    customer: (form.customer || 'New Customer').trim(),
+    site: form.site || '',
+    type,
+    tech: form.techName || 'Unassigned',
+    techId: form.techInitials || '—',
+    assignedTo: form.assignedTo || null,   // profile id the tech app filters on
+    scheduled: form.scheduled || new Date().toISOString().slice(0, 10),
+    status: 'scheduled',
+    scope: form.scope || '',
+    notes: form.notes || '',
+    materials: [],
+    checklist: Array.isArray(form.checklist) && form.checklist.length ? form.checklist : tpl.checklist,
+    photoSlots: (typeof PHOTO_CHECKLISTS !== 'undefined' && PHOTO_CHECKLISTS[type]) || [],
+    checkedItems: {}, timerSeconds: 0, timerRunning: false, signatureSigned: false,
+    createdAt: Date.now(),
+  };
+}
+
 /* ── Incident Store ── */
 const incidentStore = createShieldStore('incidents', []);
 
@@ -158,6 +196,30 @@ const woFocusStore = createShieldStore('wofocus', null);
 
 /* ── Truck Inventory Store (per-tech van stock; auto-restock automation) ── */
 const truckStore = createShieldStore('truck', {});
+
+/* ── Per-user preferences (remembered per user, synced across devices) ──
+   Everything a single user configures for themselves — appearance, presence,
+   notification prefs, and any future personal toggles. store-sync.js keys this
+   to the signed-in user (userprefs:<uid>), so each person keeps their own. */
+const userPrefsStore = createShieldStore('userprefs', {
+  theme: 'dark', status: 'online',
+  notify: { email: true, push: true, desktop: false },
+});
+/* Apply the remembered appearance to the document as soon as it's known and on
+   every change, so a user's theme choice survives reloads and follows them to
+   any device. */
+(() => {
+  const applyTheme = (t) => {
+    try {
+      const mode = t === 'system'
+        ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+        : (t || 'dark');
+      document.documentElement.setAttribute('data-theme', mode);
+    } catch {}
+  };
+  applyTheme((userPrefsStore.get() || {}).theme);
+  userPrefsStore.subscribe((v) => applyTheme((v || {}).theme));
+})();
 
 /* ── NPS Store ── */
 const npsStore = createShieldStore('nps', []);
@@ -290,7 +352,7 @@ Object.assign(window, {
   ticketStore, workOrderStore, incidentStore, jobStore,
   npsStore, poStore, skillsStore, qtcStore, mrrStore, partsReqStore,
   photoStore, assetStore, PHOTO_CHECKLISTS, punchStore, PUNCH_STATUS, PUNCH_TECHS,
-  backlogStore, woFocusStore, truckStore,
+  backlogStore, woFocusStore, truckStore, userPrefsStore,
   customerStore, subCustomerStore, buildCustomer,
   mobileTabsStore, M_ALL_TAB, approvalStore,
   proposalStore, defaultProposalBlocks, proposalValue,

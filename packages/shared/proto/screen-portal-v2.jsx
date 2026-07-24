@@ -187,15 +187,30 @@ function EmployeeScreen() {
   const [toast, setToast] = React.useState(null);
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 3000); };
 
-  const employees = [
-    { name: 'Mike Reyes', initials: 'MR', role: 'Lead Technician', dept: 'Field Ops', status: 'active', hireDate: 'Jan 2022', phone: '(415) 555-0142', email: 'mreyes@shieldtech.com', certs: 3, rating: 4.8, utilization: 87 },
-    { name: 'Jessica Liu', initials: 'JL', role: 'Senior Technician', dept: 'Field Ops', status: 'active', hireDate: 'Mar 2022', phone: '(415) 555-0289', email: 'jliu@shieldtech.com', certs: 3, rating: 4.9, utilization: 92 },
-    { name: 'Kevin White', initials: 'KW', role: 'Technician', dept: 'Field Ops', status: 'active', hireDate: 'Aug 2023', phone: '(415) 555-0367', email: 'kwhite@shieldtech.com', certs: 2, rating: 4.5, utilization: 78 },
-    { name: 'Diana Patel', initials: 'DP', role: 'Technician', dept: 'Field Ops', status: 'active', hireDate: 'Nov 2023', phone: '(415) 555-0445', email: 'dpatel@shieldtech.com', certs: 2, rating: 4.6, utilization: 81 },
-    { name: 'Tony Garcia', initials: 'TG', role: 'Fire Alarm Specialist', dept: 'Field Ops', status: 'active', hireDate: 'Sep 2021', phone: '(415) 555-0523', email: 'tgarcia@shieldtech.com', certs: 4, rating: 4.7, utilization: 85 },
-    { name: 'Sarah Chen', initials: 'SC', role: 'Sales Manager', dept: 'Sales', status: 'active', hireDate: 'Jun 2021', phone: '(415) 555-0601', email: 'schen@shieldtech.com', certs: 1, rating: 4.9, utilization: 0 },
-    { name: 'John Mitchell', initials: 'JM', role: 'Owner / GM', dept: 'Admin', status: 'active', hireDate: 'Jan 2020', phone: '(415) 555-0101', email: 'jmitchell@shieldtech.com', certs: 2, rating: 0, utilization: 0 },
-  ];
+  // Blank canvas: the team is the real profiles table (people invited via the
+  // Add Team Member flow). No filler employees.
+  const [employees, setEmployees] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const deptFor = (role) => /tech|field|install/i.test(role || '') ? 'Field Ops'
+    : /sales|account exec|bd/i.test(role || '') ? 'Sales'
+    : /admin|owner|manager|gm/i.test(role || '') ? 'Admin' : 'Team';
+  const load = React.useCallback(async () => {
+    if (!window.__shieldSupabase) { setLoading(false); return; }
+    const { data } = await window.__shieldSupabase
+      .from('profiles').select('id,name,email,role,created_at').order('created_at', { ascending: true });
+    setEmployees((data || []).map(p => {
+      const name = p.name || p.email || 'Team member';
+      return {
+        id: p.id, name, email: p.email || '',
+        initials: name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'T',
+        role: p.role || 'Technician', dept: deptFor(p.role), status: 'active',
+        hireDate: p.created_at ? new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—',
+        phone: '', certs: 0, rating: 0, utilization: 0,
+      };
+    }));
+    setLoading(false);
+  }, []);
+  React.useEffect(() => { load(); }, [load]);
 
   const openEmployee = (emp) => shieldModal({
     kind: 'detail', title: emp.name, subtitle: `${emp.role} · ${emp.dept}`,
@@ -220,17 +235,32 @@ function EmployeeScreen() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 className="display" style={{ fontSize: 20, fontWeight: 300 }}>Team Management</h2>
-        <button onClick={() => setAddModalOpen(true)} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="add" size={14} color="#fff" /> Add Employee</button>
+        <h2 className="display" style={{ fontSize: 20, fontWeight: 300 }}>Team</h2>
+        <button onClick={() => setAddModalOpen(true)} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="add" size={14} color="#fff" /> Add Team Member</button>
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'flex', gap: 12 }}>
-        <StatCard label="TOTAL EMPLOYEES" value={employees.length} delay={0} />
-        <StatCard label="FIELD TECHS" value={employees.filter(e => e.dept === 'Field Ops').length} delay={80} />
-        <StatCard label="AVG UTILIZATION" value={Math.round(employees.filter(e => e.utilization > 0).reduce((s,e) => s + e.utilization, 0) / employees.filter(e => e.utilization > 0).length) + '%'} mono={false} delay={160} />
-        <StatCard label="AVG RATING" value={(employees.filter(e => e.rating > 0).reduce((s,e) => s + e.rating, 0) / employees.filter(e => e.rating > 0).length).toFixed(1)} mono={false} delay={240} />
-      </div>
+      {(() => {
+        const uts = employees.filter(e => e.utilization > 0);
+        const rts = employees.filter(e => e.rating > 0);
+        return (
+          <div style={{ display: 'flex', gap: 12 }}>
+            <StatCard label="TEAM MEMBERS" value={employees.length} delay={0} />
+            <StatCard label="FIELD TECHS" value={employees.filter(e => e.dept === 'Field Ops').length} delay={80} />
+            <StatCard label="AVG UTILIZATION" value={uts.length ? Math.round(uts.reduce((s,e) => s + e.utilization, 0) / uts.length) + '%' : '—'} mono={false} delay={160} />
+            <StatCard label="AVG RATING" value={rts.length ? (rts.reduce((s,e) => s + e.rating, 0) / rts.length).toFixed(1) : '—'} mono={false} delay={240} />
+          </div>
+        );
+      })()}
+
+      {/* Empty state */}
+      {!loading && employees.length === 0 && (
+        <GlassPanel style={{ padding: '40px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-high)', marginBottom: 6 }}>No team members yet</div>
+          <div style={{ fontSize: 12, color: 'var(--text-low)', maxWidth: 380, margin: '0 auto 14px' }}>Add your first team member — you'll set their role, app access, and pay, then send the invite in the same flow.</div>
+          <button onClick={() => setAddModalOpen(true)} style={{ padding: '9px 18px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Team Member</button>
+        </GlassPanel>
+      )}
 
       {/* Employee cards */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -265,19 +295,22 @@ function EmployeeScreen() {
         ))}
       </div>
 
-      {/* Add Employee Modal */}
-      {addModalOpen && <AddEmployeeModal onClose={() => setAddModalOpen(false)} showToast={showToast} />}
+      {/* Add Team Member Modal — collects info + role + privileges, then sends the invite */}
+      {addModalOpen && <AddEmployeeModal onClose={() => setAddModalOpen(false)} showToast={showToast} onDone={load} team={employees} />}
       {toast && <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, padding: '10px 24px', borderRadius: 8, background: 'var(--card)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 13, fontWeight: 500, boxShadow: 'var(--glow-brand-sm)', animation: 'fade-up 0.3s ease both' }}>{toast}</div>}
     </div>
   );
 }
 
-/* ── Add Employee Modal ── */
-function AddEmployeeModal({ onClose, showToast }) {
+/* ── Add Team Member Modal — new-hire wizard that ends by creating the user +
+   sending the invite (Users & Invites folded into the create flow). ── */
+function AddEmployeeModal({ onClose, showToast, onDone, team = [] }) {
   const [step, setStep] = React.useState(0); // 0=info, 1=role, 2=privileges, 3=documents, 4=invite
+  const [busy, setBusy] = React.useState(false);
+  const [result, setResult] = React.useState(null);
   const [emp, setEmp] = React.useState({
     firstName: '', lastName: '', email: '', phone: '', dept: 'Field Ops',
-    role: 'Technician', reportTo: 'John Mitchell', startDate: '',
+    role: 'Technician', reportTo: '', startDate: '',
     // Privileges
     portalAccess: true, techAppAccess: true, dispatchView: true, dispatchEdit: false,
     financeView: false, financeEdit: false, crmView: true, crmEdit: false,
@@ -290,6 +323,44 @@ function AddEmployeeModal({ onClose, showToast }) {
     documents: [],
   });
   const update = (f, v) => setEmp(prev => ({ ...prev, [f]: v }));
+
+  // Upload a team-member document to Supabase Storage and mark it on the record.
+  const uploadDoc = async (label, file) => {
+    if (!file) return;
+    const store = window.__shieldStorage;
+    const entityId = (emp.email || `${emp.firstName} ${emp.lastName}`).trim().toLowerCase() || 'new-hire';
+    showToast(`Uploading ${label}…`);
+    let res = { local: true };
+    if (store && store.uploadFile) {
+      try {
+        res = await store.uploadFile(file, {
+          folder: 'team-documents', entity: 'employee', entityId, name: `${label} — ${file.name}`,
+          shared: true,
+        });
+      } catch { res = { local: true }; }
+    }
+    setEmp(prev => prev.documents.includes(label) ? prev : { ...prev, documents: [...prev.documents, label] });
+    showToast(res && res.local ? `${label} attached` : `${label} saved`, 'ok');
+  };
+
+  // Create the user + send the invite (this IS Users & Invites, inside the flow).
+  const sendInvite = async () => {
+    const email = (emp.email || '').trim();
+    const name = `${emp.firstName} ${emp.lastName}`.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showToast('Enter a valid email in Personal Info', 'warn'); setStep(0); return; }
+    if (!window.__shieldSupabase) { showToast('Backend not configured', 'warn'); return; }
+    const inviteRole = emp.adminEdit ? 'Admin' : emp.portalAccess ? 'Staff' : 'Technician';
+    const app_rights = { portal: !!emp.portalAccess, tech: !!emp.techAppAccess, customer: false };
+    setBusy(true); setResult(null);
+    const { data, error } = await window.__shieldSupabase.functions.invoke('invite-user', {
+      body: { email, name: name || email, role: inviteRole, app_rights },
+    });
+    setBusy(false);
+    if (error || !data || !data.ok) { showToast((data && data.error) || (error && error.message) || 'Could not create team member', 'error'); return; }
+    setResult(data.data);
+    if (onDone) onDone();
+    showToast(data.data.emailed ? `Invite emailed to ${email}` : 'Team member created — copy the temp password below', 'ok');
+  };
 
   const steps = ['Personal Info', 'Role & Pay', 'App Privileges', 'Documents', 'Send Invite'];
   const inputStyle = { width: '100%', padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
@@ -386,9 +457,10 @@ function AddEmployeeModal({ onClose, showToast }) {
                 </select>
               </div>
               <div><label style={labelStyle}>Start Date</label><input type="date" value={emp.startDate} onChange={e => update('startDate', e.target.value)} style={inputStyle} /></div>
-              <div><label style={labelStyle}>Reports To</label>
+              <div><label style={labelStyle}>Reporting Manager</label>
                 <select value={emp.reportTo} onChange={e => update('reportTo', e.target.value)} style={inputStyle}>
-                  {['John Mitchell','Sarah Chen','Mike Reyes'].map(m => <option key={m}>{m}</option>)}
+                  <option value="">— Select manager —</option>
+                  {team.map(m => <option key={m.id || m.name} value={m.name}>{m.name}{m.role ? ` · ${m.role}` : ''}</option>)}
                 </select>
               </div>
             </div>
@@ -486,21 +558,20 @@ function AddEmployeeModal({ onClose, showToast }) {
                 ].map((doc, i) => {
                   const uploaded = emp.documents.includes(doc.label);
                   return (
-                    <div key={i} onClick={() => {
-                      if (uploaded) update('documents', emp.documents.filter(d => d !== doc.label));
-                      else update('documents', [...emp.documents, doc.label]);
-                    }} style={{
+                    <label key={i} style={{
                       display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
                       background: uploaded ? 'rgba(52,211,153,0.04)' : 'transparent',
                       border: `1px solid ${uploaded ? 'rgba(52,211,153,0.15)' : doc.required ? 'rgba(251,191,36,0.15)' : 'var(--border-subtle)'}`
                     }}>
+                      <input type="file" accept="image/*,application/pdf,.doc,.docx,.txt" style={{ display: 'none' }}
+                        onChange={e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) uploadDoc(doc.label, f); }} />
                       <Icon name={doc.icon} size={14} color={uploaded ? 'var(--status-ok)' : 'var(--text-low)'} />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 11, color: uploaded ? 'var(--status-ok)' : 'var(--text-high)', fontWeight: uploaded ? 500 : 400 }}>{uploaded ? '✓ ' : ''}{doc.label}</div>
                         {doc.required && !uploaded && <div style={{ fontSize: 8, color: 'var(--status-warn)' }}>Required</div>}
                       </div>
                       <span style={{ fontSize: 9, color: uploaded ? 'var(--status-ok)' : 'var(--brand)' }}>{uploaded ? 'Uploaded' : 'Upload'}</span>
-                    </div>
+                    </label>
                   );
                 })}
               </div>
@@ -527,16 +598,24 @@ function AddEmployeeModal({ onClose, showToast }) {
                 </div>
               </GlassPanel>
 
-              <div style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 16 }}>
-                An invite will be sent to <strong>{emp.email || '(enter email)'}</strong> with login credentials and onboarding instructions.
-              </div>
-
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-                <button onClick={() => { showToast(`Invite sent to ${emp.email}`); onClose(); }} style={{ padding: '10px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Icon name="export" size={14} color="#fff" /> Send Invite
-                </button>
-                <button onClick={() => { showToast(`${emp.firstName} ${emp.lastName} added (no invite sent)`); onClose(); }} style={{ padding: '10px 24px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Without Invite</button>
-              </div>
+              {!result ? (<>
+                <div style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 16 }}>
+                  Creating this member sends an invite to <strong>{emp.email || '(enter email)'}</strong> — a temporary password by email (they set their own on first login).
+                </div>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                  <button disabled={busy} onClick={sendInvite} style={{ padding: '10px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 13, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Icon name="export" size={14} color="#fff" /> {busy ? 'Creating…' : 'Create & Send Invite'}
+                  </button>
+                </div>
+              </>) : (
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--status-ok)', marginBottom: 8 }}>✓ {result.email} added to the team</div>
+                  {result.emailed
+                    ? <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>Invite emailed with a temporary password.</div>
+                    : <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>Give them this temporary password (email isn't configured):<br/><span className="mono" style={{ display: 'inline-block', marginTop: 8, padding: '6px 12px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 13 }}>{result.temp_password}</span></div>}
+                  <button onClick={onClose} style={{ marginTop: 16, padding: '9px 22px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Done</button>
+                </div>
+              )}
             </div>
           )}
         </div>

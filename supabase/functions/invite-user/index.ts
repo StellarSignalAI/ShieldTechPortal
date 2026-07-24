@@ -29,15 +29,17 @@ Deno.serve(async (req) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
 
-  // ── Caller must be a signed-in Admin ──
+  // ── Caller must be a signed-in Admin or reporting manager (Staff/Manager) ──
   const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
   if (!jwt) return json(401, { ok: false, error: "Missing bearer token" });
   const { data: caller, error: callerErr } = await admin.auth.getUser(jwt);
   if (callerErr || !caller?.user) return json(401, { ok: false, error: "Invalid session" });
   const { data: callerProfile } = await admin
     .from("profiles").select("role").eq("id", caller.user.id).maybeSingle();
-  if (callerProfile?.role !== "Admin") {
-    return json(403, { ok: false, error: "Admin role required" });
+  const callerRole = callerProfile?.role;
+  const canInvite = callerRole === "Admin" || callerRole === "Manager" || callerRole === "Staff";
+  if (!canInvite) {
+    return json(403, { ok: false, error: "Admin or reporting-manager role required to add team members" });
   }
 
   // ── Payload ──
@@ -47,8 +49,12 @@ Deno.serve(async (req) => {
   const role = body.role ?? "Client";
   const appRights = body.app_rights ?? { portal: false, tech: false, customer: true };
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json(400, { ok: false, error: "Valid email required" });
-  if (!["Admin", "Staff", "Technician", "Client"].includes(role)) {
+  if (!["Admin", "Staff", "Manager", "Technician", "Client"].includes(role)) {
     return json(400, { ok: false, error: "Unknown role" });
+  }
+  // Only a full Admin can mint another Admin — a reporting manager cannot escalate.
+  if (role === "Admin" && callerRole !== "Admin") {
+    return json(403, { ok: false, error: "Only an Admin can create another Admin" });
   }
 
   // ── 1) Pre-create the invite profile BEFORE the auth user. ──

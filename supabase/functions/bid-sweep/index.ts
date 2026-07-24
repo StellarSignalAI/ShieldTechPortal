@@ -14,8 +14,11 @@ const cors = {
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
 
-const EXTRACT_PROMPT = `You extract bid/RFP opportunities from a procurement portal's public listing page text, for a security integrator (CCTV/video surveillance, access control, intrusion alarm, fire alarm, low-voltage electrical, structured cabling, network infrastructure).
-ONLY include solicitations plausibly involving those trades (security, camera, CCTV, access, alarm, fire, low voltage, cabling, network, electronic safety). Ignore everything else (roads, food, janitorial...).
+const EXTRACT_PROMPT = `You extract opportunities from a public page's text for a security integrator (CCTV/video surveillance, access control, intrusion alarm, fire alarm, low-voltage electrical, structured cabling, network infrastructure).
+Capture TWO kinds of items:
+1. Bid/RFP solicitations plausibly involving those trades (security, camera, CCTV, access, alarm, fire, low voltage, cabling, network, electronic safety).
+2. GRANT / FUNDING PROGRAMS that pay for physical security equipment (e.g. nonprofit/house-of-worship security grants, school-safety grants, homeland-security grants). For a grant, the "buyer" is the funding body and "why" should note it's grant-funded security work ShieldTech can help applicants spec + install.
+Ignore everything unrelated (roads, food, janitorial...).
 Reply with JSON ONLY: {"alerts":[{"title":string,"buyer":string,"sourceUrl":string|null,"solicitationId":string|null,"state":two-letter string|null,"trades":string[],"value":number|null,"dueAt":ISO-8601 string|null,"why":string}]}
 Rules: only items explicitly present in the text; never invent buyers, values, dates, or URLs; sourceUrl only if an absolute link appears in the text. Empty page → {"alerts":[]}.`;
 
@@ -89,7 +92,7 @@ Deno.serve(async (req) => {
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   if (!(await authorize(req, admin))) return json(401, { ok: false, error: "Admin/Staff session or CRON_SECRET required" });
 
-  const { data: sources } = await admin.from("sources").select("id, listing_url").not("listing_url", "is", null);
+  const { data: sources } = await admin.from("sources").select("id, listing_url").in("lane", ["bid", "grant"]).not("listing_url", "is", null);
   const results: Record<string, unknown>[] = [];
   for (const s of sources ?? []) {
     const now = new Date().toISOString();

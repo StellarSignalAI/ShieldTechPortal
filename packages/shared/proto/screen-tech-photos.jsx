@@ -15,24 +15,29 @@ const techMe = () => (window.__shieldUser || {});
 /* ── Photo Roll + Checklist ── */
 function TechPhotosView({ setTab }) {
   const [photos] = useShieldStore(photoStore);
-  const [wos] = useShieldStore(workOrderStore);
+  const [allWos] = useShieldStore(workOrderStore);
+  // Only the jobs assigned to me (unassigned WOs stay visible to everyone).
+  const myId = (window.__shieldUser || {}).id;
+  const wos = allWos.filter(w => !w.assignedTo || w.assignedTo === myId);
   const [cam, setCam] = useShieldStore(techCamStore);
   const [lightbox, setLightbox] = React.useState(null);
 
-  const activeWo = wos.find(w => w.id === cam.wo) || wos[0];
-  if (!activeWo) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ fontSize: 16, fontWeight: 500 }}>Site Photos</div>
-        <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>No work orders assigned — photo documentation starts when a job is dispatched to you.</div>
-      </div>
-    );
-  }
-  const comp = photoCompliance(activeWo, photos);
-  const woPhotos = photos.filter(p => p.wo === activeWo.id);
-  const otherPhotos = photos.filter(p => p.tech === techMe().initials && p.wo !== activeWo.id);
+  // Photos no longer require a dispatched job. When the tech has no work order
+  // (or explicitly picks "Unassigned"), they can still shoot; the photo lands in
+  // an Unassigned bucket and can be attached to a job afterwards.
+  const activeWo = cam.wo === '__unassigned' ? null : (wos.find(w => w.id === cam.wo) || wos[0] || null);
+  const comp = activeWo ? photoCompliance(activeWo, photos) : null;
+  const woPhotos = activeWo ? photos.filter(p => p.wo === activeWo.id) : [];
+  const unassignedPhotos = photos.filter(p => p.tech === techMe().initials && !p.wo);
+  const otherPhotos = photos.filter(p => p.tech === techMe().initials && p.wo && (!activeWo || p.wo !== activeWo.id));
 
   const shootSlot = (slot) => { setCam({ ...cam, wo: activeWo.id, slot }); setTab('capture'); };
+  const assignPhoto = (photoId, woId) => {
+    const w = wos.find(x => x.id === woId);
+    if (!w) return;
+    photoStore.set(prev => prev.map(p => p.id === photoId ? { ...p, wo: w.id, customer: w.customer, site: w.site, label: p.label && !p.label.startsWith('Field photo') ? p.label : `Field photo — ${w.customer}` } : p));
+    showToast(`Photo attached to ${w.id} · ${w.customer}`, 'ok');
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -43,10 +48,14 @@ function TechPhotosView({ setTab }) {
         </button>
       </div>
 
-      {/* Job selector */}
+      {/* Job selector — includes an Unassigned bucket so photos can be shot with no job */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
+        <button onClick={() => setCam({ ...cam, wo: '__unassigned' })} style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-body)', background: !activeWo ? 'rgba(63,169,245,0.12)' : 'rgba(63,169,245,0.03)', border: `1px solid ${!activeWo ? 'var(--border-strong)' : 'var(--border-subtle)'}`, color: !activeWo ? 'var(--brand)' : 'var(--text-mid)', textAlign: 'left' }}>
+          <div className="mono" style={{ fontSize: 10, fontWeight: 600 }}>Unassigned</div>
+          <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{unassignedPhotos.length} photo{unassignedPhotos.length === 1 ? '' : 's'}</div>
+        </button>
         {wos.map(w => {
-          const on = w.id === activeWo.id;
+          const on = activeWo && w.id === activeWo.id;
           return (
             <button key={w.id} onClick={() => setCam({ ...cam, wo: w.id })} style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-body)', background: on ? 'rgba(63,169,245,0.12)' : 'rgba(63,169,245,0.03)', border: `1px solid ${on ? 'var(--border-strong)' : 'var(--border-subtle)'}`, color: on ? 'var(--brand)' : 'var(--text-mid)', textAlign: 'left' }}>
               <div className="mono" style={{ fontSize: 10, fontWeight: 600 }}>{w.id}</div>
@@ -56,7 +65,33 @@ function TechPhotosView({ setTab }) {
         })}
       </div>
 
+      {/* Unassigned bucket — shoot now, attach to a job later */}
+      {!activeWo && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', marginBottom: 8 }}>Unassigned — {unassignedPhotos.length} photo{unassignedPhotos.length === 1 ? '' : 's'}</div>
+          {unassignedPhotos.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)', fontStyle: 'italic' }}>Tap Camera to shoot without a job — you can attach photos to a job afterwards.</div>}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {unassignedPhotos.map(p => (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 8, background: 'rgba(5,7,10,0.4)', border: '1px solid var(--border-subtle)' }}>
+                <MockPhoto photo={p} stamp={false} onClick={() => setLightbox(p.id)} style={{ width: 46, height: 36, borderRadius: 5, cursor: 'pointer', flexShrink: 0 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.label}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{p.time} · {p.day}</div>
+                </div>
+                {wos.length > 0 ? (
+                  <select defaultValue="" onChange={e => { if (e.target.value) assignPhoto(p.id, e.target.value); }} style={{ flexShrink: 0, maxWidth: 130, padding: '5px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontFamily: 'var(--font-body)' }}>
+                    <option value="">Attach to job…</option>
+                    {wos.map(w => <option key={w.id} value={w.id}>{w.id} · {w.customer}</option>)}
+                  </select>
+                ) : <span style={{ fontSize: 9, color: 'var(--text-low)' }}>No jobs yet</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Required shots */}
+      {activeWo && (
       <div className="glass" style={{ padding: 14, borderRadius: 'var(--radius-md)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)' }}>Required Shots — {activeWo.type}</span>
@@ -89,8 +124,10 @@ function TechPhotosView({ setTab }) {
           ? <div style={{ fontSize: 10, color: 'var(--status-warn)', marginTop: 8 }}>⚠ Job can't be closed until all required shots are in</div>
           : <div style={{ fontSize: 10, color: 'var(--status-ok)', marginTop: 8 }}>✓ Documentation complete — job can be closed</div>}
       </div>
+      )}
 
       {/* This job's roll */}
+      {activeWo && (
       <div>
         <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', marginBottom: 8 }}>{activeWo.customer} — {woPhotos.length} photos</div>
         {woPhotos.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)', fontStyle: 'italic' }}>No photos yet — open the camera to start documenting</div>}
@@ -98,6 +135,7 @@ function TechPhotosView({ setTab }) {
           {woPhotos.map(p => <PhotoCard key={p.id} photo={p} hideMeta onClick={() => setLightbox(p.id)} />)}
         </div>
       </div>
+      )}
 
       {/* Other recent */}
       {otherPhotos.length > 0 && (
@@ -116,7 +154,9 @@ function TechPhotosView({ setTab }) {
 
 /* ── Capture (mock viewfinder) ── */
 function TechCaptureView({ setTab }) {
-  const [wos] = useShieldStore(workOrderStore);
+  const [allWos] = useShieldStore(workOrderStore);
+  const myId = (window.__shieldUser || {}).id;
+  const wos = allWos.filter(w => !w.assignedTo || w.assignedTo === myId);
   const [photos] = useShieldStore(photoStore);
   const [cam, setCam] = useShieldStore(techCamStore);
   const [scene, setScene] = React.useState(randomLook);
@@ -146,17 +186,11 @@ function TechCaptureView({ setTab }) {
     return () => { const cam = window.__shieldCamera; if (cam && v) cam.stopStream(v); };
   }, [enableCam]);
 
-  const activeWo = wos.find(w => w.id === cam.wo) || wos[0];
-  if (!activeWo) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <button onClick={() => setTab('photos')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, textAlign: 'left' }}>← Roll</button>
-        <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>No work order to attach photos to yet.</div>
-      </div>
-    );
-  }
-  const comp = photoCompliance(activeWo, photos);
-  const slot = cam.slot && comp.missing.includes(cam.slot) ? cam.slot : null;
+  // Capture works with or without a job. Unassigned shots (cam.wo === '__unassigned'
+  // or no jobs at all) save with wo: null and can be attached to a job later.
+  const activeWo = cam.wo === '__unassigned' ? null : (wos.find(w => w.id === cam.wo) || wos[0] || null);
+  const comp = activeWo ? photoCompliance(activeWo, photos) : null;
+  const slot = activeWo && cam.slot && comp.missing.includes(cam.slot) ? cam.slot : null;
 
   const capture = async () => {
     const cam = window.__shieldCamera;
@@ -170,12 +204,12 @@ function TechCaptureView({ setTab }) {
     if (!frame) { showToast('Capture failed — hold steady and try again', 'warn'); return; }
     const id = genId('PH');
     const me = techMe();
-    const shot = await cam.savePhoto(frame, { id, wo: activeWo.id });
+    const shot = await cam.savePhoto(frame, { id, wo: activeWo ? activeWo.id : 'unassigned' });
     const photo = {
-      id, wo: activeWo.id, customer: activeWo.customer, site: activeWo.site,
+      id, wo: activeWo ? activeWo.id : null, customer: activeWo ? activeWo.customer : 'Unassigned', site: activeWo ? activeWo.site : '—',
       tech: me.initials || '—', techName: me.name || 'Technician',
       phase: slot ? (slot.toLowerCase().includes('before') || slot === 'Issue found' || slot === 'Site — before' ? 'before' : slot.toLowerCase().includes('after') || slot.toLowerCase().includes('complete') || slot.toLowerCase().includes('final') ? 'after' : 'progress') : phase,
-      slot, label: slot || `Field photo — ${activeWo.customer}`,
+      slot, label: slot || (activeWo ? `Field photo — ${activeWo.customer}` : `Field photo — Unassigned`),
       day: 'Today', time: nowTime(), look: null, pair: null, annotations: [],
       url: (shot && shot.url) || null, dataUrl: (shot && shot.dataUrl) || null,
     };
@@ -183,9 +217,9 @@ function TechCaptureView({ setTab }) {
     setFlash(true); setTimeout(() => setFlash(false), 180);
     setLastShot(photo);
     setScene(randomLook());
-    const after = photoCompliance(activeWo, [photo, ...photos]);
-    showToast(slot ? `✓ ${slot} captured (${after.done.length}/${after.required.length})` : 'Photo saved to job', 'ok');
-    if (slot) {
+    const after = activeWo ? photoCompliance(activeWo, [photo, ...photos]) : null;
+    showToast(slot && after ? `✓ ${slot} captured (${after.done.length}/${after.required.length})` : activeWo ? 'Photo saved to job' : 'Photo saved — attach it to a job from the roll', 'ok');
+    if (slot && after) {
       const nextSlot = after.missing[0] || null;
       setCam({ ...cam, slot: nextSlot });
       if (!nextSlot) showToast('All required shots complete', 'ok');
@@ -198,8 +232,8 @@ function TechCaptureView({ setTab }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px 0' }}>
         <button onClick={() => setTab('photos')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0 }}>← Roll</button>
         <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-          <div className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{activeWo.id}</div>
-          <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{activeWo.customer} · {activeWo.site}</div>
+          <div className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{activeWo ? activeWo.id : 'UNASSIGNED'}</div>
+          <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{activeWo ? `${activeWo.customer} · ${activeWo.site}` : 'attach to a job later'}</div>
         </div>
       </div>
 
@@ -209,7 +243,7 @@ function TechCaptureView({ setTab }) {
           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--status-warn)' }}>Required shot: {slot}</span>
           <button onClick={() => setCam({ ...cam, slot: null })} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>skip</button>
         </div>
-      ) : comp.missing.length > 0 && (
+      ) : activeWo && comp.missing.length > 0 && (
         <div style={{ margin: '0 16px', display: 'flex', gap: 5, overflowX: 'auto' }}>
           {comp.missing.map(s => (
             <button key={s} onClick={() => setCam({ ...cam, slot: s })} style={{ flexShrink: 0, padding: '4px 10px', borderRadius: 10, background: 'rgba(63,169,245,0.05)', border: '1px dashed var(--border-strong)', color: 'var(--text-mid)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>○ {s}</button>
@@ -237,8 +271,8 @@ function TechCaptureView({ setTab }) {
         ))}
         {/* auto-tag overlay */}
         <div style={{ position: 'absolute', bottom: 10, left: 10, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span className="mono" style={{ fontSize: 9, color: 'rgba(255,255,255,0.8)' }}>{nowTime()} · GPS ✓ {activeWo.site}</span>
-          <span className="mono" style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)' }}>auto-tagged → {activeWo.id} · {activeWo.customer}</span>
+          <span className="mono" style={{ fontSize: 9, color: 'rgba(255,255,255,0.8)' }}>{nowTime()} · GPS ✓ {activeWo ? activeWo.site : 'unassigned'}</span>
+          <span className="mono" style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)' }}>auto-tagged → {activeWo ? `${activeWo.id} · ${activeWo.customer}` : 'attach to a job later'}</span>
         </div>
         {flash && <div style={{ position: 'absolute', inset: 0, background: '#fff', opacity: 0.85, animation: 'fade-up 0.18s ease both' }}></div>}
         {/* last shot thumb */}

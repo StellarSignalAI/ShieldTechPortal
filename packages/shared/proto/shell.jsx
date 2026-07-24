@@ -275,8 +275,13 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
 /* ── Top Bar ── */
 function TopBar({ title, onAI, onNotifications, onNav }) {
   const [profileOpen, setProfileOpen] = React.useState(false);
-  const [theme, setTheme] = React.useState('dark');
-  const [userStatus, setUserStatus] = React.useState('online');
+  // Appearance + presence are per-user config, remembered across reloads and
+  // synced to whatever device this user signs in on (userPrefsStore).
+  const [prefs, setPrefs] = useShieldStore(userPrefsStore);
+  const theme = (prefs && prefs.theme) || 'dark';
+  const userStatus = (prefs && prefs.status) || 'online';
+  const setTheme = (t) => setPrefs(p => ({ ...(p || {}), theme: t }));
+  const setUserStatus = (s) => setPrefs(p => ({ ...(p || {}), status: s }));
   return (
     <header style={{
       height: 52, flexShrink: 0,
@@ -384,6 +389,28 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                       </div>
                     </button>
                   ))}
+                </div>
+
+                <div style={{ height: 1, background: 'var(--border-subtle)', margin: '0 12px' }} />
+
+                <div style={{ padding: '4px 0' }}>
+                  <button onClick={async () => {
+                    setProfileOpen(false);
+                    if (!window.__shieldPasskey || !window.__shieldPasskey.supported()) { window.dispatchEvent(new CustomEvent('shield:toast', { detail: { msg: 'This device/browser does not support passkeys', type: 'warn' } })); return; }
+                    const r = await window.__shieldPasskey.createPasskey('Passkey');
+                    window.dispatchEvent(new CustomEvent('shield:toast', { detail: { msg: r.ok ? 'Passkey added — you can now sign in with Face ID / Touch ID' : (r.error || 'Could not add passkey'), type: r.ok ? 'ok' : 'error' } }));
+                  }} style={{
+                    display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',
+                    background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.06)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                    <Icon name="lock" size={14} color="var(--text-mid)" />
+                    <div>
+                      <div style={{ fontSize: 12, color: 'var(--text-high)' }}>Add a passkey</div>
+                      <div style={{ fontSize: 9, color: 'var(--text-low)' }}>Sign in with Face ID / Touch ID next time</div>
+                    </div>
+                  </button>
                 </div>
 
                 <div style={{ height: 1, background: 'var(--border-subtle)', margin: '0 12px' }} />

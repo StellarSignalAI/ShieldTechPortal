@@ -428,7 +428,12 @@ function PhotoQuoteCanvas({ placedDevices, setPlacedDevices, dragPlaceDevice, se
 
   const onFile = (e) => {
     const f = e.target.files?.[0]; if (!f) return;
-    const url = URL.createObjectURL(f); setPhoto(url); showToast && showToast('Site photo loaded — drag devices onto it');
+    setPhoto(URL.createObjectURL(f)); showToast && showToast('Site photo loaded — drag devices onto it');
+    const store = window.__shieldStorage;
+    if (store && store.uploadFile) {
+      store.uploadFile(f, { folder: 'quote-photos', entity: 'quote_photo', name: f.name })
+        .then(res => { if (res && res.url && !res.local) setPhoto(res.url); }).catch(() => {});
+    }
   };
 
   const drop = (e) => {

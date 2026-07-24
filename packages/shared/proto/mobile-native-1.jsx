@@ -1,5 +1,11 @@
 /* ShieldTech Mobile — native screens I: Home, Mission Control, Dispatch, Finance, Customers */
 const MN_TECH = { MR: '#3FA9F5', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
+const firstName = () => {
+  const n = (window.__shieldUser && window.__shieldUser.name) || '';
+  const f = String(n).trim().split(/\s+/)[0];
+  return f && !f.includes('@') ? f : 'there';
+};
+const dayGreeting = () => { const h = new Date().getHours(); return h < 12 ? 'Morning' : h < 18 ? 'Afternoon' : 'Evening'; };
 
 function MHomeView({ onNav }) {
   const [jobs] = useShieldStore(jobStore);
@@ -8,7 +14,7 @@ function MHomeView({ onNav }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div>
         <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Wednesday, June 10</div>
-        <div className="display" style={{ fontSize: 21, fontWeight: 300, color: 'var(--text-high)' }}>Morning, Sarah</div>
+        <div className="display" style={{ fontSize: 21, fontWeight: 300, color: 'var(--text-high)' }}>{dayGreeting()}, {firstName()}</div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
         <MStat label="CASH POSITION" value="$482.6K" sub="↑ +$38K this week" accent="var(--status-ok)" />

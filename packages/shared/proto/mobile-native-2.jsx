@@ -191,8 +191,13 @@ function MWorkOrdersView({ onNav }) {
 }
 
 function MHermesView() {
+  const greetName = (() => {
+    const n = (window.__shieldUser && window.__shieldUser.name) || '';
+    const f = String(n).trim().split(/\s+/)[0];
+    return f && !f.includes('@') ? f : 'there';
+  })();
   const [thread, setThread] = React.useState([
-    { from: 'ai', text: 'Morning Sarah. Revenue is pacing +8.2%, one NVR incident is active at Acme Dental, and 4 approvals are waiting. What do you need?' },
+    { from: 'ai', text: `Hi ${greetName}. Ask me anything about your customers, jobs, monitoring, or bids — I'll answer from your live workspace.` },
   ]);
   const [input, setInput] = React.useState('');
   const ref = React.useRef(null);

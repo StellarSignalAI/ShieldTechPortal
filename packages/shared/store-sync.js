@@ -5,7 +5,14 @@
    with no Supabase config this module is a no-op. Last write wins. */
 import { supabase, supabaseConfigured } from './supabase.js';
 
-const PERSONAL_KEYS = new Set(['mobiletabs', 'ssprefs', 'svprefs', 'wofocus']);
+// Per-user rows (keyed userprefs:<uid>) — each person keeps their own copy.
+// Everything else is company-wide business data shared across the team.
+//   userprefs  — appearance, presence, notification prefs (this user)
+//   appcontext — the customer/project this user is currently focused on
+//   mobiletabs — this user's mobile bottom-tab layout
+//   ss/svprefs — this user's Site/Survey scan preferences
+//   wofocus    — this user's transient work-order deep-link
+const PERSONAL_KEYS = new Set(['userprefs', 'appcontext', 'mobiletabs', 'ssprefs', 'svprefs', 'wofocus']);
 
 const muted = new Set();          // keys currently applying a remote value
 const dirty = new Map();          // key -> debounce timer

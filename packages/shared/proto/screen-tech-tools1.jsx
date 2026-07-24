@@ -4,22 +4,31 @@
 function TechCopilotView() {
   const [thread, setThread] = React.useState([]);
   const [input, setInput] = React.useState('');
+  const [attachments, setAttachments] = React.useState([]);
+  const fileRef = React.useRef(null);
   const scrollRef = React.useRef(null);
 
   const push = (msg) => setThread(t => [...t, msg]);
-  const ask = async (q, prior) => {
+  const pickFiles = async (fileList) => {
+    if (!fileList || !fileList.length || !window.__shieldAI) return;
+    const read = await window.__shieldAI.readAttachments(fileList);
+    setAttachments(prev => [...prev, ...read]);
+  };
+  const ask = async (q, prior, atts) => {
     const history = [...prior.map(m => ({ role: m.from === 'me' ? 'user' : 'assistant', content: m.text })), { role: 'user', content: q }];
     const reply = window.__shieldAI
-      ? await window.__shieldAI.shieldAIChat('tech-copilot', history)
+      ? await window.__shieldAI.shieldAIChat('tech-copilot', history, undefined, atts)
       : { text: 'ShieldTech AI responses appear here once the AI service is configured in Settings → Integrations.' };
     push({ from: 'hermes', text: reply.text });
   };
   const send = () => {
-    if (!input.trim()) return;
+    const atts = attachments.filter(a => a.dataUrl || a.text);
+    if (!input.trim() && atts.length === 0) return;
     const prior = thread;
-    push({ from: 'me', text: input });
-    ask(input, prior);
-    setInput('');
+    const label = input.trim() || `[${atts.length} attachment${atts.length > 1 ? 's' : ''}: ${atts.map(a => a.name).join(', ')}]`;
+    push({ from: 'me', text: label });
+    ask(input.trim() || 'Please review the attached file(s).', prior, atts);
+    setInput(''); setAttachments([]);
   };
 
   React.useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [thread]);
@@ -53,8 +62,21 @@ function TechCopilotView() {
           </div>
         ))}
       </div>
+      {/* Attachment chips */}
+      {attachments.length > 0 && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {attachments.map((a, i) => (
+            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 7px', borderRadius: 6, background: 'rgba(63,169,245,0.08)', border: `1px solid ${a.error ? 'var(--status-warn)' : 'var(--border-subtle)'}`, fontSize: 10, color: a.error ? 'var(--status-warn)' : 'var(--text-mid)' }}>
+              {a.dataUrl ? '🖼' : '📄'} {a.name}
+              <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1 }}>✕</button>
+            </span>
+          ))}
+        </div>
+      )}
       {/* Input */}
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <input ref={fileRef} type="file" multiple accept="image/*,text/*,.txt,.md,.csv,.json,.log,.yaml,.yml" style={{ display: 'none' }} onChange={e => { pickFiles(e.target.files); e.target.value = ''; }} />
+        <button onClick={() => fileRef.current && fileRef.current.click()} title="Attach a photo or file" style={{ width: 40, height: 40, flexShrink: 0, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 16, cursor: 'pointer' }}>📎</button>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Describe the symptom…"
           style={{ flex: 1, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '10px 14px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={send} style={{ padding: '0 18px', background: 'rgba(63,169,245,0.12)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>↑</button>
@@ -97,18 +119,66 @@ function TechVoiceView() {
   );
 }
 
-/* ── 3. Model-Sticker Scanner ── */
+/* ── 3. Model-Sticker Scanner — real camera + AI vision OCR ── */
 function TechScannerView() {
+  const videoRef = React.useRef(null);
+  const [live, setLive] = React.useState(false);
+  const [camErr, setCamErr] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const [result, setResult] = React.useState(null);
+
+  const enableCam = React.useCallback(async () => {
+    const cam = window.__shieldCamera;
+    if (!cam) { setCamErr('Camera not supported in this browser'); return; }
+    if (!videoRef.current) return;
+    setCamErr('');
+    const r = await cam.startStream(videoRef.current, 'environment');
+    setLive(!!r.ok);
+    if (!r.ok) setCamErr(r.error || 'Could not start camera');
+  }, []);
+  React.useEffect(() => {
+    enableCam();
+    const v = videoRef.current;
+    return () => { const cam = window.__shieldCamera; if (cam && v) cam.stopStream(v); };
+  }, [enableCam]);
+
+  const scan = async () => {
+    const cam = window.__shieldCamera;
+    if (!live || !cam || !videoRef.current) { showToast('Camera not available — allow camera access, then try again', 'warn'); return; }
+    const frame = cam.captureFrame(videoRef.current);
+    if (!frame) { showToast('Hold steady and try again', 'warn'); return; }
+    if (!window.__shieldAI) { showToast('ShieldTech AI not configured yet', 'warn'); return; }
+    setBusy(true); setResult(null);
+    const prompt = 'This is a photo of an equipment model/spec sticker. Identify the manufacturer, model number, and any key specs (voltage, PoE, resolution, part number). Reply concisely; if the text is unreadable, say so.';
+    const reply = await window.__shieldAI.shieldAIChat('tech-copilot', [{ role: 'user', content: prompt }], undefined, [{ name: 'sticker.jpg', mime: 'image/jpeg', dataUrl: frame }]);
+    setBusy(false);
+    setResult(reply.text);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ fontSize: 16, fontWeight: 500 }}>Model Scanner</div>
-      <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)', aspectRatio: '3/4', background: photoBg({ h: 230, p: 'panel', s: 77 }) }}>
-        <div style={{ position: 'absolute', top: '32%', left: '22%', right: '22%', height: '20%', border: '2px solid var(--brand)', borderRadius: 8, boxShadow: '0 0 0 2000px rgba(0,0,0,0.45)', animation: 'pulse-online 2s ease-in-out infinite' }}>
+      <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)', aspectRatio: '3/4', background: '#05070a' }}>
+        <video ref={videoRef} playsInline muted autoPlay style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: live ? 'block' : 'none' }} />
+        {!live && (
+          <button onClick={enableCam} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#05070a', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 20 }}>
+            <div style={{ width: 48, height: 48, borderRadius: '50%', border: '2px solid var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, color: 'var(--brand)' }}>◉</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>Tap to start camera</div>
+            {camErr && <div style={{ fontSize: 10, color: 'var(--status-warn)', maxWidth: 220, textAlign: 'center' }}>{camErr}</div>}
+          </button>
+        )}
+        {live && <div style={{ position: 'absolute', top: '32%', left: '22%', right: '22%', height: '20%', border: '2px solid var(--brand)', borderRadius: 8, boxShadow: '0 0 0 2000px rgba(0,0,0,0.35)', animation: 'pulse-online 2s ease-in-out infinite' }}>
           <span style={{ position: 'absolute', top: -22, left: 0, fontSize: 9, color: 'var(--brand)', letterSpacing: '0.08em' }}>ALIGN MODEL STICKER</span>
-        </div>
-        <button onClick={() => showToast('Sticker recognition requires the ShieldTech AI service', 'warn')} style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', padding: '10px 26px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 22, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 6px 20px rgba(63,169,245,0.4)' }}>Scan</button>
+        </div>}
+        <button onClick={scan} disabled={busy} style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', padding: '10px 26px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 22, color: '#fff', fontSize: 13, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1, fontFamily: 'var(--font-body)', boxShadow: '0 6px 20px rgba(63,169,245,0.4)' }}>{busy ? 'Reading…' : 'Scan'}</button>
       </div>
-      <div style={{ fontSize: 10, color: 'var(--text-low)', textAlign: 'center', lineHeight: 1.5 }}>Scanning a model sticker pulls specs, manuals, warranty status and known issues for the device.</div>
+      {result && (
+        <div className="glass" style={{ padding: 14, borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--brand)' }}>
+          <div className="label-sm" style={{ marginBottom: 6 }}>IDENTIFIED</div>
+          <div style={{ fontSize: 12.5, color: 'var(--text-high)', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{result}</div>
+        </div>
+      )}
+      <div style={{ fontSize: 10, color: 'var(--text-low)', textAlign: 'center', lineHeight: 1.5 }}>Point the camera at a model/spec sticker and tap Scan — ShieldTech AI reads the make, model and specs.</div>
     </div>
   );
 }

@@ -21,11 +21,13 @@ import '@shared/styles/styles.css';
 import '@shared/styles/viewport-lock.css';
 import '@shared/supabase.js';
 import '@shared/auth.js';
+import '@shared/passkey.js';
 import '@shared/ai.js';
 import '@shared/time.js';
 import '@shared/email.js';
 import '@shared/pdf.js';
 import '@shared/camera.js';
+import '@shared/storage.js';
 import '@shared/proto-manifest-customer.js';
 import '@shared/store-sync.js';
 

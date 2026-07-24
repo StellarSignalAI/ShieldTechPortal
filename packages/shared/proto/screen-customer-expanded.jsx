@@ -61,7 +61,7 @@ function CustomerDashboardView({ onNavigate }) {
       {/* Welcome */}
       <div style={{ marginBottom: 24, animation: 'fade-up 0.5s ease both' }}>
         <h1 className="display" style={{ fontSize: 26, fontWeight: 200, color: 'var(--text-high)' }}>
-          Welcome back, <span style={{ fontWeight: 400 }}>Acme Dental Group</span>
+          Welcome back, <span style={{ fontWeight: 400 }}>{(window.__shieldUser && window.__shieldUser.name) || 'Acme Dental Group'}</span>
         </h1>
         <p style={{ fontSize: 14, color: 'var(--text-mid)', marginTop: 6 }}>Site A — 1247 Market Street</p>
       </div>
