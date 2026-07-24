@@ -34,7 +34,7 @@ const SCREEN_LIST = [
   'photos', 'punchlist', 'digest', 'survey-ai', 'survey-cloud', 'copilot', 'intel',
   'margin-xray', 'rr-builder', 'rfp', 'wallboard',
   'helpdesk', 'workorder', 'parts-req', 'subcontractors', 'purchase-orders',
-  'skills', 'knowledge', 'integrations', 'marketing', 'documents', 'portal-settings', 'users',
+  'skills', 'knowledge', 'integrations', 'marketing', 'documents', 'portal-settings', 'users', 'messages',
 , 'fleet', 'invoices', 'estimates', 'outbox', 'pay', 'secret-weapon'];
 
 /* screen id → window component name (same mapping as the prototype shell) */
@@ -108,6 +108,7 @@ const SCREEN_COMPONENTS = {
   'portal-settings': 'PortalSettingsScreen',
   users: 'UsersScreen',
   fleet: 'DispatchScreen',
+  messages: 'PortalMessagesScreen',
   invoices: 'InvoicesDirectScreen',
   estimates: 'EstimatesDirectScreen',
   outbox: 'OutboxScreen',

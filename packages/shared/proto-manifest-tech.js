@@ -20,3 +20,4 @@ import './proto/tweaks-panel.jsx';
 import './proto/screen-fleet.jsx';
 import './proto/screen-login.jsx';
 import './proto/screen-auth.jsx';
+import './proto/screen-messages.jsx';

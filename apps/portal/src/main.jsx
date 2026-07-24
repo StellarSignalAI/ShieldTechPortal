@@ -12,6 +12,7 @@ import '@shared/ai.js';
 import '@shared/time.js';
 import '@shared/camera.js';
 import '@shared/storage.js';
+import '@shared/messaging.js';
 import '@shared/vision.js';
 import '@shared/webxr-scan.js';
 import '@shared/lidar-import.js';
