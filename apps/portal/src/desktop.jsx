@@ -288,8 +288,9 @@ function App() {
 }
 
 const ShieldAuthGate = window.ShieldAuthGate;
+const EB = window.AppErrorBoundary || React.Fragment;
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <ShieldAuthGate appId="portal"><App /></ShieldAuthGate>
+  <ShieldAuthGate appId="portal"><EB><App /></EB></ShieldAuthGate>
 );
 
 /* ── Toast notification system (ported from the shell's second inline script) ── */

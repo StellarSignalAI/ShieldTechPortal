@@ -302,6 +302,7 @@ function TechApp() {
 }
 
 const ShieldAuthGate = window.ShieldAuthGate;
+const EB = window.AppErrorBoundary || React.Fragment;
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <ShieldAuthGate appId="tech"><TechApp /></ShieldAuthGate>
+  <ShieldAuthGate appId="tech"><EB><TechApp /></EB></ShieldAuthGate>
 );
