@@ -275,8 +275,13 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
 /* ── Top Bar ── */
 function TopBar({ title, onAI, onNotifications, onNav }) {
   const [profileOpen, setProfileOpen] = React.useState(false);
-  const [theme, setTheme] = React.useState('dark');
-  const [userStatus, setUserStatus] = React.useState('online');
+  // Appearance + presence are per-user config, remembered across reloads and
+  // synced to whatever device this user signs in on (userPrefsStore).
+  const [prefs, setPrefs] = useShieldStore(userPrefsStore);
+  const theme = (prefs && prefs.theme) || 'dark';
+  const userStatus = (prefs && prefs.status) || 'online';
+  const setTheme = (t) => setPrefs(p => ({ ...(p || {}), theme: t }));
+  const setUserStatus = (s) => setPrefs(p => ({ ...(p || {}), status: s }));
   return (
     <header style={{
       height: 52, flexShrink: 0,

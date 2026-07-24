@@ -197,6 +197,30 @@ const woFocusStore = createShieldStore('wofocus', null);
 /* ── Truck Inventory Store (per-tech van stock; auto-restock automation) ── */
 const truckStore = createShieldStore('truck', {});
 
+/* ── Per-user preferences (remembered per user, synced across devices) ──
+   Everything a single user configures for themselves — appearance, presence,
+   notification prefs, and any future personal toggles. store-sync.js keys this
+   to the signed-in user (userprefs:<uid>), so each person keeps their own. */
+const userPrefsStore = createShieldStore('userprefs', {
+  theme: 'dark', status: 'online',
+  notify: { email: true, push: true, desktop: false },
+});
+/* Apply the remembered appearance to the document as soon as it's known and on
+   every change, so a user's theme choice survives reloads and follows them to
+   any device. */
+(() => {
+  const applyTheme = (t) => {
+    try {
+      const mode = t === 'system'
+        ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+        : (t || 'dark');
+      document.documentElement.setAttribute('data-theme', mode);
+    } catch {}
+  };
+  applyTheme((userPrefsStore.get() || {}).theme);
+  userPrefsStore.subscribe((v) => applyTheme((v || {}).theme));
+})();
+
 /* ── NPS Store ── */
 const npsStore = createShieldStore('nps', []);
 
@@ -328,7 +352,7 @@ Object.assign(window, {
   ticketStore, workOrderStore, incidentStore, jobStore,
   npsStore, poStore, skillsStore, qtcStore, mrrStore, partsReqStore,
   photoStore, assetStore, PHOTO_CHECKLISTS, punchStore, PUNCH_STATUS, PUNCH_TECHS,
-  backlogStore, woFocusStore, truckStore,
+  backlogStore, woFocusStore, truckStore, userPrefsStore,
   customerStore, subCustomerStore, buildCustomer,
   mobileTabsStore, M_ALL_TAB, approvalStore,
   proposalStore, defaultProposalBlocks, proposalValue,
