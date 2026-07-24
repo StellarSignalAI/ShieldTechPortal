@@ -5,9 +5,13 @@ function LoginScreen() {
   const [signingIn, setSigningIn] = React.useState(false);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [note, setNote] = React.useState(null); // inline status — the login screen has no toast host
   const configured = Boolean(window.__shieldSupabaseConfigured && window.__shieldAuth);
 
-  const toast = (msg, type) => window.dispatchEvent(new CustomEvent('shield:toast', { detail: { msg, type: type || 'ok' } }));
+  const toast = (msg, type) => {
+    setNote({ msg, type: type || 'ok' });
+    window.dispatchEvent(new CustomEvent('shield:toast', { detail: { msg, type: type || 'ok' } }));
+  };
 
   const handleSignIn = async () => {
     if (signingIn) return;
@@ -32,8 +36,10 @@ function LoginScreen() {
 
   const handlePasskey = async () => {
     if (!configured || !window.__shieldPasskey) { toast('Passkeys go live once Supabase is connected', 'warn'); return; }
-    if (!email.trim()) { toast('Enter your email above first', 'warn'); return; }
+    if (!window.__shieldPasskey.supported || !window.__shieldPasskey.supported()) { toast('This browser can’t use passkeys — sign in with email/password', 'warn'); return; }
+    if (!email.trim()) { toast('Enter your email above first, then tap the passkey button', 'warn'); return; }
     setSigningIn(true);
+    setNote({ msg: 'Follow your device’s Face ID / Touch ID prompt…', type: 'info' });
     const r = await window.__shieldPasskey.signInWithPasskey(email.trim());
     setSigningIn(false);
     if (!r.ok) { toast(r.error || 'Passkey sign-in failed', 'error'); return; }
@@ -253,6 +259,15 @@ function LoginScreen() {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 18v3h3l7.5-7.5"/><circle cx="16.5" cy="7.5" r="4.5"/><path d="M12.5 11.5 15 14"/></svg>
             Sign in with a passkey
           </button>
+
+          {note && (
+            <div style={{
+              padding: '9px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, lineHeight: 1.4, textAlign: 'center',
+              background: note.type === 'error' ? 'rgba(244,63,94,0.10)' : note.type === 'warn' ? 'rgba(251,191,36,0.10)' : 'rgba(63,169,245,0.10)',
+              border: `1px solid ${note.type === 'error' ? 'rgba(244,63,94,0.3)' : note.type === 'warn' ? 'rgba(251,191,36,0.3)' : 'var(--border-strong)'}`,
+              color: note.type === 'error' ? 'var(--status-critical)' : note.type === 'warn' ? 'var(--status-warn)' : 'var(--text-high)',
+            }}>{note.msg}</div>
+          )}
 
           <div style={{
             textAlign: 'center', animation: 'fade-up 0.5s ease 0.5s both'
