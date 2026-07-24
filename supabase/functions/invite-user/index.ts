@@ -3,6 +3,7 @@
 // emails), then the auth user with a temp password, then emails the credentials
 // via Resend when RESEND_API_KEY is configured. Response shape: {ok, data|error}.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { credentialsEmail, googleWelcomeEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -99,24 +100,26 @@ Deno.serve(async (req) => {
   }).eq("email", email);
   if (profileErr) return json(500, { ok: false, error: profileErr.message });
 
-  // ── 4) Email the credentials (Resend), best-effort. ──
+  // ── 4) Email the invite (Resend), best-effort. ──
+  // Domain users (@shieldtechsolutions.com) sign in with Google SSO, so they get
+  // a "sign in with Google" welcome instead of a temporary password.
   const resendKey = Deno.env.get("RESEND_API_KEY");
   const portalUrl = Deno.env.get("PORTAL_URL") ?? "https://portal.shieldtechsolutions.com";
+  const isDomainUser = email.endsWith("@shieldtechsolutions.com");
   let emailed = false;
   if (resendKey) {
     const apps = Object.entries(appRights).filter(([, v]) => v).map(([k]) => k).join(", ") || "none";
+    const mail = isDomainUser
+      ? googleWelcomeEmail({ name: body.name, apps, portalUrl })
+      : credentialsEmail({ name: body.name, email, password, apps, portalUrl });
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech <no-reply@shieldtechsolutions.com>",
         to: [email],
-        subject: "Your ShieldTech account",
-        html: `<p>You've been invited to the ShieldTech platform.</p>
-<p><strong>Username:</strong> ${email}<br/>
-<strong>Temporary password:</strong> ${password}<br/>
-<strong>Applications:</strong> ${apps}</p>
-<p>Sign in at <a href="${portalUrl}">${portalUrl}</a>. You'll be asked to set a new password on first login.</p>`,
+        subject: mail.subject,
+        html: mail.html,
       }),
     });
     emailed = res.ok;

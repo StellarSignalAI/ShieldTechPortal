@@ -3,6 +3,7 @@
 // from the client via RLS (admins can update profiles); this function covers the
 // actions that need the service role. Response shape: {ok, data|error}.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { resetEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -66,18 +67,15 @@ Deno.serve(async (req) => {
     const portalUrl = Deno.env.get("PORTAL_URL") ?? "https://portal.shieldtechsolutions.com";
     let emailed = false;
     if (resendKey) {
-      const subject = action === "resend" ? "Your ShieldTech invitation" : "Your ShieldTech password was reset";
+      const mail = resetEmail({ email: target.email, password, portalUrl, resend: action === "resend" });
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech <no-reply@shieldtechsolutions.com>",
           to: [target.email],
-          subject,
-          html: `<p>${action === "resend" ? "Here are your ShieldTech sign-in details." : "Your ShieldTech password has been reset by an administrator."}</p>
-<p><strong>Username:</strong> ${target.email}<br/>
-<strong>Temporary password:</strong> ${password}</p>
-<p>Sign in at <a href="${portalUrl}">${portalUrl}</a>. You'll be asked to set a new password on first login.</p>`,
+          subject: mail.subject,
+          html: mail.html,
         }),
       });
       emailed = res.ok;

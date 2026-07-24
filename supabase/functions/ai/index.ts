@@ -4,6 +4,7 @@
 // Auth: signed-in user required for chat; status is public (no key exposure).
 // Response shape follows the platform API contract: {ok, data|error}.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { getConfig, updateConfig } from "../_shared/leadConfig.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -67,6 +68,11 @@ Deno.serve(async (req) => {
   const { data: caller } = jwt ? await admin.auth.getUser(jwt) : { data: null };
   if (!caller?.user) return json(401, { ok: false, error: "Sign in to use ShieldTech AI" });
 
+  // Caller role gates the lead-scraping tool (Admin/Staff may retune scraping).
+  const { data: callerProfile } = await admin.from("profiles").select("role").eq("id", caller.user.id).maybeSingle();
+  const callerRole = callerProfile?.role ?? "";
+  const canTuneLeads = callerRole === "Admin" || callerRole === "Staff";
+
   // Basic rate limit: 30 runs / 5 minutes / user (via ai_runs table).
   const since = new Date(Date.now() - 5 * 60_000).toISOString();
   const { count } = await admin
@@ -110,25 +116,74 @@ Deno.serve(async (req) => {
     }
   }
 
-  const payload = {
-    model,
-    messages: outMessages,
-    max_tokens: 900,
-    temperature: feature === "extract" ? 0 : 0.4,
+  // ── Lead-scraping control tool ──
+  // Admin/Staff can retune the lead scrapers in plain language from chat; the
+  // model calls this and the change is written to lead_config, which the SAM.gov
+  // poller + bid sweep read on their next (background) run.
+  const leadTools = canTuneLeads && (feature === "assistant" || feature === "bid") ? [{
+    type: "function",
+    function: {
+      name: "update_lead_scraping",
+      description: "Change which regions/keywords ShieldTech's automated lead scrapers target. Takes effect on the next background run. Use when the user asks to add/remove states or focus areas for leads/bids.",
+      parameters: {
+        type: "object",
+        properties: {
+          regions: { type: "array", items: { type: "string" }, description: "Replace the full region list with these US state codes (e.g. ['NJ','PA'])." },
+          addRegions: { type: "array", items: { type: "string" }, description: "State codes to add." },
+          removeRegions: { type: "array", items: { type: "string" }, description: "State codes to remove." },
+          addKeywords: { type: "array", items: { type: "string" }, description: "Focus keywords to add (e.g. 'school security')." },
+          removeKeywords: { type: "array", items: { type: "string" }, description: "Keywords to remove." },
+        },
+      },
+    },
+  }] : [];
+
+  // Tell the model the current config so it can answer/diff intelligently.
+  if (leadTools.length) {
+    const cfg = await getConfig(admin);
+    outMessages.splice(1, 0, { role: "system", content:
+      `Current lead-scraping config — regions: ${cfg.regions.join(", ") || "(none)"}; keywords: ${cfg.keywords.join(", ") || "(none)"}. When the user asks to change scraping targets, call update_lead_scraping; then confirm the new list in plain language.` });
+  }
+
+  const callOpenAI = async (msgs: unknown[], withTools: boolean) => {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model, messages: msgs, max_tokens: 900,
+        temperature: feature === "extract" ? 0 : 0.4,
+        ...(withTools && leadTools.length ? { tools: leadTools, tool_choice: "auto" } : {}),
+      }),
+    });
+    const out = await res.json();
+    if (!res.ok) throw new Error(out?.error?.message ?? `OpenAI error ${res.status}`);
+    return out.choices?.[0]?.message ?? {};
   };
 
+  const payload = { messages: outMessages }; // for the ai_runs log below
   let text = "";
   let ok = true;
   let errMsg: string | null = null;
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const out = await res.json();
-    if (!res.ok) { ok = false; errMsg = out?.error?.message ?? `OpenAI error ${res.status}`; }
-    else text = out.choices?.[0]?.message?.content ?? "";
+    let msg = await callOpenAI(outMessages, true);
+    // Resolve up to 3 tool calls, then get the final natural-language reply.
+    let guard = 0;
+    while (msg.tool_calls && msg.tool_calls.length && guard++ < 3) {
+      outMessages.push(msg);
+      for (const tc of msg.tool_calls) {
+        let result: unknown = { ok: false, error: "unknown tool" };
+        if (tc.function?.name === "update_lead_scraping" && canTuneLeads) {
+          try {
+            const args = JSON.parse(tc.function.arguments || "{}");
+            const cfg = await updateConfig(admin, args, caller.user.id);
+            result = { ok: true, regions: cfg.regions, keywords: cfg.keywords };
+          } catch (e) { result = { ok: false, error: String(e) }; }
+        }
+        outMessages.push({ role: "tool", tool_call_id: tc.id, content: JSON.stringify(result) });
+      }
+      msg = await callOpenAI(outMessages, true);
+    }
+    text = msg.content ?? "";
   } catch (e) {
     ok = false; errMsg = String(e);
   }

@@ -274,7 +274,7 @@ function MAvatarMenu({ onNav }) {
             <button style={item} onClick={() => go('portal-settings')}>⚙ Settings</button>
             <button style={item} onClick={() => go('users')}>◈ Users & Invites</button>
             <button style={item} onClick={() => go('integrations')}>⇄ Integrations</button>
-            <button style={item} onClick={() => go('fleet')}>⌖ Fleet GPS</button>
+            <button style={item} onClick={() => go('dispatch')}>⌖ Dispatch &amp; Fleet</button>
             {u && <button style={item} onClick={() => { setOpen(false); if (window.__shieldAuth) window.__shieldAuth.signOut(); }}>← Sign out</button>}
             <div className="mono" style={{ padding: '6px 13px 10px', fontSize: 9, color: 'var(--text-low)', opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}</div>
           </div>

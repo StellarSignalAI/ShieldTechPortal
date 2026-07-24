@@ -107,7 +107,7 @@ const SCREEN_COMPONENTS = {
   documents: 'DocumentsScreen',
   'portal-settings': 'PortalSettingsScreen',
   users: 'UsersScreen',
-  fleet: 'FleetMapScreen',
+  fleet: 'DispatchScreen',
   invoices: 'InvoicesDirectScreen',
   estimates: 'EstimatesDirectScreen',
   outbox: 'OutboxScreen',

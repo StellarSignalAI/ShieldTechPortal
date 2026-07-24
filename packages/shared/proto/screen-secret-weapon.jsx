@@ -3,6 +3,42 @@
    opportunities via the ingest/sweep/email/SAM.gov lanes), plus the deep
    tools: Bid Room, War Games, Review Deck, Agent Replay. */
 
+/* A real scraped lead is sparse compared to the seed opportunities the Bid Room
+   was built around, so a deep sub-view can throw. This boundary guarantees a
+   click never blanks the screen: on any error it shows a clean lead detail with
+   the verified link back to the live posting. */
+class LeadRoomBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { crashed: false }; }
+  static getDerivedStateFromError() { return { crashed: true }; }
+  componentDidCatch() { /* swallow — fallback below is the UX */ }
+  componentDidUpdate(prev) { if (prev.oppId !== this.props.oppId && this.state.crashed) this.setState({ crashed: false }); }
+  render() {
+    if (!this.state.crashed) return this.props.children;
+    const o = this.props.opp || {};
+    const url = o.sourceUrl && /^https?:\/\//i.test(o.sourceUrl) ? o.sourceUrl : null;
+    const row = (k, v) => v ? <div style={{ display: 'flex', gap: 10, fontSize: 13 }}><span style={{ color: 'var(--text-low)', minWidth: 90 }}>{k}</span><span style={{ color: 'var(--text-high)' }}>{v}</span></div> : null;
+    return (
+      <div className="glass" style={{ padding: 22, borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 640 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-high)' }}>{o.title || 'Lead'}</div>
+          <button onClick={this.props.onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {row('Buyer', o.buyer)}
+          {row('State', o.state)}
+          {row('Value', o.value ? (window.swK ? window.swK(o.value) : '$' + o.value) : null)}
+          {row('Due', o.dueAt)}
+          {row('Why', o.why)}
+        </div>
+        {url
+          ? <a href={url} target="_blank" rel="noreferrer" style={{ alignSelf: 'flex-start', padding: '9px 18px', background: 'var(--brand)', color: '#04121F', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>Open verified opportunity ↗</a>
+          : <div style={{ fontSize: 12, color: 'var(--text-low)' }}>No source link on this record yet.</div>}
+        <div style={{ fontSize: 11.5, color: 'var(--text-low)' }}>The full guided Bid Room is optimized for richly-specced solicitations; this lead is shown in summary while its details fill in.</div>
+      </div>
+    );
+  }
+}
+
 function SecretWeaponScreen() {
   const [tab, setTab] = React.useState('board');
   const [oppId, setOppId] = React.useState(null);
@@ -55,7 +91,11 @@ function SecretWeaponScreen() {
       {tab === 'board' && (
         <>
           <BidBoardWorkspace onOpenOpp={setOppId} />
-          {oppId && tab === 'board' && <BidRoom oppId={oppId} onClose={() => setOppId(null)} />}
+          {oppId && tab === 'board' && (
+            <LeadRoomBoundary oppId={oppId} opp={opps.find(o => o.id === oppId)} onClose={() => setOppId(null)}>
+              <BidRoom oppId={oppId} onClose={() => setOppId(null)} />
+            </LeadRoomBoundary>
+          )}
         </>
       )}
       {tab === 'wargames' && (activeOpp && bidState ? <BrWarGames opp={activeOpp} state={bidState} update={update} /> : needOpp)}
