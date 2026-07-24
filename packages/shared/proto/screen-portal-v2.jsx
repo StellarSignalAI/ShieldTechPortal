@@ -252,7 +252,7 @@ function EmployeeScreen() {
       ...(isAdmin ? [
         { label: 'Resend Invite', onClick: () => manageUser('resend', emp), close: true },
         { label: 'Reset Password', onClick: () => manageUser('reset', emp), close: true },
-        { label: 'Remove', danger: true, close: true, onClick: () => confirmRemove(emp) },
+        { label: 'Remove', danger: true, close: false, onClick: () => confirmRemove(emp) },
       ] : [
         { label: 'View Schedule', primary: true, successMsg: 'Opening schedule for ' + emp.name, onClick: () => {} },
       ]),
