@@ -116,3 +116,4 @@ import './proto/screen-fleet.jsx';
 import './proto/screen-fleet-share.jsx';
 import './proto/screen-outbox.jsx';
 import './proto/screen-secret-weapon.jsx';
+import './proto/screen-messages.jsx';

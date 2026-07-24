@@ -27,6 +27,7 @@ import '@shared/ai.js';
 import '@shared/time.js';
 import '@shared/camera.js';
 import '@shared/storage.js';
+import '@shared/messaging.js';
 import '@shared/vision.js';
 import '@shared/webxr-scan.js';
 import '@shared/lidar-import.js';
@@ -160,6 +161,7 @@ function TechShellV2({ tab, setTab, children }) {
 /* More sub-menu */
 function MoreMenu({ setTab }) {
   const items = [
+  { id: 'messages', label: 'Message Dispatch', icon: 'chat', desc: 'Chat with the office — live' },
   { id: 'route', label: 'My Route', icon: 'dispatch', desc: 'Smart day plan · traffic-aware' },
   { id: 'voice', label: 'Voice Notes', icon: 'chat', desc: 'Dictate → auto work-order' },
   { id: 'scanner', label: 'Model Scanner', icon: 'cam-dome', desc: 'Scan stickers → specs & manuals' },
@@ -248,6 +250,7 @@ function TechApp() {
     safety: () => <BackWrap setTab={setTab}><TechSafetyView /></BackWrap>,
     skills: () => <BackWrap setTab={setTab}><TechSkillTreeView /></BackWrap>,
     toolbox: () => <BackWrap setTab={setTab}><TechToolboxView /></BackWrap>,
+    messages: () => <BackWrap setTab={setTab}>{window.TechMessagesView ? <window.TechMessagesView /> : null}</BackWrap>,
     more: () => <MoreMenu setTab={setTab} />,
     vehicle: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><VehicleInspectionView /></React.Fragment>,
     parts: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><PartsRequestView /></React.Fragment>,
@@ -256,7 +259,7 @@ function TechApp() {
   };
 
   const ViewFn = views[tab] || views.today;
-  const mainTab = ['today', 'photos', 'time', 'assets', 'expenses', 'ai', 'more'].includes(tab) ? tab : tab === 'capture' ? 'photos' : ['vehicle', 'parts', 'resources', 'jobs', 'punch', 'truck', 'route', 'voice', 'scanner', 'ar', 'sync', 'upsell', 'safety', 'skills', 'toolbox'].includes(tab) ? 'more' : 'today';
+  const mainTab = ['today', 'photos', 'time', 'assets', 'expenses', 'ai', 'more'].includes(tab) ? tab : tab === 'capture' ? 'photos' : ['vehicle', 'parts', 'resources', 'jobs', 'punch', 'truck', 'route', 'voice', 'scanner', 'ar', 'sync', 'upsell', 'safety', 'skills', 'toolbox', 'messages'].includes(tab) ? 'more' : 'today';
 
   const { TweaksPanel, TweakSection, TweakSelect, ShieldToastHost } = window;
 

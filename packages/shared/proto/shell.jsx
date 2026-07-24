@@ -46,6 +46,7 @@ const NAV_GROUPS = [
 },
 { id: 'fieldops', label: 'FIELD OPERATIONS', collapsible: true, items: [
   { id: 'dispatch', icon: 'dispatch', label: 'Dispatch & Fleet', useSvg: true },
+  { id: 'messages', icon: 'hermes', label: 'Messages', useSvg: true },
   { id: 'survey-cloud', icon: 'floorplan', label: 'Survey Cloud', useSvg: true },
   { id: 'photos', icon: 'cameras', label: 'Site Photos', useSvg: true },
   { id: 'punchlist', icon: 'approvals', label: 'Punch Lists', useSvg: true },

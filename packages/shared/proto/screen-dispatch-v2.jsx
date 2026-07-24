@@ -954,7 +954,17 @@ function DispatchTechDrawer({ tech, onClose, showToast }) {
         <div className="label-sm" style={{ marginBottom: 8 }}>ACTIONS</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <button onClick={() => showToast('Calling...')} style={{ width: '100%', padding: '8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✆ Call {tech.name.split(' ')[0]}</button>
-          <button onClick={() => showToast('Message sent')} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✉ Send Message</button>
+          <button onClick={async () => {
+            // Open the real conversation with this tech. Resolve their profile id
+            // (the thread key) from their name, then jump to Messages.
+            const sb = window.__shieldSupabase;
+            let pid = null;
+            if (sb && tech.name) { try { const { data } = await sb.from('profiles').select('id').eq('name', tech.name).maybeSingle(); pid = data && data.id; } catch {} }
+            if (!pid) { showToast('Open Messages to reach this tech', 'info'); if (window.navTo) window.navTo('messages'); return; }
+            window.__shieldMsgFocus = pid;
+            onClose();
+            if (window.navTo) window.navTo('messages');
+          }} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✉ Send Message</button>
           <button onClick={() => showToast('Route displayed')} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⤳ View Today's Route</button>
           <button onClick={() => showToast('Timesheet opened')} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◔ Full Timesheet</button>
         </div>
