@@ -435,6 +435,14 @@ function brFetchRemoteLeads() {
           dueAt: r.due_at ? r.due_at.slice(0, 10) : null,
           fit: r.fit_score ?? 70,
           why: r.why || '',
+          // Shape fields the guided Bid Room reads. Real scraped/grant leads lack
+          // the rich demo structure (point-of-contact, source label, site walk),
+          // so default them here — otherwise opening the lead throws.
+          poc: (r.poc && typeof r.poc === 'object')
+            ? { name: r.poc.name || r.buyer || 'Procurement Office', title: r.poc.title || 'Buyer', email: r.poc.email || '', phone: r.poc.phone || '' }
+            : { name: r.buyer || 'Procurement Office', title: 'Buyer', email: '', phone: '' },
+          source: r.source_id || 'listing',
+          siteWalk: null,
           // A lead is "verified" when it carries a real, absolute link back to the
           // live posting (SAM.gov API links and every scraped detail/listing URL
           // qualify). We never surface a dead "#" — the card links straight to the
