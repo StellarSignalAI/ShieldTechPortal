@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json(405, { ok: false, error: "POST only" });
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-  let body: { action?: string; email?: string; response?: unknown; label?: string };
+  let body: { action?: string; email?: string; response?: unknown; label?: string; challengeId?: string };
   try { body = await req.json(); } catch { return json(400, { ok: false, error: "Invalid JSON" }); }
   const action = body.action;
 
@@ -61,7 +61,10 @@ Deno.serve(async (req) => {
         userName: user.email ?? user.id,
         attestationType: "none",
         excludeCredentials: (existing ?? []).map((c) => ({ id: c.credential_id, transports: c.transports ?? undefined })),
-        authenticatorSelection: { residentKey: "preferred", userVerification: "preferred" },
+        // Discoverable credential so the user can sign in later WITHOUT typing an
+        // email — the device offers the passkey and we identify the account from
+        // the credential itself.
+        authenticatorSelection: { residentKey: "required", requireResidentKey: true, userVerification: "preferred" },
       });
       await admin.from("webauthn_challenges").insert({ user_id: user.id, kind: "register", challenge: opts.challenge });
       return json(200, { ok: true, data: opts });
@@ -95,30 +98,50 @@ Deno.serve(async (req) => {
     }
 
     // ── Authentication: options ──
+    // Email is OPTIONAL. With no email we return an empty allowCredentials list,
+    // which lets the device offer whatever discoverable passkey it holds for this
+    // site (true usernameless / one-tap sign-in). We return a challengeId the
+    // client echoes back on verify so we can match the ceremony without an email.
     if (action === "auth-options") {
       const email = (body.email ?? "").trim().toLowerCase();
-      if (!email) return json(400, { ok: false, error: "Email required" });
-      const { data: profile } = await admin.from("profiles").select("id").eq("email", email).maybeSingle();
-      const creds = profile ? (await admin.from("webauthn_credentials").select("credential_id, transports").eq("user_id", profile.id)).data ?? [] : [];
+      let profileId: string | null = null;
+      let creds: Array<{ credential_id: string; transports: string[] | null }> = [];
+      if (email) {
+        const { data: profile } = await admin.from("profiles").select("id").eq("email", email).maybeSingle();
+        profileId = profile?.id ?? null;
+        if (profileId) creds = (await admin.from("webauthn_credentials").select("credential_id, transports").eq("user_id", profileId)).data ?? [];
+      }
       const opts = await generateAuthenticationOptions({
         rpID: RP_ID,
         allowCredentials: creds.map((c) => ({ id: c.credential_id, transports: c.transports ?? undefined })),
         userVerification: "preferred",
       });
-      await admin.from("webauthn_challenges").insert({ user_id: profile?.id ?? null, email, kind: "authenticate", challenge: opts.challenge });
-      return json(200, { ok: true, data: opts });
+      const { data: chRow } = await admin.from("webauthn_challenges")
+        .insert({ user_id: profileId, email: email || null, kind: "authenticate", challenge: opts.challenge })
+        .select("id").maybeSingle();
+      return json(200, { ok: true, data: { ...opts, challengeId: chRow?.id ?? null } });
     }
 
     // ── Authentication: verify → mint session ──
+    // Identifies the account from the passkey itself (no email needed).
     if (action === "auth-verify") {
-      const email = (body.email ?? "").trim().toLowerCase();
       const resp = body.response as { id?: string };
-      if (!email || !resp?.id) return json(400, { ok: false, error: "Missing email or response" });
-      const { data: ch } = await admin.from("webauthn_challenges")
-        .select("id, challenge").eq("email", email).eq("kind", "authenticate").order("created_at", { ascending: false }).limit(1).maybeSingle();
-      if (!ch) return json(400, { ok: false, error: "No pending challenge" });
+      const challengeId = body.challengeId;
+      const email = (body.email ?? "").trim().toLowerCase();
+      if (!resp?.id) return json(400, { ok: false, error: "Missing passkey response" });
+
+      // Match the pending challenge: by id (usernameless) or by email (legacy).
+      let ch: { id: string; challenge: string } | null = null;
+      if (challengeId) {
+        ch = (await admin.from("webauthn_challenges").select("id, challenge").eq("id", challengeId).maybeSingle()).data ?? null;
+      } else if (email) {
+        ch = (await admin.from("webauthn_challenges").select("id, challenge").eq("email", email).eq("kind", "authenticate").order("created_at", { ascending: false }).limit(1).maybeSingle()).data ?? null;
+      }
+      if (!ch) return json(400, { ok: false, error: "No pending passkey challenge — try again" });
+
       const { data: cred } = await admin.from("webauthn_credentials").select("*").eq("credential_id", resp.id).maybeSingle();
-      if (!cred) { await admin.from("webauthn_challenges").delete().eq("id", ch.id); return json(400, { ok: false, error: "Unknown passkey" }); }
+      if (!cred) { await admin.from("webauthn_challenges").delete().eq("id", ch.id); return json(400, { ok: false, error: "This passkey isn't registered — add one from Settings after signing in." }); }
+
       const verification = await verifyAuthenticationResponse({
         response: body.response as never,
         expectedChallenge: ch.challenge,
@@ -131,10 +154,17 @@ Deno.serve(async (req) => {
       await admin.from("webauthn_credentials")
         .update({ counter: verification.authenticationInfo.newCounter, last_used_at: new Date().toISOString() })
         .eq("id", cred.id);
-      // Mint a session: generate a magiclink token the client exchanges via verifyOtp.
-      const { data: link, error: linkErr } = await admin.auth.admin.generateLink({ type: "magiclink", email });
+
+      // Resolve the account email from the credential's owner, then mint a session.
+      let userEmail = email;
+      const { data: prof } = await admin.from("profiles").select("email").eq("id", cred.user_id).maybeSingle();
+      if (prof?.email) userEmail = prof.email;
+      else { const { data: u } = await admin.auth.admin.getUserById(cred.user_id); userEmail = u?.user?.email ?? userEmail; }
+      if (!userEmail) return json(500, { ok: false, error: "Could not resolve account for this passkey" });
+
+      const { data: link, error: linkErr } = await admin.auth.admin.generateLink({ type: "magiclink", email: userEmail });
       if (linkErr || !link?.properties?.hashed_token) return json(500, { ok: false, error: linkErr?.message ?? "Could not create session" });
-      return json(200, { ok: true, data: { token_hash: link.properties.hashed_token, email } });
+      return json(200, { ok: true, data: { token_hash: link.properties.hashed_token, email: userEmail } });
     }
 
     return json(400, { ok: false, error: "Unknown action" });

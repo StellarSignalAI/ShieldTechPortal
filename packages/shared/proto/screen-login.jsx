@@ -25,7 +25,23 @@ function LoginScreen() {
     const { error } = await window.__shieldAuth.signInWithPassword(email.trim(), password);
     setSigningIn(false);
     if (error) { toast(error.message || 'Sign-in failed', 'error'); return; }
+    await offerPasskeySetup();
     if (window.__shieldNav) window.__shieldNav('custom-dashboard');
+  };
+
+  // After a successful email sign-in, offer to set up a passkey once (per
+  // device) so future logins are one-tap Face ID / Touch ID with no password.
+  const offerPasskeySetup = async () => {
+    try {
+      const pk = window.__shieldPasskey;
+      if (!configured || !pk || !pk.supported || !pk.supported()) return;
+      if (localStorage.getItem('st2:passkey-offered')) return;
+      localStorage.setItem('st2:passkey-offered', '1');
+      if (!window.confirm('Set up a passkey on this device? Next time you can sign in with just Face ID / Touch ID — no password or email.')) return;
+      setNote({ msg: 'Confirm with Face ID / Touch ID to create your passkey…', type: 'info' });
+      const r = await pk.createPasskey('This device');
+      setNote(r.ok ? { msg: 'Passkey saved — tap “Sign in with a passkey” next time.', type: 'ok' } : { msg: r.error || 'Could not set up passkey', type: 'warn' });
+    } catch { /* non-fatal */ }
   };
 
   const handleGoogle = async () => {
@@ -37,10 +53,10 @@ function LoginScreen() {
   const handlePasskey = async () => {
     if (!configured || !window.__shieldPasskey) { toast('Passkeys go live once Supabase is connected', 'warn'); return; }
     if (!window.__shieldPasskey.supported || !window.__shieldPasskey.supported()) { toast('This browser can’t use passkeys — sign in with email/password', 'warn'); return; }
-    if (!email.trim()) { toast('Enter your email above first, then tap the passkey button', 'warn'); return; }
+    // Usernameless: no email needed. The device offers its passkey directly.
     setSigningIn(true);
-    setNote({ msg: 'Follow your device’s Face ID / Touch ID prompt…', type: 'info' });
-    const r = await window.__shieldPasskey.signInWithPasskey(email.trim());
+    setNote({ msg: 'Choose your passkey and confirm with Face ID / Touch ID…', type: 'info' });
+    const r = await window.__shieldPasskey.signInWithPasskey(email.trim() || undefined);
     setSigningIn(false);
     if (!r.ok) { toast(r.error || 'Passkey sign-in failed', 'error'); return; }
     if (window.__shieldNav) window.__shieldNav('custom-dashboard');
