@@ -80,10 +80,11 @@ function TechAvatarMenu() {
   return (
     <div style={{ position: 'relative' }}>
       <button onClick={() => setOpen(o => !o)} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>{(u && u.initials) || '·'}</button>
-      {open && (
+      {open && window.ReactDOM.createPortal((
         <>
-          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 99998 }} />
-          <div style={{ position: 'fixed', top: 46, right: 8, zIndex: 99999, width: 'min(240px, 88vw)', maxHeight: '82vh', overflowY: 'auto', background: 'var(--modal, #0d1420)', border: '1px solid var(--border-strong)', borderRadius: 12, boxShadow: '0 16px 44px rgba(0,0,0,0.6)' }}>
+          {/* Portal to <body> so the panel escapes the header's stacking context. */}
+          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 2147483646 }} />
+          <div style={{ position: 'fixed', top: 46, right: 8, zIndex: 2147483647, width: 'min(240px, 88vw)', maxHeight: '82vh', overflowY: 'auto', background: 'var(--modal, #0d1420)', border: '1px solid var(--border-strong)', borderRadius: 12, boxShadow: '0 16px 44px rgba(0,0,0,0.6)' }}>
             <div style={{ padding: '12px 14px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{(u && u.name) || 'Technician'}</div>
               <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{(u && u.role) || 'Tech'} · {(u && u.email) || 'not signed in'}</div>
@@ -101,7 +102,7 @@ function TechAvatarMenu() {
             <div className="mono" style={{ padding: '6px 14px 10px', fontSize: 9, color: 'var(--text-low)', opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}</div>
           </div>
         </>
-      )}
+      ), document.body)}
     </div>
   );
 }
