@@ -36,3 +36,31 @@
   --warn-tint-12: rgba(251,191,36,0.12);
   --critical-tint-12: rgba(244,63,94,0.12);
 }
+
+/* ── Light appearance ──
+   Applied when the account menu's Appearance is set to Light (shared-state.jsx
+   stamps data-theme="light" on <html>; "System" resolves to light/dark from the
+   OS). Flips the elevation surfaces, text and borders to a light palette while
+   keeping the electric-blue brand. */
+:root[data-theme="light"] {
+  --brand: #1E7FCB;
+  --brand-hover: #2A93E6;
+  --brand-pressed: #14608F;
+
+  --canvas: #EEF3F9;
+  --card: #FFFFFF;
+  --modal: #FFFFFF;
+
+  --glass-bg: rgba(255,255,255,0.72);
+
+  --border-subtle: rgba(30,111,176,0.14);
+  --border-strong: rgba(30,111,176,0.30);
+
+  --text-high: #0D1B2A;
+  --text-mid: #43586E;
+  --text-low: #7386A0;
+
+  --brand-tint-05: rgba(30,127,203,0.05);
+  --brand-tint-12: rgba(30,127,203,0.12);
+}
+:root[data-theme="light"] body { background: var(--canvas); color: var(--text-high); }

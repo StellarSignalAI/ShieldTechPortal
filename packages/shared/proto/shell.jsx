@@ -290,6 +290,42 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
   const userStatus = (prefs && prefs.status) || 'online';
   const setTheme = (t) => setPrefs(p => ({ ...(p || {}), theme: t }));
   const setUserStatus = (s) => setPrefs(p => ({ ...(p || {}), status: s }));
+
+  // Edit display name / phone — persists to the profiles row.
+  const openProfileModal = () => {
+    const u = window.__shieldUser || {};
+    window.shieldModal && window.shieldModal({
+      kind: 'form', title: 'My Profile', subtitle: 'Your name and contact info',
+      submitLabel: 'Save', successMsg: 'Profile updated',
+      fields: [
+        { key: 'name', label: 'Full name', value: u.name || '', required: true, full: true },
+        { key: 'phone', label: 'Phone', value: u.phone || '', placeholder: '(555) 555-0100' },
+      ],
+      onSubmit: async (v) => {
+        const sb = window.__shieldSupabase;
+        if (sb && u.id) { try { await sb.from('profiles').update({ name: (v.name || '').trim(), phone: v.phone || null }).eq('id', u.id); } catch {} }
+        if (window.__shieldUser) window.__shieldUser.name = (v.name || '').trim();
+        try { window.dispatchEvent(new CustomEvent('shield:auth', { detail: { authed: true } })); } catch {}
+      },
+    });
+  };
+
+  // Notification channel toggles — stored per-user (userPrefsStore.notify).
+  const openNotifPrefs = () => {
+    const n = (userPrefsStore.get() || {}).notify || { email: true, push: true, desktop: false };
+    const yn = (b) => b ? 'On' : 'Off';
+    window.shieldModal && window.shieldModal({
+      kind: 'form', title: 'Notification Preferences', subtitle: 'Where ShieldTech reaches you',
+      submitLabel: 'Save', successMsg: 'Notification preferences saved',
+      fields: [
+        { key: 'email', label: 'Email', type: 'select', options: ['On', 'Off'], value: yn(n.email) },
+        { key: 'push', label: 'Push', type: 'select', options: ['On', 'Off'], value: yn(n.push) },
+        { key: 'desktop', label: 'Desktop', type: 'select', options: ['On', 'Off'], value: yn(n.desktop) },
+      ],
+      onSubmit: (v) => setPrefs(p => ({ ...(p || {}), notify: { email: v.email === 'On', push: v.push === 'On', desktop: v.desktop === 'On' } })),
+    });
+  };
+
   return (
     <header style={{
       height: 52, flexShrink: 0,
@@ -380,11 +416,11 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                 {/* Menu items */}
                 <div style={{ padding: '4px 0' }}>
                   {[
-                    { icon: 'customers', label: 'My Profile', desc: 'Name, photo, contact info' },
-                    { icon: 'settings', label: 'Account Settings', desc: 'Company, billing, plan' },
-                    { icon: 'notification', label: 'Notification Preferences', desc: 'Channels, quiet hours' },
+                    { icon: 'customers', label: 'My Profile', desc: 'Name, photo, contact info', act: () => openProfileModal() },
+                    { icon: 'settings', label: 'Account Settings', desc: 'Company, billing, plan', act: () => onNav && onNav('portal-settings') },
+                    { icon: 'notification', label: 'Notification Preferences', desc: 'Channels, quiet hours', act: () => openNotifPrefs() },
                   ].map((item, i) => (
-                    <button key={i} onClick={() => { setProfileOpen(false); if (item.label === 'Notification Preferences' && onNotifications) onNotifications(); }} style={{
+                    <button key={i} onClick={() => { setProfileOpen(false); item.act && item.act(); }} style={{
                       display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',
                       background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left'
                     }}
@@ -425,10 +461,10 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
 
                 <div style={{ padding: '4px 0' }}>
                   {[
-                    { icon: 'hermes', label: 'ShieldTech AI Settings', desc: 'Tone, auto-actions, context' },
-                    { icon: 'poe', label: 'Integrations', desc: 'Stripe, QuickBooks, Samsara' },
+                    { icon: 'hermes', label: 'ShieldTech AI Settings', desc: 'Tone, auto-actions, context', act: () => (window.__shieldOpenAI ? window.__shieldOpenAI() : (onNav && onNav('shieldtech-ai'))) },
+                    { icon: 'poe', label: 'Integrations', desc: 'Stripe, QuickBooks, Samsara', act: () => onNav && onNav('integrations') },
                   ].map((item, i) => (
-                    <button key={i} onClick={() => setProfileOpen(false)} style={{
+                    <button key={i} onClick={() => { setProfileOpen(false); item.act && item.act(); }} style={{
                       display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',
                       background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left'
                     }}
@@ -486,7 +522,12 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
 
                 {/* Sign out */}
                 <div style={{ padding: '4px 0' }}>
-                  <button onClick={() => { setProfileOpen(false); if (onNav) onNav('login'); }} style={{
+                  <button onClick={async () => {
+                    setProfileOpen(false);
+                    // Really end the session, then fall back to the login screen.
+                    try { if (window.__shieldAuth && window.__shieldAuth.signOut) await window.__shieldAuth.signOut(); } catch {}
+                    if (onNav) onNav('login');
+                  }} style={{
                     display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',
                     background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left'
                   }}
