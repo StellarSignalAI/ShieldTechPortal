@@ -22,6 +22,28 @@ function button(label: string, href: string): string {
     font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">${label}</a>`;
 }
 
+// An outline "secondary" button — used for the Tech-app download link.
+function outlineButton(label: string, href: string): string {
+  return `<a href="${href}" style="display:inline-block;background:rgba(63,169,245,0.10);
+    border:1px solid ${BORDER};color:${TEXT};font-weight:650;font-size:14px;text-decoration:none;
+    padding:12px 24px;border-radius:10px;
+    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">${label}</a>`;
+}
+
+// "Get the Tech App" block, shown when the invitee has technician-app access.
+// techUrl points at the branded install page (…/get-tech.html) that walks the
+// user through installing on iOS, Android, Windows, or Mac.
+function techAppBlock(techUrl: string): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+      style="margin:18px 0 0;border-top:1px solid ${BORDER};padding-top:16px;">
+      <tr><td>
+        ${p(`<strong style="color:${TEXT};">Field technician?</strong> Install the ShieldTech Tech App
+           on your phone, tablet, or computer — it adds a home-screen icon and works full-screen.`)}
+        <div style="padding:2px 0 2px;">${outlineButton("Download the Tech App", techUrl)}</div>
+      </td></tr>
+    </table>`;
+}
+
 // A labelled credential row (monospace value on a subtle chip).
 function credRow(label: string, value: string): string {
   return `<tr>
@@ -70,7 +92,9 @@ const p = (t: string) =>
 export interface InviteEmail { html: string; subject: string; }
 
 // Domain (@shieldtechsolutions.com) invitee — signs in with Google SSO, no password.
-export function googleWelcomeEmail(opts: { name?: string; apps: string; portalUrl: string }): InviteEmail {
+export function googleWelcomeEmail(
+  opts: { name?: string; apps: string; portalUrl: string; techUrl?: string },
+): InviteEmail {
   const hi = opts.name ? `Hi ${opts.name.split(/\s+/)[0]},` : "Welcome,";
   const inner =
     h("Your ShieldTech account is ready") +
@@ -80,13 +104,14 @@ export function googleWelcomeEmail(opts: { name?: string; apps: string; portalUr
        choose <em>Continue with Google</em>, and use your <strong style="color:${TEXT};">@shieldtechsolutions.com</strong>
        email. That's it.`) +
     p(`<strong style="color:${TEXT};">Access:</strong> ${opts.apps}`) +
-    `<div style="padding:6px 0 4px;">${button("Sign in with Google", opts.portalUrl)}</div>`;
+    `<div style="padding:6px 0 4px;">${button("Sign in with Google", opts.portalUrl)}</div>` +
+    (opts.techUrl ? techAppBlock(opts.techUrl) : "");
   return { subject: "Welcome to ShieldTech — sign in with Google", html: shell(inner) };
 }
 
 // External invitee — gets a temporary password to set on first login.
 export function credentialsEmail(opts: {
-  name?: string; email: string; password: string; apps: string; portalUrl: string;
+  name?: string; email: string; password: string; apps: string; portalUrl: string; techUrl?: string;
 }): InviteEmail {
   const hi = opts.name ? `Hi ${opts.name.split(/\s+/)[0]},` : "Welcome,";
   const inner =
@@ -99,7 +124,8 @@ export function credentialsEmail(opts: {
        ${credRow("Temporary password", opts.password)}
        ${credRow("Applications", opts.apps)}
      </table>` +
-    `<div style="padding:2px 0 6px;">${button("Sign in to ShieldTech", opts.portalUrl)}</div>`;
+    `<div style="padding:2px 0 6px;">${button("Sign in to ShieldTech", opts.portalUrl)}</div>` +
+    (opts.techUrl ? techAppBlock(opts.techUrl) : "");
   return { subject: "Your ShieldTech account", html: shell(inner) };
 }
 
