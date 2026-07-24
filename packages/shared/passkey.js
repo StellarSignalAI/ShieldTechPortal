@@ -33,24 +33,29 @@ export async function createPasskey(label) {
   }
 }
 
-/* Sign in with a passkey. On success a Supabase session is established. */
+/* Sign in with a passkey. Usernameless: no email required — the device offers
+   its discoverable passkey for this site and the account is resolved from the
+   credential. On success a Supabase session is established. */
 export async function signInWithPasskey(email) {
   if (!supabaseConfigured) return { ok: false, error: 'Backend not configured' };
   if (!supported()) return { ok: false, error: 'This device/browser does not support passkeys' };
-  if (!email || !email.trim()) return { ok: false, error: 'Enter your email first' };
   try {
-    const options = await call('auth-options', { email: email.trim() });
-    if (!options.allowCredentials || options.allowCredentials.length === 0) {
-      return { ok: false, error: 'No passkey found for this email — sign in another way, then add one in Settings.' };
-    }
+    const em = (email || '').trim();
+    const options = await call('auth-options', em ? { email: em } : {});
+    const { challengeId } = options;
+    // startAuthentication triggers the OS passkey picker (Face ID / Touch ID).
     const authResp = await startAuthentication({ optionsJSON: options });
-    const { token_hash } = await call('auth-verify', { email: email.trim(), response: authResp });
+    const { token_hash } = await call('auth-verify', { challengeId, email: em || undefined, response: authResp });
     const { error } = await supabase.auth.verifyOtp({ type: 'magiclink', token_hash });
     if (error) return { ok: false, error: error.message };
     try { window.dispatchEvent(new CustomEvent('shield:auth', { detail: { authed: true } })); } catch {}
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e && e.name === 'NotAllowedError' ? 'Passkey sign-in cancelled' : String(e.message || e) };
+    if (e && e.name === 'NotAllowedError') return { ok: false, error: 'Passkey sign-in cancelled or no passkey on this device' };
+    const msg = String((e && e.message) || e);
+    // A non-2xx from the function usually means the passkey backend isn't set up.
+    if (/non-2xx|Passkey request failed/i.test(msg)) return { ok: false, error: "No passkey available yet — sign in with your email/password, then add a passkey in the account menu." };
+    return { ok: false, error: msg };
   }
 }
 
