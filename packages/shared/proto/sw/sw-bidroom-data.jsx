@@ -402,7 +402,7 @@ function brSyncAcceptedLeads() {
   const st = brLeadState();
   BR_LEADS.forEach(l => {
     const exists = window.SW.OPPS.some(o => o.id === l.id);
-    if (st[l.id] === 'accepted' && !exists) window.SW.OPPS.push({ ...l, industry: 'govmuni', sourceUrl: l.sourceUrl || '#' });
+    if (st[l.id] === 'accepted' && !exists) window.SW.OPPS.push({ ...l, industry: 'govmuni', sourceUrl: l.sourceUrl || null });
   });
 }
 brSyncAcceptedLeads();
@@ -435,8 +435,13 @@ function brFetchRemoteLeads() {
           dueAt: r.due_at ? r.due_at.slice(0, 10) : null,
           fit: r.fit_score ?? 70,
           why: r.why || '',
-          sourceRisk: r.source_id === 'sam-gov' ? 'Verified' : 'Unverified',
-          sourceUrl: r.source_url || '#',
+          // A lead is "verified" when it carries a real, absolute link back to the
+          // live posting (SAM.gov API links and every scraped detail/listing URL
+          // qualify). We never surface a dead "#" — the card links straight to the
+          // opportunity so it can always be confirmed at the source.
+          verified: (r.source_id === 'sam-gov') || /^https?:\/\//i.test(r.source_url || ''),
+          sourceRisk: ((r.source_id === 'sam-gov') || /^https?:\/\//i.test(r.source_url || '')) ? 'Verified' : 'Unverified',
+          sourceUrl: /^https?:\/\//i.test(r.source_url || '') ? r.source_url : null,
           _remote: true,
         });
         if (r.status === 'accepted' && !st[r.id]) st[r.id] = 'accepted';

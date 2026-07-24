@@ -331,7 +331,9 @@ function BbLeadCard({ lead, onAccept, onDismiss }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', font: '500 11.5px/1 var(--font-mono)', color: 'var(--text-mid)' }}>
         <span style={{ color: 'var(--text-high)', fontWeight: 600 }}>{swK(lead.value)}</span>
         <BbHeat opp={lead} />
-        <a href={lead.sourceUrl && lead.sourceUrl !== '#' ? lead.sourceUrl : undefined} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ color: lead.sourceRisk === 'Verified' ? 'var(--status-ok)' : 'var(--status-warn)', textDecoration: lead.sourceUrl && lead.sourceUrl !== '#' ? 'underline' : 'none' }}>{lead.sourceRisk} ↗</a>
+        {lead.sourceUrl
+          ? <a href={lead.sourceUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ color: 'var(--status-ok)', textDecoration: 'underline', fontWeight: 600 }}>Verified ↗</a>
+          : <span style={{ color: 'var(--text-low)' }}>Link pending</span>}
         <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', font: '600 11px/1 var(--font-body)', color: 'var(--text-low)', padding: '4px 6px' }}>Pass</button>
       </div>
     </Card>
