@@ -105,13 +105,20 @@ Deno.serve(async (req) => {
   // a "sign in with Google" welcome instead of a temporary password.
   const resendKey = Deno.env.get("RESEND_API_KEY");
   const portalUrl = Deno.env.get("PORTAL_URL") ?? "https://portal.shieldtechsolutions.com";
+  const techBase = (Deno.env.get("TECH_URL") ?? "https://tech.shieldtechsolutions.com").replace(/\/+$/, "");
   const isDomainUser = email.endsWith("@shieldtechsolutions.com");
+  // Technician-app access → include the "Get the Tech App" install link.
+  const hasTech = !!appRights.tech;
+  const techOnly = hasTech && !appRights.portal && !appRights.customer;
+  const techUrl = hasTech ? `${techBase}/get-tech.html` : undefined;
+  // Tech-only users can't reach the portal — point their sign-in button at the Tech app.
+  const signInUrl = techOnly ? techBase : portalUrl;
   let emailed = false;
   if (resendKey) {
     const apps = Object.entries(appRights).filter(([, v]) => v).map(([k]) => k).join(", ") || "none";
     const mail = isDomainUser
-      ? googleWelcomeEmail({ name: body.name, apps, portalUrl })
-      : credentialsEmail({ name: body.name, email, password, apps, portalUrl });
+      ? googleWelcomeEmail({ name: body.name, apps, portalUrl: signInUrl, techUrl })
+      : credentialsEmail({ name: body.name, email, password, apps, portalUrl: signInUrl, techUrl });
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },

@@ -1,0 +1,19 @@
+{
+  "id": "/?app=tech",
+  "name": "ShieldTech Technician",
+  "short_name": "ShieldTech Tech",
+  "description": "Field technician app — work orders, photos, site scans, and dispatch for ShieldTech Solutions.",
+  "start_url": "/?src=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#05070A",
+  "theme_color": "#05070A",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    { "src": "/sw/shieldtech-emblem.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/sw/shieldtech-emblem.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/sw/shieldtech-emblem.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
