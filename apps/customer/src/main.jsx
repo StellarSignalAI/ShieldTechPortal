@@ -347,6 +347,7 @@ function CustomerPortalApp() {
 }
 
 const ShieldAuthGate = window.ShieldAuthGate;
+const EB = window.AppErrorBoundary || React.Fragment;
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <ShieldAuthGate appId="customer"><CustomerPortalApp /></ShieldAuthGate>
+  <ShieldAuthGate appId="customer"><EB><CustomerPortalApp /></EB></ShieldAuthGate>
 );

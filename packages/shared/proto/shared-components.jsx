@@ -1,6 +1,39 @@
 /* ShieldTech — Shared Components */
 const { useState, useEffect, useRef, useMemo } = React;
 
+/* ── App-wide error boundary ──
+   A crash in any screen (e.g. a lead detail missing data) used to blank the
+   whole app to black. This catches it, shows a readable recover card with the
+   error, and lets the user go back / reload instead of a dead screen. */
+class AppErrorBoundary extends React.Component {
+  constructor(p) { super(p); this.state = { err: null }; }
+  static getDerivedStateFromError(err) { return { err }; }
+  componentDidCatch(err) { try { console.error('ShieldTech caught:', err); } catch {} }
+  reset = () => {
+    this.setState({ err: null });
+    try { if (window.__shieldNav) window.__shieldNav('custom-dashboard'); } catch {}
+  };
+  render() {
+    if (!this.state.err) return this.props.children;
+    const msg = String((this.state.err && this.state.err.message) || this.state.err || 'Unexpected error');
+    return (
+      <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <div className="glass" style={{ maxWidth: 460, width: '100%', padding: 26, borderRadius: 14, textAlign: 'center', border: '1px solid var(--border-strong)' }}>
+          <div style={{ fontSize: 30, marginBottom: 10 }}>⚠️</div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-high)', marginBottom: 6 }}>This screen hit a snag</div>
+          <div style={{ fontSize: 12.5, color: 'var(--text-mid)', lineHeight: 1.5, marginBottom: 8 }}>It didn’t take down the rest of the app. You can head back and keep working.</div>
+          <div className="mono" style={{ fontSize: 10.5, color: 'var(--text-low)', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '8px 10px', marginBottom: 14, wordBreak: 'break-word', textAlign: 'left' }}>{msg}</div>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+            <button onClick={this.reset} style={{ padding: '9px 18px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Back to dashboard</button>
+            <button onClick={() => window.location.reload()} style={{ padding: '9px 18px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Reload</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+window.AppErrorBoundary = AppErrorBoundary;
+
 /* ── Global toast helper — concise feedback for prototype actions ── */
 function shieldToast(msg, type) {
   window.dispatchEvent(new CustomEvent('shield:toast', { detail: { msg, type: type || 'info' } }));
