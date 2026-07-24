@@ -176,7 +176,7 @@ function LoginScreen() {
               display: 'block', fontSize: 11, fontWeight: 500, textTransform: 'uppercase',
               letterSpacing: '0.08em', color: 'var(--text-low)', marginBottom: 6
             }}>Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="operator@shieldtech.com" style={{
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" style={{
               width: '100%', padding: '10px 14px',
               background: 'rgba(5,7,10,0.6)', border: '1px solid var(--border-subtle)',
               borderRadius: 'var(--radius-sm)', color: 'var(--text-high)',
