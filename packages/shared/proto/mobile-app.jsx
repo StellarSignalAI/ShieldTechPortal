@@ -254,29 +254,54 @@ function MobileDirectory({ onNav }) {
   );
 }
 
-/* Top-right avatar → account & settings dropdown */
+/* Top-right avatar → account & settings dropdown (parity with desktop menu) */
 function MAvatarMenu({ onNav }) {
   const [open, setOpen] = useState(false);
+  const [prefs, setPrefs] = useShieldStore(userPrefsStore);
   const u = window.__shieldUser;
+  const theme = (prefs && prefs.theme) || 'dark';
+  const status = (prefs && prefs.status) || 'online';
+  const setTheme = (t) => setPrefs(p => ({ ...(p || {}), theme: t }));
+  const setStatus = (s) => setPrefs(p => ({ ...(p || {}), status: s }));
   const go = (id) => { setOpen(false); onNav(id); };
-  const item = { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '11px 13px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' };
+  const item = { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '11px 14px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 13.5, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' };
+  const seg = (active, c) => ({ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', background: active ? (c ? `${c}22` : 'rgba(63,169,245,0.14)') : 'transparent', border: `1px solid ${active ? (c || 'var(--brand)') : 'var(--border-subtle)'}`, color: active ? (c || 'var(--brand)') : 'var(--text-low)' });
+  const label = { fontSize: 9, fontWeight: 700, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '4px 14px 6px' };
   return (
     <div style={{ position: 'relative' }}>
       <button onClick={() => setOpen(o => !o)} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>{(u && u.initials) || '·'}</button>
       {open && (
         <>
-          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 4000 }} />
-          <div style={{ position: 'absolute', top: 34, right: 0, zIndex: 4001, width: 236, background: 'var(--modal, #0d1420)', border: '1px solid var(--border-strong)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 16px 44px rgba(0,0,0,0.6)' }}>
-            <div style={{ padding: '12px 13px 9px', borderBottom: '1px solid var(--border-subtle)' }}>
+          {/* High z-index + fixed so the panel is never clipped by the phone frame */}
+          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 99998 }} />
+          <div style={{ position: 'fixed', top: 46, right: 8, zIndex: 99999, width: 'min(260px, 88vw)', maxHeight: '82vh', overflowY: 'auto', background: 'var(--modal, #0d1420)', border: '1px solid var(--border-strong)', borderRadius: 12, boxShadow: '0 16px 44px rgba(0,0,0,0.6)' }}>
+            <div style={{ padding: '12px 14px 9px', borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{(u && u.name) || 'ShieldTech'}</div>
               <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{(u && u.role) || ''} {(u && u.email) || 'not signed in'}</div>
             </div>
             <button style={item} onClick={() => go('portal-settings')}>⚙ Settings</button>
+            <button style={item} onClick={() => go('messages')}>✉ Messages</button>
             <button style={item} onClick={() => go('users')}>◈ Users & Invites</button>
             <button style={item} onClick={() => go('integrations')}>⇄ Integrations</button>
             <button style={item} onClick={() => go('dispatch')}>⌖ Dispatch &amp; Fleet</button>
-            {u && <button style={item} onClick={() => { setOpen(false); if (window.__shieldAuth) window.__shieldAuth.signOut(); }}>← Sign out</button>}
-            <div className="mono" style={{ padding: '6px 13px 10px', fontSize: 9, color: 'var(--text-low)', opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}</div>
+
+            <div style={{ height: 1, background: 'var(--border-subtle)', margin: '5px 12px' }} />
+            <div style={label}>Appearance</div>
+            <div style={{ display: 'flex', gap: 5, padding: '0 14px 8px' }}>
+              {[['dark', 'Dark'], ['light', 'Light'], ['system', 'System']].map(([id, l]) => (
+                <button key={id} onClick={() => setTheme(id)} style={seg(theme === id)}>{l}</button>
+              ))}
+            </div>
+            <div style={label}>Status</div>
+            <div style={{ display: 'flex', gap: 5, padding: '0 14px 8px' }}>
+              {[['online', 'Online', 'var(--status-ok)'], ['busy', 'Busy', 'var(--status-warn)'], ['away', 'Away', 'var(--text-low)']].map(([id, l, c]) => (
+                <button key={id} onClick={() => setStatus(id)} style={seg(status === id, c)}>{l}</button>
+              ))}
+            </div>
+
+            <div style={{ height: 1, background: 'var(--border-subtle)', margin: '5px 12px' }} />
+            {u && <button style={{ ...item, color: 'var(--status-critical)' }} onClick={() => { setOpen(false); if (window.__shieldAuth) window.__shieldAuth.signOut(); if (onNav) onNav('login'); }}>← Sign out</button>}
+            <div className="mono" style={{ padding: '6px 14px 10px', fontSize: 9, color: 'var(--text-low)', opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}</div>
           </div>
         </>
       )}
