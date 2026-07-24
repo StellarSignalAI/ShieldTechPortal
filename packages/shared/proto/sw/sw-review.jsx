@@ -51,6 +51,7 @@ function brDecisions(opp, s) {
 
   flags.forEach(f => {
     const row = brSpecRows(opp).find(r => r.id === f.rowId);
+    if (!row) return; // scraped leads may not have a matching spec row
     const recQty = Math.max(row.rfpQty, row.drawingQty); // §1.4: greater governs
     const recSide = recQty === row.rfpQty ? 'rfp' : 'drawing';
     D.push({
