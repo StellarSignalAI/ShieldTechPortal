@@ -143,6 +143,10 @@ function DispatchScreen() {
 function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMenu, statusColors, setDrawerOpen, showToast, notifyOnSite, notifyLeave }) {
   const active = techs.filter(t => t.status !== 'clocked-out');
   const openActions = (e, tech) => { e.preventDefault(); e.stopPropagation(); handleContextMenu(e, tech); };
+  // Collapsible roster so the map is fully visible — especially on mobile where
+  // the panel would otherwise cover most of the screen. Opening a tech's detail
+  // is what surfaces their projects + options.
+  const [rosterOpen, setRosterOpen] = React.useState(true);
   return (
     <div className="glass" style={{ position: 'relative', height: '100%', minHeight: 340, overflow: 'hidden', borderRadius: 12 }}>
       {/* Real map fills the whole surface; roster + legend float on top */}
@@ -158,12 +162,23 @@ function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMe
         ))}
       </div>
 
+      {/* Collapsed pill — tap to reveal the roster (keeps the map unobstructed) */}
+      {!rosterOpen && (
+        <button onClick={() => setRosterOpen(true)} className="glass" style={{ position: 'absolute', top: 12, right: 12, zIndex: 500, pointerEvents: 'auto', padding: '8px 13px', borderRadius: 10, background: 'rgba(4,10,16,0.86)', border: '1px solid var(--border-strong)', color: 'var(--text-high)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 7 }}>
+          <StatusDot status="info" size={7} /> Technicians <span className="mono" style={{ color: 'var(--brand)' }}>{active.length}</span> ▾
+        </button>
+      )}
+
       {/* Roster overlay — top-right, collapsible, independently scrolling */}
+      {rosterOpen && (
       <div style={{ position: 'absolute', top: 12, right: 12, bottom: 12, zIndex: 500, width: 'min(300px, 82vw)', display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
         <div className="glass" style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', minHeight: 0, background: 'rgba(4,10,16,0.86)', borderRadius: 12, overflow: 'hidden' }}>
-          <div style={{ padding: '9px 13px 8px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ padding: '9px 13px 8px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
             <span className="label-sm">Active Technicians</span>
-            <span className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{active.length}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{active.length}</span>
+              <button onClick={() => setRosterOpen(false)} title="Hide panel" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 14, cursor: 'pointer', lineHeight: 1, padding: 0 }}>✕</button>
+            </span>
           </div>
           <div style={{ overflowY: 'auto', padding: 8, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
             {techs.length === 0 && (
@@ -173,7 +188,7 @@ function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMe
             )}
             {techs.map(tech => (
               <div key={tech.id}
-                onClick={() => setSelectedTech(tech.id === selectedTech ? null : tech.id)}
+                onClick={() => { setSelectedTech(tech.id); setDrawerOpen(tech); }}
                 onContextMenu={(e) => handleContextMenu(e, tech)}
                 style={{
                   padding: 10, borderRadius: 8, cursor: 'pointer',
@@ -221,6 +236,7 @@ function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMe
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }
@@ -898,11 +914,43 @@ function DispatchTechDrawer({ tech, onClose, showToast }) {
             <div className="mono" style={{ fontSize: 16, fontWeight: 600 }}>{tech.hours}</div>
           </GlassPanel>
         </div>
-        <div className="label-sm" style={{ marginBottom: 8 }}>TODAY'S JOBS</div>
-        <GlassPanel style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 500 }}>{tech.job}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{tech.jobAddr}</div>
-        </GlassPanel>
+        <div className="label-sm" style={{ marginBottom: 8 }}>PROJECTS & WORK ORDERS</div>
+        {(() => {
+          // The tech's real assignments from the shared work-order store — match on
+          // id or name so it works whether the WO stored a profile id or a name.
+          const all = (window.workOrderStore && window.workOrderStore.get()) || [];
+          const mine = all.filter(w => {
+            const a = String(w.assignedTo || w.tech || w.assignedToName || '').toLowerCase();
+            return a && (a === String(tech.id).toLowerCase() || a === String(tech.name).toLowerCase());
+          });
+          const openWO = (w) => {
+            try { window.woFocusStore && window.woFocusStore.set(w.id); } catch {}
+            if (window.navTo) window.navTo('workorder');
+            onClose();
+          };
+          if (!mine.length) {
+            return (
+              <GlassPanel style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 500 }}>{tech.job !== '—' ? tech.job : 'No work orders assigned'}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{tech.jobAddr !== '—' ? tech.jobAddr : 'Assign one from the Dispatch Queue or a project.'}</div>
+              </GlassPanel>
+            );
+          }
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
+              {mine.map(w => (
+                <button key={w.id} onClick={() => openWO(w)} style={{ textAlign: 'left', padding: 11, borderRadius: 8, background: 'var(--glass-bg)', border: '1px solid var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{w.title || w.customer || w.id}</span>
+                    <span style={{ fontSize: 10, color: 'var(--brand)' }}>{w.status || 'scheduled'}</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 2 }}>{[w.customer, w.site || w.address].filter(Boolean).join(' · ') || '—'}</div>
+                  <div style={{ fontSize: 10, color: 'var(--brand)', marginTop: 4 }}>Open work order →</div>
+                </button>
+              ))}
+            </div>
+          );
+        })()}
         <div className="label-sm" style={{ marginBottom: 8 }}>ACTIONS</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <button onClick={() => showToast('Calling...')} style={{ width: '100%', padding: '8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✆ Call {tech.name.split(' ')[0]}</button>

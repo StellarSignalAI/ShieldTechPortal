@@ -146,6 +146,7 @@ function FleetMapScreen() {
   const [fleet, setFleet] = useShieldStore(fleetStore);
   const [now, setNow] = React.useState(Date.now());
   const [sel, setSel] = React.useState(null);
+  const [rosterOpen, setRosterOpen] = React.useState(true);
   const [shareState, setShareState] = React.useState('idle');
   const alerted = React.useRef({});
 
@@ -203,12 +204,21 @@ function FleetMapScreen() {
           ))}
         </div>
 
+        {/* Collapsed pill — tap to reveal the roster (keeps the map unobstructed) */}
+        {!rosterOpen && (
+          <button onClick={() => setRosterOpen(true)} className="glass" style={{ position: 'absolute', top: 12, right: 12, zIndex: 500, padding: '8px 13px', borderRadius: 10, background: 'rgba(4,10,16,0.82)', border: '1px solid var(--border-strong)', color: 'var(--text-high)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Fleet roster <span className="mono" style={{ color: 'var(--brand)' }}>{techIds.length}</span> ▾</button>
+        )}
+
         {/* Roster overlay — top-right, collapsible; scrolls independently */}
+        {rosterOpen && (
         <div style={{ position: 'absolute', top: 12, right: 12, bottom: 12, zIndex: 500, width: 'min(280px, 78vw)', display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
           <div className="glass" style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', minHeight: 0, background: 'rgba(4,10,16,0.82)', borderRadius: 12, overflow: 'hidden' }}>
-            <div style={{ padding: '10px 13px 8px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ padding: '10px 13px 8px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
               <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-low)' }}>Fleet roster</span>
-              <span className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{techIds.length}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{techIds.length}</span>
+                <button onClick={() => setRosterOpen(false)} title="Hide panel" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 14, cursor: 'pointer', lineHeight: 1, padding: 0 }}>✕</button>
+              </span>
             </div>
             <div style={{ overflowY: 'auto', padding: '4px 0', minHeight: 0 }}>
               {techIds.length === 0 && <div style={{ padding: '18px 13px', fontSize: 11, color: 'var(--text-low)', lineHeight: 1.5 }}>No techs sharing location yet. Technicians appear here automatically when their app is open (location permission is requested once at sign-in).</div>}
@@ -228,6 +238,7 @@ function FleetMapScreen() {
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

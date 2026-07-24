@@ -45,8 +45,7 @@ const NAV_GROUPS = [
   { id: 'mrr', icon: 'roi', label: 'MRR Tracker', useSvg: true }]
 },
 { id: 'fieldops', label: 'FIELD OPERATIONS', collapsible: true, items: [
-  { id: 'dispatch', icon: 'dispatch', label: 'Dispatch', useSvg: true },
-  { id: 'fleet', icon: 'dispatch', label: 'Fleet GPS', useSvg: true },
+  { id: 'dispatch', icon: 'dispatch', label: 'Dispatch & Fleet', useSvg: true },
   { id: 'survey-cloud', icon: 'floorplan', label: 'Survey Cloud', useSvg: true },
   { id: 'photos', icon: 'cameras', label: 'Site Photos', useSvg: true },
   { id: 'punchlist', icon: 'approvals', label: 'Punch Lists', useSvg: true },
@@ -275,6 +274,14 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
 /* ── Top Bar ── */
 function TopBar({ title, onAI, onNotifications, onNav }) {
   const [profileOpen, setProfileOpen] = React.useState(false);
+  // Re-render when auth resolves so the avatar/name fill in instead of showing
+  // the "·" placeholder forever (window.__shieldUser is set after first paint).
+  const [, authTick] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => {
+    const on = () => authTick();
+    window.addEventListener('shield:auth', on);
+    return () => window.removeEventListener('shield:auth', on);
+  }, []);
   // Appearance + presence are per-user config, remembered across reloads and
   // synced to whatever device this user signs in on (userPrefsStore).
   const [prefs, setPrefs] = useShieldStore(userPrefsStore);
