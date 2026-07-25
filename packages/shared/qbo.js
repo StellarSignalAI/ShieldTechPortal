@@ -48,6 +48,21 @@ export const employees = (limit = 500) =>
 export const payslips = (limit = 500) =>
   readAll('qbo_payslips', { order: { col: 'pay_date', asc: false }, limit });
 
+export const vendors = (limit = 1000) =>
+  readAll('qbo_vendors', { order: { col: 'display_name', asc: true }, limit });
+
+export const bills = (limit = 500) =>
+  readAll('qbo_bills', { order: { col: 'txn_date', asc: false }, limit });
+
+export const purchases = (limit = 500) =>
+  readAll('qbo_purchases', { order: { col: 'txn_date', asc: false }, limit });
+
+export const payments = (limit = 500) =>
+  readAll('qbo_payments', { order: { col: 'txn_date', asc: false }, limit });
+
+export const accounts = (limit = 500) =>
+  readAll('qbo_accounts', { order: { col: 'acct_num', asc: true }, limit });
+
 /* Latest snapshot of a financial report (profit_loss | balance_sheet |
    ar_aging | ap_aging | sales_by_customer | sales_by_product). */
 export async function report(reportType) {
@@ -96,5 +111,6 @@ export async function hasData() {
 
 window.__shieldQBO = {
   customers, items, invoices, estimates, employees, payslips,
+  vendors, bills, purchases, payments, accounts,
   report, syncState, syncNow, hasData,
 };

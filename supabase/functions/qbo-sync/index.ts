@@ -170,6 +170,68 @@ async function pull(admin: Admin, token: string, realm: string) {
   }
   counts.employees = employees.length;
 
+  // ── Vendors ──
+  const vendors = await qboQueryAll(token, realm, "Vendor");
+  if (vendors.length) {
+    await admin.from("qbo_vendors").upsert(vendors.map((v) => ({
+      qbo_id: String(v.Id), display_name: v.DisplayName ?? null, company_name: v.CompanyName ?? null,
+      email: v.PrimaryEmailAddr?.Address ?? null, phone: v.PrimaryPhone?.FreeFormNumber ?? null,
+      balance: num(v.Balance) ?? 0, active: v.Active !== false, raw: v, synced_at: new Date().toISOString(),
+    })), { onConflict: "qbo_id" });
+  }
+  counts.vendors = vendors.length;
+
+  // ── Bills (AP) ──
+  const bills = await qboQueryAll(token, realm, "Bill");
+  if (bills.length) {
+    await admin.from("qbo_bills").upsert(bills.map((b) => {
+      const bal = Number(b.Balance ?? 0);
+      const status = bal <= 0 ? "paid" : (b.DueDate && new Date(b.DueDate).getTime() < Date.now() ? "overdue" : "open");
+      return {
+        qbo_id: String(b.Id), doc_number: b.DocNumber ?? null,
+        vendor_qbo_id: b.VendorRef?.value ?? null, vendor_name: b.VendorRef?.name ?? null,
+        txn_date: b.TxnDate ?? null, due_date: b.DueDate ?? null, total: num(b.TotalAmt) ?? 0,
+        balance: bal, status, private_note: b.PrivateNote ?? null, lines: b.Line ?? null,
+        raw: b, synced_at: new Date().toISOString(),
+      };
+    }), { onConflict: "qbo_id" });
+  }
+  counts.bills = bills.length;
+
+  // ── Purchases (expenses: cash/check/card spend) ──
+  const purchases = await qboQueryAll(token, realm, "Purchase");
+  if (purchases.length) {
+    await admin.from("qbo_purchases").upsert(purchases.map((p) => ({
+      qbo_id: String(p.Id), payment_type: p.PaymentType ?? null, account_name: p.AccountRef?.name ?? null,
+      entity_name: p.EntityRef?.name ?? null, txn_date: p.TxnDate ?? null, total: num(p.TotalAmt) ?? 0,
+      memo: p.PrivateNote ?? p.Memo ?? null, lines: p.Line ?? null, raw: p, synced_at: new Date().toISOString(),
+    })), { onConflict: "qbo_id" });
+  }
+  counts.purchases = purchases.length;
+
+  // ── Payments (received against invoices) ──
+  const payments = await qboQueryAll(token, realm, "Payment");
+  if (payments.length) {
+    await admin.from("qbo_payments").upsert(payments.map((p) => ({
+      qbo_id: String(p.Id), customer_qbo_id: p.CustomerRef?.value ?? null, customer_name: p.CustomerRef?.name ?? null,
+      txn_date: p.TxnDate ?? null, total: num(p.TotalAmt) ?? 0, unapplied: num(p.UnappliedAmt) ?? 0,
+      method: p.PaymentMethodRef?.name ?? null, raw: p, synced_at: new Date().toISOString(),
+    })), { onConflict: "qbo_id" });
+  }
+  counts.payments = payments.length;
+
+  // ── Chart of Accounts ──
+  const accounts = await qboQueryAll(token, realm, "Account");
+  if (accounts.length) {
+    await admin.from("qbo_accounts").upsert(accounts.map((a) => ({
+      qbo_id: String(a.Id), acct_num: a.AcctNum ?? null, name: a.Name ?? null,
+      account_type: a.AccountType ?? null, account_subtype: a.AccountSubType ?? null,
+      classification: a.Classification ?? null, current_balance: num(a.CurrentBalance) ?? 0,
+      active: a.Active !== false, raw: a, synced_at: new Date().toISOString(),
+    })), { onConflict: "qbo_id" });
+  }
+  counts.accounts = accounts.length;
+
   // Report snapshots (all-time P&L, current Balance Sheet, AR + AP aging).
   const today = new Date().toISOString().slice(0, 10);
   const reports: [string, string][] = [
