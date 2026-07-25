@@ -240,7 +240,7 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
             <GlassPanel style={{ gridColumn: 'span 3' }}>
               <div className="label-sm" style={{ marginBottom: 8 }}>TAGS</div>
               <div style={{ display: 'flex', gap: 6 }}>
-                {c.tags.map(t => <span key={t} style={{ padding: '3px 10px', borderRadius: 4, background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--brand)' }}>{t}</span>)}
+                {(c.tags || []).map(t => <span key={t} style={{ padding: '3px 10px', borderRadius: 4, background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--brand)' }}>{t}</span>)}
                 <button onClick={() => showToast('Add tag')} style={{ padding: '3px 10px', borderRadius: 4, background: 'transparent', border: '1px dashed var(--border-subtle)', color: 'var(--text-low)', fontSize: 11, cursor: 'pointer' }}>+ Tag</button>
               </div>
             </GlassPanel>
