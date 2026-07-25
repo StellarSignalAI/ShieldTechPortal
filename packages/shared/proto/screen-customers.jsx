@@ -41,15 +41,20 @@ function CustomersScreen() {
       if (!r || !r.ok || !r.data) return;
       setQboCust(r.data.map(c => {
         const name = c.display_name || c.company_name || 'Customer';
+        const addr = [c.billing_line, c.billing_city, c.billing_state, c.billing_postal].filter(Boolean).join(', ');
         return {
           id: 'qbo:' + c.qbo_id, name,
           dba: (c.company_name && c.company_name !== name) ? c.company_name : '',
-          type: 'Customer', sites: 0, assets: 0, owner: '—', mrr: 0,
+          type: 'Commercial', industry: '', sites: 0, assets: 0, contacts: 0, owner: '—', mrr: 0,
           balance: Number(c.balance) || 0, health: 0,
-          status: c.active === false ? 'Inactive' : 'Active',
-          acctNum: '', logo: name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'C',
+          status: c.active === false ? 'inactive' : 'active',
+          acctNum: 'QB-' + c.qbo_id,
+          logo: name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'C',
           email: c.email || '', phone: c.phone || '',
+          address: addr, billing: addr, shipping: '', website: '', taxId: '', terms: 'Net 30',
+          taxExempt: false, tags: [], notes: '', parent: null,
           city: c.billing_city || '', state: c.billing_state || '',
+          source: 'quickbooks', createdAt: c.synced_at ? new Date(c.synced_at).getTime() : Date.now(),
         };
       }));
     });
@@ -537,12 +542,21 @@ function CustomerCreateModal({ onClose, showToast, editing }) {
     if (!f.name.trim()) { showToast('Company name is required'); return; }
     if (editing) {
       const logo = f.name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase() || editing.logo;
-      customerStore.set(list => list.map(c => c.id === editing.id ? {
-        ...c, name: f.name.trim(), dba: f.dba, type: f.type, industry: f.industry,
+      const patch = {
+        name: f.name.trim(), dba: f.dba, type: f.type, industry: f.industry,
         address: f.address, billing: f.billing, shipping: f.shipping, phone: f.phone, website: f.website,
-        taxId: f.taxId, terms: f.terms, taxExempt: !!f.taxExempt, owner: f.owner || c.owner,
+        taxId: f.taxId, terms: f.terms, taxExempt: !!f.taxExempt,
         tags: f.tags.split(',').map(t => t.trim()).filter(Boolean), notes: f.notes, logo,
-      } : c));
+      };
+      const inStore = customerStore.get().some(c => c.id === editing.id);
+      if (inStore) {
+        customerStore.set(list => list.map(c => c.id === editing.id ? { ...c, ...patch, owner: f.owner || c.owner } : c));
+      } else {
+        // QuickBooks-sourced customer: it isn't in the store yet, so persist a
+        // portal override record carrying the edits. It wins the name-dedupe, so
+        // the edited category (e.g. Contractor) sticks and syncs to all apps.
+        customerStore.set(list => [{ ...editing, ...patch, owner: f.owner || editing.owner }, ...list]);
+      }
       showToast(`${f.name.trim()} updated — synced to all apps`);
     } else {
       const rec = buildCustomer({ ...f, source: 'portal' });
@@ -566,7 +580,7 @@ function CustomerCreateModal({ onClose, showToast, editing }) {
             <div style={{ flex: 1 }}>
               <div className="label-sm" style={{ marginBottom: 4 }}>Type</div>
               <select value={f.type} onChange={set('type')} style={selStyle}>
-                {['Commercial','Government','Healthcare','Hospitality','Residential','Industrial','Education','Non-Profit'].map(o => <option key={o} value={o}>{o}</option>)}
+                {['Commercial','Contractor','Sub-Contractor','Vendor','Distributor','Partner','Government','Healthcare','Hospitality','Residential','Industrial','Education','Non-Profit'].map(o => <option key={o} value={o}>{o}</option>)}
               </select>
             </div>
             <CField label="Industry" placeholder="Banking" value={f.industry} onChange={set('industry')} style={{ flex: 1 }} />
