@@ -74,7 +74,14 @@ function FinanceScreen() {
             cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', transition: 'all 0.15s'
           }}>{a.label}</button>
         ))}
-        <span style={{ marginLeft: 'auto', paddingBottom: 6 }}>
+        <span style={{ marginLeft: 'auto', paddingBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={() => {
+            if (!window.__shieldQBO) { showToast('Backend not configured'); return; }
+            showToast('Syncing with QuickBooks…');
+            window.__shieldQBO.syncNow('pull').then(r => {
+              showToast(r && r.ok ? 'QuickBooks synced' : ((r && r.error) || 'Sync unavailable — connect QuickBooks first'));
+            });
+          }} style={{ padding: '4px 12px', fontSize: 11, borderRadius: 6, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--brand)', color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Sync now</button>
           {window.QboSyncBadge && <QboSyncBadge state={demoState === 'stale' ? 'stale' : demoState === 'error' ? 'error' : 'synced'} />}
         </span>
       </div>
@@ -138,21 +145,55 @@ function FinanceScreen() {
 
 /* ── Finance Overview Dashboard ── */
 function FinanceOverview({ onNav }) {
-  const arBuckets = [
+  const DEMO_AR = [
     { label: 'Current', amount: 134400, color: 'var(--status-ok)' },
     { label: '1–30', amount: 22100, color: 'var(--status-warn)' },
     { label: '31–60', amount: 14250, color: 'var(--status-critical)' },
     { label: '60+', amount: 5200, color: '#c084fc' },
   ];
+  // Derive real AR aging + revenue from imported QuickBooks invoices when
+  // present; otherwise the demo figures above stand in.
+  const [inv, setInv] = React.useState(null);
+  React.useEffect(() => {
+    const q = window.__shieldQBO; if (!q) return;
+    q.invoices({ limit: 2000 }).then(r => { if (r && r.ok && r.data && r.data.length) setInv(r.data); });
+  }, []);
+  const live = React.useMemo(() => {
+    if (!inv) return null;
+    const now = Date.now(), yr = new Date().getFullYear(), mo = new Date().getMonth();
+    const b = { cur: 0, d30: 0, d60: 0, d60p: 0 };
+    let revYTD = 0, revMTD = 0;
+    inv.forEach(v => {
+      const bal = Number(v.balance) || 0;
+      if (bal > 0) {
+        const due = v.due_date ? new Date(v.due_date).getTime() : now;
+        const days = Math.floor((now - due) / 86400000);
+        if (days <= 0) b.cur += bal; else if (days <= 30) b.d30 += bal; else if (days <= 60) b.d60 += bal; else b.d60p += bal;
+      }
+      const td = v.txn_date ? new Date(v.txn_date + 'T00:00:00') : null;
+      const tot = Number(v.total) || 0;
+      if (td && td.getFullYear() === yr) { revYTD += tot; if (td.getMonth() === mo) revMTD += tot; }
+    });
+    return { b, revYTD, revMTD };
+  }, [inv]);
+  const money = (n) => '$' + Math.round(n).toLocaleString();
+  const arBuckets = live ? [
+    { label: 'Current', amount: live.b.cur, color: 'var(--status-ok)' },
+    { label: '1–30', amount: live.b.d30, color: 'var(--status-warn)' },
+    { label: '31–60', amount: live.b.d60, color: 'var(--status-critical)' },
+    { label: '60+', amount: live.b.d60p, color: '#c084fc' },
+  ] : DEMO_AR;
   const arTotal = arBuckets.reduce((s, b) => s + b.amount, 0);
+  const revMTDStr = live ? money(live.revMTD) : '$284,600';
+  const revYTDStr = live ? money(live.revYTD) : '$1.25M';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 1400 }}>
       {/* Top KPIs */}
       <div style={{ display: 'flex', gap: 10 }}>
         <StatCard label="CASH POSITION" value="$482,600" mono={false} trend="+$38K this week" trendDir="up" delay={0} />
-        <StatCard label="REVENUE (MTD)" value="$284,600" mono={false} trend="+8.2% vs prior" trendDir="up" delay={80} />
-        <StatCard label="REVENUE (YTD)" value="$1.25M" mono={false} delay={160} />
+        <StatCard label="REVENUE (MTD)" value={revMTDStr} mono={false} trend={live ? 'from QuickBooks' : '+8.2% vs prior'} trendDir="up" delay={80} />
+        <StatCard label="REVENUE (YTD)" value={revYTDStr} mono={false} delay={160} />
         <StatCard label="GROSS MARGIN" value="28.4%" mono={false} trend="Target: 25%" trendDir="up" delay={240} />
         <StatCard label="MRR" value="$171,200" mono={false} trend="+3.8% MoM" trendDir="up" delay={320} />
       </div>
@@ -294,7 +335,7 @@ function FinanceOverview({ onNav }) {
 
 /* ── Invoices Tab ── */
 function FinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, setSelectedInv, invFilter, setInvFilter, showToast }) {
-  const invoices = [
+  const DEMO_INVOICES = [
     { num: 'INV-2847', customer: 'Acme Dental Group', amount: 14250, status: 'overdue', due: 'Apr 28, 2026', days: 38, terms: 'Net 30', po: 'PO-2401', lines: [{ desc: 'NVR System — Hanwha XNR-6410', qty: 1, rate: 2800 }, { desc: 'Axis P3265-V Dome Camera', qty: 4, rate: 890 }, { desc: 'Installation labor (16h)', qty: 16, rate: 125 }, { desc: 'Cat6A cabling', qty: 1, rate: 1890 }] },
     { num: 'INV-2851', customer: 'Metro Bank Corp', amount: 67500, status: 'pending', due: 'Jun 10, 2026', days: 0, terms: 'Net 30', po: 'PO-MB-448', lines: [{ desc: '16-Camera expansion', qty: 1, rate: 42000 }, { desc: 'Access control (8 doors)', qty: 1, rate: 18200 }, { desc: 'Project management', qty: 1, rate: 7300 }] },
     { num: 'INV-2853', customer: 'Riverside Medical', amount: 8400, status: 'paid', due: 'May 25, 2026', days: 0, terms: 'Net 15', po: 'PO-RM-220', lines: [{ desc: 'Quarterly PM — 32 cameras', qty: 1, rate: 4800 }, { desc: 'NVR health check + firmware', qty: 1, rate: 2400 }, { desc: 'Fire panel test', qty: 1, rate: 1200 }] },
@@ -306,6 +347,30 @@ function FinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, setS
     { num: 'INV-2863', customer: 'Embarcadero Partners', amount: 18900, status: 'pending', due: 'Jun 20, 2026', days: 0, terms: 'Net 30', po: 'EP-2026-07', lines: [{ desc: 'Access control — 6 doors', qty: 6, rate: 2400 }, { desc: 'Visitor management integration', qty: 1, rate: 4500 }] },
     { num: 'INV-2865', customer: 'Marina District Dental', amount: 24800, status: 'pending', due: 'Jun 25, 2026', days: 0, terms: 'Net 30', po: '', lines: [{ desc: '8-camera system', qty: 1, rate: 18400 }, { desc: 'Alarm panel + sensors', qty: 1, rate: 4200 }, { desc: 'Central station activation', qty: 1, rate: 2200 }] },
   ];
+
+  // Live QuickBooks invoices when they've been imported; the demo set above is
+  // the fallback until the first sync lands. Design and interactions unchanged.
+  const mapQbo = (r) => ({
+    num: r.doc_number || ('INV-' + r.qbo_id),
+    customer: r.customer_name || 'Customer',
+    amount: Number(r.total) || 0,
+    status: r.status === 'open' ? 'pending' : (r.status || 'pending'),
+    due: r.due_date ? new Date(r.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—',
+    days: (r.status === 'overdue' && r.due_date) ? Math.max(0, Math.round((Date.now() - new Date(r.due_date).getTime()) / 86400000)) : 0,
+    terms: '—', po: '',
+    lines: Array.isArray(r.lines) ? r.lines
+      .filter(l => l.DetailType === 'SalesItemLineDetail' || l.SalesItemLineDetail)
+      .map(l => ({
+        desc: l.Description || (l.SalesItemLineDetail && l.SalesItemLineDetail.ItemRef && l.SalesItemLineDetail.ItemRef.name) || 'Item',
+        qty: (l.SalesItemLineDetail && l.SalesItemLineDetail.Qty) || 1,
+        rate: (l.SalesItemLineDetail && l.SalesItemLineDetail.UnitPrice) || Number(l.Amount) || 0,
+      })) : [],
+  });
+  const [invoices, setInvoices] = React.useState(DEMO_INVOICES);
+  React.useEffect(() => {
+    const q = window.__shieldQBO; if (!q) return;
+    q.invoices({ limit: 500 }).then(r => { if (r && r.ok && r.data && r.data.length) setInvoices(r.data.map(mapQbo)); });
+  }, []);
 
   const filtered = invFilter === 'All' ? invoices : invoices.filter(i => i.status === invFilter.toLowerCase());
 
