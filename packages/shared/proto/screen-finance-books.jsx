@@ -2,13 +2,29 @@
 
 /* ── Estimates ── */
 function FinanceEstimates({ setModal, showToast }) {
-  const estimates = [
+  const DEMO_ESTIMATES = [
     { num: 'EST-301', customer: 'Pinnacle Financial Group', amount: 128500, status: 'sent', date: 'Jun 4, 2026', expires: 'Jul 4, 2026' },
     { num: 'EST-298', customer: 'Bayshore Medical Center', amount: 94200, status: 'draft', date: 'Jun 2, 2026', expires: '—' },
     { num: 'EST-295', customer: 'Golden Gate Logistics', amount: 52000, status: 'sent', date: 'May 28, 2026', expires: 'Jun 28, 2026' },
     { num: 'EST-290', customer: 'Marina District Dental', amount: 24800, status: 'accepted', date: 'May 20, 2026', expires: '—' },
     { num: 'EST-288', customer: 'Redwood Community College', amount: 38000, status: 'expired', date: 'Apr 15, 2026', expires: 'May 15, 2026' },
   ];
+  // Live QuickBooks estimates when imported; demo set is the fallback.
+  const fmt = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+  const statusMap = { pending: 'sent', accepted: 'accepted', closed: 'accepted', rejected: 'expired' };
+  const mapEst = (r) => ({
+    num: r.doc_number || ('EST-' + r.qbo_id),
+    customer: r.customer_name || 'Customer',
+    amount: Number(r.total) || 0,
+    status: statusMap[r.status] || 'sent',
+    date: fmt(r.txn_date),
+    expires: fmt(r.expiration_date),
+  });
+  const [estimates, setEstimates] = React.useState(DEMO_ESTIMATES);
+  React.useEffect(() => {
+    const q = window.__shieldQBO; if (!q) return;
+    q.estimates(500).then(r => { if (r && r.ok && r.data && r.data.length) setEstimates(r.data.map(mapEst)); });
+  }, []);
   return (
     <div style={{ maxWidth: 1200 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>

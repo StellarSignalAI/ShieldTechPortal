@@ -3,7 +3,7 @@
 /* ── Products & Services Catalog ── */
 function FinanceProducts({ setModal, showToast }) {
   const [catFilter, setCatFilter] = React.useState('All');
-  const items = [
+  const DEMO_PRODUCTS = [
     { sku: 'CAM-P3265', name: 'Axis P3265-V Dome Camera', type: 'Inventory', cat: 'Cameras', price: 890, cost: 520, qty: 24, income: '4000 · Revenue', cogs: '5000 · COGS', taxable: true },
     { sku: 'NVR-XNR64', name: 'Hanwha XNR-6410 16ch NVR', type: 'Inventory', cat: 'Recording', price: 2800, cost: 1650, qty: 6, income: '4000 · Revenue', cogs: '5000 · COGS', taxable: true },
     { sku: 'RDR-HID40', name: 'HID iCLASS SE RK40 Reader', type: 'Inventory', cat: 'Access Control', price: 340, cost: 180, qty: 42, income: '4000 · Revenue', cogs: '5000 · COGS', taxable: true },
@@ -15,6 +15,29 @@ function FinanceProducts({ setModal, showToast }) {
     { sku: 'MON-ENT', name: 'Enterprise Monitoring (monthly)', type: 'Service', cat: 'RMR', price: 125, cost: 28, qty: null, income: '4200 · RMR Revenue', cogs: '5100 · Monitoring COGS', taxable: false },
     { sku: 'BDL-8CAM', name: '8-Camera System Bundle', type: 'Bundle', cat: 'Bundles', price: 12400, cost: 7200, qty: null, income: '4000 · Revenue', cogs: '5000 · COGS', taxable: true },
   ];
+  // Live QuickBooks products/services when imported; demo set is the fallback.
+  const mapItem = (r) => {
+    const fqn = r.fully_qualified_name || r.name || '';
+    const cat = fqn.includes(':') ? fqn.split(':')[0] : (r.type || 'Service');
+    return {
+      sku: (r.raw && r.raw.Sku) || ('ITM-' + r.qbo_id),
+      name: fqn || r.name || 'Item',
+      type: r.type || 'Service',
+      cat,
+      price: Number(r.unit_price) || 0,
+      cost: (r.raw && Number(r.raw.PurchaseCost)) || 0,
+      qty: r.raw && r.raw.QtyOnHand != null ? Number(r.raw.QtyOnHand) : null,
+      income: (r.raw && r.raw.IncomeAccountRef && r.raw.IncomeAccountRef.name) || '',
+      cogs: (r.raw && r.raw.ExpenseAccountRef && r.raw.ExpenseAccountRef.name) || '',
+      taxable: !!r.taxable,
+    };
+  };
+  const [items, setItems] = React.useState(DEMO_PRODUCTS);
+  React.useEffect(() => {
+    const q = window.__shieldQBO; if (!q) return;
+    q.items(1000).then(r => { if (r && r.ok && r.data && r.data.length) setItems(r.data.map(mapItem)); });
+  }, []);
+
   const cats = ['All', ...new Set(items.map(i => i.cat))];
   const filtered = catFilter === 'All' ? items : items.filter(i => i.cat === catFilter);
 
