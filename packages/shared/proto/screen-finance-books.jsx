@@ -60,7 +60,7 @@ function FinanceEstimates({ setModal, showToast }) {
 /* ── AP / Bills / Vendors ── */
 function FinanceAP({ setDrawer, setModal, showToast }) {
   const [apTab, setApTab] = React.useState('bills');
-  const bills = [
+  const DEMO_BILLS = [
     { num: 'BILL-420', vendor: 'ADI Global Distribution', amount: 8420, status: 'due', due: 'Jun 10, 2026', cat: 'Equipment', is1099: false },
     { num: 'BILL-418', vendor: 'Consolidated Electric', amount: 2480, status: 'paid', due: 'Jun 1, 2026', cat: 'Cable & Supply', is1099: false },
     { num: 'BILL-416', vendor: 'SafeNet Monitoring', amount: 1200, status: 'due', due: 'Jun 15, 2026', cat: 'Monitoring', is1099: true },
@@ -68,7 +68,7 @@ function FinanceAP({ setDrawer, setModal, showToast }) {
     { num: 'BILL-412', vendor: 'Verizon Business', amount: 680, status: 'due', due: 'Jun 20, 2026', cat: 'Telecom', is1099: false },
     { num: 'BILL-410', vendor: 'State Farm Insurance', amount: 4200, status: 'paid', due: 'May 15, 2026', cat: 'Insurance', is1099: false },
   ];
-  const vendors = [
+  const DEMO_VENDORS = [
     { name: 'ADI Global Distribution', balance: 8420, terms: 'Net 30', is1099: false, cat: 'Distributor', ytdSpend: 42800 },
     { name: 'Consolidated Electric', balance: 0, terms: 'Net 15', is1099: false, cat: 'Supply', ytdSpend: 18400 },
     { name: 'SafeNet Monitoring', balance: 1200, terms: 'Net 30', is1099: true, cat: 'Service', ytdSpend: 7200 },
@@ -80,6 +80,22 @@ function FinanceAP({ setDrawer, setModal, showToast }) {
     { num: 'PO-1040', vendor: 'ADI Global', items: '20× HID iCLASS SE RK40', total: 6240, status: 'received', date: 'May 28' },
     { num: 'PO-1038', vendor: 'Consolidated', items: '8× Cat6A 1000ft', total: 2480, status: 'received', date: 'May 22' },
   ];
+
+  // Live QuickBooks bills + vendors when synced; demo sets are the fallback.
+  const fmtD = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+  const [bills, setBills] = React.useState(DEMO_BILLS);
+  const [vendors, setVendors] = React.useState(DEMO_VENDORS);
+  React.useEffect(() => {
+    const q = window.__shieldQBO; if (!q) return;
+    q.bills(500).then(r => { if (r && r.ok && r.data && r.data.length) setBills(r.data.map(b => ({
+      num: b.doc_number || ('BILL-' + b.qbo_id), vendor: b.vendor_name || 'Vendor', amount: Number(b.total) || 0,
+      status: b.status === 'open' ? 'due' : (b.status || 'due'), due: fmtD(b.due_date), cat: 'Bill', is1099: false,
+    }))); });
+    q.vendors(1000).then(r => { if (r && r.ok && r.data && r.data.length) setVendors(r.data.map(v => ({
+      name: v.display_name || v.company_name || 'Vendor', balance: Number(v.balance) || 0, terms: '—',
+      is1099: false, cat: '—', ytdSpend: 0,
+    }))); });
+  }, []);
 
   return (
     <div style={{ maxWidth: 1400 }}>
@@ -165,13 +181,27 @@ function FinanceAP({ setDrawer, setModal, showToast }) {
 /* ── Expenses with AI Receipt OCR ── */
 function FinanceExpenses({ setModal, showToast }) {
   const [ocrDemo, setOcrDemo] = React.useState(false);
-  const expenses = [
+  const DEMO_EXPENSES = [
     { id: 'EXP-201', employee: 'Mike Reyes', date: 'Jun 5', vendor: 'Shell Gas Station', amount: 127.50, cat: 'Vehicle / Fuel', status: 'pending', receipt: true },
     { id: 'EXP-200', employee: 'Jessica Liu', date: 'Jun 4', vendor: 'Home Depot', amount: 342.80, cat: 'Materials', status: 'approved', receipt: true },
     { id: 'EXP-199', employee: 'Kevin White', date: 'Jun 3', vendor: 'Lowes', amount: 89.40, cat: 'Materials', status: 'approved', receipt: true },
     { id: 'EXP-198', employee: 'Tony Garcia', date: 'Jun 2', vendor: 'Costco Gas', amount: 94.20, cat: 'Vehicle / Fuel', status: 'approved', receipt: true },
     { id: 'EXP-197', employee: 'Diana Patel', date: 'Jun 1', vendor: 'Amazon Business', amount: 248.00, cat: 'Tools', status: 'pending', receipt: false },
   ];
+  // Live QuickBooks expenses (Purchase txns) when synced; demo set is the fallback.
+  const [expenses, setExpenses] = React.useState(DEMO_EXPENSES);
+  React.useEffect(() => {
+    const q = window.__shieldQBO; if (!q) return;
+    q.purchases(500).then(r => { if (r && r.ok && r.data && r.data.length) setExpenses(r.data.map(p => ({
+      id: 'EXP-' + p.qbo_id,
+      employee: p.entity_name || '—',
+      date: p.txn_date ? new Date(p.txn_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—',
+      vendor: p.entity_name || p.account_name || '—',
+      amount: Number(p.total) || 0,
+      cat: p.account_name || (p.payment_type ? p.payment_type + ' expense' : 'Expense'),
+      status: 'approved', receipt: false,
+    }))); });
+  }, []);
 
   return (
     <div style={{ maxWidth: 1200, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -242,7 +272,7 @@ function FinanceExpenses({ setModal, showToast }) {
 
 /* ── Chart of Accounts ── */
 function FinanceCOA({ setModal, showToast }) {
-  const accounts = [
+  const DEMO_ACCOUNTS = [
     { num: '1000', name: 'Business Checking', type: 'Asset', sub: 'Bank', balance: 482600, active: true },
     { num: '1100', name: 'Savings / Reserve', type: 'Asset', sub: 'Bank', balance: 125000, active: true },
     { num: '1200', name: 'Accounts Receivable', type: 'Asset', sub: 'Current Asset', balance: 175950, active: true },
@@ -263,6 +293,21 @@ function FinanceCOA({ setModal, showToast }) {
     { num: '6200', name: 'Insurance', type: 'Expense', sub: 'Operating', balance: 18400, active: true },
     { num: '6300', name: 'Office & Admin', type: 'Expense', sub: 'Operating', balance: 8600, active: true },
   ];
+  // Live Chart of Accounts from QuickBooks when synced; demo set is the fallback.
+  const clsMap = { Asset: 'Asset', Liability: 'Liability', Equity: 'Equity', Revenue: 'Income', Expense: 'Expense' };
+  const mapAcct = (a) => ({
+    num: a.acct_num || '—',
+    name: a.name || 'Account',
+    type: clsMap[a.classification] || (a.account_type || '').replace(/.*(Asset|Liability|Equity|Income|Expense).*/i, '$1') || 'Asset',
+    sub: a.account_subtype || a.account_type || '',
+    balance: Number(a.current_balance) || 0,
+    active: a.active !== false,
+  });
+  const [accounts, setAccounts] = React.useState(DEMO_ACCOUNTS);
+  React.useEffect(() => {
+    const q = window.__shieldQBO; if (!q) return;
+    q.accounts(500).then(r => { if (r && r.ok && r.data && r.data.length) setAccounts(r.data.map(mapAcct)); });
+  }, []);
   const typeColors = { Asset: 'var(--brand)', Liability: 'var(--status-warn)', Equity: '#c084fc', Income: 'var(--status-ok)', Expense: 'var(--status-critical)' };
 
   return (

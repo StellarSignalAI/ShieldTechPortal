@@ -28,8 +28,37 @@ function CustomersScreen() {
   const [toast, setToast] = React.useState(null);
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 3000); };
 
-  const [allCustomers] = useShieldStore(customerStore);
+  const [storeCustomers] = useShieldStore(customerStore);
   const [subCustomers] = useShieldStore(subCustomerStore);
+
+  // Fold in QuickBooks customers so the directory shows the real book of
+  // business (name, company, AR balance, contact). Portal-created customers in
+  // the store win on a name clash; otherwise QBO customers fill the list.
+  const [qboCust, setQboCust] = React.useState([]);
+  React.useEffect(() => {
+    const q = window.__shieldQBO; if (!q) return;
+    q.customers(2000).then(r => {
+      if (!r || !r.ok || !r.data) return;
+      setQboCust(r.data.map(c => {
+        const name = c.display_name || c.company_name || 'Customer';
+        return {
+          id: 'qbo:' + c.qbo_id, name,
+          dba: (c.company_name && c.company_name !== name) ? c.company_name : '',
+          type: 'Customer', sites: 0, assets: 0, owner: '—', mrr: 0,
+          balance: Number(c.balance) || 0, health: 0,
+          status: c.active === false ? 'Inactive' : 'Active',
+          acctNum: '', logo: name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'C',
+          email: c.email || '', phone: c.phone || '',
+          city: c.billing_city || '', state: c.billing_state || '',
+        };
+      }));
+    });
+  }, []);
+  const allCustomers = React.useMemo(() => {
+    const names = new Set((storeCustomers || []).map(c => (c.name || '').toLowerCase()));
+    return [...(storeCustomers || []), ...qboCust.filter(c => !names.has((c.name || '').toLowerCase()))];
+  }, [storeCustomers, qboCust]);
+
   const selectedCustomer = allCustomers.find(c => c.id === selectedId) || null;
   const customers = allCustomers.filter(c =>
     !query || (c.name + ' ' + (c.dba || '') + ' ' + c.type + ' ' + (c.acctNum || '')).toLowerCase().includes(query.toLowerCase())
