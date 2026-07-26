@@ -251,15 +251,17 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
         {tab === 'contacts' && <CustomerContacts customer={c} showToast={showToast} />}
         {tab === 'sites' && <CustomerSites customer={c} showToast={showToast} />}
         {tab === 'assets' && <CustomerAssets customer={c} showToast={showToast} />}
-        {tab === 'passwords' && <CustomerPasswords showToast={showToast} />}
+        {tab === 'passwords' && <CustomerPasswords customer={c} showToast={showToast} />}
         {tab === 'flexible' && <CustomerFlexAssets customer={c} showToast={showToast} />}
-        {tab === 'documents' && <CustomerDocs showToast={showToast} />}
-        {tab === 'networks' && <CustomerNetworks showToast={showToast} />}
-        {(tab === 'tickets' || tab === 'estimates' || tab === 'invoices' || tab === 'proposals') && (
+        {tab === 'documents' && <CustomerDocs customer={c} showToast={showToast} />}
+        {tab === 'networks' && <CustomerNetworks customer={c} showToast={showToast} />}
+        {tab === 'invoices' && <CustomerFinanceDocs customer={c} kind="invoices" showToast={showToast} />}
+        {tab === 'estimates' && <CustomerFinanceDocs customer={c} kind="estimates" showToast={showToast} />}
+        {tab === 'proposals' && <CustomerProposalsTab customer={c} showToast={showToast} />}
+        {tab === 'tickets' && (
           <GlassPanel><div style={{ textAlign: 'center', padding: 24, color: 'var(--text-mid)' }}>
-            <div style={{ fontSize: 14, marginBottom: 4 }}>{c.name} — {tab.charAt(0).toUpperCase()+tab.slice(1)}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-low)' }}>All {tab} for this customer appear here. Create new from any module with this customer pre-selected.</div>
-            <button onClick={() => showToast(`New ${tab.slice(0,-1)} for ${c.name}`)} style={{ marginTop: 12, padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New {tab.charAt(0).toUpperCase()+tab.slice(1,-1)}</button>
+            <div style={{ fontSize: 14, marginBottom: 4 }}>{c.name} — Tickets</div>
+            <div style={{ fontSize: 12, color: 'var(--text-low)' }}>Support tickets for this customer appear here. Create new from the Help Desk with this customer pre-selected.</div>
           </div></GlassPanel>
         )}
         {tab === 'projects' && (
@@ -443,49 +445,235 @@ function ContactFormModal({ customer, contact, onSave, onClose }) {
   );
 }
 
-/* ── Customer Sites ── */
-function CustomerSites({ customer, showToast }) {
-  const sites = [
-    { name: 'Main Office — 1450 Market St', type: 'Primary', devices: 28, status: 'online', floors: 3 },
-    { name: 'Branch — 2200 Broad St', type: 'Branch', devices: 12, status: 'online', floors: 1 },
-    { name: 'Data Center — 500 Vine St', type: 'Infrastructure', devices: 8, status: 'warning', floors: 1 },
-  ];
+/* ── Reusable per-customer record editor (sites, passwords, docs, networks, assets) ── */
+function CustomerRecordModal({ title, fields, record, onSave, onClose }) {
+  const [f, setF] = React.useState(() => {
+    const init = record && record.id ? { id: record.id } : {};
+    fields.forEach(fl => { init[fl.key] = record && record[fl.key] != null ? record[fl.key] : (fl.default != null ? fl.default : ''); });
+    return init;
+  });
+  const set = (k) => (e) => { const v = e && e.target ? (e.target.type === 'checkbox' ? e.target.checked : e.target.value) : e; setF(p => ({ ...p, [k]: v })); };
+  const req = fields.filter(fl => fl.required);
+  const valid = req.every(fl => String(f[fl.key] || '').trim());
+  const base = { width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
   return (
-    <div style={{ maxWidth: 1000 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-        <SectionHeader title="Sites / Locations" icon="map-pin" count={sites.length} />
-        <button onClick={() => showToast('New site added')} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Site</button>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
-        {sites.map((s,i) => (
-          <GlassPanel key={i} style={{ cursor: 'pointer', borderLeft: `3px solid ${s.status==='online'?'var(--status-ok)':'var(--status-warn)'}` }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <div style={{ fontSize: 14, fontWeight: 500 }}>{s.name}</div>
-              <StatusDot status={s.status} size={8} />
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9000 }}>
+      <div onClick={e => e.stopPropagation()} className="glass" style={{ width: 480, maxHeight: '86vh', overflow: 'auto', padding: 22, animation: 'fade-up 0.2s ease both' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+          <span className="display" style={{ fontSize: 17, fontWeight: 400 }}>{title}</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {fields.map(fl => (
+            <div key={fl.key}>
+              <div className="label-sm" style={{ marginBottom: 4 }}>{fl.label}{fl.required ? ' *' : ''}</div>
+              {fl.type === 'select'
+                ? <select value={f[fl.key]} onChange={set(fl.key)} style={{ ...base, cursor: 'pointer' }}>{fl.options.map(o => <option key={o} value={o}>{o}</option>)}</select>
+                : fl.type === 'textarea'
+                ? <textarea value={f[fl.key]} onChange={set(fl.key)} placeholder={fl.placeholder || ''} rows={3} style={{ ...base, resize: 'vertical' }} />
+                : <input type={fl.type === 'number' ? 'number' : fl.type === 'password' ? 'text' : 'text'} value={f[fl.key]} onChange={set(fl.key)} placeholder={fl.placeholder || ''} style={base} />}
             </div>
-            <div style={{ display: 'flex', gap: 14, fontSize: 11, color: 'var(--text-low)' }}>
-              <span>{s.type}</span><span>{s.devices} devices</span><span>{s.floors} floor{s.floors>1?'s':''}</span>
-            </div>
-          </GlassPanel>
-        ))}
+          ))}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
+          <button onClick={onClose} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
+          <button onClick={() => valid && onSave(f)} disabled={!valid} style={{ padding: '8px 20px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: valid ? 'pointer' : 'not-allowed', opacity: valid ? 1 : 0.5, fontFamily: 'var(--font-body)' }}>{record ? 'Save' : 'Add'}</button>
+        </div>
       </div>
     </div>
   );
 }
 
-/* ── Customer Assets (brief — full detail in screen-assets-v2) ── */
-function CustomerAssets({ customer, showToast }) {
+/* Shared helpers for the per-customer CRUD tabs. */
+function useCustList(customer, kind) {
+  const [all] = useShieldStore(customerDataStore);
+  const cid = customer && customer.id;
+  return [(all && all[`${cid}:${kind}`]) || [], cid];
+}
+function saveCustRecord(cid, kind, rec, prefix) {
+  const list = custRecords(cid, kind);
+  if (rec.id) setCustRecords(cid, kind, list.map(x => x.id === rec.id ? rec : x));
+  else setCustRecords(cid, kind, [...list, { ...rec, id: prefix + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5) }]);
+}
+function delCustRecord(cid, kind, id) {
+  setCustRecords(cid, kind, custRecords(cid, kind).filter(x => x.id !== id));
+}
+
+/* ── Customer Sites ── */
+function CustomerSites({ customer, showToast }) {
+  const [sites, cid] = useCustList(customer, 'sites');
+  const [modal, setModal] = React.useState(null);
+  const fields = [
+    { key: 'name', label: 'Site name', required: true, placeholder: 'Main Office — 1450 Market St' },
+    { key: 'type', label: 'Type', type: 'select', options: ['Primary','Branch','Warehouse','Infrastructure','Remote'], default: 'Primary' },
+    { key: 'address', label: 'Address', placeholder: 'Street, City, State' },
+    { key: 'devices', label: 'Devices', type: 'number', default: 0 },
+    { key: 'status', label: 'Status', type: 'select', options: ['online','warning','offline'], default: 'online' },
+  ];
+  const save = (rec) => { saveCustRecord(cid, 'sites', { ...rec, devices: Number(rec.devices) || 0 }, 'st'); showToast(rec.id ? 'Site updated' : 'Site added'); setModal(null); };
+  const remove = (s) => shieldModal({ kind: 'confirm', title: 'Remove site', danger: true, message: `Remove ${s.name}?`, confirmLabel: 'Remove', onConfirm: () => { delCustRecord(cid, 'sites', s.id); showToast('Site removed'); } });
   return (
-    <div style={{ maxWidth: 1200 }}>
+    <div style={{ maxWidth: 1000 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-        <SectionHeader title={`Assets — ${customer.name}`} icon="⬡" count={customer.assets} />
-        <button onClick={() => showToast('New configuration')} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Asset</button>
+        <SectionHeader title="Sites / Locations" icon="map-pin" count={sites.length} />
+        <button onClick={() => setModal({ record: null })} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Site</button>
       </div>
-      <div style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 12 }}>Full IT Glue-class asset management available in the Assets module. Customer → Site → Device breadcrumb.</div>
-      <GlassPanel style={{ textAlign: 'center', padding: 24 }}>
-        <div style={{ fontSize: 28, fontWeight: 600 }}>{customer.assets}</div>
-        <div style={{ fontSize: 12, color: 'var(--text-low)' }}>configurations across {customer.sites} sites</div>
-      </GlassPanel>
+      {sites.length === 0 ? (
+        <GlassPanel style={{ textAlign: 'center', padding: 36 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>No sites yet</div>
+          <div style={{ fontSize: 12, color: 'var(--text-low)' }}>Add the locations where {customer.name} has equipment.</div>
+        </GlassPanel>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
+          {sites.map((s) => (
+            <GlassPanel key={s.id} style={{ cursor: 'pointer', borderLeft: `3px solid ${s.status==='online'?'var(--status-ok)':s.status==='offline'?'var(--status-critical)':'var(--status-warn)'}` }} onClick={() => setModal({ record: s })}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, alignItems: 'flex-start' }}>
+                <div style={{ fontSize: 14, fontWeight: 500 }}>{s.name}</div>
+                <button onClick={(e) => { e.stopPropagation(); remove(s); }} title="Remove" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 13, cursor: 'pointer' }}>✕</button>
+              </div>
+              <div style={{ display: 'flex', gap: 14, fontSize: 11, color: 'var(--text-low)', flexWrap: 'wrap' }}>
+                <span>{s.type}</span><span>{s.devices || 0} devices</span>{s.address && <span>{s.address}</span>}
+              </div>
+            </GlassPanel>
+          ))}
+        </div>
+      )}
+      {modal && <CustomerRecordModal title={`${modal.record ? 'Edit' : 'New'} Site · ${customer.name}`} fields={fields} record={modal.record} onSave={save} onClose={() => setModal(null)} />}
+    </div>
+  );
+}
+
+/* ── Customer Assets (per-customer devices/configurations) ── */
+function CustomerAssets({ customer, showToast }) {
+  const [assets, cid] = useCustList(customer, 'assets');
+  const [modal, setModal] = React.useState(null);
+  const fields = [
+    { key: 'name', label: 'Asset name', required: true, placeholder: 'Lobby NVR' },
+    { key: 'type', label: 'Type', type: 'select', options: ['NVR','Camera','Access Panel','Reader','Switch','Server','Alarm Panel','Sensor','Other'], default: 'Camera' },
+    { key: 'model', label: 'Model', placeholder: 'Hanwha XNR-6410' },
+    { key: 'serial', label: 'Serial #', placeholder: 'SN-…' },
+    { key: 'site', label: 'Site', placeholder: 'Main Office' },
+    { key: 'status', label: 'Status', type: 'select', options: ['online','warning','offline','retired'], default: 'online' },
+    { key: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Optional' },
+  ];
+  const save = (rec) => { saveCustRecord(cid, 'assets', rec, 'as'); showToast(rec.id ? 'Asset updated' : 'Asset added'); setModal(null); };
+  const remove = (a) => shieldModal({ kind: 'confirm', title: 'Delete asset', danger: true, message: `Delete "${a.name}"?`, confirmLabel: 'Delete', onConfirm: () => { delCustRecord(cid, 'assets', a.id); showToast('Deleted'); } });
+  return (
+    <div style={{ maxWidth: 1100 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+        <SectionHeader title={`Assets — ${customer.name}`} icon="⬡" count={assets.length} />
+        <button onClick={() => setModal({ record: null })} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Asset</button>
+      </div>
+      {assets.length === 0 ? (
+        <GlassPanel style={{ textAlign: 'center', padding: 36 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>No assets yet</div>
+          <div style={{ fontSize: 12, color: 'var(--text-low)' }}>Track {customer.name}'s installed devices — NVRs, cameras, panels, switches.</div>
+        </GlassPanel>
+      ) : (
+        <GlassPanel style={{ padding: 0 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead><tr>{['Name','Type','Model','Serial','Site','Status',''].map((h,i) => (
+              <th key={i} style={{ textAlign: 'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
+            ))}</tr></thead>
+            <tbody>{assets.map((a) => (
+              <tr key={a.id} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }} onClick={() => setModal({ record: a })}>{a.name}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{a.type}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{a.model || '—'}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 10.5, color: 'var(--text-low)' }}>{a.serial || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{a.site || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={a.status==='online'?'online':a.status==='offline'?'critical':a.status==='retired'?'info':'warning'} label={a.status} /></td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'right' }}>
+                  <button onClick={() => remove(a)} title="Delete" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 13, cursor: 'pointer' }}>✕</button>
+                </td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </GlassPanel>
+      )}
+      {modal && <CustomerRecordModal title={`${modal.record ? 'Edit' : 'New'} Asset · ${customer.name}`} fields={fields} record={modal.record} onSave={save} onClose={() => setModal(null)} />}
+    </div>
+  );
+}
+
+/* ── Invoices / Estimates for this customer (live from QuickBooks) ── */
+function CustomerFinanceDocs({ customer, kind, showToast }) {
+  const [rows, setRows] = React.useState(null);
+  React.useEffect(() => {
+    const q = window.__shieldQBO; if (!q) { setRows([]); return; }
+    const nameMatch = (r) => {
+      const n = (r.customer_name || '').toLowerCase();
+      return n === (customer.name || '').toLowerCase() || (customer.dba && n === customer.dba.toLowerCase());
+    };
+    const p = kind === 'invoices' ? q.invoices({ limit: 1000 }) : q.estimates(1000);
+    p.then(res => setRows(res && res.ok && res.data ? res.data.filter(nameMatch) : []));
+  }, [customer, kind]);
+  const money = (n) => '$' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmt = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+  if (rows === null) return <GlassPanel style={{ padding: 24, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>Loading {kind}…</GlassPanel>;
+  const total = rows.reduce((s, r) => s + (Number(r.total) || 0), 0);
+  return (
+    <div style={{ maxWidth: 1100 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, alignItems: 'center' }}>
+        <SectionHeader title={`${kind === 'invoices' ? 'Invoices' : 'Estimates'} — ${customer.name}`} icon="reports" count={rows.length} />
+        <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-mid)' }}>{money(total)} total</span>
+      </div>
+      {rows.length === 0 ? (
+        <GlassPanel style={{ textAlign: 'center', padding: 36 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>No {kind} for {customer.name}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-low)' }}>{window.__shieldQBO ? `${kind === 'invoices' ? 'Invoices' : 'Estimates'} sync in from QuickBooks and appear here.` : 'Connect QuickBooks to see live records.'}</div>
+        </GlassPanel>
+      ) : (
+        <GlassPanel style={{ padding: 0 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead><tr>{[(kind==='invoices'?'Invoice':'Estimate'),'Date','Amount','Status'].map((h,i) => (
+              <th key={i} style={{ textAlign: i===2?'right':'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
+            ))}</tr></thead>
+            <tbody>{rows.map((r) => (
+              <tr key={r.qbo_id}>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{r.doc_number || r.qbo_id}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{fmt(r.txn_date)}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{money(r.total)}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={r.status==='paid'?'online':r.status==='overdue'?'critical':r.status==='accepted'?'online':'info'} label={r.status || '—'} /></td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </GlassPanel>
+      )}
+    </div>
+  );
+}
+
+/* ── Proposals for this customer (from the proposal store) ── */
+function CustomerProposalsTab({ customer, showToast }) {
+  const [all] = useShieldStore(proposalStore);
+  const rows = (all || []).filter(p => (p.customer || '').toLowerCase() === (customer.name || '').toLowerCase());
+  return (
+    <div style={{ maxWidth: 1000 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+        <SectionHeader title={`Proposals — ${customer.name}`} icon="note" count={rows.length} />
+        <button onClick={() => (window.navTo || navTo)('proposals')} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Proposal</button>
+      </div>
+      {rows.length === 0 ? (
+        <GlassPanel style={{ textAlign: 'center', padding: 36 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>No proposals for {customer.name}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-low)' }}>Create one in the Proposals studio with {customer.name} selected and it shows up here.</div>
+        </GlassPanel>
+      ) : (
+        <GlassPanel style={{ padding: 0 }}>
+          {rows.map((p) => (
+            <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid rgba(63,169,245,0.04)', cursor: 'pointer' }}
+              onClick={() => (window.navTo || navTo)('proposals')}
+              onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 500 }}>{p.title || 'Proposal'}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.status || 'draft'}{typeof proposalValue === 'function' ? ` · ${'$' + (proposalValue(p) || 0).toLocaleString()}` : ''}</div>
+              </div>
+              <StatusBadge status={p.status==='accepted'?'online':p.status==='sent'?'info':'warning'} label={p.status || 'draft'} />
+            </div>
+          ))}
+        </GlassPanel>
+      )}
     </div>
   );
 }
@@ -529,123 +717,180 @@ function CustomerFlexAssets({ customer, showToast }) {
 }
 
 /* ── Passwords Vault ── */
-function CustomerPasswords({ showToast }) {
+function CustomerPasswords({ customer, showToast }) {
   const [revealed, setRevealed] = React.useState({});
-  const [createModal, setCreateModal] = React.useState(false);
-  const creds = [
-    { id: 1, name: 'NVR Admin', user: 'admin', pass: 'X#k9$mP2!qR7', url: 'https://192.168.1.100', cat: 'NVR', device: 'Hanwha XNR-6410', expiry: 'Aug 2026', lastRotated: 'Feb 2026' },
-    { id: 2, name: 'Access Panel', user: 'installer', pass: 'ShldTch@2026!', url: 'https://192.168.1.110', cat: 'Access Control', device: 'HID VertX V1000', expiry: null, lastRotated: 'Mar 2026' },
-    { id: 3, name: 'Monitoring Portal', user: 'shieldtech_metro', pass: 'Tr!@ngulm#8842', url: 'https://monitoring.triangulum.com', cat: 'Monitoring', device: null, expiry: null, lastRotated: 'Jan 2026' },
-    { id: 4, name: 'Camera Wi-Fi', user: '', pass: 'Metro-WiFi-2026', url: '', cat: 'Network', device: null, expiry: null, lastRotated: 'Apr 2026' },
+  const [creds, cid] = useCustList(customer, 'passwords');
+  const [modal, setModal] = React.useState(null);
+  const fields = [
+    { key: 'name', label: 'Name', required: true, placeholder: 'NVR Admin' },
+    { key: 'user', label: 'Username', placeholder: 'admin' },
+    { key: 'pass', label: 'Password', type: 'password', required: true, placeholder: '••••••••' },
+    { key: 'url', label: 'URL / Host', placeholder: 'https://192.168.1.100' },
+    { key: 'cat', label: 'Category', type: 'select', options: ['NVR','Access Control','Monitoring','Network','Alarm','Other'], default: 'NVR' },
+    { key: 'device', label: 'Linked device', placeholder: 'Hanwha XNR-6410' },
+    { key: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Optional' },
   ];
+  const save = (rec) => { saveCustRecord(cid, 'passwords', { ...rec, lastRotated: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) }, 'pw'); showToast(rec.id ? 'Credential updated' : 'Credential added'); setModal(null); };
+  const remove = (cr) => shieldModal({ kind: 'confirm', title: 'Delete credential', danger: true, message: `Delete "${cr.name}"?`, confirmLabel: 'Delete', onConfirm: () => { delCustRecord(cid, 'passwords', cr.id); showToast('Deleted'); } });
+  const genPass = () => {
+    const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    return Array.from(b).map(x => a[x % a.length]).join('');
+  };
   return (
-    <div style={{ maxWidth: 1000 }}>
+    <div style={{ maxWidth: 1050 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
         <SectionHeader title="Passwords & Credentials" icon="credential" count={creds.length} />
-        <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => showToast('Password generated: kQ8#xP2$mT!nR')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Generate</button>
-          <button onClick={() => setCreateModal(true)} style={{ padding: '5px 12px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add</button>
-        </div>
+        <button onClick={() => setModal({ record: null })} style={{ padding: '5px 12px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add</button>
       </div>
-      <GlassPanel style={{ padding: 0 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr>{['Name','Username','Password','Category','Linked Device','Last Rotated',''].map((h,i) => (
-            <th key={i} style={{ textAlign: 'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
-          ))}</tr></thead>
-          <tbody>{creds.map(cr => (
-            <tr key={cr.id} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }}>{cr.name}</td>
-              <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{cr.user || '—'}</td>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span className="mono" style={{ fontSize: 11, color: revealed[cr.id] ? 'var(--text-high)' : 'var(--text-low)', letterSpacing: revealed[cr.id] ? '0' : '0.1em' }}>
-                    {revealed[cr.id] ? cr.pass : '••••••••••••'}
-                  </span>
-                  <button onClick={() => { setRevealed(p => ({...p, [cr.id]: !p[cr.id]})); if (!revealed[cr.id]) showToast('Reveal audit-logged'); }} style={{ padding: '2px 6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{revealed[cr.id]?'Hide':'Reveal'}</button>
-                  <button onClick={() => { navigator.clipboard?.writeText?.(cr.pass); showToast('Copied — auto-clears in 30s'); }} style={{ padding: '2px 6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy</button>
-                </div>
-              </td>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{cr.cat}</td>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: cr.device?'var(--brand)':'var(--text-low)' }}>{cr.device || '—'}</td>
-              <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{cr.lastRotated}</td>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', display: 'flex', gap: 3 }}>
-                <button onClick={() => showToast('Revision history')} style={{ padding: '2px 6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>History</button>
-                <button onClick={() => showToast('Access log')} style={{ padding: '2px 6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Audit</button>
-              </td>
-            </tr>
-          ))}</tbody>
-        </table>
-      </GlassPanel>
-      {createModal && <CreatePasswordModal onClose={() => setCreateModal(false)} showToast={showToast} />}
+      {creds.length === 0 ? (
+        <GlassPanel style={{ textAlign: 'center', padding: 36 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>No credentials yet</div>
+          <div style={{ fontSize: 12, color: 'var(--text-low)' }}>Store {customer.name}'s device logins, portals, and Wi-Fi keys here.</div>
+        </GlassPanel>
+      ) : (
+        <GlassPanel style={{ padding: 0 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead><tr>{['Name','Username','Password','Category','Linked Device','Last Rotated',''].map((h,i) => (
+              <th key={i} style={{ textAlign: 'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
+            ))}</tr></thead>
+            <tbody>{creds.map(cr => (
+              <tr key={cr.id} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500, cursor: 'pointer' }} onClick={() => setModal({ record: cr })}>{cr.name}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{cr.user || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span className="mono" style={{ fontSize: 11, color: revealed[cr.id] ? 'var(--text-high)' : 'var(--text-low)', letterSpacing: revealed[cr.id] ? '0' : '0.1em' }}>{revealed[cr.id] ? cr.pass : '••••••••••••'}</span>
+                    <button onClick={() => setRevealed(p => ({...p, [cr.id]: !p[cr.id]}))} style={{ padding: '2px 6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{revealed[cr.id]?'Hide':'Reveal'}</button>
+                    <button onClick={() => { navigator.clipboard?.writeText?.(cr.pass); showToast('Copied'); }} style={{ padding: '2px 6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy</button>
+                  </div>
+                </td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{cr.cat}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: cr.device?'var(--brand)':'var(--text-low)' }}>{cr.device || '—'}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{cr.lastRotated || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'right' }}>
+                  <button onClick={() => setModal({ record: cr })} style={{ padding: '2px 6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)', marginRight: 4 }}>Edit</button>
+                  <button onClick={() => remove(cr)} title="Delete" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 13, cursor: 'pointer' }}>✕</button>
+                </td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </GlassPanel>
+      )}
+      {modal && <CustomerRecordModal title={`${modal.record ? 'Edit' : 'New'} Credential · ${customer.name}`}
+        fields={fields.map(fl => fl.key === 'pass' && !modal.record ? { ...fl, default: genPass() } : fl)}
+        record={modal.record} onSave={save} onClose={() => setModal(null)} />}
     </div>
   );
 }
 
 /* ── Documents ── */
-function CustomerDocs({ showToast }) {
-  const [createModal, setCreateModal] = React.useState(false);
-  const docs = [
-    { name: 'Network Diagram — Main Office', type: 'Diagram', updated: 'Jun 2, 2026', version: 'v3', author: 'Mike Reyes' },
-    { name: 'Camera Schedule & Locations', type: 'As-Built', updated: 'May 15, 2026', version: 'v2', author: 'Kevin White' },
-    { name: 'Alarm Panel Programming Guide', type: 'Runbook', updated: 'Apr 20, 2026', version: 'v1', author: 'Jessica Liu' },
+function CustomerDocs({ customer, showToast }) {
+  const [docs, cid] = useCustList(customer, 'documents');
+  const [modal, setModal] = React.useState(null);
+  const fileRef = React.useRef(null);
+  const fields = [
+    { key: 'name', label: 'Document name', required: true, placeholder: 'Network Diagram — Main Office' },
+    { key: 'type', label: 'Type', type: 'select', options: ['Diagram','As-Built','Runbook','Contract','Warranty','Permit','Photo','Other'], default: 'Runbook' },
+    { key: 'link', label: 'Link / URL', placeholder: 'https://… (or upload below)' },
+    { key: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Optional' },
   ];
+  const save = (rec) => { saveCustRecord(cid, 'documents', { ...rec, updated: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }, 'doc'); showToast(rec.id ? 'Document updated' : 'Document added'); setModal(null); };
+  const remove = (d) => shieldModal({ kind: 'confirm', title: 'Delete document', danger: true, message: `Delete "${d.name}"?`, confirmLabel: 'Delete', onConfirm: () => { delCustRecord(cid, 'documents', d.id); showToast('Deleted'); } });
+  const onFile = async (e) => {
+    const file = e.target.files && e.target.files[0]; if (!file) return;
+    let link = '';
+    if (window.__shieldStorage && window.__shieldStorage.uploadFile) {
+      const r = await window.__shieldStorage.uploadFile(file, { folder: `customers/${cid}` }).catch(() => null);
+      link = (r && (r.url || r.publicUrl)) || '';
+    }
+    if (!link) link = URL.createObjectURL(file);
+    saveCustRecord(cid, 'documents', { name: file.name, type: 'Other', link, updated: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }, 'doc');
+    showToast(`Uploaded ${file.name}`); e.target.value = '';
+  };
   return (
     <div style={{ maxWidth: 1000 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
         <SectionHeader title="Documents & Runbooks" icon="note" count={docs.length} />
-        <button onClick={() => setCreateModal(true)} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Document</button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <input ref={fileRef} type="file" style={{ display: 'none' }} onChange={onFile} />
+          <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Upload File</button>
+          <button onClick={() => setModal({ record: null })} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Document</button>
+        </div>
       </div>
-      <GlassPanel style={{ padding: 0 }}>
-        {docs.map((d,i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid rgba(63,169,245,0.04)', cursor: 'pointer' }}
-            onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'}
-            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-            <span style={{ fontSize: 20 }}>▤</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 500 }}>{d.name}</div>
-              <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{d.type} · {d.version} · Updated {d.updated} by {d.author}</div>
+      {docs.length === 0 ? (
+        <GlassPanel style={{ textAlign: 'center', padding: 36 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>No documents yet</div>
+          <div style={{ fontSize: 12, color: 'var(--text-low)' }}>Upload or link diagrams, as-builts, contracts, and runbooks for {customer.name}.</div>
+        </GlassPanel>
+      ) : (
+        <GlassPanel style={{ padding: 0 }}>
+          {docs.map((d) => (
+            <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}
+              onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              <span style={{ fontSize: 20 }}>▤</span>
+              <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => setModal({ record: d })}>
+                <div style={{ fontSize: 13, fontWeight: 500 }}>{d.name}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{d.type}{d.updated ? ` · Updated ${d.updated}` : ''}</div>
+              </div>
+              {d.link && <a href={d.link} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{ padding: '3px 8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, textDecoration: 'none', fontFamily: 'var(--font-body)' }}>Open</a>}
+              <button onClick={() => remove(d)} title="Delete" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 13, cursor: 'pointer' }}>✕</button>
             </div>
-            <button onClick={() => showToast('Version history')} style={{ padding: '3px 8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Versions</button>
-          </div>
-        ))}
-      </GlassPanel>
-      {createModal && <CreateDocumentModal onClose={() => setCreateModal(false)} showToast={showToast} />}
+          ))}
+        </GlassPanel>
+      )}
+      {modal && <CustomerRecordModal title={`${modal.record ? 'Edit' : 'New'} Document · ${customer.name}`} fields={fields} record={modal.record} onSave={save} onClose={() => setModal(null)} />}
     </div>
   );
 }
 
 /* ── Networks ── */
-function CustomerNetworks({ showToast }) {
-  const [createModal, setCreateModal] = React.useState(false);
-  const networks = [
-    { subnet: '192.168.1.0/24', vlan: 10, name: 'Security VLAN', gateway: '192.168.1.1', assignments: 28, site: 'Main Office' },
-    { subnet: '192.168.2.0/24', vlan: 20, name: 'Camera VLAN', gateway: '192.168.2.1', assignments: 16, site: 'Main Office' },
-    { subnet: '10.0.1.0/24', vlan: 100, name: 'Management', gateway: '10.0.1.1', assignments: 4, site: 'Data Center' },
+function CustomerNetworks({ customer, showToast }) {
+  const [networks, cid] = useCustList(customer, 'networks');
+  const [modal, setModal] = React.useState(null);
+  const fields = [
+    { key: 'subnet', label: 'Subnet', required: true, placeholder: '192.168.1.0/24' },
+    { key: 'vlan', label: 'VLAN', placeholder: '10' },
+    { key: 'name', label: 'Name', placeholder: 'Security VLAN' },
+    { key: 'gateway', label: 'Gateway', placeholder: '192.168.1.1' },
+    { key: 'site', label: 'Site', placeholder: 'Main Office' },
+    { key: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Optional' },
   ];
+  const save = (rec) => { saveCustRecord(cid, 'networks', rec, 'net'); showToast(rec.id ? 'Network updated' : 'Network added'); setModal(null); };
+  const remove = (n) => shieldModal({ kind: 'confirm', title: 'Delete network', danger: true, message: `Delete ${n.subnet}?`, confirmLabel: 'Delete', onConfirm: () => { delCustRecord(cid, 'networks', n.id); showToast('Deleted'); } });
   return (
     <div style={{ maxWidth: 1000 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
         <SectionHeader title="Networks & IP Addresses" icon="⊚" count={networks.length} />
-        <button onClick={() => setCreateModal(true)} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Network</button>
+        <button onClick={() => setModal({ record: null })} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Network</button>
       </div>
-      <GlassPanel style={{ padding: 0 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr>{['Subnet','VLAN','Name','Gateway','Assignments','Site'].map((h,i) => (
-            <th key={i} style={{ textAlign: 'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
-          ))}</tr></thead>
-          <tbody>{networks.map((n,i) => (
-            <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-              <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{n.subnet}</td>
-              <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11 }}>{n.vlan}</td>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }}>{n.name}</td>
-              <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{n.gateway}</td>
-              <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11 }}>{n.assignments} IPs</td>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{n.site}</td>
-            </tr>
-          ))}</tbody>
-        </table>
-      </GlassPanel>
-      {createModal && <CreateNetworkModal onClose={() => setCreateModal(false)} showToast={showToast} />}
+      {networks.length === 0 ? (
+        <GlassPanel style={{ textAlign: 'center', padding: 36 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>No networks yet</div>
+          <div style={{ fontSize: 12, color: 'var(--text-low)' }}>Record {customer.name}'s subnets, VLANs, and gateways.</div>
+        </GlassPanel>
+      ) : (
+        <GlassPanel style={{ padding: 0 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead><tr>{['Subnet','VLAN','Name','Gateway','Site',''].map((h,i) => (
+              <th key={i} style={{ textAlign: 'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
+            ))}</tr></thead>
+            <tbody>{networks.map((n) => (
+              <tr key={n.id} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }} onClick={() => setModal({ record: n })}>{n.subnet}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11 }}>{n.vlan || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }}>{n.name || '—'}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{n.gateway || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{n.site || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'right' }}>
+                  <button onClick={() => remove(n)} title="Delete" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 13, cursor: 'pointer' }}>✕</button>
+                </td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </GlassPanel>
+      )}
+      {modal && <CustomerRecordModal title={`${modal.record ? 'Edit' : 'New'} Network · ${customer.name}`} fields={fields} record={modal.record} onSave={save} onClose={() => setModal(null)} />}
     </div>
   );
 }
