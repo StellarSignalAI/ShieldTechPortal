@@ -250,33 +250,116 @@ const PROJECTS = [];
 function MProjects({ onNav }) {
   const [filter, setFilter] = React.useState('All');
   const [openId, setOpenId] = React.useState(null);
+  const [createOpen, setCreateOpen] = React.useState(false);
+  const [invoiceFor, setInvoiceFor] = React.useState(null);
+  const [storeP] = useShieldStore(projectStore);
   const fmap = { Planning:'planning', Active:'in-progress', Review:'review', Done:'complete' };
-  const list = filter === 'All' ? PROJECTS : PROJECTS.filter(p => p.stage === fmap[filter]);
-  const active = PROJECTS.filter(p => p.stage !== 'complete').length;
-  const value = PROJECTS.filter(p => p.stage !== 'complete').reduce((a, p) => a + p.value, 0);
+  // Real projects created on any surface, mapped to the mobile card shape;
+  // demo board only until the first real project exists.
+  const mapP = (p) => ({
+    id: p.number, name: p.name, customer: p.customer || '—', value: Number(p.estimatedValue) || 0,
+    stage: ['planning','in-progress','review','complete'].includes(p.status) ? p.status : 'planning',
+    progress: p.status === 'complete' ? 100 : p.status === 'review' ? 90 : p.status === 'in-progress' ? 40 : 5,
+    pm: p.contact || '—', start: '', end: '', techs: [], milestones: [], _rec: p,
+  });
+  const ALL = (storeP && storeP.length) ? storeP.map(mapP) : PROJECTS;
+  const list = filter === 'All' ? ALL : ALL.filter(p => p.stage === fmap[filter]);
+  const active = ALL.filter(p => p.stage !== 'complete').length;
+  const value = ALL.filter(p => p.stage !== 'complete').reduce((a, p) => a + p.value, 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <OpsKpis items={[['ACTIVE', active, 'var(--brand)'], ['PIPELINE', `$${(value / 1000).toFixed(0)}K`, 'var(--text-high)'], ['COMPLETE', PROJECTS.filter(p => p.stage === 'complete').length, 'var(--status-ok)']]} />
+      <OpsKpis items={[['ACTIVE', active, 'var(--brand)'], ['PIPELINE', `$${(value / 1000).toFixed(0)}K`, 'var(--text-high)'], ['COMPLETE', ALL.filter(p => p.stage === 'complete').length, 'var(--status-ok)']]} />
+      <button onClick={() => setCreateOpen(true)} style={{ width: '100%', padding: '12px', borderRadius: 11, background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', color: '#fff', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer' }}>+ New Project</button>
       <MSegment options={['All', 'Planning', 'Active', 'Review', 'Done']} value={filter} onChange={setFilter} />
       {list.map(p => (
-        <div key={p.id} onClick={() => setOpenId(p.id)} className="glass" style={{ padding: '12px 13px', borderRadius: 12, cursor: 'pointer', borderLeft: `3px solid ${PRJ_STAGE[p.stage]}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-            <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.id}</span>
-            <MBadge color={PRJ_STAGE[p.stage]}>{PRJ_STAGE_LABEL[p.stage]}</MBadge>
-            <span className="mono" style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 700, color: 'var(--text-high)' }}>${(p.value / 1000).toFixed(0)}K</span>
+        <div key={p.id} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${PRJ_STAGE[p.stage]}` }}>
+          <div onClick={() => setOpenId(p.id)} style={{ cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+              <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.id}</span>
+              <MBadge color={PRJ_STAGE[p.stage]}>{PRJ_STAGE_LABEL[p.stage]}</MBadge>
+              <span className="mono" style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 700, color: 'var(--text-high)' }}>${(p.value / 1000).toFixed(0)}K</span>
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)', marginBottom: 3 }}>{p.name}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: 7 }}>{p.customer} · {p.pm}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ flex: 1 }}><MBar pct={p.progress} color={PRJ_STAGE[p.stage]} /></div>
+              <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{p.progress}%</span>
+            </div>
           </div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)', marginBottom: 3 }}>{p.name}</div>
-          <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: 7 }}>{p.pm} · {p.start}–{p.end} · {p.techs.map(t => t).join(',') || 'unstaffed'}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ flex: 1 }}><MBar pct={p.progress} color={PRJ_STAGE[p.stage]} /></div>
-            <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{p.progress}%</span>
-          </div>
+          <button onClick={() => setInvoiceFor(p)} style={{ marginTop: 9, width: '100%', padding: '8px', borderRadius: 9, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer' }}>+ Create Invoice</button>
         </div>
       ))}
       {list.length === 0 && <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>No projects yet.</div>}
       {openId && <MProjectDetail id={openId} onClose={() => setOpenId(null)} />}
+      {createOpen && <MProjectCreate onClose={() => setCreateOpen(false)} />}
+      {invoiceFor && <MQuickInvoice project={invoiceFor} onClose={() => setInvoiceFor(null)} />}
     </div>
+  );
+}
+
+/* Create a project from mobile — persists to the shared project store. */
+function MProjectCreate({ onClose }) {
+  const [f, setF] = React.useState({ name: '', customer: '', type: 'Install', estimatedValue: '' });
+  const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
+  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
+  const lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
+  const save = () => {
+    if (!f.name.trim()) return;
+    const rec = addProject(f);
+    if (window.shieldToast) window.shieldToast(`Project ${rec.number} created`, 'ok');
+    onClose();
+  };
+  return (
+    <MSheet title="New Project" onClose={onClose}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div><span style={lbl}>Project name</span><input value={f.name} onChange={set('name')} placeholder="e.g. Metro Bank — CCTV Upgrade" style={inp} /></div>
+        <div><span style={lbl}>Customer</span><input value={f.customer} onChange={set('customer')} placeholder="Customer name" style={inp} /></div>
+        <div><span style={lbl}>Type</span>
+          <select value={f.type} onChange={set('type')} style={{ ...inp, cursor: 'pointer' }}>
+            {['Install','Service','Upgrade','Maintenance','Design'].map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
+        </div>
+        <div><span style={lbl}>Estimated value ($)</span><input type="number" value={f.estimatedValue} onChange={set('estimatedValue')} placeholder="0" style={inp} /></div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '13px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-mid)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
+          <button onClick={save} disabled={!f.name.trim()} style={{ flex: 2, padding: '13px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 14, fontWeight: 600, cursor: f.name.trim() ? 'pointer' : 'not-allowed', opacity: f.name.trim() ? 1 : 0.5, fontFamily: 'var(--font-body)' }}>Create Project</button>
+        </div>
+      </div>
+    </MSheet>
+  );
+}
+
+/* Create an invoice from a project on mobile — persists to the shared invoice
+   store so it reflects in Finance, on the customer, and on desktop. */
+function MQuickInvoice({ project, onClose }) {
+  const [f, setF] = React.useState({ amount: project.value ? String(project.value) : '', desc: project.name || '', due: '' });
+  const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
+  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
+  const lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
+  const save = () => {
+    const amt = Number(f.amount) || 0;
+    const rec = addInvoice({
+      customer_name: project.customer, total: amt, due_date: f.due || null, status: 'open',
+      lines: f.desc ? [{ desc: f.desc, qty: 1, rate: amt }] : null,
+      project_id: project._rec && project._rec.id,
+    });
+    if (window.shieldToast) window.shieldToast(`Invoice ${rec.doc_number} created for ${project.customer}`, 'ok');
+    onClose();
+  };
+  return (
+    <MSheet title="Create Invoice" onClose={onClose}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>{project.name} · <span style={{ color: 'var(--text-low)' }}>{project.customer}</span></div>
+        <div><span style={lbl}>Description</span><input value={f.desc} onChange={set('desc')} placeholder="Work / line item" style={inp} /></div>
+        <div><span style={lbl}>Amount ($)</span><input type="number" value={f.amount} onChange={set('amount')} placeholder="0.00" style={inp} /></div>
+        <div><span style={lbl}>Due date</span><input type="date" value={f.due} onChange={set('due')} style={inp} /></div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '13px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-mid)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
+          <button onClick={save} style={{ flex: 2, padding: '13px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Invoice</button>
+        </div>
+      </div>
+    </MSheet>
   );
 }
 function MProjectDetail({ id, onClose }) {

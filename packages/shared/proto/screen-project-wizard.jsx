@@ -33,8 +33,11 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
   };
 
   const handleCreate = () => {
-    if (showToast) showToast(`Project "${project.name}" created — navigating to Dispatch`);
-    if (onComplete) onComplete(project);
+    // Persist so the project shows up everywhere (Projects list, customer hub,
+    // mobile) and can spawn an invoice later.
+    const rec = addProject({ ...project, customer: project.customer || customer || '' });
+    if (showToast) showToast(`Project "${rec.name}" created (${rec.number})`);
+    if (onComplete) onComplete(rec);
     if (onClose) onClose();
   };
 

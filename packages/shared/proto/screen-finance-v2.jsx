@@ -366,11 +366,18 @@ function FinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, setS
         rate: (l.SalesItemLineDetail && l.SalesItemLineDetail.UnitPrice) || Number(l.Amount) || 0,
       })) : [],
   });
-  const [invoices, setInvoices] = React.useState(DEMO_INVOICES);
+  // Merge portal-created invoices (sync store) with QuickBooks so anything
+  // created in the portal reflects here immediately, and vice-versa.
+  const [localInv] = useShieldStore(invoiceStore);
+  const [qboInv, setQboInv] = React.useState([]);
   React.useEffect(() => {
     const q = window.__shieldQBO; if (!q) return;
-    q.invoices({ limit: 500 }).then(r => { if (r && r.ok && r.data && r.data.length) setInvoices(r.data.map(mapQbo)); });
+    q.invoices({ limit: 500 }).then(r => setQboInv(r && r.ok && r.data ? r.data : []));
   }, []);
+  const invoices = React.useMemo(() => {
+    const merged = [...(localInv || []), ...qboInv];
+    return merged.length ? merged.map(mapQbo) : DEMO_INVOICES;
+  }, [localInv, qboInv]);
 
   const filtered = invFilter === 'All' ? invoices : invoices.filter(i => i.status === invFilter.toLowerCase());
 
