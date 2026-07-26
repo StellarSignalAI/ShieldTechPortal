@@ -564,12 +564,12 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [sendOpen, setSendOpen] = React.useState(false);
   const [itemPickerOpen, setItemPickerOpen] = React.useState(null);
-  const [customer, setCustomer] = React.useState('');
-  const [customerEmail, setCustomerEmail] = React.useState('');
+  const [customer, setCustomer] = React.useState(modal.customer || '');
+  const [customerEmail, setCustomerEmail] = React.useState(modal.customerEmail || '');
   const [terms, setTerms] = React.useState('net-30');
   const [dueDate, setDueDate] = React.useState('');
   const [quoteRef, setQuoteRef] = React.useState('');
-  const [projectName, setProjectName] = React.useState('');
+  const [projectName, setProjectName] = React.useState(modal.projectName || '');
   const [poNumber, setPoNumber] = React.useState('');
   const [invoiceNum, setInvoiceNum] = React.useState(isEstimate ? 'EST-1001' : 'INV-2870');
   const [memo, setMemo] = React.useState('');
@@ -617,6 +617,20 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
   const tax = taxable * (taxRate / 100);
   const total = taxable + tax;
   const depositAmt = depositEnabled ? total * (depositPct / 100) : 0;
+
+  /* Persist to the shared invoice/estimate store so it reflects in the Finance
+     suite, on the customer, and on mobile — both ways. */
+  const persistDoc = (status) => {
+    const fn = isEstimate ? addEstimate : addInvoice;
+    return fn({
+      doc_number: invoiceNum, customer_name: customer,
+      txn_date: new Date().toISOString().slice(0, 10), due_date: dueDate || null,
+      total, status,
+      lines: lines.filter(l => l.desc || l.rate).map(l => ({ desc: l.desc, qty: Number(l.qty) || 1, rate: Number(l.rate) || 0 })),
+      project_id: (modal && modal.projectId) || null,
+      customer_qbo_id: (modal && modal.customerQboId) || null,
+    });
+  };
 
   /* Customer list for selector */
   const customers = [
@@ -876,7 +890,7 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
             {/* ─── FOOTER ACTIONS ─── */}
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', borderTop: '1px solid var(--border-subtle)', paddingTop: 14 }}>
               <button onClick={() => setModal(null)} style={btnSecondary}>Cancel</button>
-              <button onClick={() => { setModal(null); showToast(`${isEstimate ? 'Estimate' : 'Invoice'} saved as draft`); }} style={{ ...btnSecondary, color: 'var(--brand)', borderColor: 'var(--brand)' }}>Save Draft</button>
+              <button onClick={() => { persistDoc('draft'); setModal(null); showToast(`${isEstimate ? 'Estimate' : 'Invoice'} ${invoiceNum} saved as draft`); }} style={{ ...btnSecondary, color: 'var(--brand)', borderColor: 'var(--brand)' }}>Save Draft</button>
               <button onClick={() => setSendOpen(true)} style={{ ...btnPrimary, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span>↗</span> Send {isEstimate ? 'Estimate' : 'Invoice'}
               </button>
@@ -995,7 +1009,7 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
           newEmail={newEmail} setNewEmail={setNewEmail}
           customerEmail={customerEmail} attachPdf={attachPdf} includePayLink={includePayLink}
           onClose={() => setSendOpen(false)}
-          onSend={() => { setSendOpen(false); setModal(null); showToast(`${isEstimate ? 'Estimate' : 'Invoice'} ${invoiceNum} sent to ${customer}`); }}
+          onSend={() => { persistDoc(isEstimate ? 'pending' : 'open'); setSendOpen(false); setModal(null); showToast(`${isEstimate ? 'Estimate' : 'Invoice'} ${invoiceNum} sent to ${customer}`); }}
           showToast={showToast}
         />}
       </div>

@@ -20,11 +20,16 @@ function FinanceEstimates({ setModal, showToast }) {
     date: fmt(r.txn_date),
     expires: fmt(r.expiration_date),
   });
-  const [estimates, setEstimates] = React.useState(DEMO_ESTIMATES);
+  const [localEst] = useShieldStore(estimateStore);
+  const [qboEst, setQboEst] = React.useState([]);
   React.useEffect(() => {
     const q = window.__shieldQBO; if (!q) return;
-    q.estimates(500).then(r => { if (r && r.ok && r.data && r.data.length) setEstimates(r.data.map(mapEst)); });
+    q.estimates(500).then(r => setQboEst(r && r.ok && r.data ? r.data : []));
   }, []);
+  const estimates = React.useMemo(() => {
+    const merged = [...(localEst || []), ...qboEst];
+    return merged.length ? merged.map(mapEst) : DEMO_ESTIMATES;
+  }, [localEst, qboEst]);
   return (
     <div style={{ maxWidth: 1200 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>

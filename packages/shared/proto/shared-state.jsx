@@ -291,6 +291,54 @@ function proposalValue(blocks) {
 }
 const proposalStore = createShieldStore('proposals', []);
 
+/* ── Projects, Invoices, Estimates ──
+   Portal-created records, persisted + synced across desktop/mobile. Invoices &
+   estimates share the QuickBooks row shape so they MERGE cleanly with the
+   qbo_* data everywhere they're shown (Finance suite, customer tabs, mobile).
+   That's what makes creation reflect "both ways". */
+const projectStore = createShieldStore('projects', []);
+const invoiceStore = createShieldStore('invoices', []);
+const estimateStore = createShieldStore('estimates', []);
+
+function buildProject(form) {
+  const list = projectStore.get();
+  const seq = list.reduce((m, p) => Math.max(m, parseInt(String(p.number || '').replace(/\D/g, ''), 10) || 0), 1000) + 1;
+  return {
+    id: 'prj-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    number: 'PRJ-' + seq, name: (form.name || 'New Project').trim(),
+    customer: form.customer || '', type: form.type || 'Install',
+    status: form.status || 'planning', siteAddr: form.siteAddr || '',
+    contact: form.contact || '', phone: form.phone || '', email: form.email || '',
+    estimatedValue: Number(form.estimatedValue) || 0, timeline: form.timeline || '',
+    priority: form.priority || 'normal', notes: form.notes || '',
+    createdAt: Date.now(), source: form.source || 'portal',
+  };
+}
+function addProject(form) { const rec = buildProject(form); projectStore.set(l => [rec, ...l]); return rec; }
+
+/* Portal invoice/estimate in the qbo_* row shape so merges are clean. */
+function buildDoc(kind, form) {
+  const store = kind === 'estimate' ? estimateStore : invoiceStore;
+  const prefix = kind === 'estimate' ? 'EST' : 'INV';
+  const seq = store.get().reduce((m, d) => Math.max(m, parseInt(String(d.doc_number || '').replace(/\D/g, ''), 10) || 0), 1000) + 1;
+  const total = Number(form.total) || (form.lines || []).reduce((s, li) => s + (Number(li.qty ?? li.Qty ?? 1) * Number(li.rate ?? li.UnitPrice ?? 0)), 0);
+  return {
+    qbo_id: 'local-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    doc_number: form.doc_number || `${prefix}-${seq}`,
+    customer_qbo_id: form.customer_qbo_id || null, customer_name: form.customer_name || form.customer || 'Customer',
+    txn_date: form.txn_date || new Date().toISOString().slice(0, 10),
+    due_date: form.due_date || null, expiration_date: form.expiration_date || null,
+    total, balance: kind === 'estimate' ? undefined : (form.balance != null ? Number(form.balance) : total),
+    status: form.status || (kind === 'estimate' ? 'pending' : 'open'),
+    lines: form.lines || null, project_id: form.project_id || null, source: 'portal',
+  };
+}
+function addInvoice(form) { const d = buildDoc('invoice', form); invoiceStore.set(l => [d, ...l]); return d; }
+function addEstimate(form) { const d = buildDoc('estimate', form); estimateStore.set(l => [d, ...l]); return d; }
+/* Portal-created rows to merge ahead of the QBO rows (newest first). */
+function localInvoiceRows() { return invoiceStore.get() || []; }
+function localEstimateRows() { return estimateStore.get() || []; }
+
 /* ── Site Survey Report Store ── (real, editable, persistent → syncs) */
 const SURVEY_BOM_SEED = [
   { sku:'P3245-V',  desc:'Axis P3245-V Indoor Dome',        qty:8,  unit:285,  hrs:1.5 },
@@ -381,6 +429,9 @@ Object.assign(window, {
   customerStore, subCustomerStore, buildCustomer,
   contactsStore, customerContacts, setCustomerContacts,
   customerDataStore, custRecords, setCustRecords,
+  projectStore, invoiceStore, estimateStore,
+  buildProject, addProject, buildDoc, addInvoice, addEstimate,
+  localInvoiceRows, localEstimateRows,
   mobileTabsStore, M_ALL_TAB, approvalStore,
   proposalStore, defaultProposalBlocks, proposalValue,
   surveyStore, surveyTotals, SURVEY_RATE, SURVEY_BOM_SEED, studioInboxStore,

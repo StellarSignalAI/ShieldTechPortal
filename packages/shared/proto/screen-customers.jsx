@@ -598,19 +598,24 @@ function CustomerAssets({ customer, showToast }) {
 
 /* ── Invoices / Estimates for this customer (live from QuickBooks) ── */
 function CustomerFinanceDocs({ customer, kind, showToast }) {
-  const [rows, setRows] = React.useState(null);
+  // Merge portal-created docs (sync store) with QuickBooks, filtered to this
+  // customer — so anything created for them shows here and in the Finance suite.
+  const [localInv] = useShieldStore(invoiceStore);
+  const [localEst] = useShieldStore(estimateStore);
+  const [qboRows, setQboRows] = React.useState([]);
   React.useEffect(() => {
-    const q = window.__shieldQBO; if (!q) { setRows([]); return; }
-    const nameMatch = (r) => {
-      const n = (r.customer_name || '').toLowerCase();
-      return n === (customer.name || '').toLowerCase() || (customer.dba && n === customer.dba.toLowerCase());
-    };
+    const q = window.__shieldQBO; if (!q) { setQboRows([]); return; }
     const p = kind === 'invoices' ? q.invoices({ limit: 1000 }) : q.estimates(1000);
-    p.then(res => setRows(res && res.ok && res.data ? res.data.filter(nameMatch) : []));
+    p.then(res => setQboRows(res && res.ok && res.data ? res.data : []));
   }, [customer, kind]);
+  const nameMatch = (r) => {
+    const n = (r.customer_name || '').toLowerCase();
+    return n === (customer.name || '').toLowerCase() || (customer.dba && n === customer.dba.toLowerCase());
+  };
+  const localRows = kind === 'invoices' ? (localInv || []) : (localEst || []);
+  const rows = [...localRows, ...qboRows].filter(nameMatch);
   const money = (n) => '$' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmt = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-  if (rows === null) return <GlassPanel style={{ padding: 24, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>Loading {kind}…</GlassPanel>;
   const total = rows.reduce((s, r) => s + (Number(r.total) || 0), 0);
   return (
     <div style={{ maxWidth: 1100 }}>

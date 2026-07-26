@@ -8,7 +8,10 @@ function ProjectsScreen() {
     { id: 'review', label: 'Review', color: '#c084fc' },
     { id: 'complete', label: 'Complete', color: 'var(--status-ok)' },
   ];
-  const projects = [
+  const [wizardOpen, setWizardOpen] = React.useState(false);
+  const [invModal, setInvModal] = React.useState(null);
+  const [storeProjects] = useShieldStore(projectStore);
+  const DEMO_PROJECTS = [
     { id: 'PRJ-101', name: 'Pacific Rim Hotels — Full Upgrade', customer: 'Pacific Rim Hotels', value: '$215,000', stage: 'in-progress', progress: 35, pm: 'John Mitchell', techs: ['JL','KW'], start: 'May 15', end: 'Aug 30', milestones: [{ label: 'Site survey', done: true }, { label: 'Equipment ordered', done: true }, { label: 'Property 1 install', done: false }, { label: 'Property 2 install', done: false }, { label: 'Property 3 install', done: false }, { label: 'Final commissioning', done: false }] },
     { id: 'PRJ-098', name: 'City Hall — Access Control Upgrade', customer: 'City Hall', value: '$45,000', stage: 'in-progress', progress: 72, pm: 'Sarah Chen', techs: ['KW'], start: 'Apr 20', end: 'Jun 20', milestones: [{ label: 'Demo old system', done: true }, { label: 'Run new cables', done: true }, { label: 'Install readers', done: true }, { label: 'Program controllers', done: false }, { label: 'Testing & handoff', done: false }] },
     { id: 'PRJ-104', name: 'Westfield Mall — Camera Expansion', customer: 'Westfield Mall', value: '$31,800', stage: 'planning', progress: 10, pm: 'John Mitchell', techs: ['MR','TG'], start: 'Jun 15', end: 'Jul 30', milestones: [{ label: 'Design approval', done: true }, { label: 'Equipment PO', done: false }, { label: 'Installation', done: false }, { label: 'Commissioning', done: false }] },
@@ -16,9 +19,22 @@ function ProjectsScreen() {
     { id: 'PRJ-092', name: 'Marina District Dental — 8-Camera', customer: 'Marina Dental', value: '$24,800', stage: 'complete', progress: 100, pm: 'John Mitchell', techs: ['MR'], start: 'May 1', end: 'Jun 2', milestones: [{ label: 'Install', done: true }, { label: 'Configure', done: true }, { label: 'Customer sign-off', done: true }] },
     { id: 'PRJ-105', name: 'Golden Gate Logistics — Perimeter', customer: 'Golden Gate', value: '$52,000', stage: 'planning', progress: 5, pm: 'Sarah Chen', techs: [], start: 'Jul 1', end: 'Aug 15', milestones: [{ label: 'Site survey', done: false }, { label: 'Design', done: false }, { label: 'Install', done: false }] },
   ];
+  // Real projects created in the portal/mobile show here; demo board until then.
+  const mapProj = (p) => ({
+    id: p.number, name: p.name, customer: p.customer || '—',
+    value: p.estimatedValue ? '$' + Number(p.estimatedValue).toLocaleString() : '—',
+    stage: ['planning','in-progress','review','complete'].includes(p.status) ? p.status : 'planning',
+    progress: p.status === 'complete' ? 100 : p.status === 'review' ? 90 : p.status === 'in-progress' ? 40 : 5,
+    pm: p.contact || '', techs: [], start: '', end: '', milestones: [], _rec: p,
+  });
+  const projects = (storeProjects && storeProjects.length) ? storeProjects.map(mapProj) : DEMO_PROJECTS;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: 'calc(100vh - 100px)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+        <h2 className="display" style={{ fontSize: 20, fontWeight: 300 }}>Projects</h2>
+        <button onClick={() => setWizardOpen(true)} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Project</button>
+      </div>
       {/* Stats */}
       <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
         {[
@@ -74,13 +90,20 @@ function ProjectsScreen() {
                       ))}
                     </div>
                   </div>
-                  <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 6 }}>{p.start} → {p.end}</div>
+                  {(p.start || p.end) && <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 6 }}>{p.start} → {p.end}</div>}
+                  <button onClick={(e) => { e.stopPropagation(); setInvModal({ type: 'new-invoice', customer: p.customer, projectName: p.name, projectId: p._rec && p._rec.id }); }} style={{ marginTop: 8, width: '100%', padding: '5px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Create Invoice</button>
                 </div>
               ))}
             </div>
           );
         })}
       </div>
+      {wizardOpen && typeof ProjectWizard !== 'undefined' && (
+        <ProjectWizard onClose={() => setWizardOpen(false)}
+          onComplete={(pr) => { shieldToast(`Project ${pr.number} created`, 'ok'); setWizardOpen(false); }}
+          showToast={(m) => shieldToast(m, 'info')} />
+      )}
+      {invModal && <NIFinanceModal modal={invModal} setModal={setInvModal} showToast={(m) => shieldToast(m, 'ok')} />}
     </div>
   );
 }
