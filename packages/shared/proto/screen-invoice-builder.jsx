@@ -3,19 +3,78 @@
 // ── screen-finance-books.jsx ──
 /* Finance Books — COA, GL, Statements, Reconciliation, Estimates, AP, Expenses + Modals/Drawers */
 
-/* ── Estimates ── */
+/* ── Estimates ──
+   Live rows (portal-created + QuickBooks) with the acceptance → project
+   workflow: accept manually, or email the customer an acceptance link; either
+   path creates a project with the quote attached. */
 function NIFinanceEstimates({ setModal, showToast }) {
-  const estimates = [
-    { num: 'EST-301', customer: 'Pinnacle Financial Group', amount: 128500, status: 'sent', date: 'Jun 4, 2026', expires: 'Jul 4, 2026' },
-    { num: 'EST-298', customer: 'Bayshore Medical Center', amount: 94200, status: 'draft', date: 'Jun 2, 2026', expires: '—' },
-    { num: 'EST-295', customer: 'Golden Gate Logistics', amount: 52000, status: 'sent', date: 'May 28, 2026', expires: 'Jun 28, 2026' },
-    { num: 'EST-290', customer: 'Marina District Dental', amount: 24800, status: 'accepted', date: 'May 20, 2026', expires: '—' },
-    { num: 'EST-288', customer: 'Redwood Community College', amount: 38000, status: 'expired', date: 'Apr 15, 2026', expires: 'May 15, 2026' },
-  ];
+  const [localEst] = useShieldStore(estimateStore);
+  const [projects] = useShieldStore(projectStore);
+  const [qboEst, setQboEst] = React.useState([]);
+  const [acceptances, setAcceptances] = React.useState([]);
+
+  const refreshAcceptances = React.useCallback(() => {
+    const api = window.__shieldAcceptance;
+    if (!api) return;
+    api.list().then(r => { if (r && r.ok) setAcceptances(r.data); });
+  }, []);
+
+  React.useEffect(() => {
+    const q = window.__shieldQBO;
+    if (q) q.estimates(500).then(r => setQboEst(r && r.ok && r.data ? r.data : []));
+    // Apply any customer email-acceptances that landed since last visit,
+    // then load acceptance state for the "awaiting customer" badges.
+    Promise.resolve(typeof applyEstimateAcceptances === 'function' ? applyEstimateAcceptances() : null)
+      .then(() => refreshAcceptances());
+  }, [refreshAcceptances]);
+
+  const fmt = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+  const rows = React.useMemo(() => {
+    const merged = [...(localEst || []), ...qboEst];
+    return merged.map(r => {
+      const v = estWorkflowView(r);
+      const proj = (projects || []).find(p => (p.estimateRefs || []).includes(v.ref)) || null;
+      const acc = acceptances.find(a => a.estimate_ref === v.ref) || null;
+      const accepted = v.status === 'accepted' || v.status === 'closed' || !!proj || (acc && acc.status === 'accepted');
+      return {
+        ...v,
+        raw: r,
+        date: fmt(r.txn_date), expires: fmt(r.expiration_date),
+        display: accepted ? 'accepted' : (v.status === 'rejected' ? 'expired' : (v.status === 'draft' ? 'draft' : 'sent')),
+        project: proj,
+        awaiting: !accepted && acc && acc.status === 'pending',
+      };
+    });
+  }, [localEst, qboEst, projects, acceptances]);
+
+  const doAccept = (row) => {
+    const proj = acceptEstimateToProject(row.raw, 'manual');
+    showToast(`${row.ref} accepted — project ${proj.number} created with the quote attached`);
+  };
+
+  const doEmailAccept = async (row) => {
+    const email = window.prompt(`Send acceptance request for ${row.ref} ($${row.total.toLocaleString()}) to which customer email?`, '');
+    if (!email || !email.includes('@')) { if (email !== null) showToast('Enter a valid email address'); return; }
+    const api = window.__shieldAcceptance;
+    if (!api) { showToast('Acceptance backend not configured'); return; }
+    const r = await api.send({
+      estimateRef: row.ref, estimateQboId: row.qboId,
+      customerName: row.customer, customerEmail: email.trim(), amount: row.total,
+    });
+    if (r && r.ok) {
+      showToast(r.data.emailed
+        ? `Acceptance email for ${row.ref} sent to ${email.trim()}`
+        : `Acceptance link created (email not sent: ${r.data.emailError}). Link copied when available in Outbox.`);
+      refreshAcceptances();
+    } else showToast(`Could not create acceptance request: ${(r && r.error) || 'unknown error'}`);
+  };
+
+  const btn = (bg, border, color) => ({ padding: '3px 8px', background: bg, border, borderRadius: 4, color, fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' });
+
   return (
     <div style={{ maxWidth: 1200 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-        <SectionHeader title="Estimates" icon="◇" count={estimates.length} />
+        <SectionHeader title="Estimates" icon="◇" count={rows.length} />
         <button onClick={() => setModal({ type: 'new-estimate' })} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Estimate</button>
       </div>
       <GlassPanel style={{ padding: 0 }}>
@@ -23,18 +82,28 @@ function NIFinanceEstimates({ setModal, showToast }) {
           <thead><tr>{['Estimate','Customer','Amount','Status','Date','Expires','Actions'].map((h,i) => (
             <th key={i} style={{ textAlign: i===2?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
           ))}</tr></thead>
-          <tbody>{estimates.map((e,i) => (
-            <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={ev=>ev.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
-              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{e.num}</td>
+          <tbody>{rows.length === 0 && (
+            <tr><td colSpan={7} style={{ padding: '22px 14px', fontSize: 12, color: 'var(--text-low)', textAlign: 'center' }}>No estimates yet — create one, or they'll appear here from QuickBooks after a sync.</td></tr>
+          )}
+          {rows.map((e,i) => (
+            <tr key={i} onMouseEnter={ev=>ev.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
+              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{e.ref}</td>
               <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{e.customer}</td>
-              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${e.amount.toLocaleString()}</td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={e.status==='accepted'?'online':e.status==='sent'?'info':e.status==='draft'?'draft':'critical'} label={e.status} /></td>
+              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${e.total.toLocaleString()}</td>
+              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <StatusBadge status={e.display==='accepted'?'online':e.display==='sent'?'info':e.display==='draft'?'draft':'critical'} label={e.display} />
+                {e.awaiting && <span style={{ marginLeft: 6, fontSize: 9, color: 'var(--status-warn)' }}>✉ awaiting customer</span>}
+              </td>
               <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{e.date}</td>
               <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{e.expires}</td>
               <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', display: 'flex', gap: 4 }}>
-                {e.status === 'accepted' && <button onClick={()=>showToast('Converted to Invoice INV-2870')} style={{ padding: '3px 8px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>→ Invoice</button>}
-                {e.status === 'accepted' && <button onClick={()=>showToast('Converted to Proposal')} style={{ padding: '3px 8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>→ Proposal</button>}
-                {e.status === 'draft' && <button onClick={()=>showToast('Estimate sent')} style={{ padding: '3px 8px', background: 'var(--brand)', border: 'none', borderRadius: 4, color: '#fff', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send</button>}
+                {e.display !== 'accepted' && <>
+                  <button onClick={()=>doAccept(e)} style={btn('rgba(52,211,153,0.08)', '1px solid rgba(52,211,153,0.2)', 'var(--status-ok)')}>✓ Accept → Project</button>
+                  <button onClick={()=>doEmailAccept(e)} style={btn('rgba(63,169,245,0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>✉ Email accept link</button>
+                </>}
+                {e.display === 'accepted' && (e.project
+                  ? <button onClick={()=>navTo('projects')} style={btn('rgba(63,169,245,0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>→ {e.project.number}</button>
+                  : <button onClick={()=>doAccept(e)} style={btn('rgba(52,211,153,0.08)', '1px solid rgba(52,211,153,0.2)', 'var(--status-ok)')}>→ Create Project</button>)}
               </td>
             </tr>
           ))}</tbody>

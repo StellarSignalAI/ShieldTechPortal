@@ -16,6 +16,9 @@
 
 /* ── Core Store Factory ── */
 function createShieldStore(key, initial) {
+  // One store per key: a second create (e.g. 'invoices' in shared-invoicing)
+  // returns the registered instance so every screen shares live state.
+  if (window.__shieldStores && window.__shieldStores[key]) return window.__shieldStores[key];
   let state;
   try { state = JSON.parse(localStorage.getItem('st2_' + key)) ?? initial; }
   catch { state = initial; }
@@ -312,9 +315,155 @@ function buildProject(form) {
     estimatedValue: Number(form.estimatedValue) || 0, timeline: form.timeline || '',
     priority: form.priority || 'normal', notes: form.notes || '',
     createdAt: Date.now(), source: form.source || 'portal',
+    /* Estimate → project → progress-billing workflow */
+    estimateRefs: form.estimateRefs || [],   // attached quote doc numbers (EST-…)
+    invoiceRefs: form.invoiceRefs || [],     // attached invoice doc numbers (INV-…)
+    contractTotal: Number(form.contractTotal) || Number(form.estimatedValue) || 0,
+    billing: form.billing || [],             // [{pct, amount, ref, at}] progress invoices cut
   };
 }
 function addProject(form) { const rec = buildProject(form); projectStore.set(l => [rec, ...l]); return rec; }
+
+/* ── Estimate → Project → Progress-billing workflow ──
+   An accepted estimate (manual click or customer email acceptance) becomes a
+   project with the quote attached; the project then converts incremental % of
+   the contract into invoices. Invoices/estimates attach both directions. */
+
+function updateProject(number, patch) {
+  projectStore.set(list => list.map(p => p.number === number
+    ? { ...p, ...(typeof patch === 'function' ? patch(p) : patch) } : p));
+}
+
+/* Normalize an estimate row (portal store shape or qbo_* shape) for workflow use. */
+function estWorkflowView(e) {
+  return {
+    ref: e.doc_number || e.num || ('EST-' + (e.qbo_id || '?')),
+    qboId: e.qbo_id && !String(e.qbo_id).startsWith('local-') ? e.qbo_id : null,
+    customer: e.customer_name || e.customer || 'Customer',
+    total: Number(e.total ?? e.amount) || 0,
+    status: e.status || 'pending',
+  };
+}
+
+/* Find the project (if any) that a given estimate ref is attached to. */
+function projectForEstimate(ref) {
+  return (projectStore.get() || []).find(p => (p.estimateRefs || []).includes(ref)) || null;
+}
+
+/* Accept an estimate → create (or return) its project with the quote attached.
+   via: 'manual' | 'email'. Marks the portal-store estimate row accepted. */
+function acceptEstimateToProject(est, via) {
+  const v = estWorkflowView(est);
+  estimateStore.set(list => (list || []).map(e =>
+    (e.doc_number || e.num) === v.ref ? { ...e, status: 'accepted' } : e));
+  const existing = projectForEstimate(v.ref);
+  if (existing) return existing;
+  return addProject({
+    name: `${v.customer} — ${v.ref}`,
+    customer: v.customer,
+    status: 'planning',
+    estimatedValue: v.total,
+    contractTotal: v.total,
+    estimateRefs: [v.ref],
+    source: 'estimate-' + (via || 'manual'),
+    notes: `Created from accepted estimate ${v.ref} (${via || 'manual'} acceptance).`,
+  });
+}
+
+/* Attach a quote to a project (project ↔ estimate, either direction). */
+function attachEstimateToProject(projectNumber, est) {
+  const v = estWorkflowView(est);
+  updateProject(projectNumber, p => ({
+    estimateRefs: (p.estimateRefs || []).includes(v.ref) ? p.estimateRefs : [...(p.estimateRefs || []), v.ref],
+    contractTotal: (Number(p.contractTotal) || 0) > 0 ? p.contractTotal : v.total,
+    estimatedValue: (Number(p.estimatedValue) || 0) > 0 ? p.estimatedValue : v.total,
+  }));
+}
+
+/* Attach an invoice to a project (invoice ↔ project, either direction). */
+function attachInvoiceToProject(projectNumber, invRef) {
+  updateProject(projectNumber, p => ({
+    invoiceRefs: (p.invoiceRefs || []).includes(invRef) ? p.invoiceRefs : [...(p.invoiceRefs || []), invRef],
+  }));
+  const stores = [window.invoiceStore, invoiceStore].filter(Boolean);
+  const seen = new Set();
+  for (const s of stores) {
+    if (seen.has(s)) continue; seen.add(s);
+    s.set(list => (list || []).map(i =>
+      (i.doc_number || i.num) === invRef ? { ...i, project_id: projectNumber } : i));
+  }
+}
+
+/* Cumulative % of the contract already converted to invoices. */
+function projectBilledPct(p) {
+  return (p.billing || []).reduce((s, b) => s + (Number(b.pct) || 0), 0);
+}
+
+/* Convert an incremental % of the project's contract into an invoice.
+   Writes through window.invoiceStore (the instance the Finance suite renders)
+   with a dual-shape row so it shows in both the Invoices tab and QBO merges. */
+function createProgressInvoice(projectNumber, pct) {
+  const p = (projectStore.get() || []).find(x => x.number === projectNumber);
+  if (!p) return { ok: false, error: 'Project not found' };
+  const base = Number(p.contractTotal) || Number(p.estimatedValue) || 0;
+  if (!(base > 0)) return { ok: false, error: 'Project has no contract total — attach an estimate first' };
+  const pctNum = Math.round(Number(pct) * 100) / 100;
+  if (!(pctNum > 0)) return { ok: false, error: 'Enter a % greater than zero' };
+  const already = projectBilledPct(p);
+  const amount = Math.round(base * pctNum) / 100;
+  const store = window.invoiceStore || invoiceStore;
+  const seq = (store.get() || []).reduce((m, d) =>
+    Math.max(m, parseInt(String(d.doc_number || d.num || '').replace(/\D/g, ''), 10) || 0), 2800) + 1;
+  const num = 'INV-' + seq;
+  const refList = (p.estimateRefs || []).join(', ') || p.number;
+  const dueDate = new Date(Date.now() + 30 * 86400000);
+  const line = {
+    desc: `Progress billing — ${pctNum}% of contract ${refList} (${p.name})`,
+    qty: 1, rate: amount,
+  };
+  const row = {
+    /* qbo_* shape (merges + reports) */
+    qbo_id: 'local-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    doc_number: num, customer_qbo_id: null, customer_name: p.customer || 'Customer',
+    txn_date: new Date().toISOString().slice(0, 10),
+    due_date: dueDate.toISOString().slice(0, 10),
+    total: amount, balance: amount, source: 'portal',
+    /* legacy Invoices-tab shape */
+    num, customer: p.customer || 'Customer', amount,
+    status: 'pending', days: 0, terms: 'Net 30',
+    due: dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    lines: [line],
+    project_id: p.number,
+    progressPct: pctNum,
+  };
+  store.set(list => [row, ...(list || [])]);
+  updateProject(p.number, prev => ({
+    billing: [...(prev.billing || []), { pct: pctNum, amount, ref: num, at: Date.now() }],
+    invoiceRefs: [...(prev.invoiceRefs || []), num],
+  }));
+  return { ok: true, invoice: row, amount, cumulativePct: already + pctNum };
+}
+
+/* Pull customer email acceptances from the backend and apply them: mark the
+   estimate accepted, create the project (quote attached), mark the record
+   applied. Safe to call on any screen mount; no-ops offline. */
+async function applyEstimateAcceptances() {
+  const api = window.__shieldAcceptance;
+  if (!api) return { applied: 0 };
+  const r = await api.pendingApply().catch(() => null);
+  if (!r || !r.ok || !r.data.length) return { applied: 0 };
+  let applied = 0;
+  for (const rec of r.data) {
+    const proj = acceptEstimateToProject({
+      doc_number: rec.estimate_ref, qbo_id: rec.estimate_qbo_id || undefined,
+      customer_name: rec.customer_name, total: Number(rec.amount) || 0, status: 'accepted',
+    }, 'email');
+    await api.markApplied(rec.id, proj.number).catch(() => {});
+    applied++;
+    showToast(`Estimate ${rec.estimate_ref} accepted by customer — project ${proj.number} created`, 'ok');
+  }
+  return { applied };
+}
 
 /* Portal invoice/estimate in the qbo_* row shape so merges are clean. */
 function buildDoc(kind, form) {
@@ -432,6 +581,9 @@ Object.assign(window, {
   projectStore, invoiceStore, estimateStore,
   buildProject, addProject, buildDoc, addInvoice, addEstimate,
   localInvoiceRows, localEstimateRows,
+  updateProject, estWorkflowView, projectForEstimate, acceptEstimateToProject,
+  attachEstimateToProject, attachInvoiceToProject, projectBilledPct,
+  createProgressInvoice, applyEstimateAcceptances,
   mobileTabsStore, M_ALL_TAB, approvalStore,
   proposalStore, defaultProposalBlocks, proposalValue,
   surveyStore, surveyTotals, SURVEY_RATE, SURVEY_BOM_SEED, studioInboxStore,

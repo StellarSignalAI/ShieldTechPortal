@@ -242,8 +242,22 @@ function NIFinanceOverview({ onNav }) {
 /* ── Invoices Tab ── */
 function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, setSelectedInv, invFilter, setInvFilter, showToast }) {
   /* Live shared store — invoice actions persist and sync across surfaces */
-  const [invoices] = useShieldStore(invoiceStore);
-  const updateInv = (num, patch) => invoiceStore.set(prev => prev.map(i => i.num === num ? { ...i, ...(typeof patch === 'function' ? patch(i) : patch) } : i));
+  const [rawInvoices] = useShieldStore(invoiceStore);
+  const [projects] = useShieldStore(projectStore);
+  const updateInv = (num, patch) => invoiceStore.set(prev => prev.map(i => (i.num || i.doc_number) === num ? { ...i, ...(typeof patch === 'function' ? patch(i) : patch) } : i));
+
+  /* Normalize both row shapes (legacy Invoices-tab rows and qbo_*-shape rows
+     created by the builder / progress billing) so every invoice renders. */
+  const statusMap = { open: 'pending', paid: 'paid', overdue: 'overdue', draft: 'draft', void: 'void', pending: 'pending' };
+  const invoices = (rawInvoices || []).map(i => ({
+    ...i,
+    num: i.num || i.doc_number,
+    customer: i.customer || i.customer_name || 'Customer',
+    amount: i.amount != null ? i.amount : (Number(i.total) || 0),
+    status: statusMap[i.status] || i.status || 'pending',
+    due: i.due || (i.due_date ? new Date(i.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'),
+    days: i.days || 0, terms: i.terms || '—', lines: i.lines || [],
+  }));
 
   const filtered = invFilter === 'All' ? invoices : invoices.filter(i => i.status === invFilter.toLowerCase());
 
@@ -314,6 +328,30 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
               <DetailField label="Due Date" value={filtered[selectedInv].due} mono />
               <DetailField label="Terms" value={filtered[selectedInv].terms} />
               <DetailField label="PO Number" value={filtered[selectedInv].po || '—'} mono />
+            </div>
+
+            {/* Project attachment — invoices ↔ projects, both directions */}
+            <div className="label-sm" style={{ marginBottom: 6 }}>PROJECT</div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 14 }}>
+              {filtered[selectedInv].project_id ? (
+                <>
+                  <button onClick={() => navTo('projects')} className="mono" style={{ padding: '5px 10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>
+                    {filtered[selectedInv].project_id} →
+                  </button>
+                  <span style={{ fontSize: 11, color: 'var(--text-low)' }}>
+                    {((projects || []).find(p => p.number === filtered[selectedInv].project_id) || {}).name || ''}
+                  </span>
+                </>
+              ) : (
+                <select defaultValue="" onChange={e => {
+                  const num = e.target.value; if (!num) return;
+                  attachInvoiceToProject(num, filtered[selectedInv].num);
+                  showToast(`${filtered[selectedInv].num} attached to ${num}`);
+                }} style={{ flex: 1, padding: '6px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, fontFamily: 'var(--font-body)' }}>
+                  <option value="">Attach to a project…</option>
+                  {(projects || []).map(p => <option key={p.number} value={p.number}>{p.number} — {p.name}</option>)}
+                </select>
+              )}
             </div>
 
             <div className="label-sm" style={{ marginBottom: 6 }}>LINE ITEMS</div>
