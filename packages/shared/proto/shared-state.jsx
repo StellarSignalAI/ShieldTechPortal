@@ -149,6 +149,18 @@ function setCustomerContacts(customerId, list) {
   contactsStore.set(m => ({ ...(m || {}), [String(customerId)]: list }));
 }
 
+/* ── Per-customer records (sites, assets, passwords, documents, networks) ──
+   One store keyed by `${customerId}:${kind}` → Record[]. Shared across surfaces
+   like the other business data. */
+const customerDataStore = createShieldStore('customerdata', {});
+function custRecords(customerId, kind) {
+  const m = customerDataStore.get() || {};
+  return m[`${customerId}:${kind}`] || [];
+}
+function setCustRecords(customerId, kind, list) {
+  customerDataStore.set(m => ({ ...(m || {}), [`${customerId}:${kind}`]: list }));
+}
+
 /* Build a complete customer record from a partial form payload (shared by desktop + mobile). */
 function buildCustomer(form) {
   const existing = customerStore.get();
@@ -368,6 +380,7 @@ Object.assign(window, {
   backlogStore, woFocusStore, truckStore, userPrefsStore,
   customerStore, subCustomerStore, buildCustomer,
   contactsStore, customerContacts, setCustomerContacts,
+  customerDataStore, custRecords, setCustRecords,
   mobileTabsStore, M_ALL_TAB, approvalStore,
   proposalStore, defaultProposalBlocks, proposalValue,
   surveyStore, surveyTotals, SURVEY_RATE, SURVEY_BOM_SEED, studioInboxStore,
