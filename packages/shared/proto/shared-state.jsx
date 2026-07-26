@@ -136,6 +136,19 @@ const customerStore = createShieldStore('customers', []);
 /* ── Sub-Customer Store (service locations / billing entities under a parent) ── */
 const subCustomerStore = createShieldStore('subcustomers', []);
 
+/* ── Customer Contacts Store ──
+   People at each customer, keyed by customer id: { [customerId]: Contact[] }.
+   Each contact carries a `receives` map controlling which documents route to
+   them — invoices, estimates, proposals. Shared across all surfaces. */
+const contactsStore = createShieldStore('customercontacts', {});
+function customerContacts(customerId) {
+  const m = contactsStore.get() || {};
+  return m[String(customerId)] || [];
+}
+function setCustomerContacts(customerId, list) {
+  contactsStore.set(m => ({ ...(m || {}), [String(customerId)]: list }));
+}
+
 /* Build a complete customer record from a partial form payload (shared by desktop + mobile). */
 function buildCustomer(form) {
   const existing = customerStore.get();

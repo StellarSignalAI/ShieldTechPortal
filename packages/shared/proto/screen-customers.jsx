@@ -248,7 +248,7 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
         )}
 
         {tab === 'churn' && <ChurnRadarPanel customer={c} showToast={showToast} />}
-        {tab === 'contacts' && <CustomerContacts showToast={showToast} />}
+        {tab === 'contacts' && <CustomerContacts customer={c} showToast={showToast} />}
         {tab === 'sites' && <CustomerSites customer={c} showToast={showToast} />}
         {tab === 'assets' && <CustomerAssets customer={c} showToast={showToast} />}
         {tab === 'passwords' && <CustomerPasswords showToast={showToast} />}
@@ -285,36 +285,160 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
   );
 }
 
-/* ── Customer Contacts ── */
-function CustomerContacts({ showToast }) {
-  const contacts = [
-    { name: 'Robert Chen', title: 'VP Facilities', email: 'rchen@metrobankcorp.com', phone: '(215) 555-0210', type: 'Primary', portal: true },
-    { name: 'Linda Park', title: 'Security Manager', email: 'lpark@metrobankcorp.com', phone: '(215) 555-0211', type: 'Technical', portal: true },
-    { name: 'James Wong', title: 'AP Clerk', email: 'jwong@metrobankcorp.com', phone: '(215) 555-0212', type: 'Billing', portal: false },
-  ];
+/* ── Customer Contacts (per-customer, persistent, with document routing) ── */
+const CONTACT_DOCS = [
+  { key: 'invoices', label: 'Invoices', short: 'INV', color: 'var(--status-warn)' },
+  { key: 'estimates', label: 'Estimates', short: 'EST', color: 'var(--brand)' },
+  { key: 'proposals', label: 'Proposals', short: 'PROP', color: '#c084fc' },
+];
+function CustomerContacts({ customer, showToast }) {
+  const [allContacts] = useShieldStore(contactsStore);
+  const cid = customer && customer.id;
+  const contacts = (allContacts && allContacts[String(cid)]) || [];
+  const [modal, setModal] = React.useState(null); // { contact } | { contact: null } for new
+
+  const saveContact = (data) => {
+    const list = customerContacts(cid);
+    if (data.id) {
+      setCustomerContacts(cid, list.map(c => c.id === data.id ? data : c));
+      showToast(`${data.name} updated`);
+    } else {
+      const rec = { ...data, id: 'ct-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) };
+      setCustomerContacts(cid, [...list, rec]);
+      showToast(`${rec.name} added`);
+    }
+    setModal(null);
+  };
+  const removeContact = (ct) => shieldModal({
+    kind: 'confirm', title: 'Remove contact', danger: true,
+    message: `Remove ${ct.name} from ${customer.name}? This can't be undone.`, confirmLabel: 'Remove',
+    onConfirm: () => { setCustomerContacts(cid, customerContacts(cid).filter(c => c.id !== ct.id)); showToast(`${ct.name} removed`); },
+  });
+
   return (
-    <div style={{ maxWidth: 1000 }}>
+    <div style={{ maxWidth: 1100 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
         <SectionHeader title="Contacts" icon="◎" count={contacts.length} />
-        <button onClick={() => showToast('New contact')} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Contact</button>
+        <button onClick={() => setModal({ contact: null })} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Contact</button>
       </div>
-      <GlassPanel style={{ padding: 0 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr>{['Name','Title','Email','Phone','Type','Portal Access'].map((h,i) => (
-            <th key={i} style={{ textAlign: 'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
-          ))}</tr></thead>
-          <tbody>{contacts.map((ct,i) => (
-            <tr key={i} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }}>{ct.name}</td>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{ct.title}</td>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--brand)' }}>{ct.email}</td>
-              <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{ct.phone}</td>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={ct.type==='Primary'?'info':ct.type==='Technical'?'online':'warning'} label={ct.type} /></td>
-              <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: ct.portal?'var(--status-ok)':'var(--text-low)' }}>{ct.portal?'✓ Enabled':'—'}</td>
-            </tr>
-          ))}</tbody>
-        </table>
-      </GlassPanel>
+      {contacts.length === 0 ? (
+        <GlassPanel style={{ textAlign: 'center', padding: 40 }}>
+          <div style={{ fontSize: 26, opacity: 0.4, marginBottom: 8 }}>◎</div>
+          <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>No contacts yet</div>
+          <div style={{ fontSize: 12, color: 'var(--text-low)', marginBottom: 14 }}>Add the people at {customer.name} and choose who receives invoices, estimates, and proposals.</div>
+          <button onClick={() => setModal({ contact: null })} style={{ padding: '7px 18px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Contact</button>
+        </GlassPanel>
+      ) : (
+        <GlassPanel style={{ padding: 0 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead><tr>{['Name','Title','Email','Phone','Type','Receives','Portal','' ].map((h,i) => (
+              <th key={i} style={{ textAlign: 'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
+            ))}</tr></thead>
+            <tbody>{contacts.map((ct) => (
+              <tr key={ct.id} style={{ cursor: 'pointer' }} onClick={() => setModal({ contact: ct })}
+                onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }}>{ct.name}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{ct.title || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--brand)' }}>{ct.email || '—'}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{ct.phone || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={ct.type==='Primary'?'info':ct.type==='Technical'?'online':'warning'} label={ct.type || 'Contact'} /></td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {CONTACT_DOCS.filter(d => ct.receives && ct.receives[d.key]).map(d => (
+                      <span key={d.key} title={d.label} style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${d.color}18`, color: d.color, letterSpacing: '0.04em' }}>{d.short}</span>
+                    ))}
+                    {(!ct.receives || !CONTACT_DOCS.some(d => ct.receives[d.key])) && <span style={{ fontSize: 11, color: 'var(--text-low)' }}>—</span>}
+                  </div>
+                </td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: ct.portal?'var(--status-ok)':'var(--text-low)' }}>{ct.portal?'✓ Enabled':'—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'right' }}>
+                  <button onClick={(e) => { e.stopPropagation(); removeContact(ct); }} title="Remove" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✕</button>
+                </td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </GlassPanel>
+      )}
+      {contacts.length > 0 && (
+        <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--text-mid)' }}>
+          <strong>Document routing:</strong> {CONTACT_DOCS.map(d => {
+            const who = contacts.filter(c => c.receives && c.receives[d.key]).map(c => c.name);
+            return <span key={d.key} style={{ marginRight: 14 }}>{d.label} → <span style={{ color: d.color }}>{who.length ? who.join(', ') : 'unassigned'}</span></span>;
+          })}
+        </div>
+      )}
+      {modal && <ContactFormModal customer={customer} contact={modal.contact} onSave={saveContact} onClose={() => setModal(null)} />}
+    </div>
+  );
+}
+
+/* Add / edit a single contact, incl. who receives invoices / estimates / proposals. */
+function ContactFormModal({ customer, contact, onSave, onClose }) {
+  const [f, setF] = React.useState(() => ({
+    id: contact ? contact.id : null,
+    name: contact ? contact.name || '' : '', title: contact ? contact.title || '' : '',
+    email: contact ? contact.email || '' : '', phone: contact ? contact.phone || '' : '',
+    type: contact ? contact.type || 'Primary' : 'Primary',
+    portal: contact ? !!contact.portal : false,
+    receives: {
+      invoices: !!(contact && contact.receives && contact.receives.invoices),
+      estimates: !!(contact && contact.receives && contact.receives.estimates),
+      proposals: !!(contact && contact.receives && contact.receives.proposals),
+    },
+  }));
+  const set = (k) => (e) => { const v = e && e.target ? (e.target.type === 'checkbox' ? e.target.checked : e.target.value) : e; setF(p => ({ ...p, [k]: v })); };
+  const toggleDoc = (k) => setF(p => ({ ...p, receives: { ...p.receives, [k]: !p.receives[k] } }));
+  const selStyle = { width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
+  const save = () => {
+    if (!f.name.trim()) return;
+    onSave({ ...f, name: f.name.trim() });
+  };
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9000 }}>
+      <div onClick={e => e.stopPropagation()} className="glass" style={{ width: 480, maxHeight: '86vh', overflow: 'auto', padding: 22, animation: 'fade-up 0.2s ease both' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+          <span className="display" style={{ fontSize: 17, fontWeight: 400 }}>{contact ? 'Edit Contact' : 'New Contact'} · {customer.name}</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <CField label="Name" placeholder="Robert Chen" value={f.name} onChange={set('name')} style={{ flex: 1 }} />
+            <CField label="Title" placeholder="VP Facilities" value={f.title} onChange={set('title')} style={{ flex: 1 }} />
+          </div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <CField label="Email" placeholder="rchen@example.com" value={f.email} onChange={set('email')} style={{ flex: 1 }} />
+            <CField label="Phone" placeholder="(215) 555-0210" value={f.phone} onChange={set('phone')} style={{ flex: 1 }} />
+          </div>
+          <div>
+            <div className="label-sm" style={{ marginBottom: 4 }}>Type</div>
+            <select value={f.type} onChange={set('type')} style={selStyle}>
+              {['Primary','Technical','Billing','Operations','Executive','Other'].map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+          <div>
+            <div className="label-sm" style={{ marginBottom: 6 }}>Receives documents</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {CONTACT_DOCS.map(d => (
+                <button key={d.key} type="button" onClick={() => toggleDoc(d.key)} style={{
+                  flex: 1, padding: '9px 8px', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-body)',
+                  fontSize: 12, fontWeight: 600,
+                  background: f.receives[d.key] ? `${d.color}1e` : 'rgba(5,7,10,0.4)',
+                  border: `1px solid ${f.receives[d.key] ? d.color : 'var(--border-subtle)'}`,
+                  color: f.receives[d.key] ? d.color : 'var(--text-mid)',
+                }}>{f.receives[d.key] ? '✓ ' : ''}{d.label}</button>
+              ))}
+            </div>
+            <div style={{ fontSize: 10.5, color: 'var(--text-low)', marginTop: 6 }}>Controls which documents route to this contact for {customer.name}.</div>
+          </div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-mid)', cursor: 'pointer' }}>
+            <input type="checkbox" checked={f.portal} onChange={set('portal')} style={{ accentColor: 'var(--brand)' }} /> Enable customer portal access
+          </label>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
+          <button onClick={onClose} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
+          <button onClick={save} disabled={!f.name.trim()} style={{ padding: '8px 20px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: f.name.trim() ? 'pointer' : 'not-allowed', opacity: f.name.trim() ? 1 : 0.5, fontFamily: 'var(--font-body)' }}>{contact ? 'Save Changes' : 'Add Contact'}</button>
+        </div>
+      </div>
     </div>
   );
 }
