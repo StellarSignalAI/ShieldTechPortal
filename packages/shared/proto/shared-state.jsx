@@ -367,6 +367,7 @@ Object.assign(window, {
   photoStore, assetStore, PHOTO_CHECKLISTS, punchStore, PUNCH_STATUS, PUNCH_TECHS,
   backlogStore, woFocusStore, truckStore, userPrefsStore,
   customerStore, subCustomerStore, buildCustomer,
+  contactsStore, customerContacts, setCustomerContacts,
   mobileTabsStore, M_ALL_TAB, approvalStore,
   proposalStore, defaultProposalBlocks, proposalValue,
   surveyStore, surveyTotals, SURVEY_RATE, SURVEY_BOM_SEED, studioInboxStore,
