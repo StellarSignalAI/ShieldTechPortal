@@ -32,7 +32,9 @@ async function list() {
     .order('created_at', { ascending: false })
     .limit(200);
   if (error) return { ok: false, error: error.message, data: [] };
-  return { ok: true, data: (data || []).map(o => ({ ...o, bid: (o.bids && o.bids[0]) || null })) };
+  // bids.opportunity_id is UNIQUE, so PostgREST embeds it one-to-one: `bids`
+  // is a single object (or null), not an array. Handle both shapes.
+  return { ok: true, data: (data || []).map(o => ({ ...o, bid: (Array.isArray(o.bids) ? o.bids[0] : o.bids) || null })) };
 }
 
 const build = (opportunityId) => call({ opportunityId });

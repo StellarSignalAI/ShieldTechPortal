@@ -230,7 +230,11 @@ ${bodyHtml}
       .in("status", ["fresh", "accepted"])
       .order("created_at", { ascending: false })
       .limit(200);
-    const todo = (opps ?? []).filter((o: { bids: unknown[] }) => !(o.bids && o.bids.length)).slice(0, limit);
+    // bids.opportunity_id is UNIQUE → PostgREST embeds one-to-one: `bids` is an
+    // object (or null), not an array. Treat any non-empty value as "has a bid".
+    const todo = (opps ?? [])
+      .filter((o: { bids: unknown }) => !(Array.isArray(o.bids) ? o.bids.length : o.bids))
+      .slice(0, limit);
     const results: Record<string, unknown>[] = [];
     for (const opp of todo) {
       try { results.push(await buildBid(admin, apiKey, opp)); }
