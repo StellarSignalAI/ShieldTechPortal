@@ -348,36 +348,11 @@ function FinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, setS
     { num: 'INV-2865', customer: 'Marina District Dental', amount: 24800, status: 'pending', due: 'Jun 25, 2026', days: 0, terms: 'Net 30', po: '', lines: [{ desc: '8-camera system', qty: 1, rate: 18400 }, { desc: 'Alarm panel + sensors', qty: 1, rate: 4200 }, { desc: 'Central station activation', qty: 1, rate: 2200 }] },
   ];
 
-  // Live QuickBooks invoices when they've been imported; the demo set above is
-  // the fallback until the first sync lands. Design and interactions unchanged.
-  const mapQbo = (r) => ({
-    num: r.doc_number || ('INV-' + r.qbo_id),
-    customer: r.customer_name || 'Customer',
-    amount: Number(r.total) || 0,
-    status: r.status === 'open' ? 'pending' : (r.status || 'pending'),
-    due: r.due_date ? new Date(r.due_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—',
-    days: (r.status === 'overdue' && r.due_date) ? Math.max(0, Math.round((Date.now() - new Date(r.due_date).getTime()) / 86400000)) : 0,
-    terms: '—', po: '',
-    lines: Array.isArray(r.lines) ? r.lines
-      .filter(l => l.DetailType === 'SalesItemLineDetail' || l.SalesItemLineDetail)
-      .map(l => ({
-        desc: l.Description || (l.SalesItemLineDetail && l.SalesItemLineDetail.ItemRef && l.SalesItemLineDetail.ItemRef.name) || 'Item',
-        qty: (l.SalesItemLineDetail && l.SalesItemLineDetail.Qty) || 1,
-        rate: (l.SalesItemLineDetail && l.SalesItemLineDetail.UnitPrice) || Number(l.Amount) || 0,
-      })) : [],
-  });
-  // Merge portal-created invoices (sync store) with QuickBooks so anything
-  // created in the portal reflects here immediately, and vice-versa.
-  const [localInv] = useShieldStore(invoiceStore);
-  const [qboInv, setQboInv] = React.useState([]);
-  React.useEffect(() => {
-    const q = window.__shieldQBO; if (!q) return;
-    q.invoices({ limit: 500 }).then(r => setQboInv(r && r.ok && r.data ? r.data : []));
-  }, []);
-  const invoices = React.useMemo(() => {
-    const merged = [...(localInv || []), ...qboInv];
-    return merged.length ? merged.map(mapQbo) : DEMO_INVOICES;
-  }, [localInv, qboInv]);
+  // ONE shared source (useMergedInvoices in shared-state): portal store merged
+  // with QuickBooks — identical rows to the direct Invoices screen. The demo
+  // set above is kept only as reference data and no longer rendered.
+  void DEMO_INVOICES;
+  const invoices = useMergedInvoices();
 
   const filtered = invFilter === 'All' ? invoices : invoices.filter(i => i.status === invFilter.toLowerCase());
 
@@ -412,6 +387,7 @@ function FinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, setS
                 ))}
               </tr></thead>
               <tbody>
+                {filtered.length === 0 && <DocsEmptyRow colSpan={7} kind="invoices" />}
                 {filtered.map((inv, i) => (
                   <tr key={i} onClick={() => setSelectedInv(i)} style={{ cursor: 'pointer', background: selectedInv === i ? 'rgba(63,169,245,0.06)' : 'transparent', transition: 'background 0.12s' }}
                     onMouseEnter={e => { if (selectedInv !== i) e.currentTarget.style.background = 'rgba(63,169,245,0.03)'; }}

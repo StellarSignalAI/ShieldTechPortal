@@ -9,27 +9,10 @@ function FinanceEstimates({ setModal, showToast }) {
     { num: 'EST-290', customer: 'Marina District Dental', amount: 24800, status: 'accepted', date: 'May 20, 2026', expires: '—' },
     { num: 'EST-288', customer: 'Redwood Community College', amount: 38000, status: 'expired', date: 'Apr 15, 2026', expires: 'May 15, 2026' },
   ];
-  // Live QuickBooks estimates when imported; demo set is the fallback.
-  const fmt = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-  const statusMap = { pending: 'sent', accepted: 'accepted', closed: 'accepted', rejected: 'expired' };
-  const mapEst = (r) => ({
-    num: r.doc_number || ('EST-' + r.qbo_id),
-    customer: r.customer_name || 'Customer',
-    amount: Number(r.total) || 0,
-    status: statusMap[r.status] || 'sent',
-    date: fmt(r.txn_date),
-    expires: fmt(r.expiration_date),
-  });
-  const [localEst] = useShieldStore(estimateStore);
-  const [qboEst, setQboEst] = React.useState([]);
-  React.useEffect(() => {
-    const q = window.__shieldQBO; if (!q) return;
-    q.estimates(500).then(r => setQboEst(r && r.ok && r.data ? r.data : []));
-  }, []);
-  const estimates = React.useMemo(() => {
-    const merged = [...(localEst || []), ...qboEst];
-    return merged.length ? merged.map(mapEst) : DEMO_ESTIMATES;
-  }, [localEst, qboEst]);
+  // ONE shared source (useMergedEstimates in shared-state): portal store
+  // merged with QuickBooks — identical rows to the direct Estimates screen.
+  void DEMO_ESTIMATES;
+  const estimates = useMergedEstimates();
   return (
     <div style={{ maxWidth: 1200 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -41,7 +24,8 @@ function FinanceEstimates({ setModal, showToast }) {
           <thead><tr>{['Estimate','Customer','Amount','Status','Date','Expires','Actions'].map((h,i) => (
             <th key={i} style={{ textAlign: i===2?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
           ))}</tr></thead>
-          <tbody>{estimates.map((e,i) => (
+          <tbody>{estimates.length === 0 && <DocsEmptyRow colSpan={7} kind="estimates" />}
+          {estimates.map((e,i) => (
             <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={ev=>ev.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
               <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{e.num}</td>
               <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{e.customer}</td>

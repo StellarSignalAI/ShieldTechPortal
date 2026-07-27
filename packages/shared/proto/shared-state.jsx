@@ -488,6 +488,97 @@ function addEstimate(form) { const d = buildDoc('estimate', form); estimateStore
 function localInvoiceRows() { return invoiceStore.get() || []; }
 function localEstimateRows() { return estimateStore.get() || []; }
 
+/* ── ONE source of truth for invoice/estimate rows ──
+   Every screen that lists invoices or estimates (Finance suite, the direct
+   Invoices/Estimates screens, customer tabs, projects) reads these hooks:
+   portal-created rows (synced store) merged with the QuickBooks landing
+   tables, normalized to one display shape and deduped by doc number. */
+
+const fmtDocDate = (d) => d ? new Date(String(d).slice(0, 10) + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+
+function qboLinesToDisplay(lines) {
+  if (!Array.isArray(lines)) return [];
+  return lines
+    .filter(l => l && (l.desc || l.DetailType === 'SalesItemLineDetail' || l.SalesItemLineDetail))
+    .map(l => l.desc !== undefined
+      ? { desc: l.desc, qty: Number(l.qty) || 1, rate: Number(l.rate) || 0 }
+      : {
+          desc: l.Description || (l.SalesItemLineDetail && l.SalesItemLineDetail.ItemRef && l.SalesItemLineDetail.ItemRef.name) || 'Item',
+          qty: (l.SalesItemLineDetail && Number(l.SalesItemLineDetail.Qty)) || 1,
+          rate: (l.SalesItemLineDetail && Number(l.SalesItemLineDetail.UnitPrice)) || Number(l.Amount) || 0,
+        });
+}
+
+function mapInvoiceRow(r) {
+  const statusMap = { open: 'pending', paid: 'paid', overdue: 'overdue', draft: 'draft', void: 'void', pending: 'pending' };
+  const dueRaw = r.due || null;
+  return {
+    num: r.num || r.doc_number || ('INV-' + (r.qbo_id || '?')),
+    customer: r.customer || r.customer_name || 'Customer',
+    amount: r.amount != null ? Number(r.amount) : (Number(r.total) || 0),
+    status: statusMap[r.status] || r.status || 'pending',
+    due: dueRaw || fmtDocDate(r.due_date),
+    days: Number(r.days) || ((r.status === 'overdue' && r.due_date) ? Math.max(0, Math.round((Date.now() - new Date(r.due_date).getTime()) / 86400000)) : 0),
+    terms: r.terms || '—', po: r.po || '',
+    lines: qboLinesToDisplay(r.lines),
+    project_id: r.project_id || null,
+    source: r.source || (r.qbo_id && !String(r.qbo_id).startsWith('local-') ? 'quickbooks' : 'portal'),
+    _raw: r,
+  };
+}
+
+function mapEstimateRow(r) {
+  const statusMap = { pending: 'sent', accepted: 'accepted', closed: 'accepted', rejected: 'expired', draft: 'draft', sent: 'sent', expired: 'expired' };
+  return {
+    num: r.num || r.doc_number || ('EST-' + (r.qbo_id || '?')),
+    customer: r.customer || r.customer_name || 'Customer',
+    amount: r.amount != null ? Number(r.amount) : (Number(r.total) || 0),
+    status: statusMap[r.status] || 'sent',
+    date: r.date || fmtDocDate(r.txn_date),
+    expires: r.expires || fmtDocDate(r.expiration_date),
+    lines: qboLinesToDisplay(r.lines),
+    qboId: r.qbo_id && !String(r.qbo_id).startsWith('local-') ? r.qbo_id : null,
+    source: r.source || (r.qbo_id && !String(r.qbo_id).startsWith('local-') ? 'quickbooks' : 'portal'),
+    _raw: r,
+  };
+}
+
+function useMergedDocs(store, fetchQbo, mapRow) {
+  const [local] = useShieldStore(store);
+  const [qbo, setQbo] = React.useState([]);
+  React.useEffect(() => {
+    let alive = true;
+    const q = window.__shieldQBO; if (!q) return;
+    fetchQbo(q).then(r => { if (alive) setQbo(r && r.ok && r.data ? r.data : []); });
+    return () => { alive = false; };
+  }, []);
+  return React.useMemo(() => {
+    const out = []; const seen = new Set();
+    for (const r of [...(local || []), ...qbo]) {
+      const m = mapRow(r);
+      if (seen.has(m.num)) continue;
+      seen.add(m.num); out.push(m);
+    }
+    return out;
+  }, [local, qbo]);
+}
+
+function useMergedInvoices() {
+  return useMergedDocs(invoiceStore, (q) => q.invoices({ limit: 500 }), mapInvoiceRow);
+}
+function useMergedEstimates() {
+  return useMergedDocs(estimateStore, (q) => q.estimates(500), mapEstimateRow);
+}
+
+/* Shared empty-state row so blank tables explain themselves the same way everywhere. */
+function DocsEmptyRow({ colSpan, kind }) {
+  return (
+    <tr><td colSpan={colSpan} style={{ padding: '24px 14px', fontSize: 12, color: 'var(--text-low)', textAlign: 'center' }}>
+      No {kind} yet — create one here, or connect QuickBooks (qbo-sync) and they'll all appear after the first sync.
+    </td></tr>
+  );
+}
+
 /* ── Site Survey Report Store ── (real, editable, persistent → syncs) */
 const SURVEY_BOM_SEED = [
   { sku:'P3245-V',  desc:'Axis P3245-V Indoor Dome',        qty:8,  unit:285,  hrs:1.5 },
@@ -581,6 +672,7 @@ Object.assign(window, {
   projectStore, invoiceStore, estimateStore,
   buildProject, addProject, buildDoc, addInvoice, addEstimate,
   localInvoiceRows, localEstimateRows,
+  mapInvoiceRow, mapEstimateRow, useMergedInvoices, useMergedEstimates, DocsEmptyRow,
   updateProject, estWorkflowView, projectForEstimate, acceptEstimateToProject,
   attachEstimateToProject, attachInvoiceToProject, projectBilledPct,
   createProgressInvoice, applyEstimateAcceptances,

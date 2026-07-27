@@ -8,9 +8,10 @@
    workflow: accept manually, or email the customer an acceptance link; either
    path creates a project with the quote attached. */
 function NIFinanceEstimates({ setModal, showToast }) {
-  const [localEst] = useShieldStore(estimateStore);
+  /* ONE shared source: portal store merged with QuickBooks (useMergedEstimates
+     in shared-state) — the same rows the Finance suite shows. */
+  const merged = useMergedEstimates();
   const [projects] = useShieldStore(projectStore);
-  const [qboEst, setQboEst] = React.useState([]);
   const [acceptances, setAcceptances] = React.useState([]);
 
   const refreshAcceptances = React.useCallback(() => {
@@ -20,32 +21,24 @@ function NIFinanceEstimates({ setModal, showToast }) {
   }, []);
 
   React.useEffect(() => {
-    const q = window.__shieldQBO;
-    if (q) q.estimates(500).then(r => setQboEst(r && r.ok && r.data ? r.data : []));
     // Apply any customer email-acceptances that landed since last visit,
     // then load acceptance state for the "awaiting customer" badges.
     Promise.resolve(typeof applyEstimateAcceptances === 'function' ? applyEstimateAcceptances() : null)
       .then(() => refreshAcceptances());
   }, [refreshAcceptances]);
 
-  const fmt = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-  const rows = React.useMemo(() => {
-    const merged = [...(localEst || []), ...qboEst];
-    return merged.map(r => {
-      const v = estWorkflowView(r);
-      const proj = (projects || []).find(p => (p.estimateRefs || []).includes(v.ref)) || null;
-      const acc = acceptances.find(a => a.estimate_ref === v.ref) || null;
-      const accepted = v.status === 'accepted' || v.status === 'closed' || !!proj || (acc && acc.status === 'accepted');
-      return {
-        ...v,
-        raw: r,
-        date: fmt(r.txn_date), expires: fmt(r.expiration_date),
-        display: accepted ? 'accepted' : (v.status === 'rejected' ? 'expired' : (v.status === 'draft' ? 'draft' : 'sent')),
-        project: proj,
-        awaiting: !accepted && acc && acc.status === 'pending',
-      };
-    });
-  }, [localEst, qboEst, projects, acceptances]);
+  const rows = React.useMemo(() => merged.map(m => {
+    const proj = (projects || []).find(p => (p.estimateRefs || []).includes(m.num)) || null;
+    const acc = acceptances.find(a => a.estimate_ref === m.num) || null;
+    const accepted = m.status === 'accepted' || !!proj || (acc && acc.status === 'accepted');
+    return {
+      ref: m.num, customer: m.customer, total: m.amount, qboId: m.qboId,
+      raw: m._raw, date: m.date, expires: m.expires,
+      display: accepted ? 'accepted' : (m.status === 'expired' ? 'expired' : (m.status === 'draft' ? 'draft' : 'sent')),
+      project: proj,
+      awaiting: !accepted && acc && acc.status === 'pending',
+    };
+  }), [merged, projects, acceptances]);
 
   const doAccept = (row) => {
     const proj = acceptEstimateToProject(row.raw, 'manual');
@@ -82,9 +75,7 @@ function NIFinanceEstimates({ setModal, showToast }) {
           <thead><tr>{['Estimate','Customer','Amount','Status','Date','Expires','Actions'].map((h,i) => (
             <th key={i} style={{ textAlign: i===2?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
           ))}</tr></thead>
-          <tbody>{rows.length === 0 && (
-            <tr><td colSpan={7} style={{ padding: '22px 14px', fontSize: 12, color: 'var(--text-low)', textAlign: 'center' }}>No estimates yet — create one, or they'll appear here from QuickBooks after a sync.</td></tr>
-          )}
+          <tbody>{rows.length === 0 && <DocsEmptyRow colSpan={7} kind="estimates" />}
           {rows.map((e,i) => (
             <tr key={i} onMouseEnter={ev=>ev.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
               <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{e.ref}</td>
