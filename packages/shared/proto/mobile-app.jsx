@@ -360,7 +360,7 @@ function MobilePortalApp() {
 
   // '<id>-full' opens the full desktop screen for ids that default to a native view
   const fullBase = screen.endsWith('-full') && M_SCREEN_MAP[screen.slice(0, -5)] ? screen.slice(0, -5) : null;
-  const hasFullView = !screen.endsWith('-full') && Boolean(M_SCREEN_MAP[screen]) && (Boolean(M_NATIVE[screen]) || M_NATIVE_IDS.includes(screen));
+  const hasFullView = !screen.endsWith('-full') && Boolean(M_SCREEN_MAP[screen]) && (Boolean(M_NATIVE[screen]) || M_NATIVE_IDS.includes(screen) || Boolean(window.M_OPS5 && window.M_OPS5[screen]));
 
   let content;
   if (fullBase) { const Fn = M_SCREEN_MAP[fullBase]; content = <Fn />; }
@@ -398,13 +398,16 @@ function MobilePortalApp() {
   else if (screen === 'dispatch') content = <MDispatchView onNav={nav} />;
   else if (screen === 'login') content = <LoginScreen />;
   else if (M_NATIVE[screen]) { const Native = M_NATIVE[screen]; content = <Native onNav={nav} />; }
+  else if (window.M_OPS5 && window.M_OPS5[screen]) { const Native = window.M_OPS5[screen]; content = <Native onNav={nav} />; }
   else {
     const Fn = M_SCREEN_MAP[screen] || (() => <MHomeView onNav={nav} />);
     content = <Fn />;
   }
   // Bespoke mobile = native touch view + the COMPLETE desktop toolset inline,
   // reflowed for the phone. One surface, nothing missing, no mode toggle.
-  const FULL_INLINE_SKIP = ['m-more', 'login', 'sitescan', 'cameras', 'topology', 'warroom', 'floorplan', 'anomaly', 'custom-dashboard', 'fleet', 'dispatch'];
+  // autobid: the shared screen is already phone-native (no dup); chat: the
+  // native view IS the live team chat (the desktop screen below would be noise).
+  const FULL_INLINE_SKIP = ['m-more', 'login', 'sitescan', 'cameras', 'topology', 'warroom', 'floorplan', 'anomaly', 'custom-dashboard', 'fleet', 'dispatch', 'autobid', 'chat', 'messages'];
   if (!fullBase && hasFullView && !FULL_INLINE_SKIP.includes(screen)) {
     const FullFn = M_SCREEN_MAP[screen];
     content = (
@@ -440,7 +443,7 @@ function MobilePortalApp() {
       </header>
 
       {/* Content */}
-      <div className="m-screen" data-desk={Boolean(fullBase) || !(M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen])} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
+      <div className="m-screen" data-desk={Boolean(fullBase) || !(M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen] || !!(window.M_OPS5 && window.M_OPS5[screen]))} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
         {content}
       </div>
 
