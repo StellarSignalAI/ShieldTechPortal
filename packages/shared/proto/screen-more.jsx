@@ -10,7 +10,13 @@ function ProjectsScreen() {
   ];
   const [wizardOpen, setWizardOpen] = React.useState(false);
   const [invModal, setInvModal] = React.useState(null);
+  const [detailNum, setDetailNum] = React.useState(null);
   const [storeProjects] = useShieldStore(projectStore);
+
+  // Apply customer email-acceptances → projects on entry.
+  React.useEffect(() => {
+    if (typeof applyEstimateAcceptances === 'function') applyEstimateAcceptances();
+  }, []);
   const DEMO_PROJECTS = [
     { id: 'PRJ-101', name: 'Pacific Rim Hotels — Full Upgrade', customer: 'Pacific Rim Hotels', value: '$215,000', stage: 'in-progress', progress: 35, pm: 'John Mitchell', techs: ['JL','KW'], start: 'May 15', end: 'Aug 30', milestones: [{ label: 'Site survey', done: true }, { label: 'Equipment ordered', done: true }, { label: 'Property 1 install', done: false }, { label: 'Property 2 install', done: false }, { label: 'Property 3 install', done: false }, { label: 'Final commissioning', done: false }] },
     { id: 'PRJ-098', name: 'City Hall — Access Control Upgrade', customer: 'City Hall', value: '$45,000', stage: 'in-progress', progress: 72, pm: 'Sarah Chen', techs: ['KW'], start: 'Apr 20', end: 'Jun 20', milestones: [{ label: 'Demo old system', done: true }, { label: 'Run new cables', done: true }, { label: 'Install readers', done: true }, { label: 'Program controllers', done: false }, { label: 'Testing & handoff', done: false }] },
@@ -65,7 +71,8 @@ function ProjectsScreen() {
                 <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{colProjects.length}</span>
               </div>
               {colProjects.map(p => (
-                <div key={p.id} className="glass" style={{ padding: 14, cursor: 'pointer' }}>
+                <div key={p.id} className="glass" style={{ padding: 14, cursor: 'pointer' }}
+                  onClick={() => p._rec ? setDetailNum(p._rec.number) : shieldToast('Demo project — create a real one with + New Project', 'info')}>
                   <div className="mono" style={{ fontSize: 10, color: 'var(--brand)', marginBottom: 4 }}>{p.id}</div>
                   <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>{p.name}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-low)', marginBottom: 8 }}>{p.customer}</div>
@@ -91,7 +98,7 @@ function ProjectsScreen() {
                     </div>
                   </div>
                   {(p.start || p.end) && <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 6 }}>{p.start} → {p.end}</div>}
-                  <button onClick={(e) => { e.stopPropagation(); setInvModal({ type: 'new-invoice', customer: p.customer, projectName: p.name, projectId: p._rec && p._rec.id }); }} style={{ marginTop: 8, width: '100%', padding: '5px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Create Invoice</button>
+                  <button onClick={(e) => { e.stopPropagation(); setInvModal({ type: 'new-invoice', customer: p.customer, projectName: p.name, projectId: p._rec && p._rec.number }); }} style={{ marginTop: 8, width: '100%', padding: '5px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Create Invoice</button>
                 </div>
               ))}
             </div>
@@ -104,6 +111,164 @@ function ProjectsScreen() {
           showToast={(m) => shieldToast(m, 'info')} />
       )}
       {invModal && <NIFinanceModal modal={invModal} setModal={setInvModal} showToast={(m) => shieldToast(m, 'ok')} />}
+      {detailNum && <ProjectDetailDrawer number={detailNum} onClose={() => setDetailNum(null)}
+        onNewInvoice={(p) => setInvModal({ type: 'new-invoice', customer: p.customer, projectName: p.name, projectId: p.number })} />}
+    </div>
+  );
+}
+
+/* ── Project Detail Drawer ──
+   Attached quotes + invoices (both directions) and progress billing: convert
+   incremental % of the accepted estimate/contract into invoices. */
+function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
+  const [projects] = useShieldStore(projectStore);
+  const [localEst] = useShieldStore(estimateStore);
+  const [invoices] = useShieldStore(invoiceStore);
+  const [qboEst, setQboEst] = React.useState([]);
+  const [pctInput, setPctInput] = React.useState('');
+  React.useEffect(() => {
+    const q = window.__shieldQBO;
+    if (q) q.estimates(500).then(r => setQboEst(r && r.ok && r.data ? r.data : []));
+  }, []);
+
+  const p = (projects || []).find(x => x.number === number);
+  if (!p) return null;
+
+  const allEst = [...(localEst || []), ...qboEst].map(estWorkflowView);
+  const attachedEst = (p.estimateRefs || []).map(ref => allEst.find(e => e.ref === ref) || { ref, customer: '', total: 0 });
+  const unattachedEst = allEst.filter(e => !(p.estimateRefs || []).includes(e.ref) && !projectForEstimate(e.ref));
+
+  const invView = (i) => ({
+    ref: i.num || i.doc_number, customer: i.customer || i.customer_name,
+    amount: i.amount != null ? i.amount : (Number(i.total) || 0), status: i.status || 'pending',
+    projectId: i.project_id || null,
+  });
+  const allInv = (invoices || []).map(invView);
+  const attachedInv = allInv.filter(i => i.projectId === p.number || (p.invoiceRefs || []).includes(i.ref));
+  const unattachedInv = allInv.filter(i => !attachedInv.includes(i));
+
+  const contract = Number(p.contractTotal) || Number(p.estimatedValue) || 0;
+  const billedPct = projectBilledPct(p);
+  const billedAmt = (p.billing || []).reduce((s, b) => s + (Number(b.amount) || 0), 0);
+  const remainingPct = Math.max(0, Math.round((100 - billedPct) * 100) / 100);
+
+  const cutInvoice = (pct) => {
+    const r = createProgressInvoice(p.number, pct);
+    if (r.ok) {
+      shieldToast(`${r.invoice.num} created — ${pct}% of contract ($${r.amount.toLocaleString()}). Billed to date: ${Math.min(r.cumulativePct, 999)}%`, 'ok');
+      setPctInput('');
+    } else shieldToast(r.error, 'warn');
+  };
+
+  const selStyle = { width: '100%', padding: '6px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, fontFamily: 'var(--font-body)' };
+  const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', fontSize: 12 };
+  const pctBtn = { padding: '5px 10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(3px)', zIndex: 8500, display: 'flex', justifyContent: 'flex-end' }}>
+      <div onClick={e => e.stopPropagation()} className="glass" style={{ width: 440, height: '100%', overflow: 'auto', padding: 22, borderRadius: 0, animation: 'fade-up 0.2s ease both' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <div>
+            <div className="mono" style={{ fontSize: 11, color: 'var(--brand)' }}>{p.number}</div>
+            <div className="display" style={{ fontSize: 17, fontWeight: 500 }}>{p.name}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-mid)', marginTop: 2 }}>{p.customer}</div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '12px 0 16px' }}>
+          <span className="label-sm">STATUS</span>
+          <select value={p.status} onChange={e => { updateProject(p.number, { status: e.target.value }); }} style={{ ...selStyle, width: 'auto' }}>
+            {['planning','in-progress','review','complete'].map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <div style={{ flex: 1 }} />
+          <span className="label-sm">CONTRACT</span>
+          <span className="mono" style={{ fontSize: 14, fontWeight: 600 }}>${contract.toLocaleString()}</span>
+        </div>
+
+        {/* Progress billing */}
+        <div className="glass" style={{ padding: 14, marginBottom: 16 }}>
+          <div className="label-sm" style={{ marginBottom: 8 }}>PROGRESS BILLING</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <div style={{ flex: 1, height: 6, background: 'rgba(63,169,245,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: `${Math.min(billedPct, 100)}%`, height: '100%', background: billedPct >= 100 ? 'var(--status-ok)' : 'var(--brand)', borderRadius: 3 }} />
+            </div>
+            <span className="mono" style={{ fontSize: 11, fontWeight: 600 }}>{billedPct}%</span>
+          </div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-low)', marginBottom: 10 }}>
+            ${billedAmt.toLocaleString()} invoiced of ${contract.toLocaleString()} · {remainingPct}% remaining
+          </div>
+          {contract > 0 ? (
+            <>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                {[10, 25, 50].map(x => <button key={x} onClick={() => cutInvoice(x)} style={pctBtn}>{x}%</button>)}
+                {remainingPct > 0 && <button onClick={() => cutInvoice(remainingPct)} style={{ ...pctBtn, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: 'var(--status-ok)' }}>Remaining {remainingPct}%</button>}
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input value={pctInput} onChange={e => setPctInput(e.target.value)} placeholder="Custom %" inputMode="decimal"
+                  style={{ flex: 1, padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none' }} />
+                <button onClick={() => cutInvoice(Number(pctInput))} style={{ ...pctBtn, background: 'var(--brand)', color: '#fff', border: 'none' }}>Invoice it</button>
+              </div>
+              {billedPct > 100 && <div style={{ fontSize: 10, color: 'var(--status-warn)', marginTop: 6 }}>⚠ Billed over 100% of contract</div>}
+            </>
+          ) : (
+            <div style={{ fontSize: 11, color: 'var(--status-warn)' }}>Attach an accepted estimate below to set the contract total.</div>
+          )}
+          {(p.billing || []).length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              {(p.billing || []).map((b, i) => (
+                <div key={i} style={rowStyle}>
+                  <span className="mono" style={{ color: 'var(--brand)', fontSize: 11 }}>{b.ref}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-mid)' }}>{b.pct}%</span>
+                  <span className="mono" style={{ fontSize: 12 }}>${Number(b.amount).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Attached quotes */}
+        <div className="label-sm" style={{ marginBottom: 6 }}>QUOTES / ESTIMATES ({attachedEst.length})</div>
+        {attachedEst.map((e, i) => (
+          <div key={i} style={rowStyle}>
+            <span className="mono" style={{ color: 'var(--brand)', fontSize: 11, cursor: 'pointer' }} onClick={() => navTo('estimates')}>{e.ref}</span>
+            <span className="mono" style={{ fontSize: 12 }}>${Number(e.total).toLocaleString()}</span>
+          </div>
+        ))}
+        {attachedEst.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)', padding: '4px 0' }}>No quotes attached yet.</div>}
+        <select defaultValue="" onChange={ev => {
+          const ref = ev.target.value; if (!ref) return;
+          const est = allEst.find(e => e.ref === ref);
+          attachEstimateToProject(p.number, est ? { doc_number: est.ref, customer_name: est.customer, total: est.total } : { doc_number: ref });
+          shieldToast(`${ref} attached to ${p.number}`, 'ok');
+          ev.target.value = '';
+        }} style={{ ...selStyle, margin: '8px 0 16px' }}>
+          <option value="">Attach an estimate…</option>
+          {unattachedEst.map(e => <option key={e.ref} value={e.ref}>{e.ref} — {e.customer} (${Number(e.total).toLocaleString()})</option>)}
+        </select>
+
+        {/* Attached invoices */}
+        <div className="label-sm" style={{ marginBottom: 6 }}>INVOICES ({attachedInv.length})</div>
+        {attachedInv.map((i2, i) => (
+          <div key={i} style={rowStyle}>
+            <span className="mono" style={{ color: 'var(--brand)', fontSize: 11, cursor: 'pointer' }} onClick={() => navTo('invoices')}>{i2.ref}</span>
+            <StatusBadge status={i2.status === 'paid' ? 'paid' : i2.status === 'overdue' ? 'overdue' : 'pending'} />
+            <span className="mono" style={{ fontSize: 12 }}>${Number(i2.amount).toLocaleString()}</span>
+          </div>
+        ))}
+        {attachedInv.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)', padding: '4px 0' }}>No invoices yet — cut one with progress billing above.</div>}
+        <select defaultValue="" onChange={ev => {
+          const ref = ev.target.value; if (!ref) return;
+          attachInvoiceToProject(p.number, ref);
+          shieldToast(`${ref} attached to ${p.number}`, 'ok');
+          ev.target.value = '';
+        }} style={{ ...selStyle, margin: '8px 0 14px' }}>
+          <option value="">Attach an existing invoice…</option>
+          {unattachedInv.map(i2 => <option key={i2.ref} value={i2.ref}>{i2.ref} — {i2.customer} (${Number(i2.amount).toLocaleString()})</option>)}
+        </select>
+
+        <button onClick={() => onNewInvoice(p)} style={{ width: '100%', padding: '9px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Invoice for this Project</button>
+      </div>
     </div>
   );
 }

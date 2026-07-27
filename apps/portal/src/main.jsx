@@ -19,6 +19,8 @@ import '@shared/webxr-scan.js';
 import '@shared/lidar-import.js';
 import '@shared/live-map.js';
 import '@shared/email.js';
+import '@shared/acceptance.js';
+import '@shared/bids.js';
 import '@shared/pdf.js';
 
 /* Fonts (self-hosted; same families/weights the design's Google Fonts import used) */

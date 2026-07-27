@@ -241,9 +241,11 @@ function NIFinanceOverview({ onNav }) {
 
 /* ── Invoices Tab ── */
 function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, setSelectedInv, invFilter, setInvFilter, showToast }) {
-  /* Live shared store — invoice actions persist and sync across surfaces */
-  const [invoices] = useShieldStore(invoiceStore);
-  const updateInv = (num, patch) => invoiceStore.set(prev => prev.map(i => i.num === num ? { ...i, ...(typeof patch === 'function' ? patch(i) : patch) } : i));
+  /* ONE shared source: portal store merged with QuickBooks (useMergedInvoices
+     in shared-state) — the same rows the Finance suite shows. */
+  const invoices = useMergedInvoices();
+  const [projects] = useShieldStore(projectStore);
+  const updateInv = (num, patch) => invoiceStore.set(prev => (prev || []).map(i => (i.num || i.doc_number) === num ? { ...i, ...(typeof patch === 'function' ? patch(i) : patch) } : i));
 
   const filtered = invFilter === 'All' ? invoices : invoices.filter(i => i.status === invFilter.toLowerCase());
 
@@ -278,6 +280,7 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
                 ))}
               </tr></thead>
               <tbody>
+                {filtered.length === 0 && <DocsEmptyRow colSpan={7} kind="invoices" />}
                 {filtered.map((inv, i) => (
                   <tr key={i} onClick={() => setSelectedInv(i)} style={{ cursor: 'pointer', background: selectedInv === i ? 'rgba(63,169,245,0.06)' : 'transparent', transition: 'background 0.12s' }}
                     onMouseEnter={e => { if (selectedInv !== i) e.currentTarget.style.background = 'rgba(63,169,245,0.03)'; }}
@@ -314,6 +317,39 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
               <DetailField label="Due Date" value={filtered[selectedInv].due} mono />
               <DetailField label="Terms" value={filtered[selectedInv].terms} />
               <DetailField label="PO Number" value={filtered[selectedInv].po || '—'} mono />
+            </div>
+
+            {/* Project attachment — invoices ↔ projects, both directions */}
+            <div className="label-sm" style={{ marginBottom: 6 }}>PROJECT</div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 14 }}>
+              {filtered[selectedInv].project_id ? (
+                <>
+                  <button onClick={() => navTo('projects')} className="mono" style={{ padding: '5px 10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>
+                    {filtered[selectedInv].project_id} →
+                  </button>
+                  <span style={{ fontSize: 11, color: 'var(--text-low)' }}>
+                    {((projects || []).find(p => p.number === filtered[selectedInv].project_id) || {}).name || ''}
+                  </span>
+                </>
+              ) : (
+                <select defaultValue="" onChange={e => {
+                  const inv = filtered[selectedInv];
+                  let num = e.target.value; if (!num) return;
+                  if (num === '__new__') {
+                    const name = window.prompt('Name for the new project:', `${inv.customer} — ${inv.num}`);
+                    e.target.value = '';
+                    if (!name) return;
+                    const rec = addProject({ name, customer: inv.customer, contractTotal: inv.amount, estimatedValue: inv.amount });
+                    num = rec.number;
+                  }
+                  attachInvoiceToProject(num, inv.num);
+                  showToast(`${inv.num} attached to ${num}`);
+                }} style={{ flex: 1, padding: '6px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, fontFamily: 'var(--font-body)' }}>
+                  <option value="">Attach to a project…</option>
+                  <option value="__new__">➕ Create new project from this invoice…</option>
+                  {(projects || []).map(p => <option key={p.number} value={p.number}>{p.number} — {p.name}</option>)}
+                </select>
+              )}
             </div>
 
             <div className="label-sm" style={{ marginBottom: 6 }}>LINE ITEMS</div>

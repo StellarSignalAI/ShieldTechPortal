@@ -13,8 +13,14 @@ const cors = {
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
 
-// Security-integrator trades: security systems, alarm, low-voltage electrical, fire.
-const DEFAULT_NAICS = "561621,238210,922160,561612";
+// Security-integrator / low-voltage trades:
+//   561621 Security Systems Services (CCTV, access control, burg/fire alarm)
+//   238210 Electrical Contractors & Other Wiring Installation (low-voltage,
+//          structured cabling, network infrastructure, AV, fire alarm install)
+//   561622 Locksmiths (electronic locks / door hardware / access control)
+// (Dropped 922160 gov fire-protection offices and 561612 security *guard*
+//  services — wrong category for an integrator's bids.)
+const DEFAULT_NAICS = "561621,238210,561622";
 
 async function authorize(req: Request, admin: ReturnType<typeof createClient>) {
   const cronSecret = Deno.env.get("CRON_SECRET");
@@ -34,14 +40,19 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json(405, { ok: false, error: "POST only" });
 
-  const apiKey = Deno.env.get("SAM_GOV_API_KEY");
-  if (!apiKey) return json(503, { ok: false, error: "SAM_GOV_API_KEY not configured" });
-
   const admin = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     { auth: { persistSession: false } },
   );
+
+  // Key: function secret first, then the Vault secret 'sam_gov_api_key'.
+  let apiKey = Deno.env.get("SAM_GOV_API_KEY") ?? "";
+  if (!apiKey) {
+    const { data } = await admin.rpc("get_sam_gov_api_key");
+    apiKey = (data as string | null) ?? "";
+  }
+  if (!apiKey) return json(503, { ok: false, error: "SAM_GOV_API_KEY not configured (env or Vault 'sam_gov_api_key')" });
   if (!(await authorize(req, admin))) {
     return json(401, { ok: false, error: "Admin/Staff session or CRON_SECRET required" });
   }
@@ -80,6 +91,19 @@ Deno.serve(async (req) => {
     return json(502, { ok: false, error: `SAM.gov fetch failed: ${String(e)}` });
   }
 
+  // Trade tagging from the live keyword database (public.lead_keywords).
+  let kwRows: { category: string; keyword: string }[] = [];
+  try {
+    const { data } = await admin.from("lead_keywords").select("category, keyword").eq("enabled", true);
+    kwRows = (data as typeof kwRows) ?? [];
+  } catch { /* keyword table optional */ }
+  const tagTrades = (text: string) => {
+    const t = text.toLowerCase();
+    const cats = new Set<string>();
+    for (const k of kwRows) if (k.keyword && t.includes(k.keyword.toLowerCase())) cats.add(k.category);
+    return cats.size ? [...cats] : ["security"];
+  };
+
   // ── Map + dedupe/insert (same ladder as ingest-alerts) ──
   let inserted = 0, deduped = 0, filtered = 0, invalid = 0;
   const seen = new Set<string>();
@@ -114,7 +138,7 @@ Deno.serve(async (req) => {
       buyer,
       state,
       territory: state,
-      trades: ["security"],
+      trades: tagTrades(title),
       due_at: o.responseDeadLine ? new Date(o.responseDeadLine).toISOString() : null,
       poc: o.pointOfContact ?? null,
       raw: o,

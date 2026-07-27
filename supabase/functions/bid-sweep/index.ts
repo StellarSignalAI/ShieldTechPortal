@@ -5,7 +5,7 @@
 // stores each lead with a link back to the platform (detail URL when the page
 // exposes one, otherwise the platform's listing page).
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { getRegions } from "../_shared/leadConfig.ts";
+import { getKeywords, getRegions } from "../_shared/leadConfig.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -96,6 +96,15 @@ Deno.serve(async (req) => {
   const regions = await getRegions(admin);
   const regionRule = `\nPRIORITY REGION: this integrator serves ${regions.join(", ")}. Prefer solicitations whose place of performance is in those states; you may still include a clearly high-value out-of-region item, but favor in-region. Grants/funding programs are national — include regardless of state.`;
 
+  // Live keyword database (public.lead_keywords, editable without redeploy):
+  // presented to the extractor as a trade taxonomy so matching stays broad but
+  // on-trade (network, cabling, fire, AV, access control, CCTV, alarms).
+  const keywords = await getKeywords(admin);
+  const keywordRule = Object.keys(keywords).length
+    ? `\nTARGET TRADE KEYWORDS (an item matching ANY of these — or a close synonym — is in scope):\n` +
+      Object.entries(keywords).map(([cat, words]) => `- ${cat}: ${words.join(", ")}`).join("\n")
+    : "";
+
   const { data: sources } = await admin.from("sources").select("id, listing_url").in("lane", ["bid", "grant"]).not("listing_url", "is", null);
   const results: Record<string, unknown>[] = [];
   for (const s of sources ?? []) {
@@ -107,7 +116,7 @@ Deno.serve(async (req) => {
       clearTimeout(t);
       const text = stripHtml(await res.text());
       if (text.length < 200) throw new Error("page too small / blocked");
-      const alerts = await extract(apiKey, text, regionRule);
+      const alerts = await extract(apiKey, text, regionRule + keywordRule);
       const r = await insertAlerts(admin, alerts, s.id, s.listing_url);
       await admin.from("sources").update({ last_checked: now, last_ok: true, last_error: null, last_found: r.inserted }).eq("id", s.id);
       results.push({ id: s.id, ...r, extracted: alerts.length });

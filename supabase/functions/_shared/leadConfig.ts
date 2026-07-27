@@ -4,7 +4,7 @@
 // when the user asks it to change scraping in chat.
 // deno-lint-ignore-file no-explicit-any
 
-const DEFAULT_REGIONS = ["NJ", "PA", "MD", "VA"];
+const DEFAULT_REGIONS = ["NJ", "PA", "NY", "MD", "VA"];
 
 export interface LeadConfig { regions: string[]; keywords: string[]; enabled: boolean; }
 
@@ -24,6 +24,24 @@ export async function getConfig(admin: any): Promise<LeadConfig> {
 
 export async function getRegions(admin: any): Promise<string[]> {
   return (await getConfig(admin)).regions;
+}
+
+// Full keyword set the scrapers target: the lead_keywords database (grouped by
+// trade category) merged with any ad-hoc keywords on lead_config. Categories
+// preserve ordering so prompts can present them as a trade taxonomy.
+export async function getKeywords(admin: any): Promise<Record<string, string[]>> {
+  const grouped: Record<string, string[]> = {};
+  try {
+    const { data } = await admin
+      .from("lead_keywords").select("category, keyword")
+      .eq("enabled", true).order("category").order("id");
+    for (const row of data ?? []) {
+      (grouped[row.category] ??= []).push(row.keyword);
+    }
+  } catch { /* table missing / not migrated yet — fall back to lead_config only */ }
+  const extra = (await getConfig(admin)).keywords;
+  if (extra.length) grouped["custom"] = [...(grouped["custom"] ?? []), ...extra];
+  return grouped;
 }
 
 // Apply a change set. Any of set/add/remove for regions + keywords. Returns the

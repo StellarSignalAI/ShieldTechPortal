@@ -56,6 +56,7 @@ function SecretWeaponScreen() {
 
   const tabs = [
     { id: 'board', l: 'Bid Board' },
+    { id: 'autobid', l: 'Auto-Bid' },
     { id: 'wargames', l: 'War Games' },
     { id: 'review', l: 'Review Deck' },
     { id: 'replay', l: 'Agent Replay' },
@@ -98,6 +99,7 @@ function SecretWeaponScreen() {
           )}
         </>
       )}
+      {tab === 'autobid' && <AutoBidScreen />}
       {tab === 'wargames' && (activeOpp && bidState ? <BrWarGames opp={activeOpp} state={bidState} update={update} /> : needOpp)}
       {tab === 'review' && (activeOpp && bidState ? <BrReviewDeck opp={activeOpp} state={bidState} update={update} onMode={() => {}} onBlueprint={() => {}} /> : needOpp)}
       {tab === 'replay' && (activeOpp ? <BrAgentReplay opp={activeOpp} onClose={() => setTab('board')} /> : needOpp)}

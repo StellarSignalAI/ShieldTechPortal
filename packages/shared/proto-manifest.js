@@ -112,6 +112,7 @@ import './proto/screen-auth.jsx';
 import './proto/shared-invoicing.jsx';
 import './proto/screen-estimates-invoices.jsx';
 import './proto/screen-invoice-builder.jsx';
+import './proto/screen-autobid.jsx';
 import './proto/screen-fleet.jsx';
 import './proto/screen-fleet-share.jsx';
 import './proto/screen-outbox.jsx';
