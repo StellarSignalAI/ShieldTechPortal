@@ -253,6 +253,9 @@ function MProjects({ onNav }) {
   const [createOpen, setCreateOpen] = React.useState(false);
   const [invoiceFor, setInvoiceFor] = React.useState(null);
   const [storeP] = useShieldStore(projectStore);
+  // Apply any customer email-acceptances that landed since last visit — an
+  // accepted estimate becomes a project here, same as on desktop.
+  React.useEffect(() => { if (typeof applyEstimateAcceptances === 'function') applyEstimateAcceptances(); }, []);
   const fmap = { Planning:'planning', Active:'in-progress', Review:'review', Done:'complete' };
   // Real projects created on any surface, mapped to the mobile card shape;
   // demo board only until the first real project exists.
@@ -286,12 +289,18 @@ function MProjects({ onNav }) {
               <div style={{ flex: 1 }}><MBar pct={p.progress} color={PRJ_STAGE[p.stage]} /></div>
               <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{p.progress}%</span>
             </div>
+            {p._rec && ((p._rec.estimateRefs || []).length > 0 || (p._rec.billing || []).length > 0) && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 6, fontSize: 9.5, color: 'var(--text-low)', flexWrap: 'wrap' }}>
+                {(p._rec.estimateRefs || []).length > 0 && <span>◇ {(p._rec.estimateRefs || []).join(', ')}</span>}
+                {(p._rec.billing || []).length > 0 && <span style={{ color: 'var(--brand)' }}>billed {projectBilledPct(p._rec)}%</span>}
+              </div>
+            )}
           </div>
           <button onClick={() => setInvoiceFor(p)} style={{ marginTop: 9, width: '100%', padding: '8px', borderRadius: 9, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer' }}>+ Create Invoice</button>
         </div>
       ))}
       {list.length === 0 && <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>No projects yet.</div>}
-      {openId && <MProjectDetail id={openId} onClose={() => setOpenId(null)} />}
+      {openId && <MProjectDetail id={openId} rec={(ALL.find(x => x.id === openId) || {})._rec} onClose={() => setOpenId(null)} />}
       {createOpen && <MProjectCreate onClose={() => setCreateOpen(false)} />}
       {invoiceFor && <MQuickInvoice project={invoiceFor} onClose={() => setInvoiceFor(null)} />}
     </div>
@@ -342,8 +351,9 @@ function MQuickInvoice({ project, onClose }) {
     const rec = addInvoice({
       customer_name: project.customer, total: amt, due_date: f.due || null, status: 'open',
       lines: f.desc ? [{ desc: f.desc, qty: 1, rate: amt }] : null,
-      project_id: project._rec && project._rec.id,
+      project_id: (project._rec && project._rec.number) || null,
     });
+    if (project._rec && project._rec.number) attachInvoiceToProject(project._rec.number, rec.doc_number);
     if (window.shieldToast) window.shieldToast(`Invoice ${rec.doc_number} created for ${project.customer}`, 'ok');
     onClose();
   };
@@ -362,9 +372,131 @@ function MQuickInvoice({ project, onClose }) {
     </MSheet>
   );
 }
-function MProjectDetail({ id, onClose }) {
+/* Real project (shared store) detail — the estimate→project→progress-billing
+   workflow on touch: status, contract, % billing, attached quotes/invoices. */
+function MRealProjectDetail({ number, onClose }) {
+  const [projects] = useShieldStore(projectStore);
+  const merged = useMergedEstimates();
+  const invoices = useMergedInvoices();
+  const [pctInput, setPctInput] = React.useState('');
+  const p = (projects || []).find(x => x.number === number);
+  if (!p) return null;
+
+  const contract = Number(p.contractTotal) || Number(p.estimatedValue) || 0;
+  const billedPct = projectBilledPct(p);
+  const billedAmt = (p.billing || []).reduce((s, b) => s + (Number(b.amount) || 0), 0);
+  const remainingPct = Math.max(0, Math.round((100 - billedPct) * 100) / 100);
+
+  const attachedEst = merged.filter(e => (p.estimateRefs || []).includes(e.num));
+  const unattachedEst = merged.filter(e => !(p.estimateRefs || []).includes(e.num));
+  const attachedInv = invoices.filter(i => i.project_id === p.number || (p.invoiceRefs || []).includes(i.num));
+
+  const cutInvoice = (pct) => {
+    const r = createProgressInvoice(p.number, pct);
+    if (r.ok) {
+      showToast(`${r.invoice.num} created — ${pct}% of contract ($${r.amount.toLocaleString()})`, 'ok');
+      setPctInput('');
+    } else showToast(r.error, 'warn');
+  };
+
+  const pctBtn = { padding: '9px 13px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
+  const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', fontSize: 12 };
+  const selStyle = { width: '100%', padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, fontFamily: 'var(--font-body)' };
+
+  return (
+    <MSheet title={p.name} onClose={onClose}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ flex: 1 }}>
+            <div className="mono" style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-high)' }}>${contract.toLocaleString()}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{p.customer || '—'} · {p.number}</div>
+          </div>
+          <select value={p.status} onChange={e => updateProject(p.number, { status: e.target.value })} style={{ ...selStyle, width: 'auto' }}>
+            {['planning', 'in-progress', 'review', 'complete'].map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+
+        {/* Progress billing */}
+        <MSection title="Progress billing">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <div style={{ flex: 1 }}><MBar pct={Math.min(billedPct, 100)} color={billedPct >= 100 ? 'var(--status-ok)' : 'var(--brand)'} /></div>
+            <span className="mono" style={{ fontSize: 11, fontWeight: 600 }}>{billedPct}%</span>
+          </div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-low)', marginBottom: 10 }}>
+            ${billedAmt.toLocaleString()} invoiced of ${contract.toLocaleString()} · {remainingPct}% remaining
+          </div>
+          {contract > 0 ? (
+            <>
+              <div style={{ display: 'flex', gap: 7, marginBottom: 8, flexWrap: 'wrap' }}>
+                {[10, 25, 50].map(x => <button key={x} onClick={() => cutInvoice(x)} style={pctBtn}>{x}%</button>)}
+                {remainingPct > 0 && <button onClick={() => cutInvoice(remainingPct)} style={{ ...pctBtn, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: 'var(--status-ok)' }}>Remaining {remainingPct}%</button>}
+              </div>
+              <div style={{ display: 'flex', gap: 7 }}>
+                <input value={pctInput} onChange={e => setPctInput(e.target.value)} placeholder="Custom %" inputMode="decimal"
+                  style={{ flex: 1, minWidth: 0, padding: '9px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-mono)', outline: 'none' }} />
+                <button onClick={() => cutInvoice(Number(pctInput))} style={{ ...pctBtn, background: 'var(--brand)', color: '#fff', border: 'none' }}>Invoice it</button>
+              </div>
+              {billedPct > 100 && <div style={{ fontSize: 10, color: 'var(--status-warn)', marginTop: 6 }}>⚠ Billed over 100% of contract</div>}
+            </>
+          ) : (
+            <div style={{ fontSize: 11, color: 'var(--status-warn)' }}>Attach an accepted estimate below to set the contract total.</div>
+          )}
+          {(p.billing || []).length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              {(p.billing || []).map((b, i) => (
+                <div key={i} style={rowStyle}>
+                  <span className="mono" style={{ color: 'var(--brand)', fontSize: 11 }}>{b.ref}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-mid)' }}>{b.pct}%</span>
+                  <span className="mono" style={{ fontSize: 12 }}>${Number(b.amount).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </MSection>
+
+        {/* Attached quotes */}
+        <MSection title={`Quotes / estimates · ${attachedEst.length}`}>
+          {attachedEst.map((e, i) => (
+            <div key={i} style={rowStyle}>
+              <span className="mono" style={{ color: 'var(--brand)', fontSize: 11 }}>{e.num}</span>
+              <span className="mono" style={{ fontSize: 12 }}>${Number(e.amount).toLocaleString()}</span>
+            </div>
+          ))}
+          {attachedEst.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)', padding: '4px 0' }}>No quotes attached yet.</div>}
+          {unattachedEst.length > 0 && (
+            <select defaultValue="" onChange={ev => {
+              const ref = ev.target.value; if (!ref) return;
+              const est = unattachedEst.find(e => e.num === ref);
+              attachEstimateToProject(p.number, est ? { doc_number: est.num, customer_name: est.customer, total: est.amount } : { doc_number: ref });
+              showToast(`${ref} attached to ${p.number}`, 'ok');
+              ev.target.value = '';
+            }} style={{ ...selStyle, marginTop: 8 }}>
+              <option value="">Attach an estimate…</option>
+              {unattachedEst.map(e => <option key={e.num} value={e.num}>{e.num} — {e.customer} (${Number(e.amount).toLocaleString()})</option>)}
+            </select>
+          )}
+        </MSection>
+
+        {/* Attached invoices */}
+        <MSection title={`Invoices · ${attachedInv.length}`}>
+          {attachedInv.map((iv, i) => (
+            <div key={i} style={rowStyle}>
+              <span className="mono" style={{ color: 'var(--brand)', fontSize: 11 }}>{iv.num}</span>
+              <MBadge color={{ paid: 'var(--status-ok)', overdue: 'var(--status-critical)', pending: 'var(--status-warn)' }[iv.status] || 'var(--text-low)'}>{iv.status}</MBadge>
+              <span className="mono" style={{ fontSize: 12 }}>${Number(iv.amount).toLocaleString()}</span>
+            </div>
+          ))}
+          {attachedInv.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)', padding: '4px 0' }}>No invoices yet — cut one with progress billing above.</div>}
+        </MSection>
+      </div>
+    </MSheet>
+  );
+}
+
+function MProjectDetail({ id, rec, onClose }) {
   const p = PROJECTS.find(x => x.id === id);
   const [milestones, setMilestones] = React.useState(p ? p.milestones : []);
+  if (!p && rec) return <MRealProjectDetail number={rec.number} onClose={onClose} />;
   if (!p) return null;
   const doneCount = milestones.filter(m => m[1]).length;
   const toggle = (i) => setMilestones(ms => ms.map((m, k) => k === i ? [m[0], !m[1]] : m));

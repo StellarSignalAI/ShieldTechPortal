@@ -54,7 +54,7 @@ function AutoBidScreen() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 1250 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <div>
           <div style={{ fontSize: 17, fontWeight: 600 }}>Auto-Bid</div>
           <div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>
@@ -78,7 +78,7 @@ function AutoBidScreen() {
         const status = bid ? bid.status : 'none';
         return (
           <div key={opp.id} className="glass" style={{ padding: '14px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => setOpenId(open ? null : opp.id)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', flexWrap: 'wrap' }} onClick={() => setOpenId(open ? null : opp.id)}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{opp.title}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 2 }}>
@@ -114,8 +114,8 @@ function AutoBidScreen() {
               <div style={{ marginTop: 14, borderTop: '1px solid var(--border-subtle)', paddingTop: 12 }}>
                 <div style={{ fontSize: 12.5, color: 'var(--text-high)', marginBottom: 10, lineHeight: 1.5 }}>{bid.scope?.summary}</div>
 
-                {/* 3 pricing tiers */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
+                {/* 3 pricing tiers — auto-fit so they stack on a phone */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 12 }}>
                   {['low', 'medium', 'aggressive'].map(k => {
                     const t = bid.tiers?.[k]; if (!t) return null;
                     const selected = bid.selected_tier === k && status === 'proposal';
@@ -136,7 +136,7 @@ function AutoBidScreen() {
                 </div>
 
                 {/* Grounding: what was read, what's assumed, what's missing */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 11 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, fontSize: 11 }}>
                   <div>
                     <div className="label-sm" style={{ marginBottom: 4 }}>LINE ITEMS ({(bid.line_items || []).length}) · {bid.labor_hours}h labor</div>
                     {(bid.line_items || []).slice(0, 8).map((l, i) => (
@@ -235,8 +235,8 @@ function ProposalViewer({ opp, bid, onClose }) {
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <div className="glass" style={{ width: 'min(940px, 96vw)', height: '92vh', display: 'flex', flexDirection: 'column', borderRadius: 12, overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 18px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 18px', borderBottom: '1px solid var(--border-subtle)', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 160 }}>
             <div style={{ fontSize: 13.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Proposal — {opp.title}</div>
             <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>{(bid.selected_tier || '').toUpperCase()} tier {bid.sent_at ? `· sent to ${bid.sent_to}` : ''}</div>
           </div>
@@ -249,7 +249,7 @@ function ProposalViewer({ opp, bid, onClose }) {
 
         {emailOpen && (
           <div onClick={() => setEmailOpen(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-            <div onClick={e => e.stopPropagation()} className="glass" style={{ width: 460, padding: 22, borderRadius: 12 }}>
+            <div onClick={e => e.stopPropagation()} className="glass" style={{ width: 'min(460px, 92vw)', padding: 22, borderRadius: 12 }}>
               <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 14 }}>Send proposal</div>
               <div className="label-sm" style={{ marginBottom: 4 }}>TO</div>
               <input value={to} onChange={e => setTo(e.target.value)} placeholder="buyer@agency.gov" style={{ ...inputStyle, marginBottom: 10 }} autoFocus />
