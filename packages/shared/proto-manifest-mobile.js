@@ -14,6 +14,7 @@ import './proto/mobile-ops.jsx';
 import './proto/mobile-ops2.jsx';
 import './proto/mobile-ops3.jsx';
 import './proto/mobile-ops4.jsx';
+import './proto/mobile-ops5.jsx';
 import './proto/image-slot.js';
 import './proto/mobile-finance.jsx';
 import './proto/mobile-builders.jsx';
