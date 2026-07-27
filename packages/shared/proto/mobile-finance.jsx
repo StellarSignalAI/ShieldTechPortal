@@ -2,9 +2,7 @@
    Full-featured mobile finance: Overview · Invoices · Recurring · Estimates · Bills (AP) · Expenses · Reports
    Mirrors the desktop QuickBooks-replacement feature set in a touch-native layout. */
 
-const FIN_INVOICES = [];
 const FIN_RECURRING = [];
-const FIN_ESTIMATES = [];
 const FIN_BILLS = [];
 const FIN_EXPENSES = [];
 const FIN_STATUS = { paid:'var(--status-ok)', pending:'var(--status-warn)', overdue:'var(--status-critical)', draft:'var(--text-low)', sent:'var(--brand)', accepted:'var(--status-ok)', declined:'var(--status-critical)', active:'var(--status-ok)', past_due:'var(--status-critical)', due:'var(--status-warn)', scheduled:'var(--brand)', approved:'var(--status-ok)', reimbursed:'var(--brand)' };
@@ -27,7 +25,11 @@ function FinKpis({ items }) {
 
 /* ── Overview ── */
 function FinOverview({ go }) {
-  const ar = [['Current', 0, 'var(--status-ok)'], ['1–30', 0, 'var(--status-warn)'], ['31–60', 0, 'var(--status-critical)'], ['60+', 0, '#c084fc']];
+  /* AR aging from the live merged invoice rows (portal + QuickBooks). */
+  const invoices = useMergedInvoices();
+  const open = invoices.filter(i => i.status !== 'paid' && i.status !== 'draft' && i.status !== 'void');
+  const bucket = (lo, hi) => open.filter(i => { const d = Number(i.days) || 0; return d >= lo && (hi == null || d <= hi); }).reduce((s, i) => s + i.amount, 0);
+  const ar = [['Current', bucket(0, 0), 'var(--status-ok)'], ['1–30', bucket(1, 30), 'var(--status-warn)'], ['31–60', bucket(31, 60), 'var(--status-critical)'], ['60+', bucket(61, null), '#c084fc']];
   const arTotal = ar.reduce((s, b) => s + b[1], 0);
   const lines = [];
   return (
@@ -74,38 +76,79 @@ function FinOverview({ go }) {
   );
 }
 
-/* ── Invoices ── */
+/* ── Invoices ──
+   ONE shared source (useMergedInvoices in shared-state): portal-created rows
+   merged with QuickBooks — the same rows every desktop screen shows. */
 function FinInvoices() {
   const [filter, setFilter] = React.useState('All');
   const [openNum, setOpenNum] = React.useState(null);
-  const list = filter === 'All' ? FIN_INVOICES : FIN_INVOICES.filter(i => i.status === filter.toLowerCase());
-  const outstanding = FIN_INVOICES.filter(i => i.status !== 'paid' && i.status !== 'draft').reduce((s, i) => s + i.amount, 0);
-  const overdue = FIN_INVOICES.filter(i => i.status === 'overdue').reduce((s, i) => s + i.amount, 0);
+  const [creating, setCreating] = React.useState(false);
+  const rows = useMergedInvoices();
+  const list = filter === 'All' ? rows : rows.filter(i => i.status === filter.toLowerCase());
+  const outstanding = rows.filter(i => i.status !== 'paid' && i.status !== 'draft').reduce((s, i) => s + i.amount, 0);
+  const overdue = rows.filter(i => i.status === 'overdue').reduce((s, i) => s + i.amount, 0);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <FinKpis items={[['OUTSTANDING', `$${(outstanding / 1000).toFixed(1)}K`, null, 'var(--status-warn)'], ['OVERDUE', `$${(overdue / 1000).toFixed(1)}K`, null, 'var(--status-critical)']]} />
       <div style={{ display: 'flex', gap: 8 }}>
         <div style={{ flex: 1, overflowX: 'auto' }}><MSegment options={['All', 'Paid', 'Pending', 'Overdue', 'Draft']} value={filter} onChange={setFilter} /></div>
-        <button onClick={() => showToast('New invoice — draft created', 'ok')} style={{ padding: '0 14px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 18, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>+</button>
+        <button onClick={() => setCreating(true)} style={{ padding: '0 14px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 18, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>+</button>
       </div>
       {list.map(inv => (
         <div key={inv.num} onClick={() => setOpenNum(inv.num)} className="glass" style={{ padding: '12px 13px', borderRadius: 12, cursor: 'pointer', borderLeft: `3px solid ${FIN_STATUS[inv.status]}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <span className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{inv.num}</span>
             <MBadge color={FIN_STATUS[inv.status]}>{inv.status}</MBadge>
+            {inv.project_id && <MBadge color="var(--brand)">{inv.project_id}</MBadge>}
             <span className="mono" style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 700, color: 'var(--text-high)' }}>${inv.amount.toLocaleString()}</span>
           </div>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{inv.customer}</div>
           <div style={{ fontSize: 10, color: inv.status === 'overdue' ? 'var(--status-critical)' : 'var(--text-low)' }}>{inv.status === 'overdue' ? `${inv.days}d overdue` : `due ${inv.due}`} · {inv.terms}</div>
         </div>
       ))}
-      {list.length === 0 && <FinEmpty>No invoices yet.</FinEmpty>}
-      {openNum && <FinInvoiceDetail num={openNum} onClose={() => setOpenNum(null)} />}
+      {list.length === 0 && <FinEmpty>No invoices yet — create one with +, or connect QuickBooks.</FinEmpty>}
+      {openNum && <FinInvoiceDetail inv={rows.find(i => i.num === openNum)} onClose={() => setOpenNum(null)} />}
+      {creating && <MNewInvoiceSheet onClose={() => setCreating(false)} />}
     </div>
   );
 }
-function FinInvoiceDetail({ num, onClose }) {
-  const inv = FIN_INVOICES.find(i => i.num === num);
+
+/* Create an invoice from the mobile Money tab — persists to the shared store
+   (same rows the desktop Finance suite and customer tabs render). */
+function MNewInvoiceSheet({ onClose }) {
+  const [f, setF] = React.useState({ customer: '', desc: '', amount: '', due: '' });
+  const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
+  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
+  const lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
+  const ok = f.customer.trim() && Number(f.amount) > 0;
+  const save = () => {
+    if (!ok) return;
+    const amt = Number(f.amount) || 0;
+    const rec = addInvoice({
+      customer_name: f.customer.trim(), total: amt, due_date: f.due || null, status: 'open',
+      lines: f.desc ? [{ desc: f.desc, qty: 1, rate: amt }] : null,
+    });
+    showToast(`Invoice ${rec.doc_number} created`, 'ok');
+    onClose();
+  };
+  return (
+    <MSheet title="New Invoice" onClose={onClose}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div><span style={lbl}>Customer</span><input value={f.customer} onChange={set('customer')} placeholder="Customer name" style={inp} /></div>
+        <div><span style={lbl}>Description</span><input value={f.desc} onChange={set('desc')} placeholder="Work / line item" style={inp} /></div>
+        <div><span style={lbl}>Amount ($)</span><input type="number" value={f.amount} onChange={set('amount')} placeholder="0.00" style={inp} /></div>
+        <div><span style={lbl}>Due date</span><input type="date" value={f.due} onChange={set('due')} style={inp} /></div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '13px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-mid)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
+          <button onClick={save} disabled={!ok} style={{ flex: 2, padding: '13px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 14, fontWeight: 600, cursor: ok ? 'pointer' : 'not-allowed', opacity: ok ? 1 : 0.5, fontFamily: 'var(--font-body)' }}>Create Invoice</button>
+        </div>
+      </div>
+    </MSheet>
+  );
+}
+
+function FinInvoiceDetail({ inv, onClose }) {
+  const [projects] = useShieldStore(projectStore);
   if (!inv) return null;
   return (
     <MSheet title={inv.num} onClose={onClose}>
@@ -115,12 +158,30 @@ function FinInvoiceDetail({ num, onClose }) {
           <MBadge color={FIN_STATUS[inv.status]}>{inv.status}</MBadge>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          {[['Due', inv.due], ['Terms', inv.terms], ['PO', inv.po || '—'], ['Lines', inv.lines.length]].map(([k, v]) => (
+          {[['Due', inv.due], ['Terms', inv.terms], ['Source', inv.source || 'portal'], ['Lines', (inv.lines || []).length]].map(([k, v]) => (
             <div key={k} style={{ background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '7px 10px' }}><div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase' }}>{k}</div><div className="mono" style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{v}</div></div>
           ))}
         </div>
+        {/* Project attachment — invoices ↔ projects, both directions (parity with desktop) */}
+        {inv.project_id ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '9px 12px' }}>
+            <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-low)', letterSpacing: '0.06em' }}>PROJECT</span>
+            <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{inv.project_id}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-low)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{((projects || []).find(p => p.number === inv.project_id) || {}).name || ''}</span>
+          </div>
+        ) : (projects || []).length > 0 && (
+          <select defaultValue="" onChange={e => {
+            const num = e.target.value; if (!num) return;
+            attachInvoiceToProject(num, inv.num);
+            showToast(`${inv.num} attached to ${num}`, 'ok');
+            onClose();
+          }} style={{ width: '100%', padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, fontFamily: 'var(--font-body)' }}>
+            <option value="">Attach to a project…</option>
+            {(projects || []).map(p => <option key={p.number} value={p.number}>{p.number} — {p.name}</option>)}
+          </select>
+        )}
         <MSection title="Line items">
-          {inv.lines.map((li, i) => (
+          {(inv.lines || []).map((li, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
               <span style={{ fontSize: 12, color: 'var(--text-mid)', flex: 1 }}>{li.desc}</span>
               {li.qty > 1 && <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{li.qty}×${li.rate}</span>}
@@ -177,27 +238,88 @@ function FinRecurring() {
   );
 }
 
-/* ── Estimates ── */
-function FinEstimates() {
+/* ── Estimates ──
+   Live rows (portal + QuickBooks merged) with the full acceptance → project
+   workflow on touch: accept manually, or email the customer an acceptance
+   link; either path creates a project with the quote attached (parity with
+   the desktop Estimates tab). */
+function FinEstimates({ onNav }) {
   const [filter, setFilter] = React.useState('All');
-  const list = filter === 'All' ? FIN_ESTIMATES : FIN_ESTIMATES.filter(e => e.status === filter.toLowerCase());
-  const outstanding = FIN_ESTIMATES.filter(e => e.status === 'sent').reduce((s, e) => s + e.amount, 0);
+  const merged = useMergedEstimates();
+  const [projects] = useShieldStore(projectStore);
+  const [acceptances, setAcceptances] = React.useState([]);
+
+  const refreshAcceptances = React.useCallback(() => {
+    const api = window.__shieldAcceptance;
+    if (!api) return;
+    api.list().then(r => { if (r && r.ok) setAcceptances(r.data); });
+  }, []);
+  React.useEffect(() => {
+    // Apply customer email-acceptances that landed since last visit, then load
+    // acceptance state for the "awaiting customer" badges.
+    Promise.resolve(typeof applyEstimateAcceptances === 'function' ? applyEstimateAcceptances() : null)
+      .then(() => refreshAcceptances());
+  }, [refreshAcceptances]);
+
+  const rows = React.useMemo(() => merged.map(m => {
+    const proj = (projects || []).find(p => (p.estimateRefs || []).includes(m.num)) || null;
+    const acc = acceptances.find(a => a.estimate_ref === m.num) || null;
+    const accepted = m.status === 'accepted' || !!proj || (acc && acc.status === 'accepted');
+    return {
+      ...m,
+      display: accepted ? 'accepted' : (m.status === 'expired' ? 'declined' : (m.status === 'draft' ? 'draft' : 'sent')),
+      project: proj,
+      awaiting: !accepted && acc && acc.status === 'pending',
+    };
+  }), [merged, projects, acceptances]);
+
+  const doAccept = (row) => {
+    const proj = acceptEstimateToProject(row._raw, 'manual');
+    showToast(`${row.num} accepted — project ${proj.number} created with the quote attached`, 'ok');
+  };
+  const doEmailAccept = async (row) => {
+    const email = window.prompt(`Send acceptance request for ${row.num} ($${row.amount.toLocaleString()}) to which customer email?`, '');
+    if (!email || !email.includes('@')) { if (email !== null) showToast('Enter a valid email address', 'warn'); return; }
+    const api = window.__shieldAcceptance;
+    if (!api) { showToast('Acceptance backend not configured', 'warn'); return; }
+    const r = await api.send({
+      estimateRef: row.num, estimateQboId: row.qboId,
+      customerName: row.customer, customerEmail: email.trim(), amount: row.amount,
+    });
+    if (r && r.ok) {
+      showToast(r.data.emailed
+        ? `Acceptance email for ${row.num} sent to ${email.trim()}`
+        : `Acceptance link created (email not sent: ${r.data.emailError})`, 'ok');
+      refreshAcceptances();
+    } else showToast(`Could not create acceptance request: ${(r && r.error) || 'unknown error'}`, 'error');
+  };
+
+  const list = filter === 'All' ? rows : rows.filter(e => e.display === filter.toLowerCase());
+  const outstanding = rows.filter(e => e.display === 'sent').reduce((s, e) => s + e.amount, 0);
+  const wonCount = rows.filter(e => e.display === 'accepted').length;
+  const actBtn = (bg, border, color) => ({ padding: '7px 12px', background: bg, border, borderRadius: 8, color, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' });
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <FinKpis items={[['OUT FOR SIGNATURE', `$${(outstanding / 1000).toFixed(0)}K`, null, 'var(--brand)'], ['WIN RATE', '—', null, 'var(--status-ok)']]} />
+      <FinKpis items={[['AWAITING ACCEPT', `$${(outstanding / 1000).toFixed(0)}K`, null, 'var(--brand)'], ['ACCEPTED', wonCount, `of ${rows.length} estimates`, 'var(--status-ok)']]} />
       <MSegment options={['All', 'Draft', 'Sent', 'Accepted', 'Declined']} value={filter} onChange={setFilter} />
       {list.map(e => (
-        <div key={e.num} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${FIN_STATUS[e.status]}` }}>
+        <div key={e.num} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${FIN_STATUS[e.display]}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <span className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{e.num}</span>
-            <MBadge color={FIN_STATUS[e.status]}>{e.status}</MBadge>
-            <span className="mono" style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: 'var(--text-high)' }}>${(e.amount / 1000).toFixed(0)}K</span>
+            <MBadge color={FIN_STATUS[e.display]}>{e.display}</MBadge>
+            {e.awaiting && <span style={{ fontSize: 9, color: 'var(--status-warn)' }}>✉ awaiting customer</span>}
+            <span className="mono" style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: 'var(--text-high)' }}>${e.amount.toLocaleString()}</span>
           </div>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{e.customer}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 10, color: 'var(--text-low)', flex: 1 }}>created {e.created} · expires {e.expires}</span>
-            {e.status === 'accepted' && <button onClick={() => showToast(`Converted ${e.num} → invoice`, 'ok')} style={{ padding: '4px 10px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 7, color: 'var(--status-ok)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>→ Invoice</button>}
-            {e.status === 'sent' && <button onClick={() => showToast('Reminder sent', 'ok')} style={{ padding: '4px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Remind</button>}
+          <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: 8 }}>created {e.date} · expires {e.expires}</div>
+          <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+            {e.display !== 'accepted' && <>
+              <button onClick={() => doAccept(e)} style={actBtn('rgba(52,211,153,0.08)', '1px solid rgba(52,211,153,0.25)', 'var(--status-ok)')}>✓ Accept → Project</button>
+              <button onClick={() => doEmailAccept(e)} style={actBtn('rgba(63,169,245,0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>✉ Email accept link</button>
+            </>}
+            {e.display === 'accepted' && (e.project
+              ? <button onClick={() => onNav && onNav('projects')} style={actBtn('rgba(63,169,245,0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>→ {e.project.number}{e.project.name ? ` · ${e.project.name.slice(0, 24)}` : ''}</button>
+              : <button onClick={() => doAccept(e)} style={actBtn('rgba(52,211,153,0.08)', '1px solid rgba(52,211,153,0.25)', 'var(--status-ok)')}>→ Create Project</button>)}
           </div>
         </div>
       ))}
@@ -303,7 +425,7 @@ function MFinance({ onNav }) {
       {tab === 'AI Queue' && <MFinAIQueue />}
       {tab === 'Invoices' && <FinInvoices />}
       {tab === 'Recurring' && <FinRecurring />}
-      {tab === 'Estimates' && <FinEstimates />}
+      {tab === 'Estimates' && <FinEstimates onNav={onNav} />}
       {tab === 'Bills' && <FinBills />}
       {tab === 'Expenses' && <FinExpenses />}
       {tab === 'Sales Tax' && <MFinSalesTax />}

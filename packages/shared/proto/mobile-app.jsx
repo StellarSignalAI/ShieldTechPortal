@@ -168,6 +168,7 @@ const M_SCREEN_MAP = {
   estimates: () => <EstimatesDirectScreen />,
   outbox: () => <OutboxScreen />,
   'secret-weapon': () => <SecretWeaponScreen />,
+  autobid: () => <AutoBidScreen />,
 };
 
 /* Ids resolved by purpose-built touch-native views (branches below). Any of
@@ -184,6 +185,7 @@ const M_TABS = [
 
 function screenLabel(id) {
   if (id === 'sitescan') return 'Survey Scan';
+  if (id === 'autobid') return 'Auto-Bid';
   if (id === 'm-more') return 'Everything';
   if (id === 'finance-full') return 'Finance Suite';
   if (id === 'workorder-full') return 'Work Order';
@@ -204,6 +206,16 @@ function MobileDirectory({ onNav }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search all screens…"
         style={{ background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+      {'auto bid autobid auto-bid bids proposals leads secret weapon'.includes(q.toLowerCase()) && (
+        <button onClick={() => onNav('autobid')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(63,169,245,0.10), rgba(52,211,153,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>⟡</span>
+          <span style={{ flex: 1 }}>
+            <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Auto-Bid <span style={{ fontSize: 8, fontWeight: 700, color: '#34D399', border: '1px solid rgba(52,211,153,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
+            <span style={{ display: 'block', fontSize: 10, color: 'var(--text-low)' }}>AI-built bids for every scraped lead — pick a tier, send the proposal</span>
+          </span>
+          <span style={{ color: 'var(--text-low)', fontSize: 14 }}>›</span>
+        </button>
+      )}
       {'survey scan surveyscan site scan 3d lidar'.includes(q.toLowerCase()) && (
         <button onClick={() => onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(63,169,245,0.10), rgba(192,132,252,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
           <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
