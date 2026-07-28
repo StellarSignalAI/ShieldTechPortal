@@ -20,10 +20,12 @@ const mFmtH = h => `${Math.floor(h)}:${h % 1 ? '30' : '00'}`;
 
 function MobileAgendaView({ onNav }) {
   const [jobs] = useShieldStore(jobStore);
-  const [day, setDay] = useState(3); // Wed = today
+  const todayIdx = ((new Date().getDay() + 6) % 7) + 1;   // Mon=1 … Sun=7, real today
+  const [day, setDay] = useState(todayIdx);
   const [addJob, setAddJob] = useState(false);
   const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const dates = [8, 9, 10, 11, 12, 13, 14];
+  const monday = new Date(); monday.setDate(monday.getDate() - (todayIdx - 1));
+  const dates = Array.from({ length: 7 }, (_, i) => { const d = new Date(monday); d.setDate(monday.getDate() + i); return d.getDate(); });
   const dayJobs = jobs.filter(j => j.day <= day && day <= (j.endDay || j.day)).sort((a, b) => a.start - b.start);
   const weekRevenue = jobs.filter(j => j.value && j.type !== 'meeting').reduce((s, j) => s + (j.value || 0), 0);
   return (
@@ -39,7 +41,7 @@ function MobileAgendaView({ onNav }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
         {dayLabels.map((d, i) => {
           const n = jobs.filter(j => j.day <= i + 1 && i + 1 <= (j.endDay || j.day)).length;
-          const on = day === i + 1, today = i === 2;
+          const on = day === i + 1, today = i + 1 === todayIdx;
           return (
             <button key={d} onClick={() => setDay(i + 1)} style={{ padding: '8px 0 6px', borderRadius: 9, border: '1px solid', borderColor: on ? 'var(--border-strong)' : 'var(--border-subtle)', background: on ? 'rgba(63,169,245,0.12)' : 'transparent', cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
               <span style={{ fontSize: 8, letterSpacing: '0.06em', color: on ? 'var(--brand)' : 'var(--text-low)' }}>{d.toUpperCase()}</span>

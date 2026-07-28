@@ -19,8 +19,16 @@ const MC_TYPES = {
   meeting:     { c: '#34D399', label: 'Meeting' },
 };
 const MC_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const MC_DATES = [8, 9, 10, 11, 12, 13, 14];      // the data week: Jun 8–14, 2026 (today = Wed 10)
-const MC_TODAY = 3;
+/* The schedule models one Mon–Sun week (jobs carry day 1–7). Anchor it to the
+   REAL current week so headers, "today" and the month grid always match the
+   calendar on the wall. */
+const MC_NOW = new Date();
+const MC_TODAY = ((MC_NOW.getDay() + 6) % 7) + 1;                 // Mon=1 … Sun=7
+const MC_WEEK = Array.from({ length: 7 }, (_, i) => {
+  const d = new Date(MC_NOW); d.setDate(MC_NOW.getDate() - (MC_TODAY - 1) + i); return d;
+});
+const MC_DATES = MC_WEEK.map(d => d.getDate());
+const MC_RANGE = `${MC_WEEK[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — ${MC_WEEK[6].toLocaleDateString('en-US', MC_WEEK[6].getMonth() === MC_WEEK[0].getMonth() ? { day: 'numeric' } : { month: 'short', day: 'numeric' })}`;
 const MC_H0 = 7, MC_H1 = 19, MC_HPX = 46, MC_COLW = 92;
 const mcSpan = j => (j.endDay || j.day) - j.day + 1;
 const mcFmt = h => `${(Math.floor(h) % 12) || 12}:${h % 1 ? '30' : '00'} ${h >= 12 ? 'PM' : 'AM'}`;
@@ -180,23 +188,28 @@ function MCWeek({ jobs, onCreate, onOpen }) {
 
 /* ── Month grid ── */
 function MCMonth({ jobs, onPickDay, onCreate }) {
-  const startDow = (new Date(2026, 5, 1).getDay() + 6) % 7;     // Mon-based weekday of Jun 1
-  const daysInMonth = 30;
+  const y = MC_NOW.getFullYear(), mo = MC_NOW.getMonth();
+  const startDow = (new Date(y, mo, 1).getDay() + 6) % 7;        // Mon-based weekday of the 1st
+  const daysInMonth = new Date(y, mo + 1, 0).getDate();
   const cells = [...Array(startDow).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
   while (cells.length % 7 !== 0) cells.push(null);
-  const jobsForDate = (d) => { const di = d - 7; return (di >= 1 && di <= 7) ? jobs.filter(j => j.day <= di && di <= (j.endDay || j.day)) : []; };
+  // Map a month date onto the scheduled week's day index (1–7) when it falls
+  // inside the current week; other dates render but hold no jobs yet.
+  const weekIdx = (d) => { const i = MC_WEEK.findIndex(w => w.getDate() === d && w.getMonth() === mo); return i >= 0 ? i + 1 : null; };
+  const jobsForDate = (d) => { const di = weekIdx(d); return di ? jobs.filter(j => j.day <= di && di <= (j.endDay || j.day)) : []; };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-mid)', textAlign: 'center' }}>{MC_NOW.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
         {MC_DAYS.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-low)', letterSpacing: '0.05em' }}>{d[0]}</div>)}
         {cells.map((d, i) => {
           if (!d) return <div key={i}></div>;
           const dayJobs = jobsForDate(d);
-          const di = d - 7;
-          const isToday = di === MC_TODAY;
+          const di = weekIdx(d);
+          const isToday = d === MC_NOW.getDate();
           return (
-            <button key={i} onClick={() => dayJobs.length ? onPickDay(di) : (di >= 1 && di <= 7 ? onCreate({ day: di, start: 9 }) : null)}
-              style={{ aspectRatio: '1', borderRadius: 9, border: `1px solid ${isToday ? 'var(--brand)' : 'var(--border-subtle)'}`, background: isToday ? 'rgba(63,169,245,0.08)' : dayJobs.length ? 'var(--glass-bg)' : 'transparent', cursor: (di >= 1 && di <= 7) ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, fontFamily: 'var(--font-body)', padding: 0 }}>
+            <button key={i} onClick={() => dayJobs.length ? onPickDay(di) : (di ? onCreate({ day: di, start: 9 }) : null)}
+              style={{ aspectRatio: '1', borderRadius: 9, border: `1px solid ${isToday ? 'var(--brand)' : 'var(--border-subtle)'}`, background: isToday ? 'rgba(63,169,245,0.08)' : dayJobs.length ? 'var(--glass-bg)' : 'transparent', cursor: di ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, fontFamily: 'var(--font-body)', padding: 0 }}>
               <span className="mono" style={{ fontSize: 12, fontWeight: isToday ? 700 : 400, color: isToday ? 'var(--brand)' : 'var(--text-mid)' }}>{d}</span>
               <div style={{ display: 'flex', gap: 2, minHeight: 5 }}>
                 {dayJobs.slice(0, 4).map((j, k) => <span key={k} style={{ width: 4, height: 4, borderRadius: '50%', background: mcColor(j) }}></span>)}
@@ -266,7 +279,7 @@ function MobileCalendar({ onNav }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span className="display" style={{ fontSize: 15, color: 'var(--text-high)' }}>Jun 8 — 14</span>
+        <span className="display" style={{ fontSize: 15, color: 'var(--text-high)' }}>{MC_RANGE}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span className="mono" style={{ fontSize: 11, color: 'var(--status-ok)' }}>${weekRevenue.toLocaleString()} wk</span>
           <button onClick={() => create({ day, start: 9 })} style={{ padding: '6px 13px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New</button>

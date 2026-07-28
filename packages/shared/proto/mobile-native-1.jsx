@@ -9,11 +9,12 @@ const dayGreeting = () => { const h = new Date().getHours(); return h < 12 ? 'Mo
 
 function MHomeView({ onNav }) {
   const [jobs] = useShieldStore(jobStore);
-  const todayJobs = jobs.filter(j => j.day <= 3 && 3 <= (j.endDay || j.day)).sort((a, b) => a.start - b.start);
+  const todayIdx = ((new Date().getDay() + 6) % 7) + 1;   // Mon=1 … Sun=7, real today
+  const todayJobs = jobs.filter(j => j.day <= todayIdx && todayIdx <= (j.endDay || j.day)).sort((a, b) => a.start - b.start);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div>
-        <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Wednesday, June 10</div>
+        <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
         <div className="display" style={{ fontSize: 21, fontWeight: 300, color: 'var(--text-high)' }}>{dayGreeting()}, {firstName()}</div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
@@ -286,7 +287,7 @@ function MCustomersView({ onNav }) {
           {c.health > 0 && c.health < 70 && <div style={{ marginTop: 7, fontSize: 10, color: 'var(--status-warn)' }}>⚠ Churn radar — late payments / open complaints · save-play suggested</div>}
         </div>
       ))}
-      {custs.length === 0 && <div className="glass" style={{ padding: 24, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>No customers match "{q}".</div>}
+      {custs.length === 0 && <div className="glass" style={{ padding: 24, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>{q.trim() ? `No customers match “${q}”.` : 'No customers yet — add your first with the + button, or sync QuickBooks to pull them in.'}</div>}
       {formOpen && <MobileCustomerForm onClose={() => setFormOpen(false)} />}
       {detail && <MobileCustomerDetail customer={detail} onClose={() => setDetailId(null)} onNav={onNav} />}
     </div>

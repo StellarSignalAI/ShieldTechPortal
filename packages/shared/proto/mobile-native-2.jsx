@@ -24,7 +24,7 @@ function MPipelineView({ onNav }) {
           <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 4 }}>Accepted leads from the Bid Board land here.</div>
         </div>
       )}
-      <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollSnapType: 'x mandatory', margin: '0 -14px', padding: '0 14px 6px' }}>
+      {stages.some(s => s.deals.length > 0) && <><div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollSnapType: 'x mandatory', margin: '0 -14px', padding: '0 14px 6px' }}>
         {stages.map(s => (
           <div key={s.name} style={{ flexShrink: 0, width: 264, scrollSnapAlign: 'start' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7, padding: '0 2px' }}>
@@ -43,7 +43,7 @@ function MPipelineView({ onNav }) {
           </div>
         ))}
       </div>
-      <div style={{ fontSize: 9, color: 'var(--text-low)', textAlign: 'center' }}>Swipe stages horizontally · drag-to-stage lives on desktop</div>
+      <div style={{ fontSize: 9, color: 'var(--text-low)', textAlign: 'center' }}>Swipe stages horizontally · drag-to-stage lives on desktop</div></>}
     </div>
   );
 }
