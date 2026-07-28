@@ -3,13 +3,14 @@
 // POST with Admin/Staff session or x-cron-secret:
 //   {opportunityId}                  → (re)build the bid for one lead
 //   {mode:"pending", limit?}         → build bids for leads that have none (cron)
+//   {mode:"proposals", limit?}       → backfill proposals for ready bids missing one
 //   {action:"proposal", bidId, tier} → generate the full proposal for a tier
 //
 // Build: reads the lead's source page (+ SAM.gov description via API when the
 // lead came from sam-poll), prices against the qbo_items pricebook, and stores
-// scope, line items, labor, and three pricing tiers (low/medium/aggressive).
-// Every bid records its assumptions, missing info, and a confidence grade —
-// the portal shows those next to the source URL for cross-referencing.
+// scope, line items, labor, and three pricing tiers (low/medium/aggressive),
+// then AUTO-GENERATES the recommended-tier proposal so every lead lands
+// approval-ready — the portal's job is just review → email/download.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const cors = {
@@ -93,6 +94,37 @@ Produce the BODY CONTENT ONLY as clean HTML fragments (h2/h3/p/ul/table with inl
 1. Executive Summary  2. Understanding of Requirements  3. Scope of Work  4. Technical Approach  5. Project Schedule & Milestones  6. Pricing (a table of the line items provided, subtotal, and the single total price provided — present the price EXACTLY as given)  7. Assumptions & Exclusions  8. Why ShieldTech  9. Acceptance (signature block with name/title/date lines).
 Professional, confident, specific to the solicitation. Never invent certifications, past-performance references, or customer names.`;
 
+// Generate the branded proposal HTML for a bid + tier and persist it.
+// Used by the explicit proposal action, by buildBid (auto-proposal on the
+// recommended tier so leads arrive approval-ready), and by mode:"proposals".
+// deno-lint-ignore no-explicit-any
+async function generateProposal(admin: any, apiKey: string, bid: any, opp: any, tierKey: string) {
+  const t = bid.tiers?.[tierKey];
+  if (!t) throw new Error("bid has no tiers yet — build it first");
+  const lines = (bid.line_items ?? []).map((l: { desc: string; qty: number; unit?: string }) =>
+    `- ${l.desc} — qty ${l.qty}${l.unit ? " " + l.unit : ""}`).join("\n");
+  const bodyHtml = await openai(apiKey, PROPOSAL_PROMPT,
+    `Solicitation: ${opp.title}\nBuyer: ${opp.buyer}\nState: ${opp.state ?? ""}\nDue: ${opp.due_at ?? ""}\nSource: ${opp.source_url ?? ""}\n\nScope summary: ${bid.scope?.summary ?? ""}\nAssumptions: ${(bid.scope?.assumptions ?? []).join("; ")}\nExclusions: ${(bid.scope?.exclusions ?? []).join("; ")}\n\nLine items (present these in the pricing table WITHOUT per-line prices — one total only):\n${lines}\n\nTOTAL PRICE (${tierKey} tier): $${Number(t.price).toLocaleString()}\nLabor included: ${bid.labor_hours} hours.`,
+    false);
+  const proposalHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Proposal — ${opp.title}</title>
+<style>body{font-family:Georgia,'Times New Roman',serif;max-width:760px;margin:0 auto;padding:48px 40px;color:#1a2330;line-height:1.55}
+h1{font-size:24px;margin:0}h2{font-size:17px;border-bottom:2px solid #1d5c96;padding-bottom:4px;margin-top:28px;color:#123a5f}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:7px 10px;border-bottom:1px solid #d8dee6;text-align:left}
+.head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1d5c96;padding-bottom:18px;margin-bottom:8px}
+.brand{font-size:20px;font-weight:700;color:#123a5f}.meta{font-size:12px;color:#54636f;text-align:right}</style></head><body>
+<div class="head"><div><div class="brand">ShieldTech Solutions LLC</div><div style="font-size:12px;color:#54636f">Security · Monitoring · Service · PA HIC #PA123456</div></div>
+<div class="meta">1234 Security Way, Philadelphia, PA 19103<br/>(215) 555-0100 · billing@shieldtechsolutions.com<br/>${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</div></div>
+<h1>Proposal — ${opp.title}</h1>
+<p style="font-size:13px;color:#54636f">Prepared for ${opp.buyer}${opp.state ? " · " + opp.state : ""} · Tier: ${tierKey.toUpperCase()} · Ref: ${opp.solicitation_id ?? opp.id}</p>
+${bodyHtml}
+</body></html>`;
+  await admin.from("bids").update({
+    status: "proposal", selected_tier: tierKey, proposal_html: proposalHtml,
+    proposal_at: new Date().toISOString(),
+  }).eq("id", bid.id);
+  return proposalHtml;
+}
+
 // deno-lint-ignore no-explicit-any
 async function buildBid(admin: any, apiKey: string, opp: any) {
   await admin.from("bids").upsert(
@@ -162,6 +194,14 @@ async function buildBid(admin: any, apiKey: string, opp: any) {
     tiers, docs_read: docs, built_at: new Date().toISOString(), error: null,
   }).eq("opportunity_id", opp.id);
 
+  // Auto-generate the recommended-tier proposal so every lead lands
+  // approval-ready — the portal's job is just review → email/download.
+  // A proposal failure never fails the build; the bid stays 'ready'.
+  try {
+    const { data: fresh } = await admin.from("bids").select("*").eq("opportunity_id", opp.id).maybeSingle();
+    if (fresh) await generateProposal(admin, apiKey, fresh, opp, "medium");
+  } catch { /* proposal can be generated later from the portal */ }
+
   return { opportunityId: opp.id, cost, tiers, confidence: scope.confidence };
 }
 
@@ -184,31 +224,23 @@ Deno.serve(async (req) => {
       const { data: bid } = await admin.from("bids").select("*, opportunities(*)").eq("id", body.bidId).maybeSingle();
       if (!bid) return json(404, { ok: false, error: "bid not found" });
       const tierKey = ["low", "medium", "aggressive"].includes(body.tier) ? body.tier : "medium";
-      const t = bid.tiers?.[tierKey];
-      if (!t) return json(400, { ok: false, error: "bid has no tiers yet — build it first" });
-      const opp = bid.opportunities;
-      const lines = (bid.line_items ?? []).map((l: { desc: string; qty: number; unit?: string }) =>
-        `- ${l.desc} — qty ${l.qty}${l.unit ? " " + l.unit : ""}`).join("\n");
-      const bodyHtml = await openai(apiKey, PROPOSAL_PROMPT,
-        `Solicitation: ${opp.title}\nBuyer: ${opp.buyer}\nState: ${opp.state ?? ""}\nDue: ${opp.due_at ?? ""}\nSource: ${opp.source_url ?? ""}\n\nScope summary: ${bid.scope?.summary ?? ""}\nAssumptions: ${(bid.scope?.assumptions ?? []).join("; ")}\nExclusions: ${(bid.scope?.exclusions ?? []).join("; ")}\n\nLine items (present these in the pricing table WITHOUT per-line prices — one total only):\n${lines}\n\nTOTAL PRICE (${tierKey} tier): $${Number(t.price).toLocaleString()}\nLabor included: ${bid.labor_hours} hours.`,
-        false);
-      const proposalHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Proposal — ${opp.title}</title>
-<style>body{font-family:Georgia,'Times New Roman',serif;max-width:760px;margin:0 auto;padding:48px 40px;color:#1a2330;line-height:1.55}
-h1{font-size:24px;margin:0}h2{font-size:17px;border-bottom:2px solid #1d5c96;padding-bottom:4px;margin-top:28px;color:#123a5f}
-table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:7px 10px;border-bottom:1px solid #d8dee6;text-align:left}
-.head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1d5c96;padding-bottom:18px;margin-bottom:8px}
-.brand{font-size:20px;font-weight:700;color:#123a5f}.meta{font-size:12px;color:#54636f;text-align:right}</style></head><body>
-<div class="head"><div><div class="brand">ShieldTech Solutions LLC</div><div style="font-size:12px;color:#54636f">Security · Monitoring · Service · PA HIC #PA123456</div></div>
-<div class="meta">1234 Security Way, Philadelphia, PA 19103<br/>(215) 555-0100 · billing@shieldtechsolutions.com<br/>${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</div></div>
-<h1>Proposal — ${opp.title}</h1>
-<p style="font-size:13px;color:#54636f">Prepared for ${opp.buyer}${opp.state ? " · " + opp.state : ""} · Tier: ${tierKey.toUpperCase()} · Ref: ${opp.solicitation_id ?? opp.id}</p>
-${bodyHtml}
-</body></html>`;
-      await admin.from("bids").update({
-        status: "proposal", selected_tier: tierKey, proposal_html: proposalHtml,
-        proposal_at: new Date().toISOString(),
-      }).eq("id", bid.id);
+      const proposalHtml = await generateProposal(admin, apiKey, bid, bid.opportunities, tierKey);
       return json(200, { ok: true, data: { bidId: bid.id, tier: tierKey, proposalHtml } });
+    }
+
+    // ── Backfill proposals for ready bids that don't have one yet ──
+    if (body.mode === "proposals") {
+      const limit = Math.min(Number(body.limit) || 15, 40);
+      const { data: bids } = await admin.from("bids")
+        .select("*, opportunities(*)")
+        .eq("status", "ready").is("proposal_html", null)
+        .order("built_at", { ascending: false }).limit(limit);
+      const done: string[] = []; const failed: string[] = [];
+      for (const bid of bids ?? []) {
+        try { await generateProposal(admin, apiKey, bid, bid.opportunities, "medium"); done.push(bid.id); }
+        catch { failed.push(bid.id); }
+      }
+      return json(200, { ok: true, data: { generated: done.length, failed: failed.length } });
     }
 
     // ── Build one ──

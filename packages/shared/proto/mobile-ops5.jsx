@@ -586,8 +586,234 @@ function MTimelineN({ onNav }) {
     chips={[{ label: 'Customers', to: 'customers-list' }]} />;
 }
 
-/* ══════════════ Auto-Bid: already phone-native — render it directly ══════════════ */
-function MAutoBidN() { return <AutoBidScreen />; }
+/* ══════════════ AUTO-BID — native approval queue ══════════════
+   Bids auto-build nightly WITH their recommended-tier proposal already
+   generated. This screen is purely review → approve: tap a lead, see the
+   finished proposal + exactly how the price was built, then Approve & Email
+   or Approve & Download. Nothing else to do. */
+const AB_CONF = { high: 'var(--status-ok)', medium: 'var(--status-warn)', low: 'var(--status-critical)' };
+const ab$ = (n) => '$' + Number(n || 0).toLocaleString();
+
+function MAutoBidN({ onNav }) {
+  const [rows, setRows] = React.useState(null);
+  const [open, setOpen] = React.useState(null);       // opp row under review
+  const [genBusy, setGenBusy] = React.useState({});
+  const refresh = React.useCallback(() => {
+    const api = window.__shieldBids; if (!api) return setRows([]);
+    api.list().then(r => setRows(r && r.ok ? r.data.filter(o => o.bid) : []));
+  }, []);
+  React.useEffect(() => { refresh(); }, [refresh]);
+  const list = rows || [];
+  const readyQ = list.filter(o => o.bid.status === 'proposal' && !o.bid.sent_at);
+  const sent = list.filter(o => o.bid.sent_at);
+  const building = list.filter(o => o.bid.status === 'ready' || o.bid.status === 'building');
+  const failed = list.filter(o => o.bid.status === 'error');
+  const finishOne = async (o) => {
+    setGenBusy(b => ({ ...b, [o.id]: true }));
+    const r = await window.__shieldBids.proposal(o.bid.id, 'medium');
+    setGenBusy(b => ({ ...b, [o.id]: false }));
+    if (r && r.ok) { showToast('Proposal ready', 'ok'); refresh(); }
+    else showToast(`Could not generate: ${(r && r.error) || 'unknown'}`, 'error');
+  };
+  const card = (o, badge, badgeColor, sub, onTap, trailing) => (
+    <div key={o.id} onClick={onTap} className="glass" style={{ padding: '13px 14px', borderRadius: 14, cursor: onTap ? 'pointer' : 'default' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+        <MBadge color={badgeColor}>{badge}</MBadge>
+        {o.bid.scope && <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: AB_CONF[o.bid.scope.confidence] || 'var(--text-low)' }}>{o.bid.scope.confidence}</span>}
+        <span className="mono" style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 700, color: 'var(--text-high)' }}>
+          {o.bid.tiers ? ab$((o.bid.tiers[o.bid.selected_tier || 'medium'] || o.bid.tiers.medium || {}).price) : ''}
+        </span>
+      </div>
+      <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-high)', lineHeight: 1.35 }}>{o.title}</div>
+      <div style={{ fontSize: 10.5, color: 'var(--text-low)', marginTop: 2 }}>{o.buyer}{o.state ? ` · ${o.state}` : ''}{o.due_at ? ` · due ${new Date(o.due_at).toLocaleDateString()}` : ''}{sub ? ` · ${sub}` : ''}</div>
+      {trailing}
+    </div>
+  );
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <OpsKpis items={[['TO APPROVE', readyQ.length, readyQ.length ? 'var(--brand)' : 'var(--status-ok)'], ['SENT', sent.length, 'var(--status-ok)'], ['LEADS', list.length, 'var(--text-mid)']]} />
+      {rows === null && <OPS5_EMPTY>Loading your bid queue…</OPS5_EMPTY>}
+      {rows !== null && list.length === 0 && <OPS5_EMPTY>No leads yet — the scrapers land them nightly at 4 AM ET and bids build themselves by 4:30.</OPS5_EMPTY>}
+
+      {readyQ.length > 0 && <MSection title="Ready for your approval" />}
+      {readyQ.map(o => card(o, 'REVIEW', 'var(--brand)', null, () => setOpen(o)))}
+
+      {building.length > 0 && <MSection title="Finishing up" style={{ marginTop: 4 }} />}
+      {building.map(o => card(o, o.bid.status === 'building' ? 'BUILDING' : 'PRICING DONE', 'var(--status-warn)', null, null, (
+        <button disabled={genBusy[o.id]} onClick={() => finishOne(o)} style={{ marginTop: 9, width: '100%', padding: '9px 0', borderRadius: 9, border: '1px solid var(--border-strong)', background: 'rgba(63,169,245,0.08)', color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+          {genBusy[o.id] ? 'Writing proposal…' : 'Finish proposal now'}
+        </button>
+      )))}
+
+      {sent.length > 0 && <MSection title="Approved & sent" style={{ marginTop: 4 }} />}
+      {sent.map(o => card(o, 'SENT', 'var(--status-ok)', `to ${o.bid.sent_to || '—'}`, () => setOpen(o)))}
+
+      {failed.length > 0 && <MSection title="Needs attention" style={{ marginTop: 4 }} />}
+      {failed.map(o => card(o, 'ERROR', 'var(--status-critical)', (o.bid.error || '').slice(0, 60), () => finishOne(o)))}
+
+      {open && <MBidReview opp={open} onClose={(changed) => { setOpen(null); if (changed) refresh(); }} />}
+    </div>
+  );
+}
+
+/* Full-screen native review: the finished proposal + a transparent "how this
+   price was built" panel, then one decision — email it or download it. */
+function MBidReview({ opp, onClose }) {
+  const [bid, setBid] = React.useState(opp.bid);
+  const [tierBusy, setTierBusy] = React.useState(false);
+  const [emailOpen, setEmailOpen] = React.useState(false);
+  const [showMath, setShowMath] = React.useState(false);
+  const [to, setTo] = React.useState('');
+  const [sending, setSending] = React.useState(false);
+  const tierKey = bid.selected_tier || 'medium';
+  const tier = (bid.tiers || {})[tierKey] || {};
+  const laborCost = Math.round((Number(bid.labor_hours) || 0) * (Number(bid.labor_rate) || 145));
+  const docs = bid.docs_read || [];
+  const readOk = docs.filter(d => d.fetched).length;
+  const switchTier = async (k) => {
+    if (k === tierKey || tierBusy) return;
+    setTierBusy(true);
+    const r = await window.__shieldBids.proposal(bid.id, k);
+    setTierBusy(false);
+    if (r && r.ok) setBid(b => ({ ...b, selected_tier: k, proposal_html: r.data.proposalHtml, status: 'proposal' }));
+    else showToast(`Could not switch tier: ${(r && r.error) || 'unknown'}`, 'error');
+  };
+  const download = () => {
+    const blob = new Blob([bid.proposal_html || ''], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `ShieldTech-Proposal-${String(opp.solicitation_id || opp.id).slice(0, 24)}.html`;
+    a.click(); URL.revokeObjectURL(a.href);
+    showToast('Approved — proposal downloaded (print to PDF for paper)', 'ok');
+  };
+  const send = async () => {
+    if (!to.includes('@')) { showToast('Enter a valid email', 'warn'); return; }
+    setSending(true);
+    const html = bid.proposal_html || '';
+    const r = await window.__shieldEmail.send({
+      to: to.trim(),
+      subject: `Proposal — ${opp.title} — ShieldTech Solutions`,
+      html: `<p style="font-family:sans-serif;font-size:14px">Hello,<br/><br/>Please find our proposal for "${opp.title}" below. We're ready to schedule a walkthrough or answer any questions.<br/><br/>Best regards,<br/>ShieldTech Solutions · (215) 555-0100</p><hr/>` +
+        html.replace(/^[\s\S]*?<body>/, '').replace(/<\/body>[\s\S]*$/, ''),
+    });
+    setSending(false);
+    if (r && r.ok) {
+      await window.__shieldBids.markSent(bid.id, to.trim());
+      showToast(`Approved — proposal emailed to ${to.trim()}`, 'ok');
+      onClose(true);
+    } else showToast(`Email failed: ${(r && r.error) || 'unknown'} — use Download instead`, 'error');
+  };
+  const mathRow = (k, v, strong) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.06)' }}>
+      <span style={{ fontSize: 11.5, color: strong ? 'var(--text-high)' : 'var(--text-mid)', fontWeight: strong ? 700 : 400 }}>{k}</span>
+      <span className="mono" style={{ fontSize: 11.5, fontWeight: strong ? 700 : 500, color: strong ? 'var(--brand)' : 'var(--text-high)' }}>{v}</span>
+    </div>
+  );
+  const overlay = (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 5000, background: 'var(--canvas)', display: 'flex', flexDirection: 'column', maxWidth: 460, margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ padding: 'calc(10px + env(safe-area-inset-top)) 16px 10px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        <button onClick={() => onClose(false)} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 17, cursor: 'pointer', padding: 0 }}>←</button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{opp.title}</div>
+          <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{opp.buyer}{opp.due_at ? ` · due ${new Date(opp.due_at).toLocaleDateString()}` : ''}</div>
+        </div>
+        {opp.source_url && <a href={opp.source_url} target="_blank" rel="noreferrer" style={{ fontSize: 10.5, color: 'var(--brand)', textDecoration: 'none', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '5px 9px', whiteSpace: 'nowrap' }}>Source ↗</a>}
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: 14, display: 'flex', flexDirection: 'column', gap: 11 }}>
+        {/* Price + tier picker */}
+        <div className="glass" style={{ padding: '14px 15px', borderRadius: 14, border: '1px solid var(--border-strong)' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
+            <span className="mono" style={{ fontSize: 27, fontWeight: 700, color: 'var(--text-high)' }}>{ab$(tier.price)}</span>
+            <span style={{ fontSize: 10.5, color: 'var(--text-low)' }}>{tier.marginPct}% margin</span>
+            {bid.scope && <span style={{ marginLeft: 'auto', fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', color: AB_CONF[bid.scope.confidence] }}>{bid.scope.confidence} confidence</span>}
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginTop: 11 }}>
+            {[['low', 'Lower'], ['medium', 'Recommended'], ['aggressive', 'Premium']].map(([k, label]) => {
+              const t = (bid.tiers || {})[k]; if (!t) return null;
+              const onIt = k === tierKey;
+              return (
+                <button key={k} disabled={tierBusy} onClick={() => switchTier(k)} style={{ flex: 1, padding: '8px 0 7px', borderRadius: 9, cursor: 'pointer', fontFamily: 'var(--font-body)', border: `1px solid ${onIt ? 'var(--brand)' : 'var(--border-subtle)'}`, background: onIt ? 'rgba(63,169,245,0.14)' : 'transparent', opacity: tierBusy ? 0.55 : 1 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: onIt ? 'var(--brand)' : 'var(--text-low)', textTransform: 'uppercase' }}>{label}</div>
+                  <div className="mono" style={{ fontSize: 12.5, fontWeight: 700, color: onIt ? 'var(--text-high)' : 'var(--text-mid)' }}>{ab$(t.price)}</div>
+                </button>
+              );
+            })}
+          </div>
+          {tierBusy && <div style={{ fontSize: 10.5, color: 'var(--status-warn)', marginTop: 8, textAlign: 'center' }}>Rewriting proposal at this price…</div>}
+        </div>
+
+        {/* How this price was built — the accuracy panel */}
+        <button onClick={() => setShowMath(s => !s)} className="glass" style={{ width: '100%', textAlign: 'left', padding: '12px 15px', borderRadius: 13, border: '1px solid var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 9 }}>
+          <span style={{ fontSize: 13 }}>🧮</span>
+          <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>How this price was built</span>
+          <span style={{ fontSize: 10, color: readOk ? 'var(--status-ok)' : 'var(--status-warn)' }}>{readOk}/{docs.length} sources read</span>
+          <span style={{ color: 'var(--text-low)', transform: showMath ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}>›</span>
+        </button>
+        {showMath && (
+          <div className="glass" style={{ padding: '12px 15px', borderRadius: 13, marginTop: -4 }}>
+            {mathRow('Materials & equipment', ab$(bid.material_cost))}
+            {mathRow(`Labor — ${bid.labor_hours}h × $${bid.labor_rate}/hr`, ab$(laborCost))}
+            {mathRow('Our cost', ab$(bid.cost_total))}
+            {mathRow(`+ ${tier.marginPct}% margin (${tierKey})`, ab$(tier.price), true)}
+            {(bid.line_items || []).length > 0 && <>
+              <div className="label-sm" style={{ margin: '10px 0 4px' }}>LINE ITEMS ({bid.line_items.length})</div>
+              {bid.line_items.slice(0, 10).map((l, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, padding: '3px 0' }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-mid)' }}>{l.qty}× {l.desc}</span>
+                  <span className="mono" style={{ fontSize: 10.5, color: 'var(--text-low)', whiteSpace: 'nowrap' }}>{ab$((Number(l.qty) || 0) * (Number(l.unitCost) || 0))}</span>
+                </div>
+              ))}
+              {bid.line_items.length > 10 && <div style={{ fontSize: 10, color: 'var(--text-low)' }}>+{bid.line_items.length - 10} more…</div>}
+            </>}
+            {docs.length > 0 && <>
+              <div className="label-sm" style={{ margin: '10px 0 4px' }}>SOURCES THE AI READ</div>
+              {docs.map((d, i) => (
+                <div key={i} style={{ display: 'flex', gap: 7, alignItems: 'center', padding: '3px 0' }}>
+                  <span style={{ fontSize: 10, color: d.fetched ? 'var(--status-ok)' : 'var(--status-critical)' }}>{d.fetched ? '✓' : '✗'}</span>
+                  <a href={d.url} target="_blank" rel="noreferrer" style={{ fontSize: 10, color: 'var(--brand)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{d.url}</a>
+                </div>
+              ))}
+            </>}
+            {(bid.scope?.missingInfo || []).length > 0 && <>
+              <div className="label-sm" style={{ margin: '10px 0 4px', color: 'var(--status-warn)' }}>⚠ VERIFY AT SOURCE BEFORE SENDING</div>
+              {bid.scope.missingInfo.map((m, i) => <div key={i} style={{ fontSize: 11, color: 'var(--status-warn)', padding: '2px 0' }}>• {m}</div>)}
+            </>}
+            {(bid.scope?.assumptions || []).length > 0 && <>
+              <div className="label-sm" style={{ margin: '10px 0 4px' }}>ASSUMPTIONS MADE</div>
+              {bid.scope.assumptions.slice(0, 5).map((a, i) => <div key={i} style={{ fontSize: 11, color: 'var(--text-mid)', padding: '2px 0' }}>• {a}</div>)}
+            </>}
+          </div>
+        )}
+
+        {/* The finished proposal */}
+        {bid.proposal_html
+          ? <iframe title="proposal" srcDoc={bid.proposal_html} style={{ width: '100%', height: '56vh', border: '1px solid var(--border-subtle)', borderRadius: 13, background: '#fff', flexShrink: 0 }} />
+          : <OPS5_EMPTY>Proposal not written yet for this lead.</OPS5_EMPTY>}
+        {bid.sent_at && <div style={{ fontSize: 10.5, color: 'var(--status-ok)', textAlign: 'center' }}>✓ Already sent to {bid.sent_to} on {new Date(bid.sent_at).toLocaleDateString()}</div>}
+      </div>
+
+      {/* Decision bar */}
+      <div style={{ padding: '10px 14px calc(12px + env(safe-area-inset-bottom))', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 9, flexShrink: 0, background: 'rgba(10,14,20,0.96)' }}>
+        <button onClick={download} style={{ flex: 1, padding: '13px 0', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'rgba(63,169,245,0.08)', color: 'var(--brand)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⭳ Approve & Download</button>
+        <button onClick={() => setEmailOpen(true)} style={{ flex: 1.2, padding: '13px 0', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✉ Approve & Email</button>
+      </div>
+
+      {emailOpen && (
+        <div onClick={() => setEmailOpen(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', zIndex: 10 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', background: 'var(--modal, #0d1420)', borderTop: '1px solid var(--border-strong)', borderRadius: '18px 18px 0 0', padding: '18px 18px calc(20px + env(safe-area-inset-bottom))' }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-high)', marginBottom: 10 }}>Send to</div>
+            <input autoFocus value={to} onChange={e => setTo(e.target.value)} placeholder="buyer@agency.gov" inputMode="email"
+              style={{ width: '100%', padding: '13px 14px', borderRadius: 11, border: '1px solid var(--border-subtle)', background: 'rgba(5,7,10,0.5)', color: 'var(--text-high)', fontSize: 16, fontFamily: 'var(--font-body)', outline: 'none', marginBottom: 12 }} />
+            <button onClick={send} disabled={sending} style={{ width: '100%', padding: '13px 0', borderRadius: 11, border: 'none', background: 'var(--brand)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', opacity: sending ? 0.6 : 1 }}>{sending ? 'Sending…' : 'Send proposal'}</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+  return (window.ReactDOM && window.ReactDOM.createPortal) ? window.ReactDOM.createPortal(overlay, document.body) : overlay;
+}
 
 /* Screen id → native view. Consumed by mobile-app.jsx; every id here renders
    its native layer with data-desk=false, plus the full desktop suite inline
@@ -631,4 +857,4 @@ const M_OPS5 = {
   autobid: MAutoBidN,
 };
 
-Object.assign(window, { M_OPS5, MDeskIntro, MChatN, MInvoicesN, MEstimatesN, MTimesheetsN, MEmployeesN, MPricebookN, MProductLibraryN, MDocumentsN, MUsersN, MOutboxN, MSecretWeaponN, MAssetsN, MForecastN, MHealthN, MWallboardN, MDigestN, MPortalSettingsN, MIntegrationsN, MAutoBidN });
+Object.assign(window, { M_OPS5, MDeskIntro, MChatN, MInvoicesN, MEstimatesN, MTimesheetsN, MEmployeesN, MPricebookN, MProductLibraryN, MDocumentsN, MUsersN, MOutboxN, MSecretWeaponN, MAssetsN, MForecastN, MHealthN, MWallboardN, MDigestN, MPortalSettingsN, MIntegrationsN, MAutoBidN, MBidReview });
