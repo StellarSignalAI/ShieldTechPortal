@@ -101,3 +101,19 @@ body { max-width: 430px; margin: 0 auto; }
   /* Row/action buttons keep a usable hit area on touch */
   .m-screen button { min-height: 30px; }
 }
+
+/* ── Bespoke polish pass — native (non-desk) screens only ──
+   Softer glass, one consistent card radius, calmer borders, comfortable tap
+   targets, and breathing room between sections. Scoped to data-desk="false"
+   so the reflowed desktop toolset keeps its own compact styling. */
+.m-screen[data-desk="false"] { padding: 16px 16px 22px !important; font-size: 13.5px; }
+.m-screen[data-desk="false"] .glass {
+  border-radius: 14px;
+  border-color: rgba(148, 163, 184, 0.10);
+  background: linear-gradient(160deg, rgba(63,169,245,0.045), rgba(15,23,36,0.35));
+  box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 22px -18px rgba(0,0,0,0.8);
+}
+.m-screen[data-desk="false"] .glass:active { transform: scale(0.992); transition: transform 0.08s; }
+.m-screen[data-desk="false"] button { -webkit-tap-highlight-color: transparent; }
+.m-screen[data-desk="false"] button:not([style*="padding: 0"]) { min-height: 38px; }
+.m-screen[data-desk="false"] input, .m-screen[data-desk="false"] select, .m-screen[data-desk="false"] textarea { font-size: 16px; } /* stops iOS zoom-on-focus */

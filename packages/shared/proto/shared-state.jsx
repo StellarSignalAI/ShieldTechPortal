@@ -484,6 +484,36 @@ function buildDoc(kind, form) {
 }
 function addInvoice(form) { const d = buildDoc('invoice', form); invoiceStore.set(l => [d, ...l]); return d; }
 function addEstimate(form) { const d = buildDoc('estimate', form); estimateStore.set(l => [d, ...l]); return d; }
+
+/* Edit any invoice/estimate by doc number. Portal-store rows are patched in
+   place; QuickBooks mirror rows get a portal override row with the same doc
+   number — the merge dedupes local-first, so the edited version wins on every
+   screen. Both store row shapes (num/customer/amount and doc_number/
+   customer_name/total) are patched so older rows stay consistent. */
+function saveDocEdit(kind, form) {
+  const store = kind === 'estimate' ? estimateStore : invoiceStore;
+  const num = form.num;
+  if (!num) return false;
+  const lines = (form.lines || []).filter(l => (l.desc || '').trim() || Number(l.rate));
+  const total = lines.length
+    ? lines.reduce((s, l) => s + (Number(l.qty) || 1) * (Number(l.rate) || 0), 0)
+    : (Number(form.total) || 0);
+  const patch = {
+    customer_name: form.customer, customer: form.customer,
+    ...(form.date ? { txn_date: form.date } : {}),
+    ...(kind === 'invoice' && form.due ? { due_date: form.due, due: undefined } : {}),
+    ...(kind === 'estimate' && form.expires ? { expiration_date: form.expires, expires: undefined } : {}),
+    status: form.status, lines, total, amount: total,
+    ...(kind === 'invoice' ? { balance: form.status === 'paid' ? 0 : total } : {}),
+  };
+  const exists = (store.get() || []).some(r => (r.num || r.doc_number) === num);
+  if (exists) store.set(prev => (prev || []).map(r => (r.num || r.doc_number) === num ? { ...r, ...patch } : r));
+  else store.set(prev => [{
+    qbo_id: 'local-edit-' + Date.now().toString(36), doc_number: num, source: 'portal',
+    txn_date: form.date || new Date().toISOString().slice(0, 10), ...patch,
+  }, ...(prev || [])]);
+  return true;
+}
 /* Portal-created rows to merge ahead of the QBO rows (newest first). */
 function localInvoiceRows() { return invoiceStore.get() || []; }
 function localEstimateRows() { return estimateStore.get() || []; }
@@ -670,7 +700,7 @@ Object.assign(window, {
   contactsStore, customerContacts, setCustomerContacts,
   customerDataStore, custRecords, setCustRecords,
   projectStore, invoiceStore, estimateStore,
-  buildProject, addProject, buildDoc, addInvoice, addEstimate,
+  buildProject, addProject, buildDoc, addInvoice, addEstimate, saveDocEdit,
   localInvoiceRows, localEstimateRows,
   mapInvoiceRow, mapEstimateRow, useMergedInvoices, useMergedEstimates, DocsEmptyRow,
   updateProject, estWorkflowView, projectForEstimate, acceptEstimateToProject,

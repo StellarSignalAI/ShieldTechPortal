@@ -83,6 +83,7 @@ function FinInvoices() {
   const [filter, setFilter] = React.useState('All');
   const [openNum, setOpenNum] = React.useState(null);
   const [creating, setCreating] = React.useState(false);
+  const [editing, setEditing] = React.useState(null);
   const rows = useMergedInvoices();
   const list = filter === 'All' ? rows : rows.filter(i => i.status === filter.toLowerCase());
   const outstanding = rows.filter(i => i.status !== 'paid' && i.status !== 'draft').reduce((s, i) => s + i.amount, 0);
@@ -107,7 +108,9 @@ function FinInvoices() {
         </div>
       ))}
       {list.length === 0 && <FinEmpty>No invoices yet — create one with +, or connect QuickBooks.</FinEmpty>}
-      {openNum && <FinInvoiceDetail inv={rows.find(i => i.num === openNum)} onClose={() => setOpenNum(null)} />}
+      {openNum && !editing && <FinInvoiceDetail inv={rows.find(i => i.num === openNum)} onClose={() => setOpenNum(null)}
+        onEdit={() => setEditing(rows.find(i => i.num === openNum))} />}
+      {editing && <MDocEditor kind="invoice" doc={editing} onClose={() => { setEditing(null); setOpenNum(null); }} />}
       {creating && <MNewInvoiceSheet onClose={() => setCreating(false)} />}
     </div>
   );
@@ -147,7 +150,89 @@ function MNewInvoiceSheet({ onClose }) {
   );
 }
 
-function FinInvoiceDetail({ inv, onClose }) {
+/* ── Full document editor — invoices & estimates, touch-native ──
+   Edits customer, dates, status and every line item; totals recompute live.
+   Saves through saveDocEdit, so edits persist and override the QuickBooks
+   mirror row on every screen (desktop included). */
+function MDocEditor({ kind, doc, onClose }) {
+  const isInv = kind === 'invoice';
+  const raw = doc._raw || {};
+  const STATUS_OPTS = isInv
+    ? [['draft', 'Draft'], ['open', 'Pending'], ['paid', 'Paid'], ['overdue', 'Overdue']]
+    : [['draft', 'Draft'], ['pending', 'Sent'], ['accepted', 'Accepted'], ['rejected', 'Declined']];
+  const backMap = isInv ? { pending: 'open' } : { sent: 'pending', declined: 'rejected', expired: 'rejected' };
+  const isoDate = (v) => (v && /^\d{4}-\d{2}-\d{2}/.test(String(v))) ? String(v).slice(0, 10) : '';
+  const [f, setF] = React.useState(() => ({
+    customer: doc.customer || '',
+    date: isoDate(raw.txn_date),
+    due: isoDate(raw.due_date),
+    expires: isoDate(raw.expiration_date),
+    status: backMap[doc.status] || (STATUS_OPTS.some(([v]) => v === doc.status) ? doc.status : STATUS_OPTS[1][0]),
+    lines: (doc.lines && doc.lines.length)
+      ? doc.lines.map(l => ({ desc: l.desc || '', qty: Number(l.qty) || 1, rate: Number(l.rate) || 0 }))
+      : [{ desc: '', qty: 1, rate: Number(doc.amount) || 0 }],
+  }));
+  const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
+  const setLine = (i, k, v) => setF(p => ({ ...p, lines: p.lines.map((l, ix) => ix === i ? { ...l, [k]: v } : l) }));
+  const total = f.lines.reduce((s, l) => s + (Number(l.qty) || 1) * (Number(l.rate) || 0), 0);
+  const inp = { width: '100%', padding: '12px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
+  const lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
+  const lineInp = (w) => ({ ...inp, padding: '9px 10px', fontSize: 13, width: w, borderRadius: 9 });
+  const save = () => {
+    if (!f.customer.trim()) { showToast('Enter a customer name', 'warn'); return; }
+    saveDocEdit(kind, { num: doc.num, customer: f.customer.trim(), date: f.date, due: f.due, expires: f.expires, status: f.status, lines: f.lines, total });
+    showToast(`${doc.num} saved`, 'ok');
+    onClose(true);
+  };
+  return (
+    <MSheet title={`Edit ${doc.num}`} onClose={() => onClose(false)}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div><span style={lbl}>Customer</span><input value={f.customer} onChange={set('customer')} style={inp} /></div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div><span style={lbl}>{isInv ? 'Invoice date' : 'Created'}</span><input type="date" value={f.date} onChange={set('date')} style={inp} /></div>
+          <div><span style={lbl}>{isInv ? 'Due date' : 'Expires'}</span><input type="date" value={isInv ? f.due : f.expires} onChange={set(isInv ? 'due' : 'expires')} style={inp} /></div>
+        </div>
+        <div>
+          <span style={lbl}>Status</span>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {STATUS_OPTS.map(([v, label]) => (
+              <button key={v} onClick={() => setF(p => ({ ...p, status: v }))} style={{ flex: 1, padding: '10px 0', borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', background: f.status === v ? 'rgba(63,169,245,0.16)' : 'transparent', border: `1px solid ${f.status === v ? 'var(--brand)' : 'var(--border-subtle)'}`, color: f.status === v ? 'var(--brand)' : 'var(--text-low)' }}>{label}</button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <span style={lbl}>Line items</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {f.lines.map((l, i) => (
+              <div key={i} className="glass" style={{ padding: '10px 10px', borderRadius: 11, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                <input value={l.desc} onChange={e => setLine(i, 'desc', e.target.value)} placeholder="Description" style={{ ...lineInp('100%') }} />
+                <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
+                  <input type="number" inputMode="decimal" value={l.qty} onChange={e => setLine(i, 'qty', e.target.value)} placeholder="Qty" style={lineInp(64)} />
+                  <span style={{ color: 'var(--text-low)', fontSize: 12 }}>×</span>
+                  <input type="number" inputMode="decimal" value={l.rate} onChange={e => setLine(i, 'rate', e.target.value)} placeholder="Rate" style={{ ...lineInp(0), flex: 1 }} />
+                  <span className="mono" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-high)', whiteSpace: 'nowrap' }}>${((Number(l.qty) || 1) * (Number(l.rate) || 0)).toLocaleString()}</span>
+                  {f.lines.length > 1 && <button onClick={() => setF(p => ({ ...p, lines: p.lines.filter((_, ix) => ix !== i) }))} style={{ background: 'none', border: 'none', color: 'var(--status-critical)', fontSize: 16, cursor: 'pointer', padding: '0 2px' }}>✕</button>}
+                </div>
+              </div>
+            ))}
+            <button onClick={() => setF(p => ({ ...p, lines: [...p.lines, { desc: '', qty: 1, rate: 0 }] }))} style={{ padding: '10px 0', borderRadius: 10, border: '1px dashed var(--border-strong)', background: 'transparent', color: 'var(--brand)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add line item</button>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 11 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-low)' }}>TOTAL</span>
+          <span className="mono" style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-high)' }}>${total.toLocaleString()}</span>
+        </div>
+        {doc.source === 'quickbooks' && <div style={{ fontSize: 10, color: 'var(--text-low)', lineHeight: 1.5 }}>This is a QuickBooks record — your edit saves a portal version that takes precedence on every screen. QuickBooks itself is untouched until write-back sync.</div>}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={() => onClose(false)} style={{ flex: 1, padding: '13px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-mid)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
+          <button onClick={save} style={{ flex: 2, padding: '13px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save changes</button>
+        </div>
+      </div>
+    </MSheet>
+  );
+}
+
+function FinInvoiceDetail({ inv, onClose, onEdit }) {
   const [projects] = useShieldStore(projectStore);
   if (!inv) return null;
   return (
@@ -200,6 +285,7 @@ function FinInvoiceDetail({ inv, onClose }) {
             <button onClick={() => showToast('Payment link sent', 'ok')} style={finBtnPrimary}>Send Payment Link</button>
           </>}
           <div style={{ display: 'flex', gap: 7 }}>
+            {onEdit && <button onClick={onEdit} style={{ ...finBtnGhost, color: 'var(--brand)', borderColor: 'var(--border-strong)' }}>✎ Edit</button>}
             <button onClick={() => showToast('PDF downloaded', 'ok')} style={finBtnGhost}>PDF</button>
             <button onClick={() => showToast('Duplicated', 'ok')} style={finBtnGhost}>Duplicate</button>
             {inv.status !== 'paid' && <button onClick={() => { showToast('Voided', 'warn'); onClose(); }} style={{ ...finBtnGhost, color: 'var(--status-critical)' }}>Void</button>}
@@ -245,6 +331,7 @@ function FinRecurring() {
    the desktop Estimates tab). */
 function FinEstimates({ onNav }) {
   const [filter, setFilter] = React.useState('All');
+  const [editing, setEditing] = React.useState(null);
   const merged = useMergedEstimates();
   const [projects] = useShieldStore(projectStore);
   const [acceptances, setAcceptances] = React.useState([]);
@@ -313,6 +400,7 @@ function FinEstimates({ onNav }) {
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{e.customer}</div>
           <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: 8 }}>created {e.date} · expires {e.expires}</div>
           <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+            <button onClick={() => setEditing(e)} style={actBtn('rgba(63,169,245,0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>✎ Edit</button>
             {e.display !== 'accepted' && <>
               <button onClick={() => doAccept(e)} style={actBtn('rgba(52,211,153,0.08)', '1px solid rgba(52,211,153,0.25)', 'var(--status-ok)')}>✓ Accept → Project</button>
               <button onClick={() => doEmailAccept(e)} style={actBtn('rgba(63,169,245,0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>✉ Email accept link</button>
@@ -324,6 +412,7 @@ function FinEstimates({ onNav }) {
         </div>
       ))}
       {list.length === 0 && <FinEmpty>No estimates yet.</FinEmpty>}
+      {editing && <MDocEditor kind="estimate" doc={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }
@@ -442,4 +531,4 @@ const finBtnSecondary = { width: '100%', padding: '11px', background: 'rgba(63,1
 const finBtnSuccess = { width: '100%', padding: '11px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' };
 const finBtnGhost = { flex: 1, padding: '9px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' };
 
-Object.assign(window, { MFinance });
+Object.assign(window, { MFinance, MDocEditor });

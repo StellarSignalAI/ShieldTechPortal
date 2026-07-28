@@ -266,6 +266,42 @@ function MobileDirectory({ onNav }) {
   );
 }
 
+/* Collapsed disclosure hiding the full desktop toolset under each native
+   screen. Keeps every feature reachable in one tap without the stacked-window
+   clutter of always rendering desktop UI below the touch view. */
+function MSuiteDisclosure({ label, Fn }) {
+  const [open, setOpen] = useState(false);
+  const anchor = React.useRef(null);
+  useEffect(() => {
+    window.__shieldOpenSuite = () => {
+      setOpen(true);
+      setTimeout(() => { try { anchor.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch {} }, 120);
+    };
+    return () => { if (window.__shieldOpenSuite) delete window.__shieldOpenSuite; };
+  }, []);
+  return (
+    <div ref={anchor} style={{ marginTop: 20 }}>
+      <button onClick={() => setOpen(o => !o)} className="glass" style={{
+        width: '100%', display: 'flex', alignItems: 'center', gap: 11, padding: '13px 15px',
+        borderRadius: 13, border: '1px solid var(--border-subtle)', background: 'var(--glass-bg)',
+        cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)'
+      }}>
+        <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--brand)', flexShrink: 0 }}>⊞</span>
+        <span style={{ flex: 1 }}>
+          <span style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>{label} — full toolset</span>
+          <span style={{ display: 'block', fontSize: 10, color: 'var(--text-low)' }}>Every desktop tool for this screen, reflowed for your phone</span>
+        </span>
+        <span style={{ color: 'var(--text-low)', fontSize: 13, transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.18s' }}>›</span>
+      </button>
+      {open && (
+        <div style={{ margin: '12px -14px 0', borderTop: '1px solid var(--border-subtle)' }}>
+          <div className="m-screen" data-desk="true" style={{ padding: 14 }}><Fn /></div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* Top-right avatar → account & settings dropdown (parity with desktop menu) */
 function MAvatarMenu({ onNav }) {
   const [open, setOpen] = useState(false);
@@ -403,20 +439,16 @@ function MobilePortalApp() {
     const Fn = M_SCREEN_MAP[screen] || (() => <MHomeView onNav={nav} />);
     content = <Fn />;
   }
-  // Bespoke mobile = native touch view + the COMPLETE desktop toolset inline,
-  // reflowed for the phone. One surface, nothing missing, no mode toggle.
-  // autobid: the shared screen is already phone-native (no dup); chat: the
-  // native view IS the live team chat (the desktop screen below would be noise).
+  // Bespoke mobile = native touch view first; the COMPLETE desktop toolset
+  // stays one tap away behind a collapsed disclosure (no feature lost, no
+  // clutter). autobid: the shared screen is already phone-native (no dup);
+  // chat: the native view IS the live team chat.
   const FULL_INLINE_SKIP = ['m-more', 'login', 'sitescan', 'cameras', 'topology', 'warroom', 'floorplan', 'anomaly', 'custom-dashboard', 'fleet', 'dispatch', 'autobid', 'chat', 'messages'];
   if (!fullBase && hasFullView && !FULL_INLINE_SKIP.includes(screen)) {
-    const FullFn = M_SCREEN_MAP[screen];
     content = (
       <>
         {content}
-        <div style={{ margin: '18px -14px 0', borderTop: '1px solid var(--border-subtle)' }}>
-          <div style={{ padding: '14px 14px 2px', fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--text-low)', textTransform: 'uppercase' }}>{screenLabel(screen)} — full suite</div>
-          <div className="m-screen" data-desk="true" style={{ padding: 14 }}><FullFn /></div>
-        </div>
+        <MSuiteDisclosure key={'suite-' + screen} label={screenLabel(screen)} Fn={M_SCREEN_MAP[screen]} />
       </>
     );
   }
