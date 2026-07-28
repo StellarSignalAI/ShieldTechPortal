@@ -22,13 +22,12 @@ function MDeskIntro({ icon, title, blurb, chips = [], kpis, onNav }) {
             <div style={{ fontSize: 11, color: 'var(--text-mid)', lineHeight: 1.45, marginTop: 2 }}>{blurb}</div>
           </div>
         </div>
-        {chips.length > 0 && (
-          <div style={{ display: 'flex', gap: 7, marginTop: 12, flexWrap: 'wrap' }}>
-            {chips.map(c => (
-              <button key={c.label} onClick={() => (c.onClick ? c.onClick() : onNav && onNav(c.to))} style={{ padding: '8px 14px', borderRadius: 9, border: '1px solid var(--border-strong)', background: c.primary ? 'var(--brand)' : 'rgba(63,169,245,0.08)', color: c.primary ? '#fff' : 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c.label}</button>
-            ))}
-          </div>
-        )}
+        <div style={{ display: 'flex', gap: 7, marginTop: 12, flexWrap: 'wrap' }}>
+          <button onClick={() => window.__shieldOpenSuite && window.__shieldOpenSuite()} style={{ padding: '8px 14px', borderRadius: 9, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⊞ Open the full toolset</button>
+          {chips.map(c => (
+            <button key={c.label} onClick={() => (c.onClick ? c.onClick() : onNav && onNav(c.to))} style={{ padding: '8px 14px', borderRadius: 9, border: '1px solid var(--border-strong)', background: 'rgba(63,169,245,0.08)', color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c.label}</button>
+          ))}
+        </div>
       </div>
       {kpis && <OpsKpis items={kpis} />}
     </div>
@@ -114,35 +113,39 @@ function MChatN({ onNav }) {
 const OPS5_INV_STATUS = { paid: 'var(--status-ok)', open: 'var(--brand)', overdue: 'var(--status-critical)', draft: 'var(--text-low)', sent: 'var(--brand)' };
 function MInvoicesN({ onNav }) {
   const rows = useMergedInvoices();
+  const [editing, setEditing] = React.useState(null);
   const open = rows.filter(r => (r.status || '').toLowerCase() !== 'paid');
-  const openTotal = open.reduce((s, r) => s + (Number(r.total ?? r.amount) || 0), 0);
+  const openTotal = open.reduce((s, r) => s + (Number(r.amount) || 0), 0);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <OpsKpis items={[['INVOICES', rows.length, 'var(--brand)'], ['OPEN', open.length, open.length ? 'var(--status-warn)' : 'var(--status-ok)'], ['OPEN $', ops5$(openTotal), 'var(--text-high)']]} />
-      <MSection title="Latest" action="Money tab" onAction={() => onNav('finance')} />
-      {rows.slice(0, 25).map((r, i) => {
+      <MSection title="Tap any invoice to edit" action="Money tab" onAction={() => onNav('finance')} />
+      {rows.slice(0, 40).map((r, i) => {
         const st = (r.status || 'open').toLowerCase();
-        return <MRow key={r.id || i} icon="finance" title={`${r.number || r.doc_number || 'INV'} · ${r.customer || r.customer_name || ''}`}
-          sub={`${r.date || r.txn_date || ''} · ${st}`} right={ops5$(r.total ?? r.amount)} accent={OPS5_INV_STATUS[st]} onClick={() => onNav('finance')} />;
+        return <MRow key={r.num || i} icon="finance" title={`${r.num} · ${r.customer}`}
+          sub={`due ${r.due} · ${st}`} right={ops5$(r.amount)} accent={OPS5_INV_STATUS[st]} onClick={() => setEditing(r)} />;
       })}
       {rows.length === 0 && <OPS5_EMPTY>No invoices yet — create one from the Money tab.</OPS5_EMPTY>}
+      {editing && <MDocEditor kind="invoice" doc={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }
 function MEstimatesN({ onNav }) {
   const rows = useMergedEstimates();
+  const [editing, setEditing] = React.useState(null);
   const pending = rows.filter(r => !/accepted|closed|converted/i.test(r.status || ''));
-  const value = rows.reduce((s, r) => s + (Number(r.total ?? r.amount) || 0), 0);
+  const value = rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <OpsKpis items={[['ESTIMATES', rows.length, 'var(--brand)'], ['AWAITING', pending.length, pending.length ? 'var(--status-warn)' : 'var(--status-ok)'], ['PIPELINE', ops5$(value), 'var(--text-high)']]} />
-      <MSection title="Latest" action="Money tab" onAction={() => onNav('finance')} />
-      {rows.slice(0, 25).map((r, i) => (
-        <MRow key={r.id || i} icon="proposals" title={`${r.number || r.doc_number || 'EST'} · ${r.customer || r.customer_name || ''}`}
-          sub={`${r.date || r.txn_date || ''} · ${r.status || 'pending'}`} right={ops5$(r.total ?? r.amount)}
-          accent={/accepted/i.test(r.status || '') ? 'var(--status-ok)' : undefined} onClick={() => onNav('finance')} />
+      <MSection title="Tap any estimate to edit" action="Money tab" onAction={() => onNav('finance')} />
+      {rows.slice(0, 40).map((r, i) => (
+        <MRow key={r.num || i} icon="proposals" title={`${r.num} · ${r.customer}`}
+          sub={`${r.date} · ${r.status || 'pending'}`} right={ops5$(r.amount)}
+          accent={/accepted/i.test(r.status || '') ? 'var(--status-ok)' : undefined} onClick={() => setEditing(r)} />
       ))}
       {rows.length === 0 && <OPS5_EMPTY>No estimates yet — the Money tab creates and emails them.</OPS5_EMPTY>}
+      {editing && <MDocEditor kind="estimate" doc={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }
