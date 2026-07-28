@@ -20,7 +20,13 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/service-worker.js').catch(function () {});
+        navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' }).then(function (reg) {
+          // Re-check for a new build whenever the app is opened or foregrounded,
+          // so installed PWAs pick up deploys without a manual cache clear.
+          document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') reg.update().catch(function () {});
+          });
+        }).catch(function () {});
       });
     }
   </script>
