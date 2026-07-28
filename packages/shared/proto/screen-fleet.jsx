@@ -146,7 +146,9 @@ function FleetMapScreen() {
   const [fleet, setFleet] = useShieldStore(fleetStore);
   const [now, setNow] = React.useState(Date.now());
   const [sel, setSel] = React.useState(null);
-  const [rosterOpen, setRosterOpen] = React.useState(true);
+  // Roster starts collapsed on the phone (it would cover the whole map card);
+  // open by default on desktop where there's room beside the map.
+  const [rosterOpen, setRosterOpen] = React.useState(() => document.documentElement.dataset.surface !== 'mobile');
   const [shareState, setShareState] = React.useState('idle');
   const alerted = React.useRef({});
 
