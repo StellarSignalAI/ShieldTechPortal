@@ -128,8 +128,8 @@ function MWorkOrdersView({ onNav }) {
         <div className="glass" style={{ padding: '26px 18px', borderRadius: 14, textAlign: 'center' }}>
           <div style={{ fontSize: 22, marginBottom: 8 }}>▤</div>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>No work orders yet</div>
-          <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 5 }}>New jobs land here — open the full suite to create one.</div>
-          <button onClick={() => onNav('workorder-full')} style={{ marginTop: 12, padding: '9px 18px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open Work Order Suite</button>
+          <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 5 }}>New jobs land here the moment they're scheduled.</div>
+          <button onClick={() => window.__shieldNewJob && window.__shieldNewJob()} style={{ marginTop: 12, padding: '9px 18px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Schedule a job</button>
         </div>
       )}
       {wos.map(w => {
@@ -181,7 +181,6 @@ function MWorkOrdersView({ onNav }) {
             )}
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => { setOpen(null); onNav('photos'); }} style={{ flex: 1, padding: '11px 0', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>All photos</button>
-              <button onClick={() => { setOpen(null); onNav('workorder-full'); }} style={{ flex: 1, padding: '11px 0', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Full work order</button>
             </div>
           </div>
         </MSheet>

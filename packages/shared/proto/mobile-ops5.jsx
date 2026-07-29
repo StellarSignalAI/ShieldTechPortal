@@ -23,7 +23,6 @@ function MDeskIntro({ icon, title, blurb, chips = [], kpis, onNav }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 7, marginTop: 12, flexWrap: 'wrap' }}>
-          <button onClick={() => window.__shieldOpenSuite && window.__shieldOpenSuite()} style={{ padding: '8px 14px', borderRadius: 9, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⊞ Open the full toolset</button>
           {chips.map(c => (
             <button key={c.label} onClick={() => (c.onClick ? c.onClick() : onNav && onNav(c.to))} style={{ padding: '8px 14px', borderRadius: 9, border: '1px solid var(--border-strong)', background: 'rgba(63,169,245,0.08)', color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c.label}</button>
           ))}

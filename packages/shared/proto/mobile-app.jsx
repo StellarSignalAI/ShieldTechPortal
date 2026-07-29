@@ -97,8 +97,6 @@ const M_NATIVE = {
   'shieldtech-ai': MHermesView,
 };
 const M_SCREEN_MAP = {
-  'finance-full': () => <FinanceScreen />,
-  'workorder-full': () => <WorkOrderScreen />,
   dashboard: () => <DashboardScreen />,
   assets: () => <AssetsScreen />,
   'shieldtech-ai': () => <ShieldAIScreen />,
@@ -173,8 +171,7 @@ const M_SCREEN_MAP = {
   autobid: () => <AutoBidScreen />,
 };
 
-/* Ids resolved by purpose-built touch-native views (branches below). Any of
-   these can also open its full desktop screen via the '<id>-full' alias. */
+/* Ids resolved by purpose-built touch-native views (branches below). */
 const M_NATIVE_IDS = ['m-more','calendar','cameras','topology','warroom','floorplan','anomaly','login','helpdesk','incidents','quote-cash','purchase-orders','parts-req','mrr','nps','skills','knowledge','warranty','photos','punchlist','subcontractors','projects','proposals','finance','certs','tools','costing','audit','reports','contracts','sla','commissions','compliance','survey-ai','sitescan','fleet'];
 
 const M_TABS = [
@@ -189,9 +186,6 @@ function screenLabel(id) {
   if (id === 'sitescan') return 'Survey Scan';
   if (id === 'autobid') return 'Auto-Bid';
   if (id === 'm-more') return 'Everything';
-  if (id === 'finance-full') return 'Finance Suite';
-  if (id === 'workorder-full') return 'Work Order';
-  if (id.endsWith('-full')) return screenLabel(id.slice(0, -5)) + ' · Full';
   const item = NAV_ITEMS.find(i => i.id === id);
   return item ? item.label : 'ShieldTech';
 }
@@ -264,42 +258,6 @@ function MobileDirectory({ onNav }) {
         <a href={appUrls.customer || '#'} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Customer Portal →</a>
         <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)', paddingTop: 10, opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}</div>
       </div>
-    </div>
-  );
-}
-
-/* Collapsed disclosure hiding the full desktop toolset under each native
-   screen. Keeps every feature reachable in one tap without the stacked-window
-   clutter of always rendering desktop UI below the touch view. */
-function MSuiteDisclosure({ label, Fn }) {
-  const [open, setOpen] = useState(false);
-  const anchor = React.useRef(null);
-  useEffect(() => {
-    window.__shieldOpenSuite = () => {
-      setOpen(true);
-      setTimeout(() => { try { anchor.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch {} }, 120);
-    };
-    return () => { if (window.__shieldOpenSuite) delete window.__shieldOpenSuite; };
-  }, []);
-  return (
-    <div ref={anchor} style={{ marginTop: 20 }}>
-      <button onClick={() => setOpen(o => !o)} className="glass" style={{
-        width: '100%', display: 'flex', alignItems: 'center', gap: 11, padding: '13px 15px',
-        borderRadius: 13, border: '1px solid var(--border-subtle)', background: 'var(--glass-bg)',
-        cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)'
-      }}>
-        <span style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--brand)', flexShrink: 0 }}>⊞</span>
-        <span style={{ flex: 1 }}>
-          <span style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>{label} — full toolset</span>
-          <span style={{ display: 'block', fontSize: 10, color: 'var(--text-low)' }}>Every desktop tool for this screen, reflowed for your phone</span>
-        </span>
-        <span style={{ color: 'var(--text-low)', fontSize: 13, transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.18s' }}>›</span>
-      </button>
-      {open && (
-        <div style={{ margin: '12px -14px 0', borderTop: '1px solid var(--border-subtle)' }}>
-          <div className="m-screen" data-desk="true" style={{ padding: 14 }}><Fn /></div>
-        </div>
-      )}
     </div>
   );
 }
@@ -396,13 +354,8 @@ function MobilePortalApp() {
   const startLP = () => { lpFired.current = false; lpTimer.current = setTimeout(() => { lpFired.current = true; setTabEditor(true); }, 450); };
   const cancelLP = () => { clearTimeout(lpTimer.current); };
 
-  // '<id>-full' opens the full desktop screen for ids that default to a native view
-  const fullBase = screen.endsWith('-full') && M_SCREEN_MAP[screen.slice(0, -5)] ? screen.slice(0, -5) : null;
-  const hasFullView = !screen.endsWith('-full') && Boolean(M_SCREEN_MAP[screen]) && (Boolean(M_NATIVE[screen]) || M_NATIVE_IDS.includes(screen) || Boolean(window.M_OPS5 && window.M_OPS5[screen]));
-
   let content;
-  if (fullBase) { const Fn = M_SCREEN_MAP[fullBase]; content = <Fn />; }
-  else if (screen === 'm-more') content = <MobileDirectory onNav={nav} />;
+  if (screen === 'm-more') content = <MobileDirectory onNav={nav} />;
   else if (screen === 'calendar') content = <MobileCalendar onNav={nav} />;
   else if (screen === 'cameras' || screen === 'topology' || screen === 'warroom' || screen === 'floorplan' || screen === 'anomaly') content = <MobileMonitoring onNav={nav} />;
   else if (screen === 'helpdesk') content = <MHelpdesk onNav={nav} />;
@@ -441,20 +394,9 @@ function MobilePortalApp() {
     const Fn = M_SCREEN_MAP[screen] || (() => <MHomeView onNav={nav} />);
     content = <Fn />;
   }
-  // Bespoke mobile = native touch view first; the COMPLETE desktop toolset
-  // stays one tap away behind a collapsed disclosure (no feature lost, no
-  // clutter). autobid: the shared screen is already phone-native (no dup);
-  // chat: the native view IS the live team chat.
-  const FULL_INLINE_SKIP = ['m-more', 'login', 'sitescan', 'cameras', 'topology', 'warroom', 'floorplan', 'anomaly', 'custom-dashboard', 'fleet', 'dispatch', 'autobid', 'chat', 'messages'];
-  if (!fullBase && hasFullView && !FULL_INLINE_SKIP.includes(screen)) {
-    content = (
-      <>
-        {content}
-        <MSuiteDisclosure key={'suite-' + screen} label={screenLabel(screen)} Fn={M_SCREEN_MAP[screen]} />
-      </>
-    );
-  }
-
+  // Every mobile screen IS the complete, bespoke experience — no desktop
+  // fallback and no "full toolset" escape hatch. Desktop layouts stay
+  // desktop-only.
   return (
     <div className="m-app-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--canvas)', position: 'relative', overflow: 'hidden' }}>
       {/* Top bar */}
@@ -477,7 +419,7 @@ function MobilePortalApp() {
       </header>
 
       {/* Content */}
-      <div className="m-screen" data-desk={Boolean(fullBase) || !(M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen] || !!(window.M_OPS5 && window.M_OPS5[screen]))} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
+      <div className="m-screen" data-desk={!(M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen] || !!(window.M_OPS5 && window.M_OPS5[screen]))} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
         {content}
       </div>
 

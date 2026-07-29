@@ -521,7 +521,6 @@ function MFinance({ onNav }) {
       {tab === 'Lending' && <MFinLending />}
       {tab === 'Reports' && <FinReports />}
       {tab === 'More' && <MFinMore onNav={onNav} />}
-      <button onClick={() => onNav('finance-full')} style={{ padding: '11px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-low)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open full ledger suite — COA, GL, reconcile, bank feed, QBO map ›</button>
     </div>
   );
 }

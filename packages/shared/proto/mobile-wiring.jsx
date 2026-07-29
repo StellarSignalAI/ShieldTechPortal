@@ -160,7 +160,7 @@ function MobileCustomerDetail({ customer, onClose, onNav }) {
             ))}
         </MSection>
 
-        <button onClick={() => { onClose(); onNav && onNav('customers-list'); }} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open full record (desktop layout) ›</button>
+        <button onClick={() => { onClose(); onNav && onNav('customers-list'); }} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>All customers ›</button>
       </div>
     </MSheet>
   );
