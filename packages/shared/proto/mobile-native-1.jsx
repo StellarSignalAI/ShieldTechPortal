@@ -168,7 +168,6 @@ function MDispatchView({ onNav }) {
         ))}
       </MSection>
       <button onClick={() => showToast(techs.length ? 'Broadcast sent to all field techs' : 'No techs online to broadcast', techs.length ? 'ok' : 'warn')} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast all techs</button>
-      <MRow icon="dispatch" title="Full dispatch board" sub="Schedule · queue · driving safety" onClick={() => onNav('dispatch-full')} />
     </div>
   );
 }
@@ -250,7 +249,6 @@ function MFinanceView({ onNav }) {
               <MBar pct={(v / 134400) * 100} color={c} />
             </div>
           ))}
-          <button onClick={() => onNav('finance-full')} style={{ ...mDispBtn, width: '100%', padding: '10px 0', color: 'var(--brand)' }}>Open full finance suite (desktop layout) ›</button>
         </MSection>
       )}
     </div>

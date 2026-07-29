@@ -97,7 +97,7 @@ function MFinMore({ onNav }) {
           <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--brand)', fontFamily: 'var(--font-mono)', margin: '0 2px 6px' }}>{g.g}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {g.items.map((it) => (
-              <MFinCard key={it[0]} onClick={() => onNav('finance-full')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
+              <MFinCard key={it[0]} onClick={() => onNav('finance')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>{it[0]}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>{it[1]}</div>
