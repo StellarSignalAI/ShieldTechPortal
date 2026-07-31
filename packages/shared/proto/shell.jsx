@@ -4,6 +4,7 @@
 const NAV_GROUPS = [
 { id: 'home', label: 'HOME', collapsible: false, items: [
   { id: 'custom-dashboard', icon: 'dashboard', label: 'My Dashboard', useSvg: true },
+  { id: 'cockpit', icon: 'grid-2', label: 'Cockpit (Preview)', useSvg: true },
   { id: 'secret-weapon', icon: 'anomaly', label: 'Secret Weapon', useSvg: true },
   { id: 'autobid', icon: 'proposals', label: 'Auto-Bid', useSvg: true }]
 },

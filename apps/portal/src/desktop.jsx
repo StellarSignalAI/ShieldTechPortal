@@ -35,7 +35,7 @@ const SCREEN_LIST = [
   'margin-xray', 'rr-builder', 'rfp', 'wallboard',
   'helpdesk', 'workorder', 'parts-req', 'subcontractors', 'purchase-orders',
   'skills', 'knowledge', 'integrations', 'marketing', 'documents', 'portal-settings', 'users', 'messages',
-, 'fleet', 'invoices', 'estimates', 'outbox', 'pay', 'secret-weapon', 'autobid'];
+, 'fleet', 'invoices', 'estimates', 'outbox', 'pay', 'secret-weapon', 'autobid', 'cockpit'];
 
 /* screen id → window component name (same mapping as the prototype shell) */
 const SCREEN_COMPONENTS = {
@@ -115,6 +115,7 @@ const SCREEN_COMPONENTS = {
   pay: 'PayPageScreen',
   'secret-weapon': 'SecretWeaponScreen',
   autobid: 'AutoBidScreen',
+  cockpit: 'CockpitPreviewScreen',
 };
 
 function MissingScreen({ id }) {
