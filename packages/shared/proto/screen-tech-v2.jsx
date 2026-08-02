@@ -426,23 +426,53 @@ function TimeViewV2() {
   );
 }
 
-/* ── Expense Submission ── */
+/* ── Expense Submission — REAL: quick-snap receipts + shared expense store ── */
+const techExpenseStore = createShieldStore('mexpenses', []);
+
 function ExpenseView() {
   const [showForm, setShowForm] = React.useState(false);
-  const [expenseType, setExpenseType] = React.useState('receipt');
+  const [f, setF] = React.useState({ desc: '', amount: '', category: 'Materials' });
+  const [allRows] = useShieldStore(techExpenseStore);
+  const [myReceipts, setMyReceipts] = React.useState([]);
+  const [snapBusy, setSnapBusy] = React.useState(false);
+  const snapRef = React.useRef(null);
+  const meName = ((window.__shieldUser || {}).name || '').toLowerCase();
 
-  const expenses = [
-    { id: 'EXP-042', date: 'Jun 5', type: 'Materials', desc: 'Cat6A patch cables (10-pack)', amount: 48.50, status: 'pending', job: 'J-4202', receipt: true },
-    { id: 'EXP-041', date: 'Jun 4', type: 'Mileage', desc: '42.6 mi — 3 site visits', amount: 29.82, status: 'approved', job: '—', receipt: false, miles: 42.6, rate: 0.70 },
-    { id: 'EXP-040', date: 'Jun 3', type: 'Meals', desc: 'Lunch — on-site Metro Bank', amount: 18.50, status: 'approved', job: 'J-4198', receipt: true },
-    { id: 'EXP-039', date: 'Jun 2', type: 'Materials', desc: 'Conduit adapters + J-box', amount: 34.20, status: 'approved', job: 'J-4195', receipt: true },
-    { id: 'EXP-038', date: 'Jun 1', type: 'Parking', desc: 'Downtown garage — City Hall', amount: 22.00, status: 'rejected', job: 'J-4192', receipt: true, rejectReason: 'Use company parking pass instead' },
-    { id: 'EXP-037', date: 'May 30', type: 'Tools', desc: 'RJ45 crimp tool replacement', amount: 89.99, status: 'approved', job: '—', receipt: true },
-  ];
+  const refreshReceipts = React.useCallback(() => {
+    if (!window.__shieldReceipts) return;
+    window.__shieldReceipts.list().then(r => { if (r.ok) setMyReceipts(r.data); });
+  }, []);
+  React.useEffect(() => { refreshReceipts(); }, [refreshReceipts]);
 
-  const statusColors = { pending: 'var(--status-warn)', approved: 'var(--status-ok)', rejected: 'var(--status-critical)' };
-  const monthTotal = expenses.reduce((s, e) => s + e.amount, 0);
-  const pendingTotal = expenses.filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0);
+  /* My expenses from the shared store (approved/rejected by the office). */
+  const expenses = (allRows || []).filter(e => !meName || (e.by || '').toLowerCase() === meName);
+
+  const snap = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!window.__shieldReceipts) { shieldToast('Receipts backend not configured', 'warn'); return; }
+    setSnapBusy(true);
+    const r = await window.__shieldReceipts.snap(file, {});
+    setSnapBusy(false);
+    if (r.ok) { shieldToast('Receipt sent to the office — they categorize it, you are done', 'ok'); refreshReceipts(); }
+    else shieldToast('Upload failed: ' + (r.error || 'unknown'), 'warn');
+  };
+
+  const submit = () => {
+    if (!f.desc.trim() || !(Number(f.amount) > 0)) { shieldToast('Add a description and amount', 'warn'); return; }
+    techExpenseStore.set(prev => [{
+      id: genId('exp'), desc: f.desc.trim(), amount: Number(f.amount), category: f.category,
+      by: (window.__shieldUser || {}).name || 'Tech', date: new Date().toISOString().slice(0, 10), status: 'pending',
+    }, ...(prev || [])]);
+    setF({ desc: '', amount: '', category: 'Materials' }); setShowForm(false);
+    shieldToast('Expense submitted for approval', 'ok');
+  };
+
+  const statusColors = { pending: 'var(--status-warn)', approved: 'var(--status-ok)', rejected: 'var(--status-critical)', inbox: 'var(--status-warn)', converted: 'var(--status-ok)', dismissed: 'var(--text-low)' };
+  const monthTotal = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const pendingTotal = expenses.filter(e => e.status === 'pending').reduce((s, e) => s + Number(e.amount || 0), 0);
+  const approvedTotal = expenses.filter(e => e.status === 'approved').reduce((s, e) => s + Number(e.amount || 0), 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -450,115 +480,86 @@ function ExpenseView() {
       <div style={{ display: 'flex', gap: 8 }}>
         <div className="glass" style={{ flex: 1, padding: '10px', textAlign: 'center' }}>
           <div className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-high)' }}>${monthTotal.toFixed(2)}</div>
-          <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>This Month</div>
+          <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>Recorded</div>
         </div>
         <div className="glass" style={{ flex: 1, padding: '10px', textAlign: 'center' }}>
           <div className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--status-warn)' }}>${pendingTotal.toFixed(2)}</div>
           <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>Pending</div>
         </div>
         <div className="glass" style={{ flex: 1, padding: '10px', textAlign: 'center' }}>
-          <div className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--status-ok)' }}>${(monthTotal - pendingTotal - 22).toFixed(2)}</div>
+          <div className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--status-ok)' }}>${approvedTotal.toFixed(2)}</div>
           <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>Approved</div>
         </div>
       </div>
 
-      {/* Quick submit buttons */}
-      <div style={{ display: 'flex', gap: 6 }}>
-        {[
-          { label: 'Receipt', iconName: 'receipt', type: 'receipt' },
-          { label: 'Mileage', iconName: 'mileage', type: 'mileage' },
-          { label: 'Per Diem', iconName: 'perdiem', type: 'perdiem' },
-          { label: 'Parts', iconName: 'parts', type: 'parts' },
-        ].map(btn => (
-          <button key={btn.type} onClick={() => { setExpenseType(btn.type); setShowForm(true); }} style={{
-            flex: 1, padding: '10px 6px', display: 'flex', flexDirection: 'column',
-            alignItems: 'center', gap: 4, background: 'rgba(63,169,245,0.04)',
-            border: '1px solid var(--border-subtle)', borderRadius: 8,
-            color: 'var(--text-high)', fontSize: 11, cursor: 'pointer',
-            fontFamily: 'var(--font-body)', transition: 'all 0.15s'
-          }}>
-            <Icon name={btn.iconName} size={18} color="var(--brand)" />
-            {btn.label}
-          </button>
-        ))}
-      </div>
+      {/* Quick-snap — the one-tap path */}
+      <input ref={snapRef} type="file" accept="image/*" capture="environment" onChange={snap} style={{ display: 'none' }} />
+      <button disabled={snapBusy} onClick={() => snapRef.current && snapRef.current.click()} style={{
+        padding: '14px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none',
+        borderRadius: 10, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)',
+        opacity: snapBusy ? 0.5 : 1, boxShadow: '0 0 18px -6px rgba(63,169,245,0.5)'
+      }}>{snapBusy ? 'Uploading…' : '📷 Snap a receipt — office handles the rest'}</button>
+      <button onClick={() => setShowForm(s => !s)} style={{ padding: '9px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+        {showForm ? 'Cancel' : '+ Manual expense (no receipt)'}
+      </button>
 
-      {/* Expense Form */}
+      {/* Manual form */}
       {showForm && (
         <GlassPanel style={{ borderLeft: '3px solid var(--brand)', animation: 'fade-up 0.3s ease both' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 14, fontWeight: 500 }}>New Expense — {expenseType === 'receipt' ? 'Receipt' : expenseType === 'mileage' ? 'Mileage' : expenseType === 'perdiem' ? 'Per Diem' : 'Parts'}</span>
-            <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 16 }}>✕</button>
-          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {expenseType === 'mileage' ? (
-              <>
-                <div>
-                  <div className="label-sm" style={{ marginBottom: 4 }}>MILES DRIVEN</div>
-                  <input type="number" placeholder="0.0" defaultValue="42.6" style={{ width: '100%', padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-mono)', outline: 'none' }} />
-                </div>
-                <div style={{ padding: '8px 10px', background: 'rgba(63,169,245,0.04)', borderRadius: 6 }}>
-                  <span style={{ fontSize: 11, color: 'var(--text-mid)' }}>Rate: <span className="mono">$0.70/mi</span> · Estimated: <span className="mono" style={{ color: 'var(--brand)' }}>$29.82</span></span>
-                </div>
-              </>
-            ) : (
-              <>
-                <div>
-                  <div className="label-sm" style={{ marginBottom: 4 }}>AMOUNT</div>
-                  <input type="number" placeholder="$0.00" style={{ width: '100%', padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-mono)', outline: 'none' }} />
-                </div>
-              </>
-            )}
+            <div>
+              <div className="label-sm" style={{ marginBottom: 4 }}>AMOUNT</div>
+              <input type="number" inputMode="decimal" value={f.amount} onChange={e => setF(p => ({ ...p, amount: e.target.value }))} placeholder="0.00" style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 16, fontFamily: 'var(--font-mono)', outline: 'none' }} />
+            </div>
             <div>
               <div className="label-sm" style={{ marginBottom: 4 }}>DESCRIPTION</div>
-              <input placeholder="What was this for?" style={{ width: '100%', padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+              <input value={f.desc} onChange={e => setF(p => ({ ...p, desc: e.target.value }))} placeholder="What was this for?" style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 16, fontFamily: 'var(--font-body)', outline: 'none' }} />
             </div>
-            <div>
-              <div className="label-sm" style={{ marginBottom: 4 }}>JOB (OPTIONAL)</div>
-              <select style={{ width: '100%', padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }}>
-                <option style={{ background: 'var(--card)' }}>— Select job —</option>
-                <option style={{ background: 'var(--card)' }}>J-4202 · Metro Bank PM</option>
-                <option style={{ background: 'var(--card)' }}>J-4203 · Harbor View Install</option>
-              </select>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {['Materials','Fuel','Tools','Other'].map(c => (
+                <button key={c} onClick={() => setF(p => ({ ...p, category: c }))} style={{ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, background: f.category === c ? 'rgba(63,169,245,0.12)' : 'transparent', border: `1px solid ${f.category === c ? 'var(--brand)' : 'var(--border-subtle)'}`, color: f.category === c ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
+              ))}
             </div>
-            {expenseType !== 'mileage' && (
-              <div style={{ padding: 20, borderRadius: 8, border: '1px dashed var(--border-subtle)', textAlign: 'center', cursor: 'pointer' }}>
-                <span style={{ fontSize: 24, opacity: 0.3 }}>◉</span>
-                <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 4 }}>Tap to capture receipt photo</div>
-              </div>
-            )}
-            <button onClick={() => setShowForm(false)} style={{
-              padding: '10px', background: 'var(--brand)', border: 'none', borderRadius: 6,
-              color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)'
-            }}>Submit Expense</button>
+            <button onClick={submit} style={{ padding: '11px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Submit Expense</button>
           </div>
         </GlassPanel>
       )}
 
-      {/* Expense List */}
+      {/* My snapped receipts */}
+      {myReceipts.length > 0 && (
+        <div>
+          <div className="label-sm" style={{ marginBottom: 8 }}>MY RECEIPTS</div>
+          {myReceipts.slice(0, 12).map(r => (
+            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+              <div style={{ width: 4, height: 26, borderRadius: 2, background: statusColors[r.status] || 'var(--text-low)' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12.5, color: 'var(--text-high)' }}>{r.vendor || r.note || 'Receipt'}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{new Date(r.created_at).toLocaleDateString()} · {r.status === 'inbox' ? 'waiting for the office' : r.status}</div>
+              </div>
+              {r.amount != null && <span className="mono" style={{ fontSize: 12.5, color: 'var(--text-high)' }}>${Number(r.amount).toFixed(2)}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Expense list (shared store — office approvals show live) */}
       <div>
         <div className="label-sm" style={{ marginBottom: 8 }}>RECENT EXPENSES</div>
-        {expenses.map((e, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0',
-            borderBottom: '1px solid rgba(63,169,245,0.05)'
-          }}>
-            <div style={{
-              width: 4, height: 28, borderRadius: 2,
-              background: statusColors[e.status]
-            }} />
+        {expenses.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-low)', padding: '10px 0' }}>Nothing yet — snap a receipt or add a manual expense.</div>}
+        {expenses.slice(0, 20).map((e, i) => (
+          <div key={e.id || i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+            <div style={{ width: 4, height: 28, borderRadius: 2, background: statusColors[e.status] }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, color: 'var(--text-high)' }}>{e.desc}</div>
               <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
                 <span style={{ fontSize: 10, color: 'var(--text-low)' }}>{e.date}</span>
                 <span style={{ fontSize: 10, color: 'var(--text-low)' }}>·</span>
-                <span style={{ fontSize: 10, color: 'var(--text-low)' }}>{e.type}</span>
-                {e.job !== '—' && <><span style={{ fontSize: 10, color: 'var(--text-low)' }}>·</span><span className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{e.job}</span></>}
+                <span style={{ fontSize: 10, color: 'var(--text-low)' }}>{e.category}</span>
+                <span style={{ fontSize: 10, color: 'var(--text-low)' }}>·</span>
+                <span style={{ fontSize: 10, color: statusColors[e.status] }}>{e.status}</span>
               </div>
-              {e.rejectReason && <div style={{ fontSize: 10, color: 'var(--status-critical)', marginTop: 2 }}>Rejected: {e.rejectReason}</div>}
             </div>
-            <span className="mono" style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>${e.amount.toFixed(2)}</span>
-            {e.receipt && <Icon name="receipt" size={12} color="var(--text-low)" />}
+            <span className="mono" style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>${Number(e.amount).toFixed(2)}</span>
           </div>
         ))}
       </div>

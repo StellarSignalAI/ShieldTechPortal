@@ -1,51 +1,106 @@
 /* Portal Additions — Expense Approval, Timesheet Approval, HR, Contracts, SLA */
 
-/* ── Expense Approval (Owner View) ── */
+/* ── Expense Approval (Owner View) — REAL: shared expense store + receipt inbox ── */
+const dExpenseStore = createShieldStore('mexpenses', []);
+
+function DReceiptThumb({ row, size = 56 }) {
+  const [src, setSrc] = React.useState(null);
+  React.useEffect(() => {
+    let alive = true;
+    if (window.__shieldReceipts) window.__shieldReceipts.imageUrl(row).then(u => { if (alive) setSrc(u); });
+    return () => { alive = false; };
+  }, [row.id]);
+  return (
+    <div onClick={src ? () => window.open(src, '_blank') : undefined} style={{ width: size, height: size, borderRadius: 8, overflow: 'hidden', background: 'rgba(63,169,245,0.07)', border: '1px solid var(--border-subtle)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: src ? 'zoom-in' : 'default' }}>
+      {src ? <img src={src} alt="receipt" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 18 }}>🧾</span>}
+    </div>
+  );
+}
+
 function ExpenseApprovalScreen() {
   const [filter, setFilter] = React.useState('pending');
-  const [expenses, setExpenses] = React.useState([
-    { id: 'EXP-042', tech: 'Mike Reyes', initials: 'MR', date: 'Jun 5', type: 'Materials', desc: 'Cat6A patch cables (10-pack)', amount: 48.50, status: 'pending', job: 'J-4202', receipt: true },
-    { id: 'EXP-041', tech: 'Mike Reyes', initials: 'MR', date: 'Jun 4', type: 'Mileage', desc: '42.6 mi — 3 site visits', amount: 29.82, status: 'pending', job: '—', miles: 42.6 },
-    { id: 'EXP-040', tech: 'Jessica Liu', initials: 'JL', date: 'Jun 4', type: 'Meals', desc: 'Lunch — on-site Metro Bank', amount: 18.50, status: 'pending', job: 'J-4198', receipt: true },
-    { id: 'EXP-039', tech: 'Kevin White', initials: 'KW', date: 'Jun 3', type: 'Tools', desc: 'Wire stripper replacement', amount: 42.00, status: 'pending', job: '—', receipt: true },
-    { id: 'EXP-038', tech: 'Diana Patel', initials: 'DP', date: 'Jun 3', type: 'Parking', desc: 'Downtown garage — City Hall', amount: 22.00, status: 'pending', job: 'J-4192', receipt: true },
-    { id: 'EXP-037', tech: 'Tony Garcia', initials: 'TG', date: 'Jun 2', type: 'Materials', desc: 'Conduit + fittings — emergency', amount: 67.40, status: 'pending', job: 'J-4190', receipt: true },
-    { id: 'EXP-036', tech: 'Mike Reyes', initials: 'MR', date: 'Jun 1', type: 'Tools', desc: 'RJ45 crimp tool replacement', amount: 89.99, status: 'approved', job: '—', receipt: true },
-    { id: 'EXP-035', tech: 'Jessica Liu', initials: 'JL', date: 'May 30', type: 'Meals', desc: 'Team dinner — project completion', amount: 124.00, status: 'rejected', job: '—', receipt: true, rejectReason: 'Over per-person limit ($25). Resubmit split.' },
-  ]);
+  const [expenses] = useShieldStore(dExpenseStore);
+  const [inbox, setInbox] = React.useState(null);
+  const [convert, setConvert] = React.useState(null); // {row, vendor, amount, category}
+  const fileRef = React.useRef(null);
+
+  const refreshInbox = React.useCallback(() => {
+    if (!window.__shieldReceipts) { setInbox([]); return; }
+    window.__shieldReceipts.list('inbox').then(r => setInbox(r.ok ? r.data : []));
+  }, []);
+  React.useEffect(() => { refreshInbox(); }, [refreshInbox]);
 
   const setStatus = (id, status, verb) => {
-    setExpenses(prev => prev.map(e => e.id === id ? { ...e, status } : e));
+    dExpenseStore.set(prev => (prev || []).map(e => e.id === id ? { ...e, status } : e));
     shieldToast(`${verb} ${id}`, status === 'approved' ? 'ok' : 'warn');
   };
   const approveAll = () => {
-    const n = expenses.filter(e => e.status === 'pending').length;
-    setExpenses(prev => prev.map(e => e.status === 'pending' ? { ...e, status: 'approved' } : e));
+    const n = (expenses || []).filter(e => e.status === 'pending').length;
+    dExpenseStore.set(prev => (prev || []).map(e => e.status === 'pending' ? { ...e, status: 'approved' } : e));
     shieldToast(`Approved all ${n} pending expense${n === 1 ? '' : 's'}`, 'ok');
   };
+  const uploadReceipt = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file || !window.__shieldReceipts) return;
+    const r = await window.__shieldReceipts.snap(file, {});
+    if (r.ok) { shieldToast('Receipt uploaded to the inbox', 'ok'); refreshInbox(); }
+    else shieldToast('Upload failed: ' + (r.error || 'unknown'), 'warn');
+  };
+  const doConvert = async () => {
+    const c = convert;
+    if (!(Number(c.amount) > 0)) { shieldToast('Enter the amount', 'warn'); return; }
+    await window.__shieldReceipts.convert(c.row.id, { vendor: c.vendor, amount: c.amount, category: c.category });
+    dExpenseStore.set(prev => [{
+      id: genId('exp'), desc: (c.vendor || 'Receipt') + (c.row.note ? ` — ${c.row.note}` : ''),
+      amount: Number(c.amount), category: c.category,
+      by: c.row.uploader_name || 'Field', date: (c.row.created_at || '').slice(0, 10),
+      status: 'approved', receipt_id: c.row.id,
+    }, ...(prev || [])]);
+    setConvert(null); shieldToast('Receipt converted to a categorized expense ✓', 'ok'); refreshInbox();
+  };
 
-  const filtered = filter === 'all' ? expenses : expenses.filter(e => e.status === filter);
-  const pendingTotal = expenses.filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0);
-  const monthTotal = expenses.reduce((s, e) => s + e.amount, 0);
+  const rows = expenses || [];
+  const filtered = filter === 'all' ? rows : rows.filter(e => e.status === filter);
+  const pendingTotal = rows.filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0);
+  const monthTotal = rows.reduce((s, e) => s + e.amount, 0);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 1100 }}>
       {/* Header stats */}
       <div style={{ display: 'flex', gap: 12 }}>
-        <StatCard label="PENDING APPROVAL" value={expenses.filter(e => e.status === 'pending').length} delay={0} />
+        <StatCard label="PENDING APPROVAL" value={rows.filter(e => e.status === 'pending').length} delay={0} />
         <StatCard label="PENDING TOTAL" value={`$${pendingTotal.toFixed(0)}`} mono={false} delay={80} />
-        <StatCard label="MONTH TO DATE" value={`$${monthTotal.toFixed(0)}`} mono={false} delay={160} />
-        <StatCard label="AVG PER TECH" value={`$${(monthTotal / 5).toFixed(0)}`} mono={false} delay={240} />
+        <StatCard label="RECEIPT INBOX" value={inbox === null ? '…' : inbox.length} delay={160} />
+        <StatCard label="ALL RECORDED" value={`$${monthTotal.toFixed(0)}`} mono={false} delay={240} />
       </div>
 
-      {/* ShieldTech AI insight */}
-      <div className="glass" style={{ padding: '10px 16px', borderLeft: '3px solid var(--brand)', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span>⟡</span>
-        <span style={{ fontSize: 12, color: 'var(--text-high)', flex: 1 }}>
-          <strong>ShieldTech AI:</strong> Diana Patel's parking expense ($22) could use the company parking pass — saved $88/mo for City Hall jobs last quarter.
-        </span>
-        <button onClick={() => shieldToast('Flagged for Diana Patel — parking pass note sent', 'info')} style={{ padding: '4px 10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Flag & Notify</button>
-      </div>
+      {/* Receipt inbox — techs quick-snap from the field; convert in one click */}
+      <GlassPanel style={{ padding: 0 }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <SectionHeader title="Receipt inbox" icon="🧾" count={inbox ? inbox.length : undefined} />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input ref={fileRef} type="file" accept="image/*,.pdf" onChange={uploadReceipt} style={{ display: 'none' }} />
+            <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⬆ Upload receipt</button>
+            <button onClick={refreshInbox} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Refresh</button>
+          </div>
+        </div>
+        <div style={{ padding: '10px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {inbox === null && <div style={{ fontSize: 12, color: 'var(--text-low)', padding: 8 }}>Loading…</div>}
+          {inbox && inbox.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-low)', padding: 8 }}>Inbox clear — receipts snapped in the field (tech app / mobile) land here for one-click conversion.</div>}
+          {(inbox || []).map(r => (
+            <div key={r.id} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 10px', borderRadius: 8, background: 'rgba(251,191,36,0.04)', border: '1px solid rgba(251,191,36,0.15)' }}>
+              <DReceiptThumb row={r} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>{r.vendor || r.note || 'Receipt'}</div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-low)' }}>{r.uploader_name || 'Field'} · {new Date(r.created_at).toLocaleString()}{r.amount ? ` · $${Number(r.amount).toLocaleString()}` : ''}{r.job_ref ? ` · ${r.job_ref}` : ''}</div>
+              </div>
+              <button onClick={() => setConvert({ row: r, vendor: r.vendor || '', amount: r.amount || '', category: 'Materials' })} style={{ padding: '6px 14px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>→ Convert to expense</button>
+              <button onClick={async () => { await window.__shieldReceipts.dismiss(r.id); refreshInbox(); }} style={{ padding: '6px 10px', background: 'transparent', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✕</button>
+            </div>
+          ))}
+        </div>
+      </GlassPanel>
 
       {/* Filter tabs */}
       <div style={{ display: 'flex', gap: 6 }}>
@@ -56,47 +111,67 @@ function ExpenseApprovalScreen() {
             border: '1px solid var(--border-subtle)',
             color: filter === f ? 'var(--brand)' : 'var(--text-low)',
             cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize'
-          }}>{f} {f === 'pending' ? `(${expenses.filter(e => e.status === 'pending').length})` : ''}</button>
+          }}>{f} {f === 'pending' ? `(${rows.filter(e => e.status === 'pending').length})` : ''}</button>
         ))}
         <div style={{ flex: 1 }} />
-        <button onClick={approveAll} style={{ padding: '5px 14px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve All Pending</button>
+        {rows.some(e => e.status === 'pending') && <button onClick={approveAll} style={{ padding: '5px 14px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve All Pending</button>}
       </div>
 
-      {/* Expense cards */}
+      {/* Expense cards — same shared store the mobile + tech apps write */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {filtered.length === 0 && <GlassPanel style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>No {filter === 'all' ? '' : filter + ' '}expenses yet — field submissions and converted receipts appear here.</GlassPanel>}
         {filtered.map((e, i) => (
-          <GlassPanel key={i} style={{ padding: '14px 18px', animation: `fade-up 0.3s ease ${i * 40}ms both` }}>
+          <GlassPanel key={e.id || i} style={{ padding: '14px 18px', animation: `fade-up 0.3s ease ${i * 40}ms both` }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(63,169,245,0.1)', color: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>{e.initials}</div>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(63,169,245,0.1)', color: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>{(e.by || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, fontWeight: 500 }}>{e.tech}</span>
-                  <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{e.id}</span>
+                  <span style={{ fontSize: 13, fontWeight: 500 }}>{e.by || 'Team'}</span>
                   <StatusBadge status={e.status === 'approved' ? 'online' : e.status === 'rejected' ? 'critical' : 'pending'} label={e.status} />
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--text-high)', marginBottom: 2 }}>{e.desc}</div>
                 <div style={{ display: 'flex', gap: 8, fontSize: 11, color: 'var(--text-low)' }}>
-                  <span>{e.date}</span><span>·</span><span>{e.type}</span>
-                  {e.job !== '—' && <><span>·</span><span className="mono" style={{ color: 'var(--brand)' }}>{e.job}</span></>}
-                  {e.receipt && <><span>·</span><span>▤ Receipt</span></>}
-                  {e.miles && <><span>·</span><span>{e.miles} mi @ $0.70</span></>}
+                  <span>{e.date}</span><span>·</span><span>{e.category}</span>
+                  {e.receipt_id && <><span>·</span><span>🧾 from receipt</span></>}
                 </div>
-                {e.rejectReason && <div style={{ fontSize: 11, color: 'var(--status-critical)', marginTop: 4, fontStyle: 'italic' }}>Reason: {e.rejectReason}</div>}
               </div>
-              <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <div className="mono" style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-high)' }}>${e.amount.toFixed(2)}</div>
-              </div>
+              <div className="mono" style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-high)', flexShrink: 0 }}>${Number(e.amount).toFixed(2)}</div>
             </div>
             {e.status === 'pending' && (
               <div style={{ display: 'flex', gap: 6, marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border-subtle)', justifyContent: 'flex-end' }}>
                 <button onClick={() => setStatus(e.id, 'approved', 'Approved')} style={{ padding: '5px 16px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>
                 <button onClick={() => setStatus(e.id, 'rejected', 'Rejected')} style={{ padding: '5px 12px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✕ Reject</button>
-                <button onClick={() => shieldToast(`Question sent to ${e.tech} about ${e.id}`, 'info')} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>? Ask</button>
               </div>
             )}
           </GlassPanel>
         ))}
       </div>
+
+      {/* Convert modal */}
+      {convert && (
+        <div onClick={() => setConvert(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9000 }}>
+          <div onClick={ev => ev.stopPropagation()} className="glass" style={{ width: 440, padding: 24, borderRadius: 12, animation: 'fade-up 0.25s ease both' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
+              <span className="display" style={{ fontSize: 15, fontWeight: 500 }}>Convert receipt → expense</span>
+              <button onClick={() => setConvert(null)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 16, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 14 }}>
+              <DReceiptThumb row={convert.row} size={84} />
+              <div style={{ fontSize: 11, color: 'var(--text-low)', lineHeight: 1.5 }}>{convert.row.uploader_name || 'Field'}<br/>{new Date(convert.row.created_at).toLocaleString()}<br/>Click the image to zoom.</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <input value={convert.vendor} onChange={e => setConvert(p => ({ ...p, vendor: e.target.value }))} placeholder="Vendor (Home Depot)" style={{ padding: '9px 11px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+              <input value={convert.amount} onChange={e => setConvert(p => ({ ...p, amount: e.target.value.replace(/[^\d.]/g, '') }))} placeholder="Amount ($)" inputMode="decimal" style={{ padding: '9px 11px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['Materials','Fuel','Tools','Other'].map(c => (
+                  <button key={c} onClick={() => setConvert(p => ({ ...p, category: c }))} style={{ flex: 1, padding: '6px 0', borderRadius: 6, fontSize: 11, background: convert.category === c ? 'rgba(63,169,245,0.12)' : 'transparent', border: `1px solid ${convert.category === c ? 'var(--brand)' : 'var(--border-subtle)'}`, color: convert.category === c ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
+                ))}
+              </div>
+              <button onClick={doConvert} style={{ padding: '10px 0', background: 'var(--brand)', border: 'none', borderRadius: 7, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Convert to expense</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

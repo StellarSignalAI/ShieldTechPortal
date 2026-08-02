@@ -39,9 +39,25 @@ function photoBg(look) {
   return [...layers, base].join(', ');
 }
 
+/* Buckets are private: legacy …/object/public/… photo URLs are swapped for a
+   fresh signed URL on the fly (cached in the storage client). */
+function usePhotoSrc(raw) {
+  const needsSign = raw && String(raw).includes('/object/public/');
+  const [src, setSrc] = React.useState(needsSign ? null : raw);
+  React.useEffect(() => {
+    let alive = true;
+    if (!raw) { setSrc(null); return; }
+    if (!String(raw).includes('/object/public/')) { setSrc(raw); return; }
+    (window.__shieldFileUrl ? window.__shieldFileUrl(raw) : Promise.resolve(raw))
+      .then((u) => { if (alive) setSrc(u); });
+    return () => { alive = false; };
+  }, [raw]);
+  return src;
+}
+
 /* The "photo" itself. children = annotation markers etc. */
 function MockPhoto({ photo, stamp = true, style, children, onClick }) {
-  const src = photo.url || photo.dataUrl;
+  const src = usePhotoSrc(photo.url || photo.dataUrl);
   return (
     <div onClick={onClick} style={{ position: 'relative', overflow: 'hidden', background: src ? '#000' : photoBg(photo.look), ...style }}>
       {src && <img src={src} alt={photo.label || 'site photo'} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}

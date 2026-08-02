@@ -52,8 +52,9 @@ export async function savePhoto(dataUrl, meta = {}) {
         const blob = await dataUrlToBlob(dataUrl);
         const { error } = await supabase.storage.from('site-photos').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
         if (!error) {
-          const { data } = supabase.storage.from('site-photos').getPublicUrl(path);
-          if (data && data.publicUrl) return { ok: true, url: data.publicUrl };
+          // Bucket is PRIVATE — store a long-lived signed URL.
+          const { data } = await supabase.storage.from('site-photos').createSignedUrl(path, 60 * 60 * 24 * 365);
+          if (data && data.signedUrl) return { ok: true, url: data.signedUrl };
         }
       }
     } catch { /* fall through to local */ }

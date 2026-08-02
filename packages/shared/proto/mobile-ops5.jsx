@@ -263,7 +263,7 @@ function MDocumentsN() {
       {docs === null && <OPS5_EMPTY>Loading documents…</OPS5_EMPTY>}
       {(docs || []).map(d => (
         <MRow key={d.id} icon="documents" title={d.name} sub={`${d.mime || ''} · ${fmtSize(d.size)}`}
-          onClick={d.url ? () => window.open(d.url, '_blank') : undefined} rightSub={d.created_at ? new Date(d.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''} />
+          onClick={d.url ? () => (window.__shieldStorage ? window.__shieldStorage.openFile(d.url) : window.open(d.url, '_blank')) : undefined} rightSub={d.created_at ? new Date(d.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''} />
       ))}
       {docs !== null && docs.length === 0 && <OPS5_EMPTY>No documents yet — photos, PDFs and files you upload live here, synced company-wide.</OPS5_EMPTY>}
     </div>

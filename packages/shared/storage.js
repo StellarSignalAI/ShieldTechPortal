@@ -51,8 +51,9 @@ async function put(blob, meta = {}) {
         const { error: upErr } = await supabase.storage
           .from(bucket).upload(path, blob, { contentType: mime, upsert: true });
         if (!upErr) {
-          const { data: pub } = supabase.storage.from(bucket).getPublicUrl(path);
-          const url = (pub && pub.publicUrl) || null;
+          // Buckets are PRIVATE — hand back a long-lived signed URL.
+          const { data: signed } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 365);
+          const url = (signed && signed.signedUrl) || null;
           // Track it — best-effort; a missing table must not fail the upload.
           try {
             await supabase.from('attachments').insert({
@@ -99,4 +100,24 @@ export async function removeAttachment(id) {
   return { ok: true };
 }
 
-window.__shieldStorage = { uploadFile, uploadDataUrl, listAttachments, removeAttachment, DEFAULT_BUCKET };
+/* The buckets went private — URLs stored before that (…/object/public/…) no
+   longer serve. resolveUrl() swaps any legacy public URL for a fresh signed
+   one on the fly (cached); everything else passes through untouched. */
+const signedCache = new Map();
+export async function resolveUrl(url) {
+  if (!url || !supabaseConfigured) return url;
+  const m = /\/storage\/v1\/object\/public\/([^/]+)\/(.+?)(\?.*)?$/.exec(String(url));
+  if (!m) return url;
+  const key = m[1] + '/' + m[2];
+  if (signedCache.has(key)) return signedCache.get(key);
+  try {
+    const { data } = await supabase.storage.from(m[1]).createSignedUrl(decodeURIComponent(m[2]), 60 * 60 * 24 * 7);
+    const out = (data && data.signedUrl) || url;
+    signedCache.set(key, out);
+    return out;
+  } catch { return url; }
+}
+export function openFile(url) { resolveUrl(url).then((u) => window.open(u, '_blank')); }
+
+window.__shieldStorage = { uploadFile, uploadDataUrl, listAttachments, removeAttachment, resolveUrl, openFile, DEFAULT_BUCKET };
+window.__shieldFileUrl = resolveUrl;

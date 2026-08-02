@@ -27,13 +27,76 @@ const mPlanStore = createShieldStore('mplans', [
   { id: 'total', name: 'Total Shield', price: 249, features: ['Everything in Professional', 'Unlimited service calls', 'Annual system health report', 'Loaner hardware', '4-hour SLA'] },
 ]);
 
-/* ══════════════ EXPENSES — submit & approve, native ══════════════ */
+/* ══════════════ RECEIPT QUICK-SNAP + INBOX (shared bits) ══════════════ */
+/* One-tap receipt capture → private receipts bucket + shared inbox. */
+function MReceiptSnap({ onDone }) {
+  const inputRef = React.useRef(null);
+  const [busy, setBusy] = React.useState(false);
+  const onFile = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!window.__shieldReceipts) { showToast('Receipts backend not configured', 'warn'); return; }
+    setBusy(true);
+    const r = await window.__shieldReceipts.snap(file, {});
+    setBusy(false);
+    if (r.ok) { showToast('Receipt in the inbox — the office will categorize it', 'ok'); onDone && onDone(); }
+    else showToast('Upload failed: ' + (r.error || 'unknown'), 'warn');
+  };
+  return (
+    <>
+      <input ref={inputRef} type="file" accept="image/*" capture="environment" onChange={onFile} style={{ display: 'none' }} />
+      <button disabled={busy} onClick={() => inputRef.current && inputRef.current.click()} style={{ ...ops6Btn(false), borderColor: 'var(--border-strong)', color: 'var(--brand)', opacity: busy ? 0.5 : 1 }}>
+        {busy ? 'Uploading…' : '📷 Quick-snap a receipt'}
+      </button>
+    </>
+  );
+}
+
+/* Thumbnail that resolves its signed URL lazily. */
+function MReceiptThumb({ row, size = 54 }) {
+  const [src, setSrc] = React.useState(null);
+  React.useEffect(() => {
+    let alive = true;
+    if (window.__shieldReceipts) window.__shieldReceipts.imageUrl(row).then(u => { if (alive) setSrc(u); });
+    return () => { alive = false; };
+  }, [row.id]);
+  return (
+    <div onClick={src ? () => window.open(src, '_blank') : undefined} style={{ width: size, height: size, borderRadius: 9, overflow: 'hidden', background: 'rgba(63,169,245,0.07)', border: '1px solid var(--border-subtle)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: src ? 'pointer' : 'default' }}>
+      {src ? <img src={src} alt="receipt" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 18 }}>🧾</span>}
+    </div>
+  );
+}
+
+/* ══════════════ EXPENSES — submit & approve + receipt inbox, native ══════════════ */
 function MExpensesFull() {
   const [rows, setRows] = useShieldStore(mExpenseStore);
   const [adding, setAdding] = React.useState(false);
   const [f, setF] = React.useState({ desc: '', amount: '', category: 'Materials' });
   const isAdmin = ((window.__shieldUser || {}).role || 'Admin') !== 'Technician';
   const pending = (rows || []).filter(r => r.status === 'pending');
+  const [inbox, setInbox] = React.useState(null);
+  const [convertRow, setConvertRow] = React.useState(null);
+  const [cf, setCf] = React.useState({ vendor: '', amount: '', category: 'Materials' });
+  const refreshInbox = React.useCallback(() => {
+    if (!window.__shieldReceipts) { setInbox([]); return; }
+    window.__shieldReceipts.list('inbox').then(r => setInbox(r.ok ? r.data : []));
+  }, []);
+  React.useEffect(() => { refreshInbox(); }, [refreshInbox]);
+  const doConvert = async () => {
+    if (!(Number(cf.amount) > 0)) { showToast('Enter the amount', 'warn'); return; }
+    const r = convertRow;
+    await window.__shieldReceipts.convert(r.id, { vendor: cf.vendor, amount: cf.amount, category: cf.category });
+    mExpenseStore.set(prev => [{
+      id: genId('exp'), desc: (cf.vendor || 'Receipt') + (r.note ? ` — ${r.note}` : ''),
+      amount: Number(cf.amount), category: cf.category,
+      by: r.uploader_name || 'Field', date: (r.created_at || '').slice(0, 10) || new Date().toISOString().slice(0, 10),
+      status: 'approved', receipt_id: r.id,
+    }, ...(prev || [])]);
+    setConvertRow(null); setCf({ vendor: '', amount: '', category: 'Materials' });
+    showToast('Receipt converted to a categorized expense ✓', 'ok');
+    refreshInbox();
+  };
   const act = (id, status) => { mExpenseStore.set(prev => prev.map(r => r.id === id ? { ...r, status } : r)); showToast(status === 'approved' ? 'Expense approved' : 'Expense rejected', 'ok'); };
   const save = () => {
     if (!f.desc.trim() || !(Number(f.amount) > 0)) { showToast('Add a description and amount', 'warn'); return; }
@@ -43,8 +106,24 @@ function MExpensesFull() {
   const stC = { pending: 'var(--status-warn)', approved: 'var(--status-ok)', rejected: 'var(--status-critical)' };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <OpsKpis items={[['PENDING', pending.length, pending.length ? 'var(--status-warn)' : 'var(--status-ok)'], ['PENDING $', ops6$(pending.reduce((s, r) => s + r.amount, 0)), 'var(--text-high)'], ['ALL', (rows || []).length, 'var(--text-mid)']]} />
-      <button onClick={() => setAdding(true)} style={ops6Btn(true)}>+ Submit expense</button>
+      <OpsKpis items={[['PENDING', pending.length, pending.length ? 'var(--status-warn)' : 'var(--status-ok)'], ['RECEIPT INBOX', inbox === null ? '…' : inbox.length, (inbox || []).length ? 'var(--status-warn)' : 'var(--status-ok)'], ['ALL', (rows || []).length, 'var(--text-mid)']]} />
+      <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}><MReceiptSnap onDone={refreshInbox} /></div>
+        <button onClick={() => setAdding(true)} style={{ ...ops6Btn(true), flex: 1 }}>+ Submit expense</button>
+      </div>
+      {(inbox || []).length > 0 && <>
+        <MSection title={`Receipt inbox (${inbox.length})`} />
+        {inbox.map(r => (
+          <div key={r.id} className="glass" style={{ padding: '11px 12px', borderRadius: 12, display: 'flex', gap: 10, alignItems: 'center', borderLeft: '3px solid var(--status-warn)' }}>
+            <MReceiptThumb row={r} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>{r.vendor || r.note || 'Receipt'}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{r.uploader_name || 'Field'} · {new Date(r.created_at).toLocaleDateString()}{r.amount ? ` · ${ops6$(r.amount)}` : ''}</div>
+            </div>
+            {isAdmin && <button onClick={() => { setConvertRow(r); setCf({ vendor: r.vendor || '', amount: r.amount || '', category: 'Materials' }); }} style={{ padding: '8px 12px', borderRadius: 9, border: 'none', background: 'rgba(52,211,153,0.14)', color: 'var(--status-ok)', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>→ Expense</button>}
+          </div>
+        ))}
+      </>}
       {(rows || []).map(r => (
         <div key={r.id} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${stC[r.status]}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -61,6 +140,21 @@ function MExpensesFull() {
         </div>
       ))}
       {(rows || []).length === 0 && <OPS6_EMPTY>No expenses yet — receipts submitted here route to approval and payroll.</OPS6_EMPTY>}
+      {convertRow && (
+        <MSheet title="Convert receipt → expense" onClose={() => setConvertRow(null)}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <MReceiptThumb row={convertRow} size={72} />
+              <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{convertRow.uploader_name || 'Field'} · {new Date(convertRow.created_at).toLocaleString()}<br/>Tap the image to zoom.</div>
+            </div>
+            <div><span style={ops6Lbl}>Vendor</span><input value={cf.vendor} onChange={e => setCf(p => ({ ...p, vendor: e.target.value }))} placeholder="Home Depot" style={ops6Inp} /></div>
+            <div><span style={ops6Lbl}>Amount ($)</span><input type="number" inputMode="decimal" value={cf.amount} onChange={e => setCf(p => ({ ...p, amount: e.target.value }))} placeholder="0.00" style={ops6Inp} /></div>
+            <div><span style={ops6Lbl}>Category</span><MSegment options={['Materials', 'Fuel', 'Tools', 'Other']} value={cf.category} onChange={v => setCf(p => ({ ...p, category: v }))} /></div>
+            <button onClick={doConvert} style={ops6Btn(true)}>Convert to expense</button>
+            <button onClick={async () => { await window.__shieldReceipts.dismiss(convertRow.id); setConvertRow(null); refreshInbox(); showToast('Receipt dismissed'); }} style={{ ...ops6Btn(false), color: 'var(--status-critical)' }}>Dismiss receipt</button>
+          </div>
+        </MSheet>
+      )}
       {adding && (
         <MSheet title="Submit expense" onClose={() => setAdding(false)}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
@@ -640,4 +734,4 @@ Object.assign(window.M_OPS5 || {}, {
   timeline: MTimelineFull,
 });
 
-Object.assign(window, { MExpensesFull, MROIFull, MRRBuilderFull, MServicePlansFull, MStatusPageFull, MMarketingFull, MOnboardingFull, MRFPFull, MCopilotFull, MIntelFull, MMarginXRayFull, MServiceReportsFull, MSurveyCloudFull, MStudioFull, MCustomerFull, MTimelineFull, mPlanStore, mStatusStore, mExpenseStore, mCampaignStore, mOnboardStore, mRfpStore });
+Object.assign(window, { MReceiptSnap, MReceiptThumb, MExpensesFull, MROIFull, MRRBuilderFull, MServicePlansFull, MStatusPageFull, MMarketingFull, MOnboardingFull, MRFPFull, MCopilotFull, MIntelFull, MMarginXRayFull, MServiceReportsFull, MSurveyCloudFull, MStudioFull, MCustomerFull, MTimelineFull, mPlanStore, mStatusStore, mExpenseStore, mCampaignStore, mOnboardStore, mRfpStore });
