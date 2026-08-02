@@ -272,23 +272,138 @@ function MDocumentsN() {
 
 /* ══════════════ USERS & INVITES (real — profiles) ══════════════ */
 const OPS5_ROLE_C = { Admin: 'var(--status-critical)', Staff: 'var(--brand)', Technician: 'var(--status-ok)', Customer: 'var(--text-low)' };
+/* Full native user console — invite (role-aware emails), role/app-rights
+   management, reset/resend/remove. Same backend as desktop (invite-user +
+   manage-user edge functions + profiles RLS). */
+const M_ROLE_RIGHTS = {
+  Admin: { portal: true, tech: true, customer: false },
+  Staff: { portal: true, tech: true, customer: false },
+  Technician: { portal: false, tech: true, customer: false },
+  Client: { portal: false, tech: false, customer: true },
+};
+const M_APPS = [['portal', 'Portal'], ['tech', 'Tech App'], ['customer', 'Customer']];
+
 function MUsersN({ onNav }) {
+  const sb = window.__shieldSupabase;
+  const selfId = (window.__shieldUser && window.__shieldUser.id) || null;
   const [rows, setRows] = React.useState(null);
-  React.useEffect(() => {
-    const sb = window.__shieldSupabase;
+  const [inviting, setInviting] = React.useState(false);
+  const [manage, setManage] = React.useState(null);   // profile row being managed
+  const [f, setF] = React.useState({ email: '', name: '', role: 'Technician' });
+  const [busy, setBusy] = React.useState('');
+  const [result, setResult] = React.useState(null);
+
+  const load = React.useCallback(() => {
     if (!sb) return setRows([]);
-    sb.from('profiles').select('id,email,name,role').order('name').then(({ data }) => setRows(data || []));
+    sb.from('profiles').select('id,email,name,role,app_rights,must_change_password,created_at')
+      .order('created_at', { ascending: false }).then(({ data }) => setRows(data || []));
   }, []);
+  React.useEffect(() => { load(); }, [load]);
+
+  const invite = async () => {
+    if (!sb) { showToast('Backend not configured', 'warn'); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) { showToast('Enter a valid email', 'warn'); return; }
+    setBusy('invite'); setResult(null);
+    const { data, error } = await sb.functions.invoke('invite-user', {
+      body: { email: f.email.trim(), name: f.name.trim(), role: f.role, app_rights: M_ROLE_RIGHTS[f.role] },
+    });
+    setBusy('');
+    if (error || !data || !data.ok) { showToast((data && data.error) || (error && error.message) || 'Invite failed', 'error'); return; }
+    setResult(data.data);
+    showToast(data.data.emailed
+      ? (f.role === 'Technician' ? `Tech App invite emailed to ${data.data.email}` : `Invite emailed to ${data.data.email}`)
+      : 'User created — hand over the temporary password shown', 'ok');
+    setF({ email: '', name: '', role: 'Technician' });
+    if (data.data.emailed) setInviting(false);
+    load();
+  };
+
+  const callManage = async (action, confirmMsg) => {
+    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    setBusy(action);
+    const { data, error } = await sb.functions.invoke('manage-user', { body: { action, userId: manage.id } });
+    setBusy('');
+    if (error || !data || !data.ok) { showToast((data && data.error) || (error && error.message) || 'Action failed', 'error'); return; }
+    if (action === 'remove') { showToast(`Removed ${manage.email}`, 'ok'); setManage(null); load(); return; }
+    showToast(data.data.emailed ? `New temporary password emailed to ${manage.email}` : `Temp password: ${data.data.temp_password}`, 'ok');
+    load();
+  };
+
+  const saveManage = async () => {
+    setBusy('save');
+    const { error } = await sb.from('profiles')
+      .update({ role: manage.role, app_rights: manage.app_rights })
+      .eq('id', manage.id);
+    setBusy('');
+    if (error) { showToast(error.message, 'error'); return; }
+    showToast(`Updated ${manage.email}`, 'ok'); setManage(null); load();
+  };
+
+  const inp = { width: '100%', boxSizing: 'border-box', padding: '12px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 16, fontFamily: 'var(--font-body)', outline: 'none' };
+  const lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <OpsKpis items={[['USERS', (rows || []).length, 'var(--brand)'], ['ADMINS', (rows || []).filter(r => r.role === 'Admin').length, 'var(--status-critical)']]} />
+      <OpsKpis items={[['USERS', (rows || []).length, 'var(--brand)'], ['ADMINS', (rows || []).filter(r => r.role === 'Admin').length, 'var(--status-critical)'], ['TECHS', (rows || []).filter(r => r.role === 'Technician').length, 'var(--status-ok)']]} />
+      <button onClick={() => { setInviting(true); setResult(null); }} style={{ padding: '13px 0', borderRadius: 11, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Invite a user</button>
+      {result && result.temp_password && (
+        <div className="glass" style={{ padding: '12px 14px', borderRadius: 11, borderLeft: '3px solid var(--status-warn)', fontSize: 12, color: 'var(--text-high)' }}>
+          Email didn't send — share these once: <span className="mono">{result.email}</span> · <span className="mono" style={{ color: 'var(--status-warn)', fontWeight: 700 }}>{result.temp_password}</span>
+        </div>
+      )}
       {rows === null && <OPS5_EMPTY>Loading users…</OPS5_EMPTY>}
       {(rows || []).map(u => (
-        <MRow key={u.id} icon="users" title={u.name || u.email} sub={u.email}
-          right={<MBadge color={OPS5_ROLE_C[u.role] || 'var(--brand)'}>{u.role || 'Staff'}</MBadge>} />
+        <MRow key={u.id} icon="users" title={(u.name || u.email) + (u.id === selfId ? ' (you)' : '')} sub={`${u.email}${u.must_change_password ? ' · temp pw' : ''}`}
+          right={<MBadge color={OPS5_ROLE_C[u.role] || 'var(--brand)'}>{u.role || 'Staff'}</MBadge>}
+          onClick={() => setManage({ ...u, app_rights: { ...(u.app_rights || {}) } })} />
       ))}
       {rows !== null && rows.length === 0 && <OPS5_EMPTY>No user profiles visible.</OPS5_EMPTY>}
-      <div style={{ fontSize: 10, color: 'var(--text-low)', textAlign: 'center' }}>Invites, app rights and password resets are in the full console below.</div>
+
+      {/* Invite sheet */}
+      {inviting && (
+        <MSheet title="Invite a user" onClose={() => setInviting(false)}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+            <div><span style={lbl}>Email</span><input value={f.email} onChange={e => setF(p => ({ ...p, email: e.target.value }))} placeholder="person@example.com" inputMode="email" autoCapitalize="none" style={inp} /></div>
+            <div><span style={lbl}>Name</span><input value={f.name} onChange={e => setF(p => ({ ...p, name: e.target.value }))} placeholder="Full name" style={inp} /></div>
+            <div><span style={lbl}>Role</span><MSegment options={['Technician', 'Staff', 'Admin', 'Client']} value={f.role} onChange={v => setF(p => ({ ...p, role: v }))} /></div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.6, padding: '2px 2px 0' }}>
+              {f.role === 'Technician'
+                ? <>They'll get one email with their sign-in and a single link to <b style={{ color: 'var(--brand)' }}>tech.shieldtechsolutions.com</b> — you administer any further access here.</>
+                : <>They'll get a branded email with a temporary password ({M_APPS.filter(([id]) => M_ROLE_RIGHTS[f.role][id]).map(([, l]) => l).join(' + ') || 'no apps'} access).</>}
+            </div>
+            <button disabled={busy === 'invite'} onClick={invite} style={{ padding: '13px 0', borderRadius: 11, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', opacity: busy === 'invite' ? 0.6 : 1 }}>{busy === 'invite' ? 'Inviting…' : 'Send invite'}</button>
+          </div>
+        </MSheet>
+      )}
+
+      {/* Manage sheet */}
+      {manage && (
+        <MSheet title={manage.name || manage.email} onClose={() => setManage(null)}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+            <div className="mono" style={{ fontSize: 11.5, color: 'var(--text-low)' }}>{manage.email}</div>
+            <div><span style={lbl}>Role</span><MSegment options={['Technician', 'Staff', 'Admin', 'Client']} value={manage.role} onChange={v => setManage(m => ({ ...m, role: v, app_rights: { ...M_ROLE_RIGHTS[v] } }))} /></div>
+            <div>
+              <span style={lbl}>App access</span>
+              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', padding: '4px 2px' }}>
+                {M_APPS.map(([id, label]) => (
+                  <label key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: 'var(--text-high)' }}>
+                    <input type="checkbox" checked={!!(manage.app_rights && manage.app_rights[id])} onChange={e => setManage(m => ({ ...m, app_rights: { ...m.app_rights, [id]: e.target.checked } }))} style={{ accentColor: 'var(--brand)', width: 17, height: 17 }} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <button disabled={busy === 'save'} onClick={saveManage} style={{ padding: '12px 0', borderRadius: 11, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', opacity: busy === 'save' ? 0.6 : 1 }}>Save changes</button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button disabled={!!busy} onClick={() => callManage('resend')} style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: '1px solid var(--border-strong)', background: 'rgba(63,169,245,0.06)', color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Resend invite</button>
+              <button disabled={!!busy} onClick={() => callManage('reset', `Reset password for ${manage.email}?`)} style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--text-mid)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Reset password</button>
+            </div>
+            {manage.id !== selfId && (
+              <button disabled={!!busy} onClick={() => callManage('remove', `Remove ${manage.email}? They lose all access immediately.`)} style={{ padding: '11px 0', borderRadius: 10, border: '1px solid rgba(244,63,94,0.25)', background: 'transparent', color: 'var(--status-critical)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Remove user</button>
+            )}
+          </div>
+        </MSheet>
+      )}
     </div>
   );
 }
