@@ -17,7 +17,7 @@ function NIFinanceScreen({ initialTab }) {
     { id: 'overview', label: 'Overview', icon: '◉' },
     { id: 'invoices', label: 'Invoices', icon: '⊞' },
     { id: 'recurring', label: 'Recurring', icon: '◔' },
-    { id: 'estimates', label: 'Estimates', icon: '◇' },
+    { id: 'estimates', label: 'Proposals', icon: '◇' },
     { id: 'credits', label: 'Credits & Receipts', icon: '◈' },
     { id: 'products', label: 'Products & Services', icon: '⊡' },
     { id: 'ap', label: 'Bills & AP', icon: '⊜' },

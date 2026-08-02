@@ -65,7 +65,7 @@ const NAV_GROUPS = [
 { id: 'finance', label: 'FINANCE & BILLING', collapsible: true, items: [
   { id: 'finance', icon: 'finance', label: 'Finance Suite', useSvg: true },
   { id: 'invoices', icon: 'expenses', label: 'Invoices', useSvg: true },
-  { id: 'estimates', icon: 'proposals', label: 'Estimates', useSvg: true },
+  { id: 'estimates', icon: 'proposals', label: 'Proposal Pipeline', useSvg: true },
   { id: 'outbox', icon: 'chat', label: 'Email Outbox', useSvg: true },
   { id: 'purchase-orders', icon: 'cart', label: 'Purchase Orders', useSvg: true },
   { id: 'expenses', icon: 'expenses', label: 'Expense Approval', useSvg: true },

@@ -1,9 +1,8 @@
 /* Invoicing/outbox stores + email helpers — vendored from updated design prototype (seeds emptied). */
 const invoiceStore = createShieldStore('invoices', []);
-function nextInvoiceNum() {
-  const n = invoiceStore.get().reduce((m, i) => Math.max(m, parseInt(String(i.num).replace(/\D/g, ''), 10) || 0), 2800);
-  return 'INV-' + (n + 1);
-}
+/* One sequence for every writer — delegates to the shared generator, which
+   scans both row shapes (num and doc_number). */
+function nextInvoiceNum() { return window.nextDocNumber('invoice'); }
 
 /* ── Brand Kit Store ── (persisted branding — pay page + email templates read this) */
 const brandStore = createShieldStore('brand', {

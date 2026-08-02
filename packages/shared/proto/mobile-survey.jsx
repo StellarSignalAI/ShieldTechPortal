@@ -80,7 +80,7 @@ function MSurveyBuilder({ id, onClose, onNav }) {
     const laborHrs = draft.bom.reduce((a, b) => a + b.qty * b.hrs, 0);
     if (laborHrs > 0) items.push({ desc: `Installation labor (${Math.round(laborHrs)}h)`, qty: Math.round(laborHrs), rate: SURVEY_RATE });
     const blocks = defaultProposalBlocks(draft.customer, `${draft.site} — Security System`).map(b => b.type === 'pricing' ? { ...b, content: { items } } : b);
-    const pid = 'PROP-' + (Math.floor(Math.random() * 600) + 320);
+    const pid = window.nextProposalId();
     proposalStore.set(list => [{ id: pid, customer: draft.customer, title: `${draft.site} — Security System`, status: 'draft', created: draft.date, viewed: false, viewTime: '—', blocks }, ...list]);
     surveyStore.set(list => existing ? list : [draft, ...list]);
     showToast(`${pid} drafted from survey — opening Proposals`, 'ok');

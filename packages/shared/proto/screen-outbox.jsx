@@ -10,9 +10,12 @@
 
 /* ── Branded customer pay page (shell-less) ── */
 function PayPageScreen({ onBack }) {
-  const [invoices, setInvoices] = useShieldStore(invoiceStore);
+  const [invoicesRaw] = useShieldStore(invoiceStore);
   const [brand] = useShieldStore(brandStore);
   const [focus] = useShieldStore(payFocusStore);
+  /* Normalize BOTH store row shapes (num/amount and doc_number/total) so the
+     page can render any invoice, whichever writer created it. */
+  const invoices = (invoicesRaw || []).map(mapInvoiceRow);
   const inv = invoices.find(i => i.num === focus) || invoices.find(i => i.status === 'pending' || i.status === 'overdue') || invoices[0];
   const [card, setCard] = React.useState({ number: '', exp: '', cvc: '', name: '' });
   const [state, setState] = React.useState('form'); // form | processing | paid
@@ -25,7 +28,8 @@ function PayPageScreen({ onBack }) {
     if (!card.number.replace(/\s/g, '') || !card.exp || !card.cvc) { showToast('Enter card number, expiry, and CVC', 'warn'); return; }
     setState('processing');
     setTimeout(() => {
-      setInvoices(prev => prev.map(i => i.num === inv.num ? { ...i, status: 'paid', days: 0, paidAt: Date.now(), paidVia: 'pay-page' } : i));
+      invoiceStore.set(prev => (prev || []).map(i => (i.num || i.doc_number) === inv.num
+        ? { ...i, status: 'paid', balance: 0, days: 0, paidAt: Date.now(), paidVia: 'pay-page' } : i));
       setState('paid');
     }, 1600);
   };
@@ -50,7 +54,7 @@ function PayPageScreen({ onBack }) {
             <span style={{ fontSize: 10, color: inv.status === 'overdue' ? 'var(--status-critical)' : 'var(--text-low)', textTransform: 'uppercase', fontWeight: 700 }}>{inv.status}{inv.status === 'overdue' ? ` · ${inv.days}d` : ''}</span>
           </div>
           <div style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 12 }}>Billed to <b style={{ color: 'var(--text-high)' }}>{inv.customer}</b> · due {inv.due}</div>
-          {inv.lines.map((li, i) => (
+          {(inv.lines || []).map((li, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', fontSize: 12 }}>
               <span style={{ color: 'var(--text-mid)' }}>{li.desc}</span>
               <span className="mono" style={{ color: 'var(--text-high)' }}>${(li.qty * li.rate).toLocaleString()}</span>

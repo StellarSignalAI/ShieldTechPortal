@@ -48,4 +48,23 @@ async function markSent(bidId, to) {
   return error ? { ok: false, error: error.message } : { ok: true };
 }
 
-window.__shieldBids = { list, build, buildPending, proposal, markSent };
+/* Approved bid → the money pipeline (idempotent per bid). The approved tier
+   becomes a proposal doc so it can be accepted → project → invoiced like any
+   other quote instead of dead-ending at the emailed HTML. */
+function toPipeline(opp, bid) {
+  try {
+    if (!window.bidToPipeline || !bid) return null;
+    const tierKey = bid.selected_tier || 'medium';
+    const tier = (bid.tiers || {})[tierKey] || {};
+    const title = (opp && opp.title) || 'Auto-Bid proposal';
+    return window.bidToPipeline({
+      bidId: bid.id,
+      customer: (opp && (opp.buyer || opp.agency || opp.title)) || 'Customer',
+      title,
+      total: Number(tier.price) || 0,
+      lines: [{ desc: `${title} — per attached proposal (${tierKey} tier)`, qty: 1, rate: Number(tier.price) || 0 }],
+    });
+  } catch { return null; }
+}
+
+window.__shieldBids = { list, build, buildPending, proposal, markSent, toPipeline };

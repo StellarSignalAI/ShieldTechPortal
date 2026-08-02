@@ -683,7 +683,8 @@ function MBidReview({ opp, onClose }) {
     a.href = URL.createObjectURL(blob);
     a.download = `ShieldTech-Proposal-${String(opp.solicitation_id || opp.id).slice(0, 24)}.html`;
     a.click(); URL.revokeObjectURL(a.href);
-    showToast('Approved — proposal downloaded (print to PDF for paper)', 'ok');
+    window.__shieldBids.toPipeline(opp, bid);
+    showToast('Approved — downloaded and added to the pipeline', 'ok');
   };
   const send = async () => {
     if (!to.includes('@')) { showToast('Enter a valid email', 'warn'); return; }
@@ -698,6 +699,7 @@ function MBidReview({ opp, onClose }) {
     setSending(false);
     if (r && r.ok) {
       await window.__shieldBids.markSent(bid.id, to.trim());
+      window.__shieldBids.toPipeline(opp, bid);
       showToast(`Approved — proposal emailed to ${to.trim()}`, 'ok');
       onClose(true);
     } else showToast(`Email failed: ${(r && r.error) || 'unknown'} — use Download instead`, 'error');

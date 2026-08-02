@@ -7,7 +7,7 @@ const FINANCE_AREAS = [
     { id: 'copilot', label: 'AI Co-pilot' }] },
   { id: 'money-in', label: 'Revenue & Receivables', tabs: [
     { id: 'invoices', label: 'Invoices' },
-    { id: 'estimates', label: 'Estimates' },
+    { id: 'estimates', label: 'Proposals' },
     { id: 'credits', label: 'Credits & Receipts' },
     { id: 'recurring', label: 'Recurring' },
     { id: 'statements', label: 'Statements' },
@@ -105,7 +105,7 @@ function FinanceScreen() {
           {tab === 'overview' && <FinanceOverview onNav={setTab} />}
           {tab === 'invoices' && <FinanceInvoicesPlus drawer={drawer} setDrawer={setDrawer} modal={modal} setModal={setModal} selectedInv={selectedInv} setSelectedInv={setSelectedInv} invFilter={invFilter} setInvFilter={setInvFilter} showToast={showToast} />}
           {tab === 'recurring' && <FinanceRecurring showToast={showToast} />}
-          {tab === 'estimates' && <FinanceEstimates setModal={setModal} showToast={showToast} />}
+          {tab === 'estimates' && <NIFinanceEstimates setModal={setModal} showToast={showToast} />}
           {tab === 'ap' && <FinanceAPPlus setDrawer={setDrawer} setModal={setModal} showToast={showToast} />}
           {tab === 'expenses' && <FinanceExpensesPlus setModal={setModal} showToast={showToast} />}
           {tab === 'accounts' && <FinanceCOA setModal={setModal} showToast={showToast} />}
@@ -135,10 +135,12 @@ function FinanceScreen() {
       )}
 
       {/* Modal Overlay */}
-      {modal && <FinanceModal modal={modal} setModal={setModal} showToast={showToast} />}
+      {/* NIFinanceModal is the REAL builder (persists via addInvoice/addEstimate) —
+          the old FinanceModal chain in screen-finance-books.jsx silently dropped docs. */}
+      {modal && <NIFinanceModal modal={modal} setModal={setModal} showToast={showToast} />}
 
       {/* Drawer Overlay */}
-      {drawer && <FinanceDrawer drawer={drawer} setDrawer={setDrawer} showToast={showToast} />}
+      {drawer && <NIFinanceDrawer drawer={drawer} setDrawer={setDrawer} showToast={showToast} />}
     </div>
   );
 }
