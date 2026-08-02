@@ -1,0 +1,129 @@
+name: Build mobile apps
+
+# Builds installable Android APKs for all three ShieldTech apps and refreshes
+# the rolling "mobile-apps-latest" release so the download links on
+# /get-apps.html never change. Also compiles the iOS projects (unsigned) to
+# keep them healthy — signed iOS builds need an Apple Developer account and
+# happen via Xcode/TestFlight from native/<app>/ios.
+#
+# Signing: if the repo secrets ANDROID_KEYSTORE_B64 / ANDROID_KEYSTORE_PASSWORD /
+# ANDROID_KEY_ALIAS are set, release APKs are signed with that keystore (so
+# updates install over the old version). Without them a fresh keystore is
+# generated per run — APKs still install, but an update requires uninstalling
+# the previous copy first.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['native/**', '.github/workflows/mobile-apps.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [portal, tech, customer]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - name: Install Capacitor deps
+        working-directory: native/${{ matrix.app }}
+        run: npm ci
+
+      - name: Sync web shell into Android project
+        working-directory: native/${{ matrix.app }}
+        run: npx cap sync android
+
+      - name: Prepare signing keystore
+        id: keystore
+        working-directory: native/${{ matrix.app }}/android
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > release.keystore
+            echo "pass=$KS_PASS" >> "$GITHUB_OUTPUT"
+            echo "alias=${KS_ALIAS:-shieldtech}" >> "$GITHUB_OUTPUT"
+            echo "Using repo keystore"
+          else
+            keytool -genkeypair -v -keystore release.keystore -alias shieldtech \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass shieldtech-ci -keypass shieldtech-ci \
+              -dname "CN=ShieldTech Solutions, O=ShieldTech, C=US"
+            echo "pass=shieldtech-ci" >> "$GITHUB_OUTPUT"
+            echo "alias=shieldtech" >> "$GITHUB_OUTPUT"
+            echo "Generated ephemeral keystore (set ANDROID_KEYSTORE_B64 for stable signing)"
+          fi
+
+      - name: Build signed release APK
+        working-directory: native/${{ matrix.app }}/android
+        run: |
+          ./gradlew assembleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file="$PWD/release.keystore" \
+            -Pandroid.injected.signing.store.password='${{ steps.keystore.outputs.pass }}' \
+            -Pandroid.injected.signing.key.alias='${{ steps.keystore.outputs.alias }}' \
+            -Pandroid.injected.signing.key.password='${{ steps.keystore.outputs.pass }}'
+          cp app/build/outputs/apk/release/app-release.apk ../../shieldtech-${{ matrix.app }}.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shieldtech-${{ matrix.app }}-apk
+          path: native/shieldtech-${{ matrix.app }}.apk
+
+  release:
+    needs: android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { merge-multiple: true, path: apks }
+      - name: Refresh rolling release with stable download URLs
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mobile-apps-latest
+          name: ShieldTech mobile apps (latest)
+          body: |
+            Installable Android apps for the ShieldTech platform. Each app is a
+            native shell around the live production app — it updates itself on
+            every deploy, no reinstall needed.
+
+            - **shieldtech-portal.apk** — the operations portal (admins/office)
+            - **shieldtech-tech.apk** — the field technician app
+            - **shieldtech-customer.apk** — the customer portal
+
+            iPhone/iPad: install from Safari via **Share → Add to Home Screen**
+            (see /get-apps.html on any of the apps), or build `native/<app>/ios`
+            in Xcode once an Apple Developer account is connected.
+          prerelease: true
+          files: apks/*.apk
+
+  ios-compile-check:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        app: [portal, tech, customer]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Install Capacitor deps
+        working-directory: native/${{ matrix.app }}
+        run: npm ci
+      - name: Sync web shell into iOS project
+        working-directory: native/${{ matrix.app }}
+        run: npx cap sync ios
+      - name: Build (unsigned) to keep the Xcode project healthy
+        working-directory: native/${{ matrix.app }}/ios/App
+        run: |
+          xcodebuild -workspace App.xcworkspace -scheme App \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" build

@@ -1,0 +1,16 @@
+{
+  "appId": "com.shieldtech.tech",
+  "appName": "ShieldTech Tech",
+  "webDir": "www",
+  "server": {
+    "url": "https://tech.shieldtechsolutions.com",
+    "cleartext": false
+  },
+  "backgroundColor": "#05070AFF",
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "always"
+  }
+}
