@@ -3,7 +3,7 @@
 // emails), then the auth user with a temp password, then emails the credentials
 // via Resend when RESEND_API_KEY is configured. Response shape: {ok, data|error}.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { credentialsEmail, googleWelcomeEmail } from "../_shared/email.ts";
+import { credentialsEmail, googleWelcomeEmail, technicianInviteEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -48,7 +48,11 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { return json(400, { ok: false, error: "Invalid JSON" }); }
   const email = (body.email ?? "").trim().toLowerCase();
   const role = body.role ?? "Client";
-  const appRights = body.app_rights ?? { portal: false, tech: false, customer: true };
+  // Technicians always get exactly tech-app access — the office administers
+  // any further rights from the Users console after the fact.
+  const appRights = role === "Technician"
+    ? { portal: false, tech: true, customer: false }
+    : (body.app_rights ?? { portal: false, tech: false, customer: true });
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json(400, { ok: false, error: "Valid email required" });
   if (!["Admin", "Staff", "Manager", "Technician", "Client"].includes(role)) {
     return json(400, { ok: false, error: "Unknown role" });
@@ -116,9 +120,13 @@ Deno.serve(async (req) => {
   let emailed = false;
   if (resendKey) {
     const apps = Object.entries(appRights).filter(([, v]) => v).map(([k]) => k).join(", ") || "none";
-    const mail = isDomainUser
-      ? googleWelcomeEmail({ name: body.name, apps, portalUrl: signInUrl, techUrl })
-      : credentialsEmail({ name: body.name, email, password, apps, portalUrl: signInUrl, techUrl });
+    // Technicians get the minimal email: just tech.shieldtechsolutions.com
+    // (+ credentials when they aren't a Google-domain account).
+    const mail = role === "Technician"
+      ? technicianInviteEmail({ name: body.name, email, password, techUrl: techBase, installUrl: techUrl, google: isDomainUser })
+      : isDomainUser
+        ? googleWelcomeEmail({ name: body.name, apps, portalUrl: signInUrl, techUrl })
+        : credentialsEmail({ name: body.name, email, password, apps, portalUrl: signInUrl, techUrl });
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },

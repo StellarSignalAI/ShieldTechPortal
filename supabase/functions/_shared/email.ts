@@ -129,6 +129,33 @@ export function credentialsEmail(opts: {
   return { subject: "Your ShieldTech account", html: shell(inner) };
 }
 
+// Technician invitee — deliberately minimal: ONE destination, the Tech App at
+// tech.shieldtechsolutions.com. No portal links, no app-rights noise — the
+// office administers access. Credentials chip only for non-Google invitees.
+export function technicianInviteEmail(opts: {
+  name?: string; email: string; password?: string; techUrl: string; installUrl?: string; google?: boolean;
+}): InviteEmail {
+  const hi = opts.name ? `Hi ${opts.name.split(/\s+/)[0]},` : "Welcome,";
+  const inner =
+    h("Welcome to the ShieldTech field team") +
+    p(`${hi} your Tech App access is ready. Everything you need on the job — your schedule,
+       work orders, time clock, photos, and receipts — lives at
+       <a href="${opts.techUrl}" style="color:${BRAND};text-decoration:none;font-weight:650;">tech.shieldtechsolutions.com</a>.`) +
+    (opts.google
+      ? p(`Sign in with your <strong style="color:${TEXT};">Google account</strong> — no password needed.`)
+      : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="margin:4px 0 18px;border-top:1px solid ${BORDER};border-bottom:1px solid ${BORDER};padding:6px 0;">
+           ${credRow("Username", opts.email)}
+           ${credRow("Temporary password", opts.password ?? "")}
+         </table>` +
+        p(`You'll set your own password the first time you sign in.`)) +
+    `<div style="padding:2px 0 6px;">${button("Open the Tech App", opts.techUrl)}</div>` +
+    (opts.installUrl
+      ? `<div style="padding:10px 0 2px;">${outlineButton("Add it to your phone's home screen", opts.installUrl)}</div>`
+      : "");
+  return { subject: "Your ShieldTech Tech App access", html: shell(inner) };
+}
+
 // Admin reset / resend — new temporary password.
 export function resetEmail(opts: {
   email: string; password: string; portalUrl: string; resend: boolean;
