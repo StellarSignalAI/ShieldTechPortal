@@ -27,6 +27,29 @@ function mUpdateInv(inv, patch) {
   }, ...(prev || [])]);
 }
 
+/* Email the customer a REAL pay link via the invoice-pay backend (public
+   page + Stripe checkout when connected); falls back to the outbox queue. */
+async function mSendPayLink(inv, { finalize } = {}) {
+  const email = window.prompt(`Email invoice ${inv.num} ($${inv.amount.toLocaleString()}) to:`, (inv._raw && inv._raw.customer_email) || '');
+  if (email === null) return;
+  if (finalize) mUpdateInv(inv, { status: 'pending', sentAt: Date.now() });
+  if (window.__shieldPay && email.includes('@')) {
+    const r = await window.__shieldPay.createLink(inv, email.trim());
+    if (r && r.ok) {
+      mUpdateInv(inv, { payLink: r.link, payLinkSentAt: Date.now() });
+      showToast(r.emailed
+        ? `${inv.num} emailed with a live pay link${r.stripe ? ' (Stripe)' : ''}`
+        : `Pay link created — email not sent (${r.emailError || 'no address'})`, 'ok');
+      return;
+    }
+    showToast(`Pay backend unavailable — queued branded email instead`, 'warn');
+  }
+  const mail = buildInvoiceEmail(inv);
+  if (email.includes('@')) mail.to = email.trim();
+  mUpdateInv(inv, { payLink: mail.payLink, payLinkSentAt: Date.now() });
+  queueEmail(mail);
+}
+
 function FinKpis({ items }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 }}>
@@ -103,6 +126,8 @@ function FinInvoices() {
   const [creating, setCreating] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
   const rows = useMergedInvoices();
+  /* Apply completed payments (Stripe webhook / manual record) on mount. */
+  React.useEffect(() => { if (window.__shieldPay) window.__shieldPay.applyPayments(); }, []);
   const list = filter === 'All' ? rows : rows.filter(i => i.status === filter.toLowerCase());
   const outstanding = rows.filter(i => i.status !== 'paid' && i.status !== 'draft').reduce((s, i) => s + i.amount, 0);
   const overdue = rows.filter(i => i.status === 'overdue').reduce((s, i) => s + i.amount, 0);
@@ -294,14 +319,14 @@ function FinInvoiceDetail({ inv, onClose, onEdit }) {
         </MSection>
         {/* REAL actions — same store writes as the desktop Invoices tab */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          {inv.status === 'draft' && <button onClick={() => { const mail = buildInvoiceEmail(inv); mUpdateInv(inv, { status: 'pending', sentAt: Date.now(), payLink: mail.payLink }); queueEmail(mail); showToast(`${inv.num} finalized — branded email with pay link queued`, 'ok'); onClose(); }} style={finBtnPrimary}>Finalize & Send</button>}
+          {inv.status === 'draft' && <button onClick={() => { mSendPayLink(inv, { finalize: true }); onClose(); }} style={finBtnPrimary}>Finalize & Send</button>}
           {inv.status === 'pending' && <>
-            <button onClick={() => { mUpdateInv(inv, { payLink: `pay.shieldtech.com/${String(inv.num).toLowerCase()}`, payLinkAt: Date.now() }); showToast('Payment link created for ' + inv.num, 'ok'); }} style={finBtnSecondary}>⊛ Create Payment Link</button>
-            <button onClick={() => { mUpdateInv(inv, { status: 'paid', balance: 0, days: 0, paidAt: Date.now() }); showToast(`Payment recorded — ${inv.num} marked paid`, 'ok'); onClose(); }} style={finBtnSuccess}>Record Payment</button>
+            <button onClick={() => mSendPayLink(inv)} style={finBtnSecondary}>⊛ {inv._raw && inv._raw.payLink ? 'Pay Link Active ✓ — resend' : 'Create & Email Pay Link'}</button>
+            <button onClick={() => { mUpdateInv(inv, { status: 'paid', balance: 0, days: 0, paidAt: Date.now() }); if (window.__shieldPay) window.__shieldPay.recordPaid(inv.num); showToast(`Payment recorded — ${inv.num} marked paid`, 'ok'); onClose(); }} style={finBtnSuccess}>Record Payment</button>
           </>}
           {inv.status === 'overdue' && <>
             <button onClick={() => { approvalStore.set(prev => [{ id: (prev || []).reduce((m, a) => Math.max(m, a.id), 0) + 1, kind: 'AR REMINDER', title: `${inv.customer} — ${inv.num} reminder (${inv.days}d overdue)`, amt: `$${inv.amount.toLocaleString()}`, sub: 'AI-drafted · review before sending', status: 'pending' }, ...(prev || [])]); showToast(`Reminder drafted for ${inv.num} → Approvals`, 'ok'); }} style={finBtnSecondary}>⟡ AI Draft Reminder</button>
-            <button onClick={() => { const mail = buildInvoiceEmail(inv); mUpdateInv(inv, { payLink: mail.payLink, payLinkSentAt: Date.now() }); queueEmail(mail); showToast(`Payment-link email for ${inv.num} queued`, 'ok'); }} style={finBtnPrimary}>Send Payment Link</button>
+            <button onClick={() => mSendPayLink(inv)} style={finBtnPrimary}>Send Payment Link</button>
           </>}
           <div style={{ display: 'flex', gap: 7 }}>
             {onEdit && <button onClick={onEdit} style={{ ...finBtnGhost, color: 'var(--brand)', borderColor: 'var(--border-strong)' }}>✎ Edit</button>}
