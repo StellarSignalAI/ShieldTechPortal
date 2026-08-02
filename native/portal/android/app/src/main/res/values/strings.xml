@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ShieldTech Portal</string>
+    <string name="title_activity_main">ShieldTech Portal</string>
+    <string name="package_name">com.shieldtech.portal</string>
+    <string name="custom_url_scheme">com.shieldtech.portal</string>
+</resources>

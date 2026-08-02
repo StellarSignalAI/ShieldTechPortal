@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Get the ShieldTech Apps</title>
+<meta name="theme-color" content="#05070A" />
+<link rel="icon" type="image/png" href="/sw/shieldtech-emblem.png" />
+<style>
+  :root{
+    --brand:#3FA9F5; --bg:#05070A; --card:#0B0F16; --border:rgba(255,255,255,.08);
+    --text:#E8EEF5; --muted:#8A97A6;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1100px 520px at 50% -10%, rgba(63,169,245,.16), transparent 60%),
+      var(--bg);
+    color:var(--text); font-family:var(--font); min-height:100vh;
+    -webkit-font-smoothing:antialiased; padding:28px 16px 56px;
+  }
+  .wrap{max-width:640px;margin:0 auto}
+  .logo{display:block;margin:6px auto 26px;max-width:190px;height:auto}
+  .hero{text-align:center;margin-bottom:26px}
+  .emblem{width:96px;height:96px;border-radius:24px;display:block;margin:0 auto 18px;
+    box-shadow:0 18px 60px rgba(63,169,245,.28);border:1px solid var(--border);background:var(--card)}
+  h1{font-size:26px;line-height:1.2;margin:0 0 10px;font-weight:700;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:15px;line-height:1.55;margin:0 auto;max-width:460px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;margin-top:22px}
+  .plat{display:flex;align-items:center;gap:10px;margin:0 0 2px}
+  .plat .dot{width:9px;height:9px;border-radius:50%;background:var(--brand);box-shadow:0 0 12px var(--brand)}
+  .plat h2{font-size:17px;margin:0;font-weight:650}
+  .who{color:var(--muted);font-size:13px;margin:6px 0 0;line-height:1.55}
+  .row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .btn{flex:1;min-width:180px;display:block;text-align:center;background:var(--brand);color:#04121F;
+    font-weight:700;font-size:14.5px;text-decoration:none;padding:13px 16px;border-radius:12px;
+    border:0;cursor:pointer;font-family:var(--font);transition:filter .15s}
+  .btn:hover{filter:brightness(1.06)}
+  .btn.ghost{background:rgba(63,169,245,.08);color:var(--text);border:1px solid var(--border);font-weight:600}
+  details{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
+  summary{color:var(--brand);font-size:13.5px;font-weight:600;cursor:pointer;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:" ›";opacity:.7}
+  details[open] summary::after{content:" ⌄"}
+  ol.steps{margin:12px 0 0;padding:0 0 0 2px;list-style:none;counter-reset:s}
+  ol.steps li{position:relative;padding:8px 0 8px 40px;color:var(--text);font-size:13.5px;
+    line-height:1.5;border-top:1px solid var(--border)}
+  ol.steps li:first-child{border-top:0}
+  ol.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:7px;
+    width:26px;height:26px;border-radius:50%;background:rgba(63,169,245,.12);border:1px solid var(--border);
+    color:var(--brand);font-weight:700;font-size:12.5px;display:flex;align-items:center;justify-content:center}
+  .note{color:var(--muted);font-size:12.5px;text-align:center;margin:24px auto 0;max-width:470px;line-height:1.6}
+  .foot{text-align:center;color:var(--muted);font-size:11px;margin-top:34px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img class="logo" src="/uploads/ShieldTech%20Logo%20Transparent%20MK3.png" alt="ShieldTech Solutions"
+       onerror="this.style.display='none'" />
+
+  <div class="hero">
+    <img class="emblem" src="/sw/shieldtech-emblem.png" alt="ShieldTech" />
+    <h1>Get the ShieldTech Apps</h1>
+    <p class="sub">Android, iPhone/iPad, and desktop. Every app keeps itself up to date —
+       install once and you always have the latest version.</p>
+  </div>
+
+  <!-- ── Portal ── -->
+  <div class="card">
+    <div class="plat"><span class="dot"></span><h2>ShieldTech Portal</h2></div>
+    <p class="who">For admins &amp; office — dispatch, proposals, invoicing, monitoring, the whole operation.</p>
+    <div class="row">
+      <a class="btn" href="https://github.com/StellarSignalAI/ShieldTechPortal/releases/download/mobile-apps-latest/shieldtech-portal.apk">⬇ Android app (APK)</a>
+      <a class="btn ghost" href="https://portal.shieldtechsolutions.com">Open in browser</a>
+    </div>
+    <details><summary>iPhone &amp; iPad</summary>
+      <ol class="steps">
+        <li>Open <strong>portal.shieldtechsolutions.com</strong> in <strong>Safari</strong>.</li>
+        <li>Tap the <strong>Share</strong> icon, then <strong>Add to Home Screen</strong>.</li>
+        <li>Tap <strong>Add</strong> — the Portal icon appears like any app.</li>
+      </ol>
+    </details>
+  </div>
+
+  <!-- ── Tech App ── -->
+  <div class="card">
+    <div class="plat"><span class="dot"></span><h2>ShieldTech Tech App</h2></div>
+    <p class="who">For field technicians — today's jobs, work orders, time clock, photos, and receipt snap.</p>
+    <div class="row">
+      <a class="btn" href="https://github.com/StellarSignalAI/ShieldTechPortal/releases/download/mobile-apps-latest/shieldtech-tech.apk">⬇ Android app (APK)</a>
+      <a class="btn ghost" href="https://tech.shieldtechsolutions.com">Open in browser</a>
+    </div>
+    <details><summary>iPhone &amp; iPad</summary>
+      <ol class="steps">
+        <li>Open <strong>tech.shieldtechsolutions.com</strong> in <strong>Safari</strong>.</li>
+        <li>Tap the <strong>Share</strong> icon, then <strong>Add to Home Screen</strong>.</li>
+        <li>Tap <strong>Add</strong> — the Tech App icon appears like any app.</li>
+      </ol>
+    </details>
+  </div>
+
+  <!-- ── Customer ── -->
+  <div class="card">
+    <div class="plat"><span class="dot"></span><h2>ShieldTech Customer</h2></div>
+    <p class="who">For your customers — system status, work photos, reports, and support.</p>
+    <div class="row">
+      <a class="btn" href="https://github.com/StellarSignalAI/ShieldTechPortal/releases/download/mobile-apps-latest/shieldtech-customer.apk">⬇ Android app (APK)</a>
+      <a class="btn ghost" href="https://customer.shieldtechsolutions.com">Open in browser</a>
+    </div>
+    <details><summary>iPhone &amp; iPad</summary>
+      <ol class="steps">
+        <li>Open <strong>customer.shieldtechsolutions.com</strong> in <strong>Safari</strong>.</li>
+        <li>Tap the <strong>Share</strong> icon, then <strong>Add to Home Screen</strong>.</li>
+        <li>Tap <strong>Add</strong> — the Customer icon appears like any app.</li>
+      </ol>
+    </details>
+  </div>
+
+  <p class="note">
+    <strong style="color:var(--text)">Android:</strong> when the download finishes, open the file and allow
+    "install from this source" if asked — these apps are distributed directly by ShieldTech, not the Play Store.<br/><br/>
+    <strong style="color:var(--text)">Desktop (Windows/Mac):</strong> open any app in Chrome or Edge and click
+    the install icon in the address bar — it becomes a windowed app in your Start Menu / Dock.
+  </p>
+
+  <div class="foot">ShieldTech Solutions · Security Operations Platform</div>
+</div>
+</body>
+</html>

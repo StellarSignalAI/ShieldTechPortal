@@ -1,0 +1,10 @@
+*/node_modules/
+*/www/.gitkeep
+*/android/.gradle/
+*/android/app/build/
+*/android/build/
+*/android/local.properties
+*/ios/App/Pods/
+*/ios/App/App.xcworkspace/xcuserdata/
+*/ios/App/output/
+*/assets/
