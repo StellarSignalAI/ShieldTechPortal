@@ -1,91 +1,59 @@
 /* ShieldTech — App Shell (Nav Rail + Top Bar) */
 
-/* Grouped nav structure with collapsible dropdowns */
+/* The approved consolidation: five workspaces, ~20 screens. On desktop the
+   merged tools live as tabs inside their workspace hub (screen-hubs.jsx);
+   `mobileOnly` items keep their bespoke native tiles on mobile without
+   re-cluttering the desktop rail. */
 const NAV_GROUPS = [
 { id: 'home', label: 'HOME', collapsible: false, items: [
   { id: 'custom-dashboard', icon: 'dashboard', label: 'My Dashboard', useSvg: true },
-  { id: 'cockpit', icon: 'grid-2', label: 'Cockpit (Preview)', useSvg: true },
-  { id: 'secret-weapon', icon: 'anomaly', label: 'Secret Weapon', useSvg: true },
-  { id: 'autobid', icon: 'proposals', label: 'Auto-Bid', useSvg: true }]
+  { id: 'shieldtech-ai', icon: 'hermes', label: 'ShieldTech AI', useSvg: true }]
 },
-{ id: 'overview', label: 'OVERVIEW', collapsible: false, items: [
-  { id: 'dashboard', icon: 'grid-2', label: 'Mission Control', useSvg: true },
-  { id: 'shieldtech-ai', icon: 'hermes', label: 'ShieldTech AI', useSvg: true },
-  { id: 'chat', icon: 'chat', label: 'Team Chat', useSvg: true },
-  { id: 'calendar', icon: 'calendar', label: 'Calendar', useSvg: true },
-  { id: 'copilot', icon: 'hermes', label: 'Scheduling Copilot', useSvg: true },
-  { id: 'digest', icon: 'reports', label: 'Daily Digest', useSvg: true },
-  { id: 'wallboard', icon: 'statuspage', label: 'NOC Wallboard', useSvg: true }]
-},
-{ id: 'customers', label: 'CUSTOMERS', collapsible: true, items: [
-  { id: 'customers-list', icon: 'customers', label: 'Customers', useSvg: true },
-  { id: 'health', icon: 'health', label: 'Health & Churn', useSvg: true },
-  { id: 'nps', icon: 'star', label: 'NPS & Feedback', useSvg: true }]
-},
-{ id: 'monitoring', label: 'MONITORING', collapsible: true, items: [
-  { id: 'assets', icon: 'assets', label: 'Asset Management', useSvg: true },
-  { id: 'cameras', icon: 'topology', label: 'Monitoring Console', useSvg: true },
-  { id: 'incidents', icon: 'warroom', label: 'Incident Response', useSvg: true },
-  { id: 'intel', icon: 'anomaly', label: 'Security Intelligence', useSvg: true },
-  { id: 'warranty', icon: 'ups', label: 'Warranty Tracker', useSvg: true }]
-},
-{ id: 'sales', label: 'SALES & REVENUE', collapsible: true, items: [
-  { id: 'crm', icon: 'pipeline', label: 'Leads', useSvg: true },
-  { id: 'survey-ai', icon: 'hermes', label: 'AI Survey Estimator', useSvg: true },
-  { id: 'rfp', icon: 'contracts', label: 'RFP Workspace', useSvg: true },
-  { id: 'rr-builder', icon: 'roi', label: 'Recurring Revenue', useSvg: true },
-  { id: 'service-plans', icon: 'contracts', label: 'Service Plans', useSvg: true },
+{ id: 'sell', label: 'SELL', collapsible: false, items: [
+  { id: 'crm', icon: 'pipeline', label: 'Bid Board', useSvg: true },
+  { id: 'autobid', icon: 'proposals', label: 'Auto-Bid', useSvg: true, mobileOnly: true },
+  { id: 'secret-weapon', icon: 'anomaly', label: 'Secret Weapon', useSvg: true, mobileOnly: true },
+  { id: 'proposals', icon: 'proposals', label: 'Proposals', useSvg: true },
   { id: 'studio', icon: 'topology', label: 'Design Studio', useSvg: true },
-  { id: 'product-library', icon: 'pricebook', label: 'Product Library', useSvg: true },
-  { id: 'proposals', icon: 'proposals', label: 'Proposal Builder', useSvg: true },
-  { id: 'roi', icon: 'roi', label: 'ROI Calculator', useSvg: true },
-  { id: 'pricebook', icon: 'pricebook', label: 'Price Book', useSvg: true },
-  { id: 'commissions', icon: 'dollar', label: 'Commissions', useSvg: true },
-  { id: 'forecast', icon: 'forecast', label: 'Revenue Forecast', useSvg: true },
-  { id: 'quote-cash', icon: 'pipeline', label: 'Quote to Cash', useSvg: true },
-  { id: 'marketing', icon: 'star', label: 'Marketing', useSvg: true },
-  { id: 'mrr', icon: 'roi', label: 'MRR Tracker', useSvg: true }]
+  { id: 'survey-cloud', icon: 'floorplan', label: 'Survey Cloud', useSvg: true, mobileOnly: true }]
 },
-{ id: 'fieldops', label: 'FIELD OPERATIONS', collapsible: true, items: [
+{ id: 'deliver', label: 'DELIVER', collapsible: false, items: [
+  { id: 'calendar', icon: 'calendar', label: 'Calendar & Copilot', useSvg: true },
+  { id: 'copilot', icon: 'hermes', label: 'Scheduling Copilot', useSvg: true, mobileOnly: true },
   { id: 'dispatch', icon: 'dispatch', label: 'Dispatch & Fleet', useSvg: true },
-  { id: 'messages', icon: 'hermes', label: 'Messages', useSvg: true },
-  { id: 'survey-cloud', icon: 'floorplan', label: 'Survey Cloud', useSvg: true },
-  { id: 'photos', icon: 'cameras', label: 'Site Photos', useSvg: true },
-  { id: 'punchlist', icon: 'approvals', label: 'Punch Lists', useSvg: true },
-  { id: 'helpdesk', icon: 'chat', label: 'Help Desk', useSvg: true },
   { id: 'workorder', icon: 'clipboard', label: 'Work Orders', useSvg: true },
-  { id: 'projects', icon: 'projects', label: 'Projects', useSvg: true },
-  { id: 'timesheets', icon: 'timesheets', label: 'Timesheets', useSvg: true },
-  { id: 'service-reports', icon: 'service-reports', label: 'Service Reports', useSvg: true },
-  { id: 'inventory', icon: 'inventory', label: 'Inventory', useSvg: true },
-  { id: 'parts-req', icon: 'parts', label: 'Parts Requisition', useSvg: true },
-  { id: 'subcontractors', icon: 'employees', label: 'Sub-Contractors', useSvg: true },
-  { id: 'certs', icon: 'certs', label: 'Certifications', useSvg: true }]
+  { id: 'photos', icon: 'cameras', label: 'Site Photos', useSvg: true, mobileOnly: true },
+  { id: 'punchlist', icon: 'approvals', label: 'Punch Lists', useSvg: true, mobileOnly: true },
+  { id: 'projects', icon: 'projects', label: 'Projects', useSvg: true }]
 },
-{ id: 'finance', label: 'FINANCE & BILLING', collapsible: true, items: [
+{ id: 'collect', label: 'COLLECT', collapsible: false, items: [
   { id: 'finance', icon: 'finance', label: 'Finance Suite', useSvg: true },
-  { id: 'invoices', icon: 'expenses', label: 'Invoices', useSvg: true },
-  { id: 'estimates', icon: 'proposals', label: 'Proposal Pipeline', useSvg: true },
-  { id: 'outbox', icon: 'chat', label: 'Email Outbox', useSvg: true },
-  { id: 'purchase-orders', icon: 'cart', label: 'Purchase Orders', useSvg: true },
-  { id: 'expenses', icon: 'expenses', label: 'Expense Approval', useSvg: true },
-  { id: 'contracts', icon: 'contracts', label: 'Contracts', useSvg: true },
-  { id: 'costing', icon: 'costing', label: 'Job Costing', useSvg: true },
-  { id: 'margin-xray', icon: 'costing', label: 'Margin X-Ray', useSvg: true },
-  { id: 'reports', icon: 'reports', label: 'Reports / BI', useSvg: true }]
+  { id: 'invoices', icon: 'expenses', label: 'Invoices', useSvg: true, mobileOnly: true },
+  { id: 'estimates', icon: 'proposals', label: 'Proposal Pipeline', useSvg: true, mobileOnly: true },
+  { id: 'outbox', icon: 'chat', label: 'Email Outbox', useSvg: true, mobileOnly: true },
+  { id: 'purchase-orders', icon: 'cart', label: 'Inventory & Purchasing', useSvg: true },
+  { id: 'parts-req', icon: 'parts', label: 'Parts Requisition', useSvg: true, mobileOnly: true },
+  { id: 'mrr', icon: 'roi', label: 'Recurring Revenue', useSvg: true },
+  { id: 'rr-builder', icon: 'roi', label: 'RR Builder', useSvg: true, mobileOnly: true },
+  { id: 'expenses', icon: 'expenses', label: 'Expenses & Receipts', useSvg: true, mobileOnly: true }]
 },
-{ id: 'admin', label: 'ADMIN', collapsible: true, items: [
-  { id: 'employees', icon: 'employees', label: 'Team', useSvg: true },
+{ id: 'care', label: 'CARE', collapsible: false, items: [
+  { id: 'customers-list', icon: 'customers', label: 'Customers', useSvg: true },
+  { id: 'cameras', icon: 'topology', label: 'Monitoring Console', useSvg: true },
+  { id: 'assets', icon: 'assets', label: 'Assets', useSvg: true, mobileOnly: true },
+  { id: 'helpdesk', icon: 'chat', label: 'Help Desk', useSvg: true },
+  { id: 'incidents', icon: 'warroom', label: 'Incidents', useSvg: true, mobileOnly: true },
+  { id: 'nps', icon: 'star', label: 'NPS & Feedback', useSvg: true, mobileOnly: true },
+  { id: 'messages', icon: 'hermes', label: 'Messages', useSvg: true }]
+},
+{ id: 'admin', label: 'ADMIN', collapsible: false, items: [
+  { id: 'employees', icon: 'employees', label: 'Team & Skills', useSvg: true },
+  { id: 'skills', icon: 'certs', label: 'Skills Matrix', useSvg: true, mobileOnly: true },
   { id: 'users', icon: 'credential', label: 'Users & Invites', useSvg: true },
-  { id: 'approvals', icon: 'check', label: 'Approvals', useSvg: true },
-  { id: 'integrations', icon: 'topology', label: 'Integrations', useSvg: true },
+  { id: 'approvals', icon: 'check', label: 'Approvals & Expenses', useSvg: true },
+  { id: 'timesheets', icon: 'timesheets', label: 'Timesheets', useSvg: true, mobileOnly: true },
   { id: 'documents', icon: 'note', label: 'Documents', useSvg: true },
-  { id: 'portal-settings', icon: 'compliance', label: 'Portal Settings', useSvg: true },
-  { id: 'sla', icon: 'timesheets', label: 'SLA Dashboard', useSvg: true },
-  { id: 'compliance', icon: 'compliance', label: 'Compliance', useSvg: true },
-  { id: 'audit', icon: 'eye', label: 'Audit Trail', useSvg: true },
-  { id: 'skills', icon: 'certs', label: 'Skills Matrix', useSvg: true },
-  { id: 'knowledge', icon: 'note', label: 'Knowledge Base', useSvg: true }]
+  { id: 'portal-settings', icon: 'compliance', label: 'Portal Settings', useSvg: true }]
 }];
 
 
@@ -150,9 +118,12 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
 
       {/* Nav groups */}
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 8 }} data-comment-anchor="2bc11fa906-div-125-7">
-        {NAV_GROUPS.map((group) => {
+        {NAV_GROUPS.map((rawGroup) => {
+          /* mobileOnly items keep their bespoke mobile tiles but stay off the
+             desktop rail — on desktop they live as tabs inside their hub. */
+          const group = { ...rawGroup, items: rawGroup.items.filter((i) => !i.mobileOnly) };
           const isOpen = openGroups[group.id] || !group.collapsible;
-          const hasActive = group.items.some((i) => i.id === current);
+          const hasActive = rawGroup.items.some((i) => i.id === current);
           const itemCount = group.items.length;
 
           return (

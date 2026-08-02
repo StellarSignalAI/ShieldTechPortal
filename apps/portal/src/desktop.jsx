@@ -21,101 +21,64 @@ const TWEAK_DEFAULTS = {
   financeState: 'live',
 };
 
-/* Master screen list for Tweaks selector */
+/* Master screen list — the approved consolidation: five workspaces, ~20
+   screens. Merged ids stay routable (they land on their hub with the right
+   tab open); the deleted demo/empty screens are gone. */
 const SCREEN_LIST = [
-  'login', 'custom-dashboard', 'dashboard', 'customer', 'customers-list',
-  'assets', 'shieldtech-ai', 'crm', 'studio', 'dispatch', 'finance',
-  'approvals', 'cameras', 'topology', 'certs', 'tools', 'costing',
-  'audit', 'warroom', 'floorplan', 'anomaly', 'expenses', 'timesheets',
-  'projects', 'inventory', 'reports', 'proposals', 'employees',
-  'contracts', 'sla', 'health', 'forecast', 'commissions', 'compliance',
-  'onboarding', 'service-reports', 'pricebook', 'roi', 'chat', 'statuspage',
-  'calendar', 'nps', 'incidents', 'warranty', 'quote-cash', 'mrr',
-  'photos', 'punchlist', 'digest', 'survey-ai', 'survey-cloud', 'copilot', 'intel',
-  'margin-xray', 'rr-builder', 'rfp', 'wallboard',
-  'helpdesk', 'workorder', 'parts-req', 'subcontractors', 'purchase-orders',
-  'skills', 'knowledge', 'integrations', 'marketing', 'documents', 'portal-settings', 'users', 'messages',
-, 'fleet', 'invoices', 'estimates', 'outbox', 'pay', 'secret-weapon', 'autobid', 'cockpit'];
+  'login', 'custom-dashboard', 'customer', 'shieldtech-ai',
+  /* Sell */    'crm', 'autobid', 'secret-weapon', 'proposals', 'studio', 'survey-cloud',
+  /* Deliver */ 'calendar', 'copilot', 'dispatch', 'workorder', 'photos', 'punchlist', 'projects',
+  /* Collect */ 'finance', 'invoices', 'estimates', 'outbox', 'purchase-orders', 'parts-req', 'mrr', 'rr-builder', 'pay',
+  /* Care */    'customers-list', 'cameras', 'assets', 'helpdesk', 'incidents', 'nps', 'messages',
+  /* Admin */   'employees', 'skills', 'users', 'approvals', 'timesheets', 'expenses', 'documents', 'portal-settings',
+];
 
-/* screen id → window component name (same mapping as the prototype shell) */
+/* screen id → window component name. Merged ids point at their workspace hub
+   (screen-hubs.jsx), which opens the matching tab via window.__hubScreenId. */
 const SCREEN_COMPONENTS = {
-  dashboard: 'DashboardScreen',
-  assets: 'AssetsScreen',
   'shieldtech-ai': 'ShieldAIScreen',
-  crm: 'BidBoardScreen',
-  studio: 'StudioScreen',
-  'product-library': 'ProductLibraryScreen',
-  'service-plans': 'ServicePlansScreen',
-  dispatch: 'DispatchScreen',
-  finance: 'FinanceScreen',
-  approvals: 'ApprovalsScreen',
-  'customers-list': 'CustomersScreen',
-  cameras: 'MonitoringConsole',
-  topology: 'MonitoringConsole',
-  certs: 'CertificationsView',
-  tools: 'PoECalculatorView',
-  costing: 'JobCostingView',
-  audit: 'AuditTrailView',
-  warroom: 'MonitoringConsole',
-  floorplan: 'MonitoringConsole',
-  anomaly: 'MonitoringConsole',
-  expenses: 'ExpenseApprovalScreen',
-  timesheets: 'TimesheetApprovalScreen',
-  projects: 'ProjectsScreen',
-  inventory: 'InventoryScreenPlus',
-  reports: 'ReportsScreen',
+  /* Sell */
+  crm: 'SellHubScreen',
+  autobid: 'SellHubScreen',
+  'secret-weapon': 'SellHubScreen',
   proposals: 'ProposalScreen',
-  employees: 'TeamScreenPlus',
-  contracts: 'ContractsScreen',
-  sla: 'SLAScreen',
-  health: 'CustomerHealthScreen',
-  forecast: 'RevenueForecastScreen',
-  commissions: 'CommissionScreen',
-  compliance: 'ComplianceScreen',
-  onboarding: 'OnboardingScreen',
-  'service-reports': 'ServiceReportScreen',
-  pricebook: 'VendorPriceBookScreen',
-  roi: 'ROICalculatorScreen',
-  chat: 'TeamChatScreen',
-  statuspage: 'StatusPageScreen',
-  calendar: 'CalendarScreen',
-  photos: 'SitePhotosScreen',
-  punchlist: 'PunchListScreen',
-  digest: 'DailyDigestScreen',
-  'survey-ai': 'SurveyEstimatorScreen',
+  studio: 'StudioScreen',
   'survey-cloud': 'SurveyCloudScreen',
-  copilot: 'SchedCopilotScreen',
-  intel: 'MonitoringIntelScreen',
-  'margin-xray': 'MarginXRayScreen',
-  'rr-builder': 'RRBuilderScreen',
-  rfp: 'RFPScreen',
-  wallboard: 'WallboardScreen',
-  nps: 'NPSScreen',
-  incidents: 'IncidentScreen',
-  warranty: 'WarrantyScreen',
-  'quote-cash': 'QuoteToCashScreen',
-  mrr: 'MRRScreen',
-  helpdesk: 'HelpdeskScreen',
-  workorder: 'WorkOrderScreen',
-  'parts-req': 'PartsReqScreen',
-  subcontractors: 'SubcontractorScreen',
-  'purchase-orders': 'PurchaseOrdersScreen',
-  skills: 'SkillsMatrixScreen',
-  knowledge: 'KnowledgeScreen',
-  integrations: 'IntegrationsScreen',
-  marketing: 'MarketingScreen',
-  documents: 'DocumentsScreen',
-  'portal-settings': 'PortalSettingsScreen',
-  users: 'UsersScreen',
-  fleet: 'DispatchScreen',
-  messages: 'PortalMessagesScreen',
+  /* Deliver */
+  calendar: 'CalendarHubScreen',
+  copilot: 'CalendarHubScreen',
+  dispatch: 'DispatchScreen',
+  workorder: 'WorkOrderHubScreen',
+  photos: 'WorkOrderHubScreen',
+  punchlist: 'WorkOrderHubScreen',
+  projects: 'ProjectsScreen',
+  /* Collect */
+  finance: 'FinanceScreen',
   invoices: 'InvoicesDirectScreen',
   estimates: 'EstimatesDirectScreen',
   outbox: 'OutboxScreen',
+  'purchase-orders': 'PurchasingHubScreen',
+  'parts-req': 'PurchasingHubScreen',
+  mrr: 'RevenueHubScreen',
+  'rr-builder': 'RevenueHubScreen',
   pay: 'PayPageScreen',
-  'secret-weapon': 'SecretWeaponScreen',
-  autobid: 'AutoBidScreen',
-  cockpit: 'CockpitPreviewScreen',
+  /* Care */
+  'customers-list': 'CustomersScreen',
+  cameras: 'MonitoringHubScreen',
+  assets: 'MonitoringHubScreen',
+  helpdesk: 'HelpdeskHubScreen',
+  incidents: 'HelpdeskHubScreen',
+  nps: 'NPSScreen',
+  messages: 'PortalMessagesScreen',
+  /* Admin */
+  employees: 'TeamHubScreen',
+  skills: 'TeamHubScreen',
+  users: 'UsersScreen',
+  approvals: 'ApprovalsHubScreen',
+  timesheets: 'ApprovalsHubScreen',
+  expenses: 'ApprovalsHubScreen',
+  documents: 'DocumentsScreen',
+  'portal-settings': 'PortalSettingsScreen',
 };
 
 function MissingScreen({ id }) {
@@ -257,6 +220,7 @@ function App() {
   }
 
   // All other screens — full internal shell
+  window.__hubScreenId = screen; // hubs open the tab matching the requested id
   const ScreenComponent = pick(SCREEN_COMPONENTS[screen] || 'DashboardScreen');
 
   return (

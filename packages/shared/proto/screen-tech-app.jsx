@@ -81,7 +81,28 @@ function TechShell({ tab, setTab, children }) {
 
 /* ── Today View ── */
 function TodayView({ setTab, setSelectedJob }) {
-  const jobs = [];
+  /* REAL feed: dispatched work orders + calendar jobs from the shared synced
+     stores (the same rows the portal's Dispatch/Calendar write). Filters to
+     this tech when identity matches; otherwise shows the whole crew's day so
+     the screen is never silently empty. */
+  const [wos] = useShieldStore(workOrderStore);
+  const [calJobs] = useShieldStore(jobStore);
+  const me = window.__shieldUser || {};
+  const myInitials = (me.name || '').split(' ').map(w => w[0]).join('').toUpperCase();
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const todayIdx = ((new Date().getDay() + 6) % 7) + 1;
+  const fmtTime = (h) => { const hr = Math.floor(h || 8); const m = Math.round(((h || 8) - hr) * 60); const ap = hr >= 12 ? 'PM' : 'AM'; const h12 = ((hr + 11) % 12) + 1; return `${h12}:${String(m).padStart(2, '0')} ${ap}`; };
+
+  const woToday = (wos || []).filter(w => w.scheduled === todayIso || w.status === 'active')
+    .map(w => ({ id: w.id, sort: 0, time: w.status === 'active' ? 'Now' : 'Today', customer: w.customer, desc: w.scope || w.type || 'Work order',
+      site: w.site || '', status: (w.status === 'done' || w.status === 'completed') ? 'completed' : w.status === 'active' ? 'active' : 'upcoming',
+      mine: (me.id && w.assignedTo === me.id) || (myInitials && w.techId === myInitials), _wo: w }));
+  const calToday = (calJobs || []).filter(j => (j.day || 0) <= todayIdx && todayIdx <= (j.endDay || j.day || 0))
+    .map(j => ({ id: 'cal-' + j.id, sort: j.start || 8, time: fmtTime(j.start), customer: j.customer || j.title || 'Scheduled job', desc: j.title || j.type || '',
+      site: j.site || '', status: 'upcoming', mine: myInitials && (j.techs || []).includes(myInitials), _cal: j }));
+  const all = [...woToday, ...calToday].sort((a, b) => a.sort - b.sort);
+  const mineOnly = all.filter(j => j.mine);
+  const jobs = mineOnly.length ? mineOnly : all;
 
   const statusColors = { completed: 'var(--status-ok)', active: 'var(--brand)', upcoming: 'var(--text-low)' };
 
@@ -91,8 +112,8 @@ function TodayView({ setTab, setSelectedJob }) {
       <div style={{ display: 'flex', gap: 10 }}>
         {[
           { label: 'Jobs Left', value: String(jobs.filter(j => j.status !== 'completed').length), icon: '⚙' },
-          { label: 'Hours', value: '0h', icon: '⏱' },
-          { label: 'Miles', value: '0', icon: '⬡' },
+          { label: 'Hours', value: `${jobs.reduce((s, j) => s + Number((j._cal && j._cal.dur) || 2), 0)}h`, icon: '⏱' },
+          { label: 'Sites', value: String(new Set(jobs.map(j => j.customer)).size), icon: '⬡' },
         ].map((s, i) => (
           <div key={i} className="glass" style={{
             flex: 1, padding: '12px', textAlign: 'center',
@@ -163,24 +184,29 @@ function TodayView({ setTab, setSelectedJob }) {
         ))}
       </div>
 
-      {/* Week preview */}
+      {/* Week preview — live counts from the shared calendar store */}
       <GlassPanel>
         <div className="label-sm" style={{ marginBottom: 8 }}>THIS WEEK</div>
         <div style={{ display: 'flex', gap: 6 }}>
-          {['Mon','Tue','Wed','Thu','Fri'].map((d, i) => (
-            <div key={i} style={{
-              flex: 1, textAlign: 'center', padding: '8px 0',
-              borderRadius: 6,
-              background: i === 3 ? 'rgba(63,169,245,0.08)' : 'transparent',
-              border: i === 3 ? '1px solid var(--border-strong)' : '1px solid transparent'
-            }}>
-              <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{d}</div>
-              <div className="mono" style={{ fontSize: 14, fontWeight: 600, color: i === 3 ? 'var(--brand)' : 'var(--text-high)', marginTop: 2 }}>
-                0
+          {['Mon','Tue','Wed','Thu','Fri'].map((d, i) => {
+            const dayN = i + 1;
+            const count = (calJobs || []).filter(j => (j.day || 0) <= dayN && dayN <= (j.endDay || j.day || 0) && (!myInitials || !mineOnly.length || (j.techs || []).includes(myInitials))).length;
+            const isNow = dayN === todayIdx;
+            return (
+              <div key={i} style={{
+                flex: 1, textAlign: 'center', padding: '8px 0',
+                borderRadius: 6,
+                background: isNow ? 'rgba(63,169,245,0.08)' : 'transparent',
+                border: isNow ? '1px solid var(--border-strong)' : '1px solid transparent'
+              }}>
+                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{d}</div>
+                <div className="mono" style={{ fontSize: 14, fontWeight: 600, color: isNow ? 'var(--brand)' : 'var(--text-high)', marginTop: 2 }}>
+                  {count}
+                </div>
+                <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 1 }}>jobs</div>
               </div>
-              <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 1 }}>jobs</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </GlassPanel>
     </div>
