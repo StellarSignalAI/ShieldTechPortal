@@ -6,11 +6,14 @@
    fake Stripe dashboard (fabricated payments, cards, disputes) was removed. */
 function FinanceStripe() {
   const [conn, setConn] = React.useState(null);        // {stripe, resend}
+  const [qbo, setQbo] = React.useState(null);          // {connected, state}
   const [links, setLinks] = React.useState(null);
   const refresh = React.useCallback(() => {
     const p = window.__shieldPay; if (!p) { setConn(false); setLinks([]); return; }
     p.status().then(r => setConn(r && r.ok ? { stripe: r.stripe, resend: r.resend } : false));
     p.list().then(r => setLinks(r && r.ok ? r.data : []));
+    const q = window.__shieldQBO;
+    if (q && q.qboStatus) q.qboStatus().then(r => setQbo(r && r.ok ? r : { connected: false })); else setQbo({ connected: false });
   }, []);
   React.useEffect(() => { refresh(); if (window.__shieldPay) window.__shieldPay.applyPayments().then(() => refresh()); }, [refresh]);
 
@@ -30,6 +33,7 @@ function FinanceStripe() {
           {conn === null ? <span style={{ fontSize: 12, color: 'var(--text-low)' }}>Checking…</span> : <>
             {light(conn && conn.stripe, 'Stripe connected — pay links include secure checkout', 'Stripe not connected — pay pages show remit-by-check until keys are added')}
             {light(conn && conn.resend, 'Email sending live (Resend)', 'Email backend not configured')}
+            {light(qbo && qbo.connected, `QuickBooks connected${qbo && qbo.state && qbo.state.last_sync_at ? ` — last sync ${new Date(qbo.state.last_sync_at).toLocaleDateString()}` : ''} — finalized invoices & accepted proposals post automatically`, 'QuickBooks not connected — portal keeps its own books until keys are added')}
           </>}
         </div>
         {conn !== null && !(conn && conn.stripe) && (
@@ -39,6 +43,14 @@ function FinanceStripe() {
             <span className="mono" style={{ color: 'var(--brand)' }}> STRIPE_WEBHOOK_SECRET</span> (Stripe → Webhooks → add endpoint
             <span className="mono"> …/functions/v1/stripe-webhook</span>, event <span className="mono">checkout.session.completed</span>).
             Every pay link switches to live Stripe checkout instantly — nothing else changes.
+          </div>
+        )}
+        {qbo !== null && !(qbo && qbo.connected) && (
+          <div style={{ marginTop: 8, padding: '10px 14px', borderRadius: 8, background: 'rgba(52,211,153,0.04)', border: '1px solid var(--border-subtle)', fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.7 }}>
+            <b style={{ color: 'var(--text-high)' }}>Connect QuickBooks (one-time):</b> in Supabase → Edge Functions → Secrets, add
+            <span className="mono" style={{ color: 'var(--brand)' }}> QBO_CLIENT_ID</span>, <span className="mono" style={{ color: 'var(--brand)' }}>QBO_CLIENT_SECRET</span> (Intuit developer app),
+            <span className="mono" style={{ color: 'var(--brand)' }}> QBO_REALM_ID</span> (your company id) and a one-time
+            <span className="mono" style={{ color: 'var(--brand)' }}> QBO_REFRESH_TOKEN</span>. From then on the nightly sync pulls your books, and every finalized invoice / accepted proposal posts to QuickBooks as the permanent record.
           </div>
         )}
       </GlassPanel>

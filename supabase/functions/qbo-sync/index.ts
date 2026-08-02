@@ -7,6 +7,9 @@
 //        report snapshots. All-time (no date filter on lists).
 //   { direction: 'push', entity: 'invoice'|'estimate'|'customer', payload }
 //        — create the record in QuickBooks, then mirror it locally.
+//   { direction: 'push-doc', doc }  — hybrid push: a portal doc row → QBO
+//        Invoice/Estimate (find-or-create customer + service item).
+//   { action: 'status' }  — connection light; never 503s.
 //
 // Requires these edge-function secrets (Intuit → developer app → Production
 // keys, plus one authorized company/realm):
@@ -254,6 +257,93 @@ async function pull(admin: Admin, token: string, realm: string) {
   return counts;
 }
 
+/* Hybrid push: a portal doc (dual-shape row) → a real QBO Invoice/Estimate.
+   Finds or creates the customer by name and a generic service item, builds
+   the QBO payload server-side, creates the record, and mirrors it into the
+   qbo_* landing table so the portal reflects it immediately. */
+async function pushDoc(admin: Admin, token: string, realm: string, d: Record<string, unknown>) {
+  const kind = d.kind === "estimate" || d.kind === "proposal" ? "estimate" : "invoice";
+  const name = String(d.customer_name ?? d.customer ?? "Customer").replace(/'/g, "\\'");
+
+  // Find or create the customer.
+  const cq = await qboFetch(token, realm, `/query?query=${encodeURIComponent(`SELECT Id, DisplayName FROM Customer WHERE DisplayName = '${name}'`)}&minorversion=70`);
+  let cust = cq?.QueryResponse?.Customer?.[0];
+  if (!cust) {
+    const created = await qboFetch(token, realm, `/customer?minorversion=70`, {
+      method: "POST",
+      body: JSON.stringify({
+        DisplayName: String(d.customer_name ?? d.customer ?? "Customer"),
+        ...(d.customer_email ? { PrimaryEmailAddr: { Address: d.customer_email } } : {}),
+      }),
+    });
+    cust = created?.Customer;
+  }
+  if (!cust?.Id) throw new Error("Could not resolve QBO customer");
+
+  // Find or create a generic service item to hang lines on.
+  const iq = await qboFetch(token, realm, `/query?query=${encodeURIComponent(`SELECT Id, Name FROM Item WHERE Name = 'ShieldTech Services'`)}&minorversion=70`);
+  let item = iq?.QueryResponse?.Item?.[0];
+  if (!item) {
+    const aq = await qboFetch(token, realm, `/query?query=${encodeURIComponent(`SELECT Id, Name FROM Account WHERE AccountType = 'Income' MAXRESULTS 1`)}&minorversion=70`);
+    const income = aq?.QueryResponse?.Account?.[0];
+    if (!income?.Id) throw new Error("No income account in QBO to attach the service item to");
+    const createdItem = await qboFetch(token, realm, `/item?minorversion=70`, {
+      method: "POST",
+      body: JSON.stringify({ Name: "ShieldTech Services", Type: "Service", IncomeAccountRef: { value: income.Id } }),
+    });
+    item = createdItem?.Item;
+  }
+
+  const lines = (Array.isArray(d.lines) ? d.lines as Array<Record<string, unknown>> : [])
+    .filter((l) => (l.desc || Number(l.rate)))
+    .map((l) => ({
+      Amount: (Number(l.qty) || 1) * (Number(l.rate) || 0),
+      Description: String(l.desc ?? ""),
+      DetailType: "SalesItemLineDetail",
+      SalesItemLineDetail: { ItemRef: { value: item.Id }, Qty: Number(l.qty) || 1, UnitPrice: Number(l.rate) || 0 },
+    }));
+  if (!lines.length) {
+    lines.push({
+      Amount: Number(d.total ?? d.amount) || 0, Description: "Services per attached proposal",
+      DetailType: "SalesItemLineDetail",
+      SalesItemLineDetail: { ItemRef: { value: item.Id }, Qty: 1, UnitPrice: Number(d.total ?? d.amount) || 0 },
+    });
+  }
+
+  const payload: Record<string, unknown> = {
+    CustomerRef: { value: cust.Id },
+    ...(d.doc_number || d.num ? { DocNumber: String(d.doc_number ?? d.num).slice(0, 21) } : {}),
+    ...(d.txn_date ? { TxnDate: d.txn_date } : {}),
+    ...(kind === "invoice" && d.due_date ? { DueDate: d.due_date } : {}),
+    ...(kind === "estimate" && d.expiration_date ? { ExpirationDate: d.expiration_date } : {}),
+    Line: lines,
+  };
+  const body = await qboFetch(token, realm, `/${kind}?minorversion=70`, { method: "POST", body: JSON.stringify(payload) });
+  const created = body?.Invoice ?? body?.Estimate ?? null;
+
+  // Mirror into the landing table so the portal shows the QBO copy at once.
+  if (created) {
+    if (kind === "invoice") {
+      await admin.from("qbo_invoices").upsert({
+        qbo_id: String(created.Id), doc_number: created.DocNumber ?? null,
+        customer_qbo_id: created.CustomerRef?.value ?? null, customer_name: created.CustomerRef?.name ?? name,
+        txn_date: created.TxnDate ?? null, due_date: created.DueDate ?? null,
+        total: Number(created.TotalAmt) || 0, balance: Number(created.Balance) || 0,
+        status: invStatus(created), lines: created.Line ?? null, raw: created, synced_at: new Date().toISOString(),
+      }, { onConflict: "qbo_id" });
+    } else {
+      await admin.from("qbo_estimates").upsert({
+        qbo_id: String(created.Id), doc_number: created.DocNumber ?? null,
+        customer_qbo_id: created.CustomerRef?.value ?? null, customer_name: created.CustomerRef?.name ?? name,
+        txn_date: created.TxnDate ?? null, expiration_date: created.ExpirationDate ?? null,
+        total: Number(created.TotalAmt) || 0, status: (created.TxnStatus ?? "Pending").toLowerCase(),
+        lines: created.Line ?? null, raw: created, synced_at: new Date().toISOString(),
+      }, { onConflict: "qbo_id" });
+    }
+  }
+  return created;
+}
+
 async function push(admin: Admin, token: string, realm: string, entity: string, payload: unknown) {
   const map: Record<string, string> = { invoice: "invoice", estimate: "estimate", customer: "customer" };
   const ep = map[entity];
@@ -275,16 +365,29 @@ Deno.serve(async (req) => {
   if (!(await authorize(req, admin))) return json(401, { ok: false, error: "Admin/Staff session or cron secret required" });
 
   const realm = Deno.env.get("QBO_REALM_ID");
-  if (!realm || !Deno.env.get("QBO_CLIENT_ID")) {
+  const connected = !!(realm && Deno.env.get("QBO_CLIENT_ID"));
+
+  let body: { direction?: string; action?: string; entity?: string; payload?: unknown; doc?: Record<string, unknown> } = {};
+  try { body = await req.json(); } catch { /* default pull */ }
+
+  // Connection light for the portal — never 503s.
+  if (body.action === "status") {
+    const { data: state } = await admin.from("qbo_sync_state").select("last_sync_at, last_status, last_error").eq("id", 1).maybeSingle();
+    return json(200, { ok: true, connected, state: state ?? null });
+  }
+
+  if (!connected) {
     return json(503, { ok: false, error: "QuickBooks not connected yet — set QBO_CLIENT_ID, QBO_CLIENT_SECRET, QBO_REALM_ID and QBO_REFRESH_TOKEN on the qbo-sync function." });
   }
 
-  let body: { direction?: string; entity?: string; payload?: unknown } = {};
-  try { body = await req.json(); } catch { /* default pull */ }
   const direction = body.direction ?? "pull";
 
   try {
     const token = await getAccessToken(admin);
+    if (direction === "push-doc") {
+      const created = await pushDoc(admin, token, realm!, body.doc ?? {});
+      return json(200, { ok: true, data: created });
+    }
     if (direction === "push") {
       const created = await push(admin, token, realm, body.entity ?? "", body.payload);
       return json(200, { ok: true, data: created });
