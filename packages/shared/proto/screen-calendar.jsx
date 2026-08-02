@@ -57,12 +57,15 @@ function CalendarScreen() {
     return typeColors[job.type] || typeColors.install;
   };
 
-  const baseMonday = new Date(2026, 5, 8 + weekOffset * 7);
+  /* Real current week (Monday-anchored) — no more frozen demo dates. */
+  const now = new Date();
+  const thisMonday = new Date(now); thisMonday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const baseMonday = new Date(thisMonday); baseMonday.setDate(thisMonday.getDate() + weekOffset * 7);
   const weekDays = Array.from({ length: 7 }, (_, i) => { const d = new Date(baseMonday); d.setDate(d.getDate() + i); return d; });
   const hours = Array.from({ length: DAY_END - DAY_START }, (_, i) => i + DAY_START);
   const dayLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const isToday = (d) => { const t = new Date(2026,5,10); return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth(); };
+  const isToday = (d) => d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   const formatDay = (d) => `${monthNames[d.getMonth()].slice(0,3)} ${d.getDate()}`;
 
   const filteredJobs = techFilter === 'all' ? jobs
@@ -305,7 +308,7 @@ function CalendarScreen() {
         <button onClick={() => setWeekOffset(0)} style={{ ...calNavBtn, fontSize: 11, padding: '5px 12px', minWidth: 60 }}>Today</button>
         <button onClick={() => setWeekOffset(w => w + 1)} style={calNavBtn}>›</button>
         <span className="display" style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-high)', marginLeft: 4 }}>
-          {view === 'week' ? `${formatDay(weekDays[0])} — ${formatDay(weekDays[6])}, ${weekDays[0].getFullYear()}` : 'June 2026'}
+          {view === 'week' ? `${formatDay(weekDays[0])} — ${formatDay(weekDays[6])}, ${weekDays[0].getFullYear()}` : `${monthNames[baseMonday.getMonth()]} ${baseMonday.getFullYear()}`}
         </span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, background: 'rgba(63,169,245,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)' }}>
           {['week','month'].map(v => (

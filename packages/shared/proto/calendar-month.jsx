@@ -23,18 +23,19 @@ function CalMonthView({ jobs, techs, drag, monthGhost, conflicts, selectedId, ge
   const LANE_H = 24, HEADER_H = 34;
   const rowMinH = Math.max(96, HEADER_H + Math.min(lanes.count, 7) * LANE_H + 10);
 
-  // June 2026 grid
+  // Real current-month grid (Monday-anchored)
   const monthWeeks = React.useMemo(() => {
-    const first = new Date(2026, 5, 1);
+    const now = new Date();
+    const first = new Date(now.getFullYear(), now.getMonth(), 1);
     const startMon = new Date(first);
     startMon.setDate(1 - ((first.getDay() + 6) % 7));
     return Array.from({ length: 5 }, (_, w) => Array.from({ length: 7 }, (_, d) => {
       const date = new Date(startMon);
       date.setDate(startMon.getDate() + w * 7 + d);
-      return { date, dayNum: d + 1, monthDay: date.getDate(), isCurrentMonth: date.getMonth() === 5 };
+      return { date, dayNum: d + 1, monthDay: date.getDate(), isCurrentMonth: date.getMonth() === now.getMonth() };
     }));
   }, []);
-  const isToday = (d) => d.getDate() === 10 && d.getMonth() === 5;
+  const isToday = (d) => { const t = new Date(); return d.getDate() === t.getDate() && d.getMonth() === t.getMonth() && d.getFullYear() === t.getFullYear(); };
 
   const ghostIn = (dayNum) => monthGhost && dayNum >= monthGhost.a && dayNum <= monthGhost.b;
 
