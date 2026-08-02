@@ -58,7 +58,7 @@ function MProposalBuilder({ id, onClose, onNav }) {
   const existing = id ? store.find(p => p.id === id) : null;
   const [draft, setDraft] = React.useState(() => existing
     ? JSON.parse(JSON.stringify(existing))
-    : { id: 'PROP-' + (Math.floor(Math.random() * 600) + 320), customer: '', title: '', status: 'draft', created: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), viewed: false, viewTime: '—', blocks: defaultProposalBlocks('', '') });
+    : { id: window.nextProposalId(), customer: '', title: '', status: 'draft', created: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), viewed: false, viewTime: '—', blocks: defaultProposalBlocks('', '') });
   const [openBlk, setOpenBlk] = React.useState('cover');
   const [addOpen, setAddOpen] = React.useState(false);
   const [preview, setPreview] = React.useState(false);

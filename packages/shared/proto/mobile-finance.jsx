@@ -9,6 +9,24 @@ const FIN_STATUS = { paid:'var(--status-ok)', pending:'var(--status-warn)', over
 
 const FinEmpty = ({ children }) => <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>{children}</div>;
 
+/* Patch an invoice by display row: portal rows are patched in place (both key
+   shapes); QuickBooks mirror rows get a portal override row with the same doc
+   number, which wins in the merge — same behavior as desktop saveDocEdit. */
+function mUpdateInv(inv, patch) {
+  const num = typeof inv === 'string' ? inv : inv.num;
+  const exists = (invoiceStore.get() || []).some(r => (r.num || r.doc_number) === num);
+  if (exists) { invoiceStore.set(prev => (prev || []).map(r => (r.num || r.doc_number) === num ? { ...r, ...patch } : r)); return; }
+  const v = typeof inv === 'object' ? inv : { num, customer: 'Customer', amount: 0, lines: [] };
+  invoiceStore.set(prev => [{
+    qbo_id: 'local-edit-' + Date.now().toString(36), source: 'portal',
+    doc_number: num, num, customer_name: v.customer, customer: v.customer,
+    total: v.amount, amount: v.amount, lines: v.lines || [],
+    due: v.due, terms: v.terms, status: v.status,
+    txn_date: new Date().toISOString().slice(0, 10),
+    ...patch,
+  }, ...(prev || [])]);
+}
+
 function FinKpis({ items }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 }}>
@@ -274,21 +292,22 @@ function FinInvoiceDetail({ inv, onClose, onEdit }) {
             </div>
           ))}
         </MSection>
+        {/* REAL actions — same store writes as the desktop Invoices tab */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          {inv.status === 'draft' && <button onClick={() => { showToast('Finalized & sent', 'ok'); onClose(); }} style={finBtnPrimary}>Finalize & Send</button>}
+          {inv.status === 'draft' && <button onClick={() => { const mail = buildInvoiceEmail(inv); mUpdateInv(inv, { status: 'pending', sentAt: Date.now(), payLink: mail.payLink }); queueEmail(mail); showToast(`${inv.num} finalized — branded email with pay link queued`, 'ok'); onClose(); }} style={finBtnPrimary}>Finalize & Send</button>}
           {inv.status === 'pending' && <>
-            <button onClick={() => showToast('Stripe payment link created', 'ok')} style={finBtnSecondary}>⊛ Create Stripe Link</button>
-            <button onClick={() => { showToast('Payment recorded', 'ok'); onClose(); }} style={finBtnSuccess}>Record Payment</button>
+            <button onClick={() => { mUpdateInv(inv, { payLink: `pay.shieldtech.com/${String(inv.num).toLowerCase()}`, payLinkAt: Date.now() }); showToast('Payment link created for ' + inv.num, 'ok'); }} style={finBtnSecondary}>⊛ Create Payment Link</button>
+            <button onClick={() => { mUpdateInv(inv, { status: 'paid', balance: 0, days: 0, paidAt: Date.now() }); showToast(`Payment recorded — ${inv.num} marked paid`, 'ok'); onClose(); }} style={finBtnSuccess}>Record Payment</button>
           </>}
           {inv.status === 'overdue' && <>
-            <button onClick={() => showToast('AI reminder drafted → Approvals', 'ok')} style={finBtnSecondary}>⟡ AI Draft Reminder</button>
-            <button onClick={() => showToast('Payment link sent', 'ok')} style={finBtnPrimary}>Send Payment Link</button>
+            <button onClick={() => { approvalStore.set(prev => [{ id: (prev || []).reduce((m, a) => Math.max(m, a.id), 0) + 1, kind: 'AR REMINDER', title: `${inv.customer} — ${inv.num} reminder (${inv.days}d overdue)`, amt: `$${inv.amount.toLocaleString()}`, sub: 'AI-drafted · review before sending', status: 'pending' }, ...(prev || [])]); showToast(`Reminder drafted for ${inv.num} → Approvals`, 'ok'); }} style={finBtnSecondary}>⟡ AI Draft Reminder</button>
+            <button onClick={() => { const mail = buildInvoiceEmail(inv); mUpdateInv(inv, { payLink: mail.payLink, payLinkSentAt: Date.now() }); queueEmail(mail); showToast(`Payment-link email for ${inv.num} queued`, 'ok'); }} style={finBtnPrimary}>Send Payment Link</button>
           </>}
           <div style={{ display: 'flex', gap: 7 }}>
             {onEdit && <button onClick={onEdit} style={{ ...finBtnGhost, color: 'var(--brand)', borderColor: 'var(--border-strong)' }}>✎ Edit</button>}
-            <button onClick={() => showToast('PDF downloaded', 'ok')} style={finBtnGhost}>PDF</button>
-            <button onClick={() => showToast('Duplicated', 'ok')} style={finBtnGhost}>Duplicate</button>
-            {inv.status !== 'paid' && <button onClick={() => { showToast('Voided', 'warn'); onClose(); }} style={{ ...finBtnGhost, color: 'var(--status-critical)' }}>Void</button>}
+            <button onClick={() => { if (window.__shieldPdf) window.__shieldPdf.exportDoc({ kind: 'invoice', number: inv.num, date: inv.due, customer: inv.customer, meta: [{ k: 'Terms', v: inv.terms || '' }], lineItems: inv.lines || [], total: inv.amount }); else showToast('PDF export unavailable'); }} style={finBtnGhost}>PDF</button>
+            <button onClick={() => { const num = window.nextDocNumber('invoice'); invoiceStore.set(prev => [{ ...(inv._raw || inv), num, doc_number: num, qbo_id: 'local-' + Date.now().toString(36), status: 'draft', due: '—', days: 0, payLink: null, payLinkSentAt: null, paidAt: null }, ...(prev || [])]); showToast(`Duplicated as ${num} (draft)`, 'ok'); onClose(); }} style={finBtnGhost}>Duplicate</button>
+            {inv.status !== 'paid' && <button onClick={() => { mUpdateInv(inv, { status: 'void', days: 0 }); showToast(`${inv.num} voided`, 'warn'); onClose(); }} style={{ ...finBtnGhost, color: 'var(--status-critical)' }}>Void</button>}
           </div>
         </div>
       </div>
@@ -502,7 +521,7 @@ function FinReports() {
 /* ── Finance suite shell ── */
 function MFinance({ onNav }) {
   const [tab, setTab] = React.useState('Overview');
-  const tabs = ['Overview', 'AI Queue', 'Invoices', 'Recurring', 'Estimates', 'Bills', 'Expenses', 'Sales Tax', 'Lending', 'Reports', 'More'];
+  const tabs = ['Overview', 'AI Queue', 'Invoices', 'Recurring', 'Proposals', 'Bills', 'Expenses', 'Sales Tax', 'Lending', 'Reports', 'More'];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2, margin: '0 -2px' }}>
@@ -514,7 +533,7 @@ function MFinance({ onNav }) {
       {tab === 'AI Queue' && <MFinAIQueue />}
       {tab === 'Invoices' && <FinInvoices />}
       {tab === 'Recurring' && <FinRecurring />}
-      {tab === 'Estimates' && <FinEstimates onNav={onNav} />}
+      {tab === 'Proposals' && <FinEstimates onNav={onNav} />}
       {tab === 'Bills' && <FinBills />}
       {tab === 'Expenses' && <FinExpenses />}
       {tab === 'Sales Tax' && <MFinSalesTax />}

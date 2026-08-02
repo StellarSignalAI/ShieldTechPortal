@@ -117,13 +117,14 @@ function CockpitPreviewScreen() {
     const html = o.bid.proposal_html || '';
     const r = await window.__shieldEmail.send({ to: email.trim(), subject: `Proposal — ${o.title} — ShieldTech Solutions`, html });
     setBusy(b => ({ ...b, [o.id]: false }));
-    if (r && r.ok) { await window.__shieldBids.markSent(o.bid.id, email.trim()); showToast(`Proposal emailed to ${email.trim()}`, 'ok'); refreshBids(); }
+    if (r && r.ok) { await window.__shieldBids.markSent(o.bid.id, email.trim()); window.__shieldBids.toPipeline(o, o.bid); showToast(`Proposal emailed to ${email.trim()}`, 'ok'); refreshBids(); }
     else showToast(`Email failed: ${(r && r.error) || 'unknown'}`, 'error');
   };
   const approveDownload = (o) => {
     const blob = new Blob([o.bid.proposal_html || ''], { type: 'text/html' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ShieldTech-Proposal-${String(o.solicitation_id || o.id).slice(0, 24)}.html`; a.click(); URL.revokeObjectURL(a.href);
-    showToast('Proposal downloaded', 'ok');
+    window.__shieldBids.toPipeline(o, o.bid);
+    showToast('Proposal downloaded — added to the pipeline', 'ok');
   };
 
   const runCmd = () => {

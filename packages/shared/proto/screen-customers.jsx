@@ -608,15 +608,25 @@ function CustomerFinanceDocs({ customer, kind, showToast }) {
     const p = kind === 'invoices' ? q.invoices({ limit: 1000 }) : q.estimates(1000);
     p.then(res => setQboRows(res && res.ok && res.data ? res.data : []));
   }, [customer, kind]);
+  /* Normalize + dedupe exactly like the Finance suite (both row shapes,
+     portal rows win over QBO mirrors of the same doc number). */
+  const mapRow = kind === 'invoices' ? mapInvoiceRow : mapEstimateRow;
+  const localRows = kind === 'invoices' ? (localInv || []) : (localEst || []);
   const nameMatch = (r) => {
-    const n = (r.customer_name || '').toLowerCase();
+    const n = (r.customer || '').toLowerCase();
     return n === (customer.name || '').toLowerCase() || (customer.dba && n === customer.dba.toLowerCase());
   };
-  const localRows = kind === 'invoices' ? (localInv || []) : (localEst || []);
-  const rows = [...localRows, ...qboRows].filter(nameMatch);
+  const rows = React.useMemo(() => {
+    const out = []; const seen = new Set();
+    for (const raw of [...localRows, ...qboRows]) {
+      const m = mapRow(raw);
+      if (seen.has(m.num) || !nameMatch(m)) continue;
+      seen.add(m.num); out.push(m);
+    }
+    return out;
+  }, [localRows, qboRows, customer, kind]);
   const money = (n) => '$' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const fmt = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-  const total = rows.reduce((s, r) => s + (Number(r.total) || 0), 0);
+  const total = rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
   return (
     <div style={{ maxWidth: 1100 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, alignItems: 'center' }}>
@@ -635,10 +645,10 @@ function CustomerFinanceDocs({ customer, kind, showToast }) {
               <th key={i} style={{ textAlign: i===2?'right':'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
             ))}</tr></thead>
             <tbody>{rows.map((r) => (
-              <tr key={r.qbo_id}>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{r.doc_number || r.qbo_id}</td>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{fmt(r.txn_date)}</td>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{money(r.total)}</td>
+              <tr key={r.num}>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{r.num}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{kind === 'invoices' ? r.due : r.date}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{money(r.amount)}</td>
                 <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={r.status==='paid'?'online':r.status==='overdue'?'critical':r.status==='accepted'?'online':'info'} label={r.status || '—'} /></td>
               </tr>
             ))}</tbody>
@@ -672,7 +682,7 @@ function CustomerProposalsTab({ customer, showToast }) {
               onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 500 }}>{p.title || 'Proposal'}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.status || 'draft'}{typeof proposalValue === 'function' ? ` · ${'$' + (proposalValue(p) || 0).toLocaleString()}` : ''}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.status || 'draft'}{typeof proposalValue === 'function' ? ` · ${'$' + (proposalValue(p.blocks) || 0).toLocaleString()}` : ''}</div>
               </div>
               <StatusBadge status={p.status==='accepted'?'online':p.status==='sent'?'info':'warning'} label={p.status || 'draft'} />
             </div>

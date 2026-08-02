@@ -198,7 +198,8 @@ function ProposalViewer({ opp, bid, onClose }) {
     a.download = `ShieldTech-Proposal-${(opp.solicitation_id || opp.id).toString().slice(0, 24)}.html`;
     a.click();
     URL.revokeObjectURL(a.href);
-    showToast('Proposal downloaded — open it and print to PDF for a paper copy', 'ok');
+    window.__shieldBids.toPipeline(opp, bid);
+    showToast('Proposal downloaded — and added to the pipeline (Finance → Proposals)', 'ok');
   };
 
   const share = async () => {
@@ -224,7 +225,8 @@ function ProposalViewer({ opp, bid, onClose }) {
     setSending(false);
     if (r && r.ok) {
       window.__shieldBids.markSent(bid.id, to.trim());
-      showToast(`Proposal emailed to ${to.trim()}`, 'ok');
+      window.__shieldBids.toPipeline(opp, bid);
+      showToast(`Proposal emailed to ${to.trim()} — now tracked in the pipeline`, 'ok');
       setEmailOpen(false);
     } else showToast(`Email failed: ${(r && r.error) || 'unknown'} — use Download instead`, 'error');
   };

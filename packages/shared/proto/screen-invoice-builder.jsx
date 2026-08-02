@@ -67,15 +67,15 @@ function NIFinanceEstimates({ setModal, showToast }) {
   return (
     <div style={{ maxWidth: 1200 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-        <SectionHeader title="Estimates" icon="◇" count={rows.length} />
-        <button onClick={() => setModal({ type: 'new-estimate' })} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Estimate</button>
+        <SectionHeader title="Proposals" icon="◇" count={rows.length} />
+        <button onClick={() => setModal({ type: 'new-estimate' })} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Proposal</button>
       </div>
       <GlassPanel style={{ padding: 0 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr>{['Estimate','Customer','Amount','Status','Date','Expires','Actions'].map((h,i) => (
+          <thead><tr>{['Proposal','Customer','Amount','Status','Date','Expires','Actions'].map((h,i) => (
             <th key={i} style={{ textAlign: i===2?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
           ))}</tr></thead>
-          <tbody>{rows.length === 0 && <DocsEmptyRow colSpan={7} kind="estimates" />}
+          <tbody>{rows.length === 0 && <DocsEmptyRow colSpan={7} kind="proposals" />}
           {rows.map((e,i) => (
             <tr key={i} onMouseEnter={ev=>ev.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
               <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{e.ref}</td>
@@ -631,7 +631,7 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
   const [quoteRef, setQuoteRef] = React.useState('');
   const [projectName, setProjectName] = React.useState(modal.projectName || '');
   const [poNumber, setPoNumber] = React.useState('');
-  const [invoiceNum, setInvoiceNum] = React.useState(isEstimate ? 'EST-1001' : 'INV-2870');
+  const [invoiceNum, setInvoiceNum] = React.useState(() => nextDocNumber(isEstimate ? 'estimate' : 'invoice'));
   const [memo, setMemo] = React.useState('');
 
   /* Settings state */
@@ -689,6 +689,9 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
       lines: lines.filter(l => l.desc || l.rate).map(l => ({ desc: l.desc, qty: Number(l.qty) || 1, rate: Number(l.rate) || 0 })),
       project_id: (modal && modal.projectId) || null,
       customer_qbo_id: (modal && modal.customerQboId) || null,
+      customer_email: customerEmail || null,
+      terms: terms === 'custom' ? 'Custom' : terms.replace(/net-(\d+)/, 'Net $1').replace('due-receipt', 'Due on receipt').replace('due-immediately', 'Due immediately'),
+      due: dueDate || null,
     });
   };
 
@@ -770,7 +773,7 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
         {/* ─── HEADER ─── */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderBottom: '1px solid var(--border-subtle)', position: 'sticky', top: 0, background: 'var(--modal)', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span className="display" style={{ fontSize: 17, fontWeight: 500 }}>{isEstimate ? 'New Estimate' : 'New Invoice'}</span>
+            <span className="display" style={{ fontSize: 17, fontWeight: 500 }}>{isEstimate ? 'New Proposal' : 'New Invoice'}</span>
             <input value={invoiceNum} onChange={e => setInvoiceNum(e.target.value)} style={{ width: 100, padding: '3px 8px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none', textAlign: 'center' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -950,9 +953,9 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
             {/* ─── FOOTER ACTIONS ─── */}
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', borderTop: '1px solid var(--border-subtle)', paddingTop: 14 }}>
               <button onClick={() => setModal(null)} style={btnSecondary}>Cancel</button>
-              <button onClick={() => { persistDoc('draft'); setModal(null); showToast(`${isEstimate ? 'Estimate' : 'Invoice'} ${invoiceNum} saved as draft`); }} style={{ ...btnSecondary, color: 'var(--brand)', borderColor: 'var(--brand)' }}>Save Draft</button>
+              <button onClick={() => { persistDoc('draft'); setModal(null); showToast(`${isEstimate ? 'Proposal' : 'Invoice'} ${invoiceNum} saved as draft`); }} style={{ ...btnSecondary, color: 'var(--brand)', borderColor: 'var(--brand)' }}>Save Draft</button>
               <button onClick={() => setSendOpen(true)} style={{ ...btnPrimary, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>↗</span> Send {isEstimate ? 'Estimate' : 'Invoice'}
+                <span>↗</span> Send {isEstimate ? 'Proposal' : 'Invoice'}
               </button>
             </div>
           </div>
@@ -1069,7 +1072,7 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
           newEmail={newEmail} setNewEmail={setNewEmail}
           customerEmail={customerEmail} attachPdf={attachPdf} includePayLink={includePayLink}
           onClose={() => setSendOpen(false)}
-          onSend={() => { persistDoc(isEstimate ? 'pending' : 'open'); setSendOpen(false); setModal(null); showToast(`${isEstimate ? 'Estimate' : 'Invoice'} ${invoiceNum} sent to ${customer}`); }}
+          onSend={() => { persistDoc(isEstimate ? 'pending' : 'open'); setSendOpen(false); setModal(null); showToast(`${isEstimate ? 'Proposal' : 'Invoice'} ${invoiceNum} sent to ${customer}`); }}
           showToast={showToast}
         />}
       </div>

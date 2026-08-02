@@ -303,6 +303,20 @@ const projectStore = createShieldStore('projects', []);
 const invoiceStore = createShieldStore('invoices', []);
 const estimateStore = createShieldStore('estimates', []);
 
+/* ── ONE document-number sequence per kind ──
+   Scans BOTH row shapes (doc_number and num) so every writer — the builder,
+   progress billing, duplicates, quick-adds — draws from the same sequence.
+   Proposals and estimates are the same document (PROP- numbering going
+   forward; legacy EST- rows count toward the sequence). */
+function nextDocNumber(kind) {
+  const isInv = kind === 'invoice';
+  const store = isInv ? invoiceStore : estimateStore;
+  const seed = isInv ? 2800 : 1000;
+  const seq = (store.get() || []).reduce((m, d) =>
+    Math.max(m, parseInt(String(d.doc_number || d.num || '').replace(/\D/g, ''), 10) || 0), seed) + 1;
+  return (isInv ? 'INV-' : 'PROP-') + seq;
+}
+
 function buildProject(form) {
   const list = projectStore.get();
   const seq = list.reduce((m, p) => Math.max(m, parseInt(String(p.number || '').replace(/\D/g, ''), 10) || 0), 1000) + 1;
@@ -342,6 +356,12 @@ function estWorkflowView(e) {
     customer: e.customer_name || e.customer || 'Customer',
     total: Number(e.total ?? e.amount) || 0,
     status: e.status || 'pending',
+    /* Carried into the project on acceptance so scheduling has something to work with. */
+    lines: Array.isArray(e.lines) ? e.lines : [],
+    email: e.customer_email || e.email || '',
+    phone: e.phone || '',
+    siteAddr: e.siteAddr || e.site_addr || '',
+    contact: e.contact || '',
   };
 }
 
@@ -358,6 +378,7 @@ function acceptEstimateToProject(est, via) {
     (e.doc_number || e.num) === v.ref ? { ...e, status: 'accepted' } : e));
   const existing = projectForEstimate(v.ref);
   if (existing) return existing;
+  const scope = (v.lines || []).map(li => `${li.qty > 1 ? li.qty + '× ' : ''}${li.desc}`).filter(Boolean).join('; ');
   return addProject({
     name: `${v.customer} — ${v.ref}`,
     customer: v.customer,
@@ -365,8 +386,9 @@ function acceptEstimateToProject(est, via) {
     estimatedValue: v.total,
     contractTotal: v.total,
     estimateRefs: [v.ref],
+    email: v.email, phone: v.phone, contact: v.contact, siteAddr: v.siteAddr,
     source: 'estimate-' + (via || 'manual'),
-    notes: `Created from accepted estimate ${v.ref} (${via || 'manual'} acceptance).`,
+    notes: `Created from accepted proposal ${v.ref} (${via || 'manual'} acceptance).` + (scope ? `\nScope: ${scope}` : ''),
   });
 }
 
@@ -412,9 +434,7 @@ function createProgressInvoice(projectNumber, pct) {
   const already = projectBilledPct(p);
   const amount = Math.round(base * pctNum) / 100;
   const store = window.invoiceStore || invoiceStore;
-  const seq = (store.get() || []).reduce((m, d) =>
-    Math.max(m, parseInt(String(d.doc_number || d.num || '').replace(/\D/g, ''), 10) || 0), 2800) + 1;
-  const num = 'INV-' + seq;
+  const num = nextDocNumber('invoice');
   const refList = (p.estimateRefs || []).join(', ') || p.number;
   const dueDate = new Date(Date.now() + 30 * 86400000);
   const line = {
@@ -465,25 +485,96 @@ async function applyEstimateAcceptances() {
   return { applied };
 }
 
-/* Portal invoice/estimate in the qbo_* row shape so merges are clean. */
+/* Portal invoice/proposal row. Written in the DUAL shape — qbo_* keys
+   (doc_number/customer_name/total) so QuickBooks merges are clean, PLUS the
+   legacy keys (num/customer/amount/due) so every older screen reads it too.
+   Numbering always comes from nextDocNumber unless the caller passes an
+   explicit doc_number that is not already taken. */
 function buildDoc(kind, form) {
-  const store = kind === 'estimate' ? estimateStore : invoiceStore;
-  const prefix = kind === 'estimate' ? 'EST' : 'INV';
-  const seq = store.get().reduce((m, d) => Math.max(m, parseInt(String(d.doc_number || '').replace(/\D/g, ''), 10) || 0), 1000) + 1;
-  const total = Number(form.total) || (form.lines || []).reduce((s, li) => s + (Number(li.qty ?? li.Qty ?? 1) * Number(li.rate ?? li.UnitPrice ?? 0)), 0);
+  const isEst = kind === 'estimate' || kind === 'proposal';
+  const store = isEst ? estimateStore : invoiceStore;
+  const taken = new Set((store.get() || []).map(d => d.doc_number || d.num).filter(Boolean));
+  const num = (form.doc_number && !taken.has(form.doc_number)) ? form.doc_number : nextDocNumber(isEst ? 'estimate' : 'invoice');
+  const lines = (form.lines || []).map(li => ({
+    desc: li.desc ?? li.Description ?? '', qty: Number(li.qty ?? li.Qty ?? 1) || 1, rate: Number(li.rate ?? li.UnitPrice ?? 0) || 0,
+  }));
+  const total = Number(form.total) || lines.reduce((s, li) => s + li.qty * li.rate, 0);
+  const customer = form.customer_name || form.customer || 'Customer';
+  /* due_date may arrive ISO (2026-08-30) or display-formatted (Aug 30, 2026) */
+  const dueIsIso = form.due_date && /^\d{4}-\d{2}-\d{2}/.test(String(form.due_date));
+  const dueIso = dueIsIso ? String(form.due_date).slice(0, 10)
+    : (form.due_date && !isNaN(new Date(form.due_date)) ? new Date(form.due_date).toISOString().slice(0, 10) : null);
   return {
+    /* qbo_* shape (merges + reports) */
     qbo_id: 'local-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-    doc_number: form.doc_number || `${prefix}-${seq}`,
-    customer_qbo_id: form.customer_qbo_id || null, customer_name: form.customer_name || form.customer || 'Customer',
+    doc_number: num,
+    customer_qbo_id: form.customer_qbo_id || null, customer_name: customer,
     txn_date: form.txn_date || new Date().toISOString().slice(0, 10),
-    due_date: form.due_date || null, expiration_date: form.expiration_date || null,
-    total, balance: kind === 'estimate' ? undefined : (form.balance != null ? Number(form.balance) : total),
-    status: form.status || (kind === 'estimate' ? 'pending' : 'open'),
-    lines: form.lines || null, project_id: form.project_id || null, source: 'portal',
+    due_date: dueIso, expiration_date: form.expiration_date || null,
+    total, balance: isEst ? undefined : (form.balance != null ? Number(form.balance) : total),
+    status: form.status || (isEst ? 'pending' : 'open'),
+    lines, project_id: form.project_id || null, source: 'portal',
+    /* legacy shape (older list/detail screens) */
+    num, customer, amount: total,
+    due: dueIso ? fmtDocDate(dueIso) : (form.due || form.due_date || '—'),
+    days: 0, terms: form.terms || 'Net 30',
+    /* contact carried for the send + accept pipeline */
+    customer_email: form.customer_email || null,
   };
 }
 function addInvoice(form) { const d = buildDoc('invoice', form); invoiceStore.set(l => [d, ...l]); return d; }
 function addEstimate(form) { const d = buildDoc('estimate', form); estimateStore.set(l => [d, ...l]); return d; }
+
+/* Sequential proposal ids — scans BOTH the block-based proposal records and
+   the doc store so ids never collide (replaces the old random PROP- ids). */
+function nextProposalId() {
+  const nums = [
+    ...(estimateStore.get() || []).map(d => d.doc_number || d.num),
+    ...(proposalStore.get() || []).map(p => p.id),
+  ];
+  const seq = nums.reduce((m, x) => Math.max(m, parseInt(String(x || '').replace(/\D/g, ''), 10) || 0), 1000) + 1;
+  return 'PROP-' + seq;
+}
+
+/* Bridge: a block-based proposal (builder record) ⇄ the money-doc pipeline.
+   Creates or refreshes the matching doc row (same PROP- number) so sending a
+   proposal makes it acceptable → project → invoice like any other quote. */
+function proposalToDoc(p) {
+  const pricing = (p.blocks || []).find(b => b.type === 'pricing');
+  const lines = pricing ? ((pricing.content && pricing.content.items) || []).map(li => ({
+    desc: li.desc || '', qty: Number(li.qty) || 1, rate: Number(li.rate) || 0,
+  })) : [];
+  const total = proposalValue(p.blocks);
+  const match = (d) => (d.doc_number || d.num) === p.id;
+  if ((estimateStore.get() || []).some(match)) {
+    estimateStore.set(l => (l || []).map(d => match(d) ? {
+      ...d, lines, total, amount: total,
+      customer_name: p.customer || d.customer_name, customer: p.customer || d.customer,
+      title: p.title || d.title || null,
+    } : d));
+    return (estimateStore.get() || []).find(match);
+  }
+  const d = buildDoc('proposal', { doc_number: p.id, customer_name: p.customer, lines, total, status: 'pending' });
+  d.title = p.title || null;
+  estimateStore.set(l => [d, ...(l || [])]);
+  return d;
+}
+
+/* Auto-Bid approval → money pipeline. An approved bid becomes a proposal doc
+   (idempotent on the bid id) so it flows through accept → project → invoice
+   like every other proposal instead of dead-ending at the email. */
+function bidToPipeline({ bidId, customer, title, total, lines }) {
+  const existing = (estimateStore.get() || []).find(d => d.bid_ref === bidId);
+  if (existing) return existing;
+  const d = buildDoc('proposal', {
+    customer_name: customer || 'Customer', total: Number(total) || 0,
+    lines: lines && lines.length ? lines : [{ desc: title || 'Per attached proposal', qty: 1, rate: Number(total) || 0 }],
+    status: 'pending',
+  });
+  d.bid_ref = bidId; d.title = title || null;
+  estimateStore.set(l => [d, ...(l || [])]);
+  return d;
+}
 
 /* Edit any invoice/estimate by doc number. Portal-store rows are patched in
    place; QuickBooks mirror rows get a portal override row with the same doc
@@ -701,6 +792,7 @@ Object.assign(window, {
   customerDataStore, custRecords, setCustRecords,
   projectStore, invoiceStore, estimateStore,
   buildProject, addProject, buildDoc, addInvoice, addEstimate, saveDocEdit,
+  nextDocNumber, bidToPipeline, nextProposalId, proposalToDoc,
   localInvoiceRows, localEstimateRows,
   mapInvoiceRow, mapEstimateRow, useMergedInvoices, useMergedEstimates, DocsEmptyRow,
   updateProject, estWorkflowView, projectForEstimate, acceptEstimateToProject,
