@@ -1,12 +1,15 @@
-// estimate-accept — customer-facing estimate acceptance.
+// estimate-accept — customer-facing proposal acceptance.
 //
 // POST (Admin/Staff session): {estimateRef, customerName, customerEmail,
 //   amount?, estimateQboId?} → creates a tokenized acceptance record and emails
-//   the customer Accept/Decline links (Resend). Returns {ok, link}.
-// GET ?token=...&action=accept|decline (public, from the email): records the
-//   customer's response, mirrors accepted status onto qbo_estimates when the
-//   estimate is a QBO row, and renders a small branded confirmation page. The
-//   portal polls estimate_acceptances and turns accepted rows into projects.
+//   the customer a review link (Resend). Returns {ok, link}.
+// GET ?token=... (public, READ-ONLY): renders the proposal review page with
+//   Accept / Decline buttons. Nothing mutates on GET, so email-scanner
+//   prefetch can never auto-accept.
+// POST {token, action} (public, from the review page's form): records the
+//   customer's decision, mirrors accepted status onto qbo_estimates for QBO
+//   rows, renders the confirmation page. The portal polls estimate_acceptances
+//   and turns accepted rows into projects.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const cors = {
@@ -17,16 +20,23 @@ const cors = {
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
 
-const page = (title: string, message: string, ok: boolean) =>
+const CSS = `body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#0a0e14;color:#e6edf3;display:flex;align-items:center;justify-content:center;min-height:100vh}
+.card{max-width:460px;width:100%;margin:24px;padding:34px;border-radius:14px;background:#111722;border:1px solid #1f2a3a;text-align:center}
+.dot{width:52px;height:52px;border-radius:50%;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.ok{background:rgba(52,211,153,0.12);color:#34d399}.bad{background:rgba(244,63,94,0.12);color:#f43f5e}.info{background:rgba(63,169,245,0.12);color:#3fa9f5}
+h1{font-size:19px;font-weight:600;margin:0 0 10px}p{font-size:14px;line-height:1.6;color:#9fb0c3;margin:0}
+.amt{font-family:ui-monospace,monospace;font-size:26px;font-weight:700;color:#3fa9f5;margin:12px 0}
+.btns{display:flex;gap:10px;justify-content:center;margin-top:22px}
+button{border:none;border-radius:9px;padding:13px 26px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.accept{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff}
+.decline{background:transparent;border:1px solid #2a3648;color:#9fb0c3}
+.brand{margin-top:22px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#5b6b7f}`;
+
+const page = (title: string, message: string, kind: "ok" | "bad" | "info", extra = "") =>
   new Response(
     `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${title} — ShieldTech Solutions</title>
-<style>body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#0a0e14;color:#e6edf3;display:flex;align-items:center;justify-content:center;min-height:100vh}
-.card{max-width:440px;margin:24px;padding:36px;border-radius:14px;background:#111722;border:1px solid #1f2a3a;text-align:center}
-.dot{width:52px;height:52px;border-radius:50%;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-size:24px;background:${ok ? "rgba(52,211,153,0.12)" : "rgba(244,63,94,0.12)"};color:${ok ? "#34d399" : "#f43f5e"}}
-h1{font-size:19px;font-weight:600;margin:0 0 10px}p{font-size:14px;line-height:1.6;color:#9fb0c3;margin:0}
-.brand{margin-top:22px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#5b6b7f}</style></head>
-<body><div class="card"><div class="dot">${ok ? "✓" : "✕"}</div><h1>${title}</h1><p>${message}</p>
+<title>${title} — ShieldTech Solutions</title><style>${CSS}</style></head>
+<body><div class="card"><div class="dot ${kind}">${kind === "ok" ? "✓" : kind === "bad" ? "✕" : "◇"}</div><h1>${title}</h1><p>${message}</p>${extra}
 <div class="brand">ShieldTech Solutions · Security · Monitoring · Service</div></div></body></html>`,
     { status: 200, headers: { ...cors, "Content-Type": "text/html; charset=utf-8" } },
   );
@@ -40,38 +50,69 @@ Deno.serve(async (req) => {
     { auth: { persistSession: false } },
   );
 
-  // ── Public GET: the customer clicked an emailed link ──
+  // ── Public GET: READ-ONLY review page (prefetch-safe) ──
   if (req.method === "GET") {
-    const url = new URL(req.url);
-    const token = url.searchParams.get("token") ?? "";
-    const action = url.searchParams.get("action") === "decline" ? "declined" : "accepted";
-    if (!token) return page("Invalid link", "This acceptance link is missing its token.", false);
+    const token = new URL(req.url).searchParams.get("token") ?? "";
+    if (!token) return page("Invalid link", "This proposal link is missing its token.", "bad");
 
     const { data: rec } = await admin.from("estimate_acceptances").select("*").eq("token", token).maybeSingle();
-    if (!rec) return page("Link not found", "This acceptance link is invalid or has been removed.", false);
+    if (!rec) return page("Link not found", "This proposal link is invalid or has been removed.", "bad");
 
     if (rec.status !== "pending") {
       const already = rec.status === "accepted" ? "accepted" : "declined";
       return page(
-        `Estimate already ${already}`,
-        `Estimate ${rec.estimate_ref} was ${already} on ${new Date(rec.responded_at).toLocaleDateString()}. No further action is needed.`,
-        rec.status === "accepted",
+        `Proposal already ${already}`,
+        `Proposal ${rec.estimate_ref} was ${already} on ${new Date(rec.responded_at).toLocaleDateString()}. No further action is needed.`,
+        rec.status === "accepted" ? "ok" : "bad",
       );
     }
 
+    const self = `${Deno.env.get("SUPABASE_URL")}/functions/v1/estimate-accept`;
+    return page(
+      `Proposal ${rec.estimate_ref}`,
+      `Prepared for ${rec.customer_name ?? "you"} by ShieldTech Solutions. Review the details from your email, then confirm your decision below. Accepting starts your project — our team follows up to schedule kickoff.`,
+      "info",
+      `${rec.amount ? `<div class="amt">$${Number(rec.amount).toLocaleString()}</div>` : ""}
+<div class="btns">
+<form method="POST" action="${self}"><input type="hidden" name="token" value="${rec.token}"/><input type="hidden" name="action" value="accept"/><button class="accept" type="submit">Accept Proposal</button></form>
+<form method="POST" action="${self}"><input type="hidden" name="token" value="${rec.token}"/><input type="hidden" name="action" value="decline"/><button class="decline" type="submit">Decline</button></form>
+</div>`,
+    );
+  }
+
+  if (req.method !== "POST") return json(405, { ok: false, error: "POST or GET only" });
+
+  // Parse JSON or the review page's form submission.
+  let body: Record<string, string | number | undefined> = {};
+  const ctype = req.headers.get("content-type") ?? "";
+  try {
+    if (ctype.includes("application/x-www-form-urlencoded") || ctype.includes("multipart/form-data")) {
+      const form = await req.formData();
+      body = Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]));
+    } else {
+      body = await req.json();
+    }
+  } catch { return json(400, { ok: false, error: "Invalid body" }); }
+
+  // ── Public POST: the customer confirmed on the review page ──
+  if (body.token) {
+    const action = body.action === "decline" ? "declined" : "accepted";
+    const { data: rec } = await admin.from("estimate_acceptances").select("*").eq("token", String(body.token)).maybeSingle();
+    if (!rec) return page("Link not found", "This proposal link is invalid or has been removed.", "bad");
+    if (rec.status !== "pending") {
+      const already = rec.status === "accepted" ? "accepted" : "declined";
+      return page(`Proposal already ${already}`, `Proposal ${rec.estimate_ref} was ${already} on ${new Date(rec.responded_at).toLocaleDateString()}.`, rec.status === "accepted" ? "ok" : "bad");
+    }
     await admin.from("estimate_acceptances").update({
       status: action, accepted_via: "email", responded_at: new Date().toISOString(),
     }).eq("id", rec.id);
     if (rec.estimate_qbo_id && action === "accepted") {
       await admin.from("qbo_estimates").update({ status: "accepted" }).eq("qbo_id", rec.estimate_qbo_id);
     }
-
     return action === "accepted"
-      ? page("Estimate accepted", `Thank you! Estimate ${rec.estimate_ref}${rec.amount ? ` ($${Number(rec.amount).toLocaleString()})` : ""} has been accepted. Our team will reach out shortly to schedule the project kickoff.`, true)
-      : page("Estimate declined", `Estimate ${rec.estimate_ref} has been marked declined. If this was a mistake or you'd like to discuss changes, just reply to the original email.`, false);
+      ? page("Proposal accepted", `Thank you! Proposal ${rec.estimate_ref}${rec.amount ? ` ($${Number(rec.amount).toLocaleString()})` : ""} has been accepted. Our team will reach out shortly to schedule the project kickoff.`, "ok")
+      : page("Proposal declined", `Proposal ${rec.estimate_ref} has been marked declined. If this was a mistake or you'd like to discuss changes, just reply to the original email.`, "bad");
   }
-
-  if (req.method !== "POST") return json(405, { ok: false, error: "POST or GET only" });
 
   // ── Staff POST: create the acceptance record + email the customer ──
   const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
@@ -81,27 +122,26 @@ Deno.serve(async (req) => {
   const { data: prof } = await admin.from("profiles").select("role").eq("id", userData.user.id).maybeSingle();
   if (!(prof?.role === "Admin" || prof?.role === "Staff")) return json(403, { ok: false, error: "Admin/Staff only" });
 
-  let body: { estimateRef?: string; estimateQboId?: string; customerName?: string; customerEmail?: string; amount?: number };
-  try { body = await req.json(); } catch { return json(400, { ok: false, error: "Invalid JSON" }); }
-  if (!body.estimateRef?.trim() || !body.customerEmail?.trim()) {
+  const estimateRef = String(body.estimateRef ?? "").trim();
+  const customerEmail = String(body.customerEmail ?? "").trim();
+  if (!estimateRef || !customerEmail) {
     return json(400, { ok: false, error: "estimateRef and customerEmail required" });
   }
 
   const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
   const { error: insErr } = await admin.from("estimate_acceptances").insert({
     token,
-    estimate_ref: body.estimateRef.trim(),
+    estimate_ref: estimateRef,
     estimate_qbo_id: body.estimateQboId ?? null,
     customer_name: body.customerName ?? null,
-    customer_email: body.customerEmail.trim(),
+    customer_email: customerEmail,
     amount: body.amount ?? null,
     sent_by: userData.user.id,
   });
   if (insErr) return json(500, { ok: false, error: insErr.message });
 
   const base = `${Deno.env.get("SUPABASE_URL")}/functions/v1/estimate-accept`;
-  const acceptLink = `${base}?token=${token}&action=accept`;
-  const declineLink = `${base}?token=${token}&action=decline`;
+  const reviewLink = `${base}?token=${token}`;
 
   const resendKey = Deno.env.get("RESEND_API_KEY");
   let emailed = false, emailError: string | null = null;
@@ -112,16 +152,15 @@ Deno.serve(async (req) => {
       headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech <no-reply@shieldtechsolutions.com>",
-        to: [body.customerEmail.trim()],
-        subject: `Estimate ${body.estimateRef} from ShieldTech Solutions — approval requested`,
+        to: [customerEmail],
+        subject: `Proposal ${estimateRef} from ShieldTech Solutions — approval requested`,
         html: `<div style="font-family:-apple-system,'Segoe UI',Roboto,sans-serif;max-width:520px;margin:0 auto;padding:24px">
-<h2 style="font-size:18px;margin:0 0 4px">Estimate ${body.estimateRef}</h2>
+<h2 style="font-size:18px;margin:0 0 4px">Proposal ${estimateRef}</h2>
 <p style="color:#556;font-size:14px;margin:0 0 14px">Prepared for ${body.customerName ?? "you"} by ShieldTech Solutions</p>
 ${amountLine}
-<p style="font-size:14px;color:#334;line-height:1.6">Please review your estimate and let us know how you'd like to proceed. Accepting starts your project — our team will follow up to schedule kickoff.</p>
+<p style="font-size:14px;color:#334;line-height:1.6">Please review your proposal and confirm your decision on the secure page below. Accepting starts your project — our team will follow up to schedule kickoff.</p>
 <div style="margin:26px 0">
-<a href="${acceptLink}" style="background:#16a34a;color:#fff;text-decoration:none;padding:12px 26px;border-radius:8px;font-size:14px;font-weight:600">Accept Estimate</a>
-<a href="${declineLink}" style="color:#9aa3af;text-decoration:none;padding:12px 18px;font-size:13px">Decline</a>
+<a href="${reviewLink}" style="background:#3fa9f5;color:#fff;text-decoration:none;padding:12px 26px;border-radius:8px;font-size:14px;font-weight:600">Review & respond</a>
 </div>
 <p style="font-size:12px;color:#99a">ShieldTech Solutions LLC · Security · Monitoring · Service<br/>Questions? Just reply to this email.</p>
 </div>`,
@@ -133,5 +172,5 @@ ${amountLine}
     emailError = "RESEND_API_KEY not configured — share the accept link manually";
   }
 
-  return json(200, { ok: true, data: { token, acceptLink, declineLink, emailed, emailError } });
+  return json(200, { ok: true, data: { token, acceptLink: reviewLink, declineLink: reviewLink, emailed, emailError } });
 });

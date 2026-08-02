@@ -20,6 +20,7 @@ import '@shared/lidar-import.js';
 import '@shared/live-map.js';
 import '@shared/email.js';
 import '@shared/acceptance.js';
+import '@shared/pay.js';
 import '@shared/bids.js';
 import '@shared/pdf.js';
 

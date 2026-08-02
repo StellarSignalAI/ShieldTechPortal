@@ -1,293 +1,84 @@
-/* Finance Payments — Stripe Integration + AI Copilot */
+/* Finance Payments — Payments & Links (real) + AI Copilot */
 
-/* ── Stripe Payments Dashboard ── */
+/* ── Payments & Links ──
+   REAL surface for collections: connection lights (Stripe / email), the live
+   payment-link ledger from invoice_links, and connect instructions. The old
+   fake Stripe dashboard (fabricated payments, cards, disputes) was removed. */
 function FinanceStripe() {
-  const [stripeTab, setStripeTab] = React.useState('dashboard');
+  const [conn, setConn] = React.useState(null);        // {stripe, resend}
+  const [links, setLinks] = React.useState(null);
+  const refresh = React.useCallback(() => {
+    const p = window.__shieldPay; if (!p) { setConn(false); setLinks([]); return; }
+    p.status().then(r => setConn(r && r.ok ? { stripe: r.stripe, resend: r.resend } : false));
+    p.list().then(r => setLinks(r && r.ok ? r.data : []));
+  }, []);
+  React.useEffect(() => { refresh(); if (window.__shieldPay) window.__shieldPay.applyPayments().then(() => refresh()); }, [refresh]);
 
-  return (
-    <div style={{ maxWidth: 1400 }}>
-      <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
-        {[{id:'dashboard',label:'Payments Dashboard'},{id:'methods',label:'Cards on File'},{id:'subscriptions',label:'Subscriptions'},{id:'disputes',label:'Disputes'},{id:'payouts',label:'Payouts'},{id:'events',label:'Webhook Log'},{id:'settings',label:'Settings'}].map(t => (
-          <button key={t.id} onClick={() => setStripeTab(t.id)} style={{ padding: '5px 12px', borderRadius: 6, fontSize: 11, background: stripeTab===t.id?'rgba(63,169,245,0.12)':'transparent', border: `1px solid ${stripeTab===t.id?'var(--brand)':'var(--border-subtle)'}`, color: stripeTab===t.id?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.label}</button>
-        ))}
-      </div>
-
-      {stripeTab === 'dashboard' && <StripeDashboard />}
-      {stripeTab === 'methods' && <StripeCards />}
-      {stripeTab === 'subscriptions' && <StripeSubscriptions />}
-      {stripeTab === 'disputes' && <StripeDisputes />}
-      {stripeTab === 'payouts' && <StripePayouts />}
-      {stripeTab === 'events' && <StripeEvents />}
-      {stripeTab === 'settings' && <StripeSettings />}
+  const light = (on, labelOn, labelOff) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span style={{ width: 9, height: 9, borderRadius: '50%', background: on ? 'var(--status-ok)' : 'var(--status-warn)', boxShadow: on ? '0 0 8px var(--status-ok)' : 'none' }} />
+      <span style={{ fontSize: 12, color: on ? 'var(--text-high)' : 'var(--text-mid)' }}>{on ? labelOn : labelOff}</span>
     </div>
   );
-}
+  const money = (n) => '$' + (Number(n) || 0).toLocaleString();
 
-function StripeDashboard() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ display: 'flex', gap: 10 }}>
-        <StatCard label="VOLUME (MTD)" value="$86,400" mono={false} trend="+22% vs prior" trendDir="up" delay={0} />
-        <StatCard label="SUCCESS RATE" value="97.8%" mono={false} delay={80} />
-        <StatCard label="FAILED / RETRYING" value="3" delay={160} />
-        <StatCard label="NEXT PAYOUT" value="$12,800" mono={false} trend="Jun 7" delay={240} />
-        <StatCard label="MRR VIA STRIPE" value="$14,200" mono={false} trend="83% of total" delay={320} />
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-        <GlassPanel>
-          <SectionHeader title="Recent Payments" icon="⊛" />
-          {[
-            { customer: 'City Hall', amount: 22100, method: 'ACH Bank Transfer', status: 'succeeded', date: 'Jun 5, 2:14 PM', fee: 44.20 },
-            { customer: 'Westfield Mall', amount: 5200, method: 'Visa •••• 4242', status: 'succeeded', date: 'Jun 3, 10:30 AM', fee: 181.00 },
-            { customer: 'Metro Bank Corp', amount: 4800, method: 'ACH Bank Transfer', status: 'succeeded', date: 'Jun 1, 9:00 AM', fee: 9.60 },
-            { customer: 'Riverside Medical', amount: 2800, method: 'Mastercard •••• 5555', status: 'succeeded', date: 'Jun 1, 8:45 AM', fee: 111.20 },
-            { customer: 'Harbor View Condos', amount: 1800, method: 'Visa •••• 1234', status: 'failed', date: 'May 28, 3:00 PM', fee: 0 },
-          ].map((p, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
-              <StatusDot status={p.status==='succeeded'?'online':'critical'} size={6} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 500 }}>{p.customer}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.method}</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div className="mono" style={{ fontSize: 13, fontWeight: 500, color: p.status==='succeeded'?'var(--text-high)':'var(--status-critical)' }}>${p.amount.toLocaleString()}</div>
-                <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{p.fee>0?`Fee: $${p.fee.toFixed(2)}`:p.status==='failed'?'Declined':''}</div>
-              </div>
-            </div>
-          ))}
-        </GlassPanel>
-
-        <GlassPanel>
-          <SectionHeader title="Payment Volume (30 Days)" icon="reports" />
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 120, marginBottom: 12 }}>
-            {[3200, 5200, 0, 8400, 2800, 1200, 0, 4800, 6200, 0, 22100, 3600, 5200, 0, 0, 4200, 0, 8400, 2100, 0, 5600, 0, 3800, 6400, 0, 0, 12800, 0, 4200, 7600].map((v, i) => (
-              <div key={i} style={{ flex: 1, height: `${Math.max((v / 22100) * 100, 2)}%`, background: v > 0 ? 'var(--brand)' : 'rgba(63,169,245,0.06)', borderRadius: '2px 2px 0 0', opacity: v > 10000 ? 1 : 0.6 }} title={`$${v.toLocaleString()}`} />
-            ))}
+    <div style={{ maxWidth: 1100, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <GlassPanel>
+        <SectionHeader title="Payment collection status" icon="⊛" />
+        <div style={{ display: 'flex', gap: 26, flexWrap: 'wrap', margin: '10px 0 4px' }}>
+          {conn === null ? <span style={{ fontSize: 12, color: 'var(--text-low)' }}>Checking…</span> : <>
+            {light(conn && conn.stripe, 'Stripe connected — pay links include secure checkout', 'Stripe not connected — pay pages show remit-by-check until keys are added')}
+            {light(conn && conn.resend, 'Email sending live (Resend)', 'Email backend not configured')}
+          </>}
+        </div>
+        {conn !== null && !(conn && conn.stripe) && (
+          <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 8, background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.7 }}>
+            <b style={{ color: 'var(--text-high)' }}>Connect Stripe (one-time):</b> in your Supabase dashboard → Edge Functions → Secrets, add
+            <span className="mono" style={{ color: 'var(--brand)' }}> STRIPE_SECRET_KEY</span> (from Stripe → Developers → API keys) and
+            <span className="mono" style={{ color: 'var(--brand)' }}> STRIPE_WEBHOOK_SECRET</span> (Stripe → Webhooks → add endpoint
+            <span className="mono"> …/functions/v1/stripe-webhook</span>, event <span className="mono">checkout.session.completed</span>).
+            Every pay link switches to live Stripe checkout instantly — nothing else changes.
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-low)' }}>
-            <span>30 days ago</span><span>Today</span>
-          </div>
-          <div style={{ marginTop: 14, display: 'flex', gap: 14 }}>
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <div className="mono" style={{ fontSize: 14, fontWeight: 600 }}>68%</div>
-              <div style={{ fontSize: 9, color: 'var(--text-low)' }}>Card</div>
-            </div>
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <div className="mono" style={{ fontSize: 14, fontWeight: 600 }}>32%</div>
-              <div style={{ fontSize: 9, color: 'var(--text-low)' }}>ACH</div>
-            </div>
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <div className="mono" style={{ fontSize: 14, fontWeight: 600 }}>$286</div>
-              <div style={{ fontSize: 9, color: 'var(--text-low)' }}>Avg Fee</div>
-            </div>
-          </div>
-        </GlassPanel>
-      </div>
-    </div>
-  );
-}
+        )}
+      </GlassPanel>
 
-function StripeCards() {
-  const cards = [
-    { customer: 'Westfield Mall', type: 'Visa', last4: '4242', exp: '09/28', autopay: true, default: true },
-    { customer: 'Westfield Mall', type: 'ACH', last4: '6789', exp: '—', autopay: false, default: false },
-    { customer: 'Metro Bank Corp', type: 'ACH', last4: '1234', exp: '—', autopay: true, default: true },
-    { customer: 'Riverside Medical', type: 'Mastercard', last4: '5555', exp: '11/27', autopay: true, default: true },
-    { customer: 'City Hall', type: 'ACH', last4: '9876', exp: '—', autopay: true, default: true },
-    { customer: 'Harbor View Condos', type: 'Visa', last4: '1234', exp: '03/26', autopay: false, default: true },
-    { customer: 'Acme Dental Group', type: '—', last4: '—', exp: '—', autopay: false, default: false },
-  ];
-  return (
-    <GlassPanel style={{ padding: 0 }}>
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
-        <SectionHeader title="Saved Payment Methods" icon="finance" count={cards.length} />
-      </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead><tr>{['Customer','Type','Last 4','Expires','AutoPay','Default',''].map((h,i) => (
-          <th key={i} style={{ textAlign: 'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
-        ))}</tr></thead>
-        <tbody>{cards.map((c,i) => (
-          <tr key={i} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-            <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }}>{c.customer}</td>
-            <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{c.type}</td>
-            <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{c.last4 !== '—' ? `•••• ${c.last4}` : '—'}</td>
-            <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: c.exp==='03/26'?'var(--status-critical)':'var(--text-mid)' }}>{c.exp}{c.exp==='03/26'?' ⚠':''}</td>
-            <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: c.autopay?'var(--status-ok)':'var(--text-low)' }}>{c.autopay?'✓ Enrolled':'—'}</td>
-            <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11 }}>{c.default?'✓':''}</td>
-            <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
-              {c.last4 === '—' ? <button onClick={() => shieldToast('Opening secure card entry for ' + (c.customer || 'customer'), 'info')} style={{ padding: '3px 8px', background: 'var(--brand)', border: 'none', borderRadius: 4, color: '#fff', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Add Card</button> : null}
-            </td>
-          </tr>
-        ))}</tbody>
-      </table>
-    </GlassPanel>
-  );
-}
-
-function StripeSubscriptions() {
-  const subs = [
-    { customer: 'Westfield Mall', plan: 'Enterprise Monitoring', amount: 5200, interval: 'monthly', status: 'active', next: 'Jul 1', method: 'Visa •••• 4242' },
-    { customer: 'Metro Bank Corp', plan: 'Enterprise Monitoring', amount: 4800, interval: 'monthly', status: 'active', next: 'Jul 1', method: 'ACH •••• 1234' },
-    { customer: 'Riverside Medical', plan: 'Standard Monitoring', amount: 2800, interval: 'monthly', status: 'active', next: 'Jul 1', method: 'MC •••• 5555' },
-    { customer: 'City Hall', plan: 'Standard Monitoring + Fire', amount: 3200, interval: 'monthly', status: 'active', next: 'Jul 1', method: 'ACH •••• 9876' },
-    { customer: 'Harbor View Condos', plan: 'Basic Monitoring', amount: 1800, interval: 'monthly', status: 'past_due', next: 'Retry Jun 8', method: 'Visa •••• 1234' },
-  ];
-  return (
-    <div>
-      <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-        <StatCard label="ACTIVE SUBS" value={subs.filter(s=>s.status==='active').length} delay={0} />
-        <StatCard label="MRR (STRIPE)" value="$17,800" mono={false} delay={80} />
-        <StatCard label="PAST DUE" value={subs.filter(s=>s.status==='past_due').length} delay={160} />
-      </div>
       <GlassPanel style={{ padding: 0 }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <SectionHeader title="Payment links sent" icon="reports" count={links ? links.length : undefined} />
+          <button onClick={refresh} style={{ padding: '4px 12px', fontSize: 11, borderRadius: 6, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Refresh</button>
+        </div>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr>{['Customer','Plan','Amount','Interval','Status','Next Billing','Payment Method'].map((h,i) => (
+          <thead><tr>{['Invoice','Customer','Amount','Status','Reminders','Sent',''].map((h,i) => (
             <th key={i} style={{ textAlign: i===2?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
           ))}</tr></thead>
-          <tbody>{subs.map((s,i) => (
-            <tr key={i} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }}>{s.customer}</td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{s.plan}</td>
-              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${s.amount.toLocaleString()}</td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{s.interval}</td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={s.status==='active'?'online':'critical'} label={s.status==='active'?'Active':'Past Due'} /></td>
-              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: s.status==='past_due'?'var(--status-critical)':'var(--text-mid)' }}>{s.next}</td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{s.method}</td>
-            </tr>
-          ))}</tbody>
+          <tbody>
+            {links === null && <tr><td colSpan={7} style={{ padding: 20, fontSize: 12, color: 'var(--text-low)', textAlign: 'center' }}>Loading…</td></tr>}
+            {links && links.length === 0 && <tr><td colSpan={7} style={{ padding: 24, fontSize: 12, color: 'var(--text-low)', textAlign: 'center' }}>No payment links yet — send an invoice from the Invoices tab and it lands here with a live customer pay page.</td></tr>}
+            {(links || []).map(l => (
+              <tr key={l.id}>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{l.invoice_ref}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{l.customer_name || '—'}</td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{money(l.amount)}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={l.status === 'paid' ? 'online' : 'info'} label={l.status === 'paid' ? `paid · ${l.paid_via || ''}` : 'awaiting payment'} /></td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{l.reminder_count || 0}</td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{l.created_at ? new Date(l.created_at).toLocaleDateString() : '—'}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                  <button onClick={() => { const base = window.__shieldSupabaseUrl || ''; if (base) window.open(`${base}/functions/v1/invoice-pay?token=${l.token}`, '_blank'); else showToast('Backend URL unavailable'); }} style={{ background: 'none', border: 'none', padding: 0, fontSize: 11, color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open page →</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </GlassPanel>
+
+      <div style={{ fontSize: 11, color: 'var(--text-low)', lineHeight: 1.6 }}>
+        Overdue links are reminded automatically (daily check · 3-day gap · max 4 nudges). Stripe payments post back here and mark the invoice paid on their own.
+      </div>
     </div>
   );
 }
 
-function StripeDisputes() {
-  return (
-    <GlassPanel>
-      <SectionHeader title="Disputes & Chargebacks" icon="warning-tri" />
-      <div style={{ textAlign: 'center', padding: '32px 0' }}>
-        <div style={{ fontSize: 32, opacity: 0.3, marginBottom: 8 }}>✓</div>
-        <div style={{ fontSize: 14, color: 'var(--text-mid)' }}>No open disputes</div>
-        <div style={{ fontSize: 12, color: 'var(--text-low)', marginTop: 4 }}>Last dispute resolved: Mar 12, 2026 — Won ($2,400)</div>
-      </div>
-    </GlassPanel>
-  );
-}
-
-function StripePayouts() {
-  const payouts = [
-    { date: 'Jun 4', amount: 8400, status: 'paid', arrival: 'Jun 6', txns: 4 },
-    { date: 'May 28', amount: 12600, status: 'paid', arrival: 'May 30', txns: 6 },
-    { date: 'May 21', amount: 6800, status: 'paid', arrival: 'May 23', txns: 3 },
-    { date: 'May 14', amount: 15200, status: 'paid', arrival: 'May 16', txns: 8 },
-  ];
-  return (
-    <div>
-      <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-        <StatCard label="STRIPE BALANCE" value="$12,800" mono={false} delay={0} />
-        <StatCard label="NEXT PAYOUT" value="Jun 7" mono={false} delay={80} />
-        <StatCard label="PAYOUT SCHEDULE" value="T+2 days" mono={false} delay={160} />
-      </div>
-      <GlassPanel style={{ padding: 0 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr>{['Date','Amount','Status','Arrival','Transactions'].map((h,i) => (
-            <th key={i} style={{ textAlign: i===1?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
-          ))}</tr></thead>
-          <tbody>{payouts.map((p,i) => (
-            <tr key={i} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{p.date}</td>
-              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${p.amount.toLocaleString()}</td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status="paid" /></td>
-              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{p.arrival}</td>
-              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{p.txns} payments</td>
-            </tr>
-          ))}</tbody>
-        </table>
-      </GlassPanel>
-    </div>
-  );
-}
-
-function StripeEvents() {
-  const events = [
-    { time: '2:14:08 PM', type: 'payment_intent.succeeded', desc: 'City Hall — $22,100 ACH', status: 'ok' },
-    { time: '2:14:08 PM', type: 'invoice.payment_succeeded', desc: '→ Invoice INV-2854 marked paid', status: 'ok' },
-    { time: '2:14:09 PM', type: 'journal_entry.auto_posted', desc: '→ JE-1042: DR Checking / CR AR $22,100', status: 'ok' },
-    { time: '10:30:00 AM', type: 'payment_intent.succeeded', desc: 'Westfield Mall — $5,200 card', status: 'ok' },
-    { time: '10:30:01 AM', type: 'invoice.payment_succeeded', desc: '→ Invoice INV-2860 marked paid', status: 'ok' },
-    { time: '3:00:12 PM', type: 'payment_intent.payment_failed', desc: 'Harbor View — $1,800 card declined', status: 'error' },
-    { time: '3:00:12 PM', type: 'subscription.payment_failed', desc: '→ Retry scheduled Jun 8', status: 'warn' },
-    { time: '3:00:13 PM', type: 'dunning.reminder_sent', desc: '→ Smart retry email sent to customer', status: 'info' },
-  ];
-  return (
-    <GlassPanel style={{ padding: 0 }}>
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
-        <SectionHeader title="Webhook Event Log" icon="◉" />
-        <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: -8 }}>Stripe → ShieldTech: payment received → invoice updated → GL auto-posted</div>
-      </div>
-      {events.map((e, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', borderBottom: '1px solid rgba(63,169,245,0.03)', background: e.status==='error'?'rgba(244,63,94,0.02)':e.status==='warn'?'rgba(251,191,36,0.02)':'transparent' }}>
-          <StatusDot status={e.status==='ok'?'online':e.status==='error'?'critical':e.status==='warn'?'warning':'info'} size={5} />
-          <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)', width: 72 }}>{e.time}</span>
-          <span className="mono" style={{ fontSize: 10, color: 'var(--brand)', width: 200 }}>{e.type}</span>
-          <span style={{ flex: 1, fontSize: 12, color: 'var(--text-mid)' }}>{e.desc}</span>
-        </div>
-      ))}
-    </GlassPanel>
-  );
-}
-
-function StripeSettings() {
-  return (
-    <div style={{ maxWidth: 600 }}>
-      <SectionHeader title="Stripe Settings" icon="⊛" />
-      <GlassPanel style={{ marginBottom: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 10, background: 'rgba(99,91,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 20 }}>⊛</span>
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 500 }}>Stripe Connected</div>
-            <div style={{ fontSize: 11, color: 'var(--text-low)' }}>acct_shieldtech_live · Live mode</div>
-          </div>
-          <StatusBadge status="online" label="Connected" />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[
-            { label: 'Statement Descriptor', value: 'SHIELDTECH SEC' },
-            { label: 'Accepted Methods', value: 'Visa, Mastercard, Amex, ACH' },
-            { label: 'Payout Schedule', value: 'T+2 business days' },
-            { label: 'Surcharge / Convenience Fee', value: 'Disabled (absorbed)' },
-            { label: 'Test Mode', value: 'Off' },
-          ].map((s, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
-              <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{s.label}</span>
-              <span style={{ fontSize: 12, color: 'var(--text-high)', fontWeight: 500 }}>{s.value}</span>
-            </div>
-          ))}
-        </div>
-      </GlassPanel>
-      <GlassPanel style={{ borderLeft: '3px solid var(--status-warn)' }}>
-        <SectionHeader title="Tax Configuration" icon="receipt" />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {[
-            { jurisdiction: 'Pennsylvania', rate: '6.00%', active: true },
-            { jurisdiction: 'New Jersey', rate: '6.625%', active: true },
-            { jurisdiction: 'New York State', rate: '4.00%', active: true },
-            { jurisdiction: 'NYC', rate: '4.50%', active: true },
-          ].map((t, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '5px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
-              <span style={{ flex: 1, fontSize: 12 }}>{t.jurisdiction}</span>
-              <span className="mono" style={{ fontSize: 12, fontWeight: 500, marginRight: 12 }}>{t.rate}</span>
-              <StatusBadge status={t.active?'online':'offline'} label={t.active?'Active':'Off'} />
-            </div>
-          ))}
-        </div>
-      </GlassPanel>
-    </div>
-  );
-}
 
 /* ── AI Financial Co-pilot ── */
 function FinanceCopilot() {
@@ -400,4 +191,4 @@ function FinanceCopilot() {
   );
 }
 
-Object.assign(window, { FinanceStripe, StripeDashboard, StripeCards, StripeSubscriptions, StripeDisputes, StripePayouts, StripeEvents, StripeSettings, FinanceCopilot });
+Object.assign(window, { FinanceStripe, FinanceCopilot });

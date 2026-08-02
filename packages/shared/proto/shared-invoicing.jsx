@@ -32,13 +32,17 @@ function queueEmail({ to, customer, subject, body, invoice, payLink, kind }) {
 /* Merge an invoice into the branded email template ({customer}/{amount}/{due_date}/{link}) */
 function buildInvoiceEmail(inv, kindLabel) {
   const b = brandStore.get();
-  const link = `pay.shieldtech.com/${inv.num.toLowerCase()}`;
+  /* Real pay link only — the live one from the invoice-pay backend if this
+     invoice has one. No fabricated domains. */
+  const link = inv.payLink || (inv._raw && inv._raw.payLink) || null;
   const kind = kindLabel || 'invoice';
   return {
-    to: `billing@${(inv.customer || 'customer').toLowerCase().replace(/[^a-z0-9]+/g, '')}.com`,
+    to: (inv._raw && inv._raw.customer_email) || '',
     customer: inv.customer,
     subject: `Your ${kind} from ${b.company} — $${inv.amount.toLocaleString()}`,
-    body: `Hi ${inv.customer},\n\nPlease find your ${kind} ${inv.num} attached. Total: $${inv.amount.toLocaleString()}, due ${inv.due}.\n\nView and pay online: ${link}\n\nThank you,\n${b.company}\n${b.phone} · ${b.email}\n${b.license}`,
+    body: `Hi ${inv.customer},\n\nPlease find your ${kind} ${inv.num} attached. Total: $${inv.amount.toLocaleString()}, due ${inv.due}.` +
+      (link ? `\n\nView and pay online: ${link}` : '') +
+      `\n\nThank you,\n${b.company}\n${b.phone} · ${b.email}\n${b.license}`,
     invoice: inv.num,
     payLink: link,
     kind,

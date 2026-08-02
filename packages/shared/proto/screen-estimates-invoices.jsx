@@ -247,6 +247,33 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
   const [projects] = useShieldStore(projectStore);
   const updateInv = (num, patch) => invoiceStore.set(prev => (prev || []).map(i => (i.num || i.doc_number) === num ? { ...i, ...(typeof patch === 'function' ? patch(i) : patch) } : i));
 
+  /* Apply completed payments (Stripe webhook / manual record) on mount. */
+  React.useEffect(() => { if (window.__shieldPay) window.__shieldPay.applyPayments(); }, []);
+
+  /* Send the customer a REAL pay link (public page + Stripe checkout when
+     connected) via the invoice-pay backend; falls back to the outbox queue
+     when the backend is unreachable. */
+  const sendPayLink = async (inv, { finalize } = {}) => {
+    const email = window.prompt(`Email invoice ${inv.num} ($${inv.amount.toLocaleString()}) to:`, (inv._raw && inv._raw.customer_email) || '');
+    if (email === null) return;
+    if (finalize) updateInv(inv.num, { status: 'pending', sentAt: Date.now() });
+    if (window.__shieldPay && email.includes('@')) {
+      const r = await window.__shieldPay.createLink(inv, email.trim());
+      if (r && r.ok) {
+        updateInv(inv.num, { payLink: r.link, payLinkSentAt: Date.now() });
+        showToast(r.emailed
+          ? `${inv.num} emailed to ${email.trim()} with a live pay link${r.stripe ? ' (Stripe checkout attached)' : ''}`
+          : `Pay link created${r.stripe ? ' with Stripe checkout' : ''} — email not sent (${r.emailError || 'no address'})`);
+        return;
+      }
+      showToast(`Pay-link backend unavailable (${(r && r.error) || 'unknown'}) — queued branded email instead`);
+    }
+    const mail = buildInvoiceEmail(inv);
+    if (email.includes('@')) mail.to = email.trim();
+    updateInv(inv.num, { payLink: mail.payLink, payLinkSentAt: Date.now() });
+    queueEmail(mail);
+  };
+
   const filtered = invFilter === 'All' ? invoices : invoices.filter(i => i.status === invFilter.toLowerCase());
 
   return (
@@ -364,23 +391,23 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
             {/* Action buttons */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 14 }}>
               {filtered[selectedInv].status === 'draft' && (
-                <button onClick={() => { const inv = filtered[selectedInv]; const mail = buildInvoiceEmail({ ...inv, due: 'Jul 21, 2026' }); updateInv(inv.num, { status: 'pending', due: 'Jul 21, 2026', sentAt: Date.now(), payLink: mail.payLink }); queueEmail(mail); showToast(`${inv.num} finalized — branded email with pay link queued in Outbox`); }} style={{ width: '100%', padding: '9px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Finalize & Send</button>
+                <button onClick={() => sendPayLink(filtered[selectedInv], { finalize: true })} style={{ width: '100%', padding: '9px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Finalize & Send</button>
               )}
               {filtered[selectedInv].status === 'pending' && <>
-                <button onClick={() => { const inv = filtered[selectedInv]; updateInv(inv.num, { payLink: `pay.shieldtech.com/${inv.num.toLowerCase()}`, payLinkAt: Date.now() }); showToast(`Stripe payment link created — pay.shieldtech.com/${inv.num.toLowerCase()}`); }} style={{ width: '100%', padding: '9px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                  <span>⊛</span> {filtered[selectedInv].payLink ? 'Payment Link Active ✓' : 'Create Stripe Payment Link'}
+                <button onClick={() => sendPayLink(filtered[selectedInv])} style={{ width: '100%', padding: '9px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <span>⊛</span> {filtered[selectedInv].payLink ? 'Payment Link Active ✓ — resend' : 'Create & Email Payment Link'}
                 </button>
-                <button onClick={() => { const inv = filtered[selectedInv]; updateInv(inv.num, { status: 'paid', days: 0, paidAt: Date.now() }); showToast(`Payment recorded — ${inv.num} marked paid ($${inv.amount.toLocaleString()})`); }} style={{ width: '100%', padding: '9px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Record Payment</button>
+                <button onClick={() => { const inv = filtered[selectedInv]; updateInv(inv.num, { status: 'paid', balance: 0, days: 0, paidAt: Date.now() }); if (window.__shieldPay) window.__shieldPay.recordPaid(inv.num); showToast(`Payment recorded — ${inv.num} marked paid ($${inv.amount.toLocaleString()})`); }} style={{ width: '100%', padding: '9px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Record Payment</button>
               </>}
               {filtered[selectedInv].status === 'overdue' && <>
                 <button onClick={() => { const inv = filtered[selectedInv]; approvalStore.set(prev => [{ id: prev.reduce((m, a) => Math.max(m, a.id), 0) + 1, kind: 'AR REMINDER', title: `${inv.customer} — ${inv.num} reminder (${inv.days}d overdue)`, amt: `$${inv.amount.toLocaleString()}`, sub: 'AI-drafted · review before sending', status: 'pending' }, ...prev]); showToast(`Reminder drafted for ${inv.num} → Approvals queue`); }} style={{ width: '100%', padding: '9px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                   <span>⟡</span> AI Draft Reminder
                 </button>
-                <button onClick={() => { const inv = filtered[selectedInv]; const mail = buildInvoiceEmail(inv); updateInv(inv.num, { payLink: mail.payLink, payLinkSentAt: Date.now() }); queueEmail(mail); showToast(`Payment-link email for ${inv.num} queued in Outbox`); }} style={{ width: '100%', padding: '9px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{filtered[selectedInv].payLinkSentAt ? 'Payment Link Sent ✓' : 'Send Payment Link'}</button>
+                <button onClick={() => sendPayLink(filtered[selectedInv])} style={{ width: '100%', padding: '9px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{filtered[selectedInv].payLinkSentAt ? 'Payment Link Sent ✓ — resend' : 'Send Payment Link'}</button>
               </>}
               <button onClick={() => { const inv = filtered[selectedInv]; payFocusStore.set(inv.num); navTo('pay'); }} style={{ width: '100%', padding: '8px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View customer pay page →</button>
               <div style={{ display: 'flex', gap: 6 }}>
-                <button onClick={() => { const inv = filtered[selectedInv]; if (window.__shieldPdf && inv) window.__shieldPdf.exportDoc({ kind: 'invoice', number: inv.num, date: inv.due, customer: inv.customer, meta: [{ k: 'Terms', v: inv.terms || '' }, { k: 'PO', v: inv.po || '' }], lineItems: inv.lines || [], total: inv.amount, payLink: inv.num ? `pay.shieldtech.com/${String(inv.num).toLowerCase()}` : null }); else showToast('No invoice selected'); }} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Download PDF</button>
+                <button onClick={() => { const inv = filtered[selectedInv]; if (window.__shieldPdf && inv) window.__shieldPdf.exportDoc({ kind: 'invoice', number: inv.num, date: inv.due, customer: inv.customer, meta: [{ k: 'Terms', v: inv.terms || '' }, { k: 'PO', v: inv.po || '' }], lineItems: inv.lines || [], total: inv.amount, payLink: (inv._raw && inv._raw.payLink) || null }); else showToast('No invoice selected'); }} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Download PDF</button>
                 <button onClick={() => { const inv = filtered[selectedInv]; const num = nextInvoiceNum(); invoiceStore.set(prev => [{ ...inv, num, status: 'draft', due: '—', days: 0, payLink: null, payLinkSentAt: null, paidAt: null }, ...prev]); setSelectedInv(null); showToast(`Duplicated as ${num} (draft)`); }} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Duplicate</button>
                 {filtered[selectedInv].status !== 'paid' && (
                   <button onClick={() => { const inv = filtered[selectedInv]; updateInv(inv.num, { status: 'void', days: 0 }); setSelectedInv(null); showToast(`${inv.num} voided`); }} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 5, color: 'var(--status-critical)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Void</button>

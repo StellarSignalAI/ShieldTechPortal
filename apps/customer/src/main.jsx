@@ -209,7 +209,12 @@ function CustomerReportsScreen() {
 function CustomerPhotosScreen() {
   const [photos] = useShieldStore(photoStore);
   const [lightbox, setLightbox] = useState(null);
-  const mine = photos;
+  /* SECURITY: only THIS customer's photos. Without a known company on the
+     signed-in account we show none — never every customer's job sites. */
+  const company = ((window.__shieldUser || {}).company || '').trim().toLowerCase();
+  const mine = company
+    ? (photos || []).filter(p => (p.customer || '').trim().toLowerCase() === company)
+    : [];
   const pairs = completePairs(mine);
   const visits = [...new Set(mine.map(p => p.wo))].length;
 
