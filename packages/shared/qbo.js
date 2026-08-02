@@ -109,8 +109,32 @@ export async function hasData() {
   return !!(c2 && c2 > 0);
 }
 
+/* Connection light — {connected, state} without a 503. */
+export async function qboStatus() {
+  if (!supabaseConfigured) return { ok: false, connected: false };
+  try {
+    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/qbo-sync`, {
+      method: 'POST', headers: await fnHeaders(), body: JSON.stringify({ action: 'status' }),
+    });
+    return await res.json();
+  } catch (e) { return { ok: false, connected: false, error: String(e) }; }
+}
+
+/* Hybrid push: portal doc row → real QBO Invoice/Estimate (server builds the
+   payload, finds/creates the customer). No-op error when QBO isn't connected. */
+export async function pushDoc(kind, doc) {
+  if (!supabaseConfigured) return notConfigured;
+  try {
+    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/qbo-sync`, {
+      method: 'POST', headers: await fnHeaders(),
+      body: JSON.stringify({ direction: 'push-doc', doc: { ...doc, kind } }),
+    });
+    return await res.json();
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+
 window.__shieldQBO = {
   customers, items, invoices, estimates, employees, payslips,
   vendors, bills, purchases, payments, accounts,
-  report, syncState, syncNow, hasData,
+  report, syncState, syncNow, hasData, qboStatus, pushDoc,
 };

@@ -32,7 +32,17 @@ function mUpdateInv(inv, patch) {
 async function mSendPayLink(inv, { finalize } = {}) {
   const email = window.prompt(`Email invoice ${inv.num} ($${inv.amount.toLocaleString()}) to:`, (inv._raw && inv._raw.customer_email) || '');
   if (email === null) return;
-  if (finalize) mUpdateInv(inv, { status: 'pending', sentAt: Date.now() });
+  if (finalize) {
+    mUpdateInv(inv, { status: 'pending', sentAt: Date.now() });
+    /* Hybrid QBO push (no-op until connected). */
+    try {
+      if (window.__shieldQBO && window.__shieldQBO.pushDoc && inv.source !== 'quickbooks') {
+        window.__shieldQBO.pushDoc('invoice', inv._raw || inv).then(r => {
+          if (r && r.ok) showToast(`${inv.num} recorded in QuickBooks`, 'ok');
+        }).catch(() => {});
+      }
+    } catch { /* connect-later */ }
+  }
   if (window.__shieldPay && email.includes('@')) {
     const r = await window.__shieldPay.createLink(inv, email.trim());
     if (r && r.ok) {

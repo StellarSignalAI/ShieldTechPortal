@@ -376,6 +376,15 @@ function acceptEstimateToProject(est, via) {
   const v = estWorkflowView(est);
   estimateStore.set(list => (list || []).map(e =>
     (e.doc_number || e.num) === v.ref ? { ...e, status: 'accepted' } : e));
+  /* Hybrid QBO: an accepted portal proposal becomes the permanent QuickBooks
+     record (no-op until QuickBooks is connected; QBO-mirror rows skip this). */
+  try {
+    if (window.__shieldQBO && window.__shieldQBO.pushDoc && !v.qboId) {
+      window.__shieldQBO.pushDoc('estimate', est).then(r => {
+        if (r && r.ok) showToast(`${v.ref} recorded in QuickBooks`, 'ok');
+      }).catch(() => {});
+    }
+  } catch { /* connect-later */ }
   const existing = projectForEstimate(v.ref);
   if (existing) return existing;
   const scope = (v.lines || []).map(li => `${li.qty > 1 ? li.qty + '× ' : ''}${li.desc}`).filter(Boolean).join('; ');
