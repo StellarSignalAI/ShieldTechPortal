@@ -523,6 +523,7 @@ function buildDoc(kind, form) {
     total, balance: isEst ? undefined : (form.balance != null ? Number(form.balance) : total),
     status: form.status || (isEst ? 'pending' : 'open'),
     lines, project_id: form.project_id || null, source: 'portal',
+    estimate_ref: form.estimate_ref || null,
     /* legacy shape (older list/detail screens) */
     num, customer, amount: total,
     due: dueIso ? fmtDocDate(dueIso) : (form.due || form.due_date || '—'),
@@ -531,6 +532,16 @@ function buildDoc(kind, form) {
     customer_email: form.customer_email || null,
   };
 }
+/* Free-text search over document/list rows: every whitespace-separated term
+   must appear in at least one of the given fields (case-insensitive). Empty
+   query matches everything, so lists can filter unconditionally. */
+function docSearchMatch(query, ...fields) {
+  const terms = String(query || '').toLowerCase().split(/\s+/).filter(Boolean);
+  if (!terms.length) return true;
+  const hay = fields.map(f => (f == null ? '' : String(f))).join(' ').toLowerCase();
+  return terms.every(t => hay.includes(t));
+}
+
 function addInvoice(form) { const d = buildDoc('invoice', form); invoiceStore.set(l => [d, ...l]); return d; }
 function addEstimate(form) { const d = buildDoc('estimate', form); estimateStore.set(l => [d, ...l]); return d; }
 
@@ -801,7 +812,7 @@ Object.assign(window, {
   customerDataStore, custRecords, setCustRecords,
   projectStore, invoiceStore, estimateStore,
   buildProject, addProject, buildDoc, addInvoice, addEstimate, saveDocEdit,
-  nextDocNumber, bidToPipeline, nextProposalId, proposalToDoc,
+  nextDocNumber, bidToPipeline, nextProposalId, proposalToDoc, docSearchMatch,
   localInvoiceRows, localEstimateRows,
   mapInvoiceRow, mapEstimateRow, useMergedInvoices, useMergedEstimates, DocsEmptyRow,
   updateProject, estWorkflowView, projectForEstimate, acceptEstimateToProject,

@@ -265,8 +265,10 @@ function MProjects({ onNav }) {
     progress: p.status === 'complete' ? 100 : p.status === 'review' ? 90 : p.status === 'in-progress' ? 40 : 5,
     pm: p.contact || '—', start: '', end: '', techs: [], milestones: [], _rec: p,
   });
+  const [query, setQuery] = React.useState('');
   const ALL = (storeP && storeP.length) ? storeP.map(mapP) : PROJECTS;
-  const list = filter === 'All' ? ALL : ALL.filter(p => p.stage === fmap[filter]);
+  const byStage = filter === 'All' ? ALL : ALL.filter(p => p.stage === fmap[filter]);
+  const list = byStage.filter(p => docSearchMatch(query, p.id, p.name, p.customer, p.pm, p.value, p.stage));
   const active = ALL.filter(p => p.stage !== 'complete').length;
   const value = ALL.filter(p => p.stage !== 'complete').reduce((a, p) => a + p.value, 0);
 
@@ -274,6 +276,8 @@ function MProjects({ onNav }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <OpsKpis items={[['ACTIVE', active, 'var(--brand)'], ['PIPELINE', `$${(value / 1000).toFixed(0)}K`, 'var(--text-high)'], ['COMPLETE', ALL.filter(p => p.stage === 'complete').length, 'var(--status-ok)']]} />
       <button onClick={() => setCreateOpen(true)} style={{ width: '100%', padding: '12px', borderRadius: 11, background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', color: '#fff', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer' }}>+ New Project</button>
+      <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search projects — name, customer, number…"
+        style={{ width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       <MSegment options={['All', 'Planning', 'Active', 'Review', 'Done']} value={filter} onChange={setFilter} />
       {list.map(p => (
         <div key={p.id} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${PRJ_STAGE[p.stage]}` }}>

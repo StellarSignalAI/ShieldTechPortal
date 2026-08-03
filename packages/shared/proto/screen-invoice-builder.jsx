@@ -13,6 +13,7 @@ function NIFinanceEstimates({ setModal, showToast }) {
   const merged = useMergedEstimates();
   const [projects] = useShieldStore(projectStore);
   const [acceptances, setAcceptances] = React.useState([]);
+  const [query, setQuery] = React.useState('');
 
   const refreshAcceptances = React.useCallback(() => {
     const api = window.__shieldAcceptance;
@@ -38,7 +39,7 @@ function NIFinanceEstimates({ setModal, showToast }) {
       project: proj,
       awaiting: !accepted && acc && acc.status === 'pending',
     };
-  }), [merged, projects, acceptances]);
+  }).filter(r => docSearchMatch(query, r.ref, r.customer, r.total, r.display, r.project && r.project.number)), [merged, projects, acceptances, query]);
 
   const doAccept = (row) => {
     const proj = acceptEstimateToProject(row.raw, 'manual');
@@ -68,6 +69,9 @@ function NIFinanceEstimates({ setModal, showToast }) {
     <div style={{ maxWidth: 1200 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
         <SectionHeader title="Proposals" icon="◇" count={rows.length} />
+        <div style={{ flex: 1 }} />
+        <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search proposals…"
+          style={{ width: 240, marginRight: 10, padding: '6px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={() => setModal({ type: 'new-estimate' })} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Proposal</button>
       </div>
       <GlassPanel style={{ padding: 0 }}>
@@ -629,6 +633,10 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
   const [terms, setTerms] = React.useState('net-30');
   const [dueDate, setDueDate] = React.useState('');
   const [quoteRef, setQuoteRef] = React.useState('');
+  const [estQuery, setEstQuery] = React.useState('');
+  const [estPickerOpen, setEstPickerOpen] = React.useState(false);
+  /* Every proposal (portal + QuickBooks) is searchable for attachment. */
+  const estRows = useMergedEstimates();
   const [projectName, setProjectName] = React.useState(modal.projectName || '');
   const [poNumber, setPoNumber] = React.useState('');
   const [invoiceNum, setInvoiceNum] = React.useState(() => nextDocNumber(isEstimate ? 'estimate' : 'invoice'));
@@ -690,6 +698,7 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
       project_id: (modal && modal.projectId) || null,
       customer_qbo_id: (modal && modal.customerQboId) || null,
       customer_email: customerEmail || null,
+      estimate_ref: quoteRef || null,
       terms: terms === 'custom' ? 'Custom' : terms.replace(/net-(\d+)/, 'Net $1').replace('due-receipt', 'Due on receipt').replace('due-immediately', 'Due immediately'),
       due: dueDate || null,
     });
@@ -750,6 +759,27 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
     }
   };
 
+  /* Attach a proposal to this invoice: record the ref, and pull customer,
+     email, and line items across when the form is still blank. */
+  const attachEstimate = (est) => {
+    setQuoteRef(est.num);
+    setEstPickerOpen(false);
+    setEstQuery('');
+    const raw = est._raw || {};
+    if (!customer && est.customer) setCustomer(est.customer);
+    if (!customerEmail && raw.customer_email) { setCustomerEmail(raw.customer_email); setSendEmails([raw.customer_email]); }
+    const estLines = (raw.lines && raw.lines.length ? raw.lines : est.lines || [])
+      .map(l => ({ desc: l.desc || '', qty: Number(l.qty) || 1, rate: Number(l.rate) || 0, type: 'product', fromInventory: false }))
+      .filter(l => l.desc || l.rate);
+    const formBlank = lines.length === 1 && !lines[0].desc && !lines[0].rate;
+    if (estLines.length && (formBlank || window.confirm(`Replace the current line items with the ${estLines.length} line(s) from ${est.num}?`))) {
+      setLines(estLines);
+      showToast(`${est.num} attached — ${estLines.length} line item${estLines.length > 1 ? 's' : ''} imported`);
+    } else {
+      showToast(`${est.num} attached`);
+    }
+  };
+
   const selectInvItem = (lineIdx, item) => {
     updateLine(lineIdx, 'desc', item.name);
     updateLine(lineIdx, 'rate', item.rate);
@@ -792,13 +822,48 @@ function InvoiceBuilderModal({ modal, setModal, showToast }) {
                 <div style={labelStyle}>Customer</div>
                 <select value={customer} onChange={e => { if (e.target.value === '__new__') { openNewCustomer(rec => handleCustomerSelect(rec.name)); return; } handleCustomerSelect(e.target.value); }} style={selectStyle}>
                   <option value="">Select customer...</option>
-                  {[...new Set([...customers.map(c => c.name), ...shieldCustomerNames()])].map(n => <option key={n} value={n}>{n}</option>)}
+                  {[...new Set([...(customer ? [customer] : []), ...customers.map(c => c.name), ...shieldCustomerNames()])].map(n => <option key={n} value={n}>{n}</option>)}
                   <option value="__new__">＋ New customer…</option>
                 </select>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={labelStyle}>Quote / Ref #</div>
-                <input value={quoteRef} onChange={e => setQuoteRef(e.target.value)} placeholder="QT-1001 or ref" style={inputStyle} />
+              <div style={{ flex: 1, position: 'relative' }}>
+                <div style={labelStyle}>{isEstimate ? 'Ref #' : 'Attach Proposal'}</div>
+                {isEstimate ? (
+                  <input value={quoteRef} onChange={e => setQuoteRef(e.target.value)} placeholder="QT-1001 or ref" style={inputStyle} />
+                ) : quoteRef ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6 }}>
+                    <span className="mono" style={{ flex: 1, fontSize: 12, color: 'var(--brand)' }}>◇ {quoteRef}</span>
+                    <button onClick={() => { setQuoteRef(''); setEstQuery(''); }} title="Detach" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 12, cursor: 'pointer' }}>✕</button>
+                  </div>
+                ) : (
+                  <input value={estQuery} onChange={e => { setEstQuery(e.target.value); setEstPickerOpen(true); }}
+                    onFocus={() => setEstPickerOpen(true)} onBlur={() => setTimeout(() => setEstPickerOpen(false), 150)}
+                    placeholder="Search proposals…" style={inputStyle} />
+                )}
+                {estPickerOpen && !quoteRef && !isEstimate && (
+                  <div className="glass" style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, maxHeight: 240, overflow: 'auto', borderRadius: 8, border: '1px solid var(--border-strong)', zIndex: 40, padding: 4 }}>
+                    {estRows.filter(e => docSearchMatch(estQuery, e.num, e.customer, e.amount, e.status)).slice(0, 8).map(e => (
+                      <div key={e.num} onMouseDown={ev => { ev.preventDefault(); attachEstimate(e); }}
+                        style={{ padding: '7px 9px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
+                        onMouseEnter={ev => ev.currentTarget.style.background = 'rgba(63,169,245,0.08)'}
+                        onMouseLeave={ev => ev.currentTarget.style.background = 'transparent'}>
+                        <span className="mono" style={{ fontSize: 11, color: 'var(--brand)' }}>{e.num}</span>
+                        <span style={{ flex: 1, fontSize: 11, color: 'var(--text-mid)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.customer}</span>
+                        <span className="mono" style={{ fontSize: 11, color: 'var(--text-high)' }}>${e.amount.toLocaleString()}</span>
+                        <span style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>{e.status}</span>
+                      </div>
+                    ))}
+                    {estRows.filter(e => docSearchMatch(estQuery, e.num, e.customer, e.amount, e.status)).length === 0 && (
+                      <div style={{ padding: '8px 9px', fontSize: 11, color: 'var(--text-low)' }}>No proposals match “{estQuery}”</div>
+                    )}
+                    {estQuery.trim() && (
+                      <div onMouseDown={ev => { ev.preventDefault(); setQuoteRef(estQuery.trim()); setEstPickerOpen(false); }}
+                        style={{ padding: '7px 9px', borderRadius: 6, cursor: 'pointer', fontSize: 11, color: 'var(--text-low)', borderTop: '1px solid var(--border-subtle)' }}>
+                        Use “{estQuery.trim()}” as a free-text reference
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
