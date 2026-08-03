@@ -9,8 +9,46 @@ const dayGreeting = () => { const h = new Date().getHours(); return h < 12 ? 'Mo
 
 function MHomeView({ onNav }) {
   const [jobs] = useShieldStore(jobStore);
-  const todayIdx = ((new Date().getDay() + 6) % 7) + 1;   // Mon=1 … Sun=7, real today
-  const todayJobs = jobs.filter(j => j.day <= todayIdx && todayIdx <= (j.endDay || j.day)).sort((a, b) => a.start - b.start);
+  const [tickets] = useShieldStore(ticketStore);
+  const [fleet] = useShieldStore(fleetStore);
+  const [proposals] = useShieldStore(proposalStore);
+  const roster = useTechs();
+  const invoices = useMergedInvoices();
+  const mExp = createShieldStore('mexpenses');
+  const [expenses] = useShieldStore(mExp);
+  const tIso = todayISO();
+  const todayJobs = jobs.filter(j => jobOnISO(j, tIso)).sort((a, b) => a.start - b.start);
+
+  /* Live numbers from the same stores every other screen uses. */
+  const openAR = invoices.filter(i => i.status !== 'paid' && i.status !== 'draft').reduce((s, i) => s + (i.amount || 0), 0);
+  const overdueInv = invoices.filter(i => i.status === 'overdue');
+  const overdue = overdueInv.reduce((s, i) => s + (i.amount || 0), 0);
+  const fleetTechs = window.deriveDispatchTechs ? deriveDispatchTechs((fleet || {}).techs) : [];
+  const onSite = fleetTechs.filter(t => t.status === 'on-site').length;
+  const openTickets = (tickets || []).filter(t => !/closed|resolved|done/i.test(t.status || '')).length;
+  const fmtK = (n) => n >= 100000 ? `$${(n / 1000).toFixed(0)}K` : n >= 1000 ? `$${(n / 1000).toFixed(1)}K` : `$${Math.round(n).toLocaleString()}`;
+
+  /* Needs attention — only real items, never filler. */
+  const pendingExp = (expenses || []).filter(e => (e.status || 'pending') === 'pending');
+  const awaitingProps = (proposals || []).filter(p => p.status === 'sent');
+  const unassignedToday = todayJobs.filter(j => !j.techs || j.techs.length === 0);
+  const attention = [
+    overdueInv.length && { icon: 'expenses', color: 'var(--status-critical)', title: `${overdueInv.length} overdue invoice${overdueInv.length > 1 ? 's' : ''} — ${fmtK(overdue)}`, sub: 'Send a reminder or pay link', nav: 'invoices' },
+    unassignedToday.length && { icon: 'warning-tri', color: 'var(--status-warn)', title: `${unassignedToday.length} job${unassignedToday.length > 1 ? 's' : ''} today with no technician`, sub: 'Assign a crew in the schedule', nav: 'calendar' },
+    pendingExp.length && { icon: 'expenses', color: 'var(--status-warn)', title: `${pendingExp.length} expense${pendingExp.length > 1 ? 's' : ''} awaiting approval`, sub: fmtK(pendingExp.reduce((s, e) => s + (Number(e.amount) || 0), 0)) + ' total', nav: 'expenses' },
+    awaitingProps.length && { icon: 'proposals', color: 'var(--brand)', title: `${awaitingProps.length} proposal${awaitingProps.length > 1 ? 's' : ''} awaiting customer`, sub: awaitingProps.map(p => p.customer).slice(0, 2).join(', '), nav: 'proposals' },
+  ].filter(Boolean);
+
+  /* Recent activity — real timestamps recorded by the money pipeline. */
+  const activity = [
+    ...invoices.filter(i => i._raw && i._raw.payLinkSentAt).map(i => ({ ts: i._raw.payLinkSentAt, text: `Pay link sent — ${i.num} · ${i.customer}`, amt: `$${i.amount.toLocaleString()}` })),
+    ...invoices.filter(i => i._raw && i._raw.sentAt && !(i._raw.payLinkSentAt)).map(i => ({ ts: i._raw.sentAt, text: `Invoice ${i.num} sent — ${i.customer}`, amt: '' })),
+    ...invoices.filter(i => i.status === 'paid' && i._raw && i._raw.paidAt).map(i => ({ ts: i._raw.paidAt, text: `Payment received — ${i.customer}`, amt: `$${i.amount.toLocaleString()}` })),
+    ...(proposals || []).filter(p => p.sentAt).map(p => ({ ts: p.sentAt, text: `Proposal ${p.id} sent — ${p.customer}`, amt: '' })),
+  ].sort((a, b) => b.ts - a.ts).slice(0, 5);
+  const fmtWhen = (ts) => { const d = new Date(ts); return isoOfDate(d) === tIso ? d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
+  const techColor = (id) => ((roster.find(t => t.id === id) || {}).color) || '#94A3B8';
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div>
@@ -18,10 +56,10 @@ function MHomeView({ onNav }) {
         <div className="display" style={{ fontSize: 21, fontWeight: 300, color: 'var(--text-high)' }}>{dayGreeting()}, {firstName()}</div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
-        <MStat label="CASH POSITION" value="$482.6K" sub="↑ +$38K this week" accent="var(--status-ok)" />
-        <MStat label="REVENUE (MTD)" value="$284.6K" sub="↑ +8.2% vs prior" delay={60} />
-        <MStat label="TECHS ON SITE" value="4 / 5" sub="Diana unassigned" delay={120} />
-        <MStat label="OPEN TICKETS" value="13" sub="↓ 3 since Monday" delay={180} />
+        <MStat label="OPEN A/R" value={fmtK(openAR)} sub={`${invoices.filter(i => i.status !== 'paid' && i.status !== 'draft').length} open invoices`} accent="var(--status-ok)" />
+        <MStat label="OVERDUE" value={fmtK(overdue)} sub={overdueInv.length ? `${overdueInv.length} invoice${overdueInv.length > 1 ? 's' : ''} late` : 'nothing late ✓'} accent={overdue > 0 ? 'var(--status-critical)' : 'var(--status-ok)'} delay={60} />
+        <MStat label="TECHS ON SITE" value={fleetTechs.length ? `${onSite} / ${fleetTechs.length}` : '—'} sub={fleetTechs.length ? `${fleetTechs.filter(t => t.status === 'driving').length} driving` : 'no one clocked in yet'} delay={120} />
+        <MStat label="OPEN TICKETS" value={String(openTickets)} sub={`${todayJobs.length} job${todayJobs.length === 1 ? '' : 's'} today`} delay={180} />
       </div>
       <MSection title="Quick actions">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
@@ -40,22 +78,31 @@ function MHomeView({ onNav }) {
         <span style={{ color: 'var(--text-low)', fontSize: 14 }}>›</span>
       </button>
       <MSection title="Today's jobs" action="Schedule" onAction={() => onNav('calendar')}>
+        {todayJobs.length === 0 && (
+          <div className="glass" style={{ padding: '14px', borderRadius: 12, fontSize: 12, color: 'var(--text-low)' }}>Nothing on the schedule today — tap Schedule to book a job.</div>
+        )}
         {todayJobs.slice(0, 4).map(j => (
           <MRow key={j.id} title={j.title} sub={`${Math.floor(j.start)}:${j.start % 1 ? '30' : '00'} · ${(j.techs || []).join(', ') || '◌ unassigned'}`}
-            right={j.value ? `$${(j.value / 1000).toFixed(1)}k` : ''} accent={MN_TECH[(j.techs || [])[0]] || '#94A3B8'} onClick={() => onNav('calendar')} />
+            right={j.value ? `$${(j.value / 1000).toFixed(1)}k` : ''} accent={techColor((j.techs || [])[0])} onClick={() => onNav('calendar')} />
         ))}
       </MSection>
       <MSection title="Needs your attention">
-        <MRow icon="warning-tri" iconColor="var(--status-critical)" title="Acme Dental — NVR offline 23m" sub="Recorder unreachable · Mike en route" onClick={() => onNav('incidents')} />
-        <MRow icon="expenses" iconColor="var(--status-warn)" title="3 expenses awaiting approval" sub="$842 total · oldest 2 days" onClick={() => onNav('expenses')} />
-        <MRow icon="contracts" iconColor="var(--brand)" title="City Hall contract renews in 21 days" sub="$48K/yr · renewal draft ready" onClick={() => onNav('contracts')} />
+        {attention.length === 0 && (
+          <div className="glass" style={{ padding: '14px', borderRadius: 12, fontSize: 12, color: 'var(--status-ok)' }}>✓ All clear — no overdue invoices, unassigned jobs, or waiting approvals.</div>
+        )}
+        {attention.map((a, i) => (
+          <MRow key={i} icon={a.icon} iconColor={a.color} title={a.title} sub={a.sub} onClick={() => onNav(a.nav)} />
+        ))}
       </MSection>
       <MSection title="Recent activity">
-        {[['Payment received — City Hall', '$22,100', '2:14 PM'], ['Invoice INV-2865 sent — Marina Dental', '', '1:50 PM'], ['Mike checked in at Metro Bank', '', '12:30 PM'], ['Proposal viewed by Pinnacle Financial', '', '11:00 AM']].map(([t, amt, time]) => (
-          <div key={t} style={{ display: 'flex', gap: 10, padding: '7px 2px', borderBottom: '1px solid rgba(63,169,245,0.05)', alignItems: 'baseline' }}>
-            <span style={{ fontSize: 12, color: 'var(--text-mid)', flex: 1 }}>{t}</span>
-            {amt && <span className="mono" style={{ fontSize: 11, color: 'var(--status-ok)' }}>{amt}</span>}
-            <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{time}</span>
+        {activity.length === 0 && (
+          <div style={{ padding: '10px 2px', fontSize: 11, color: 'var(--text-low)' }}>Activity shows here as you work — send an invoice, pay link, or proposal and it lands in this feed.</div>
+        )}
+        {activity.map((a, i) => (
+          <div key={i} style={{ display: 'flex', gap: 10, padding: '7px 2px', borderBottom: '1px solid rgba(63,169,245,0.05)', alignItems: 'baseline' }}>
+            <span style={{ fontSize: 12, color: 'var(--text-mid)', flex: 1 }}>{a.text}</span>
+            {a.amt && <span className="mono" style={{ fontSize: 11, color: 'var(--status-ok)' }}>{a.amt}</span>}
+            <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{fmtWhen(a.ts)}</span>
           </div>
         ))}
       </MSection>

@@ -1,12 +1,13 @@
-/* Screen — Calendar (v4: multi-tech jobs, unassigned state, multi-day spans)
-   - Jobs: techs[] (empty = unassigned), day..endDay span, start/dur per day
+/* Screen — Calendar (v5: real dates + real technicians)
+   - Jobs live on REAL ISO dates (date/endDate) — navigate ‹ › to any week,
+     month or year and schedule there; nothing is pinned to "this week".
+   - Technicians are the REAL user roster (useTechs → Supabase profiles).
+   - Jobs: techs[] (empty = unassigned), date..endDate span, start/dur per day
    - Drag tech → job/bar: ADD tech to crew. Drag tech → empty slot: new job.
    - Drag project from tray → schedules UNASSIGNED, opens panel to pick techs.
    - Week blocks: drag = move · top/bottom edge = adjust times · left/right edge = stretch across days
    - Month bars: booking-style spans with start/end day handles (CalMonthView in calendar-month.jsx)
    - Click job → panel with tech toggle chips · double-click → work order · Esc cancels drags */
-
-const CAL_TECHS = [];
 
 const CAL_TYPES = {
   install:     { bg: 'rgba(63,169,245,0.18)',  border: '#3FA9F5',  label: 'Install' },
@@ -29,8 +30,10 @@ const calSpanOf = j => (j.endDay || j.day) - j.day + 1;
 function CalendarScreen() {
   const [jobs, setJobs] = useShieldStore(jobStore);
   const [backlog, setBacklog] = useShieldStore(backlogStore);
+  const realTechs = useTechs();
   const [view, setView] = React.useState('week');
   const [weekOffset, setWeekOffset] = React.useState(0);
+  const [monthOffset, setMonthOffset] = React.useState(0);
   const [techFilter, setTechFilter] = React.useState('all');
   const [colorMode, setColorMode] = React.useState('type');
   const [selectedId, setSelectedId] = React.useState(null);
@@ -45,7 +48,7 @@ function CalendarScreen() {
   const targetRef = React.useRef(null);
   const didDragRef = React.useRef(false);
 
-  const techs = CAL_TECHS, typeColors = CAL_TYPES;
+  const techs = realTechs, typeColors = CAL_TYPES;
   const selectedJob = jobs.find(j => j.id === selectedId) || null;
 
   const getJobColor = (job) => {
@@ -57,41 +60,62 @@ function CalendarScreen() {
     return typeColors[job.type] || typeColors.install;
   };
 
-  /* Real current week (Monday-anchored) — no more frozen demo dates. */
+  /* Displayed week (Monday-anchored, ‹ › moves through real weeks) and the
+     displayed month for month view (independent offset — go years out). */
   const now = new Date();
   const thisMonday = new Date(now); thisMonday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
   const baseMonday = new Date(thisMonday); baseMonday.setDate(thisMonday.getDate() + weekOffset * 7);
   const weekDays = Array.from({ length: 7 }, (_, i) => { const d = new Date(baseMonday); d.setDate(d.getDate() + i); return d; });
+  const weekISO = weekDays.map(isoOfDate);
+  const monthAnchor = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
   const hours = Array.from({ length: DAY_END - DAY_START }, (_, i) => i + DAY_START);
   const dayLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const isToday = (d) => d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   const formatDay = (d) => `${monthNames[d.getMonth()].slice(0,3)} ${d.getDate()}`;
 
-  const filteredJobs = techFilter === 'all' ? jobs
+  const techMatch = techFilter === 'all' ? jobs
     : techFilter === 'none' ? jobs.filter(j => !j.techs || j.techs.length === 0)
     : jobs.filter(j => j.techs && j.techs.includes(techFilter));
 
-  // ── Overlap helpers (span + crew aware) ──
-  const daysOverlap = (a, b) => a.day <= (b.endDay || b.day) && b.day <= (a.endDay || a.day);
+  /* Week view renders a PROJECTION of each job onto the displayed week:
+     day/endDay become column indices (1–7) clamped to the week, while the
+     record itself keeps its real dates. Jobs outside the week don't render. */
+  const filteredJobs = view === 'week'
+    ? techMatch.map(j => {
+        const s = jobStartISO(j), e = jobEndISO(j);
+        if (e < weekISO[0] || s > weekISO[6]) return null;
+        const a = s < weekISO[0] ? weekISO[0] : s;
+        const b = e > weekISO[6] ? weekISO[6] : e;
+        return { ...j, day: diffDaysISO(weekISO[0], a) + 1, endDay: diffDaysISO(weekISO[0], b) + 1 };
+      }).filter(Boolean)
+    : techMatch;
+
+  // ── Overlap helpers (real-date + crew aware) ──
+  const datesOverlap = (a, b) => jobStartISO(a) <= jobEndISO(b) && jobStartISO(b) <= jobEndISO(a);
   const timesOverlap = (a, b) => a.start < b.start + b.dur && b.start < a.start + a.dur;
   const sharesTech = (a, b) => (a.techs || []).some(t => (b.techs || []).includes(t));
   const conflicts = [];
-  filteredJobs.forEach((a, ai) => filteredJobs.forEach((b, bi) => {
-    if (ai < bi && sharesTech(a, b) && daysOverlap(a, b) && timesOverlap(a, b)) conflicts.push(a.id, b.id);
+  techMatch.forEach((a, ai) => techMatch.forEach((b, bi) => {
+    if (ai < bi && sharesTech(a, b) && datesOverlap(a, b) && timesOverlap(a, b)) conflicts.push(a.id, b.id);
   }));
-  const wouldConflict = (techIds, day, endDay, start, dur, ignoreId) =>
-    techIds.length > 0 && jobs.some(j => j.id !== ignoreId
+  /* day/endDay here are DISPLAYED-WEEK columns — convert to ISO to test. */
+  const wouldConflict = (techIds, day, endDay, start, dur, ignoreId) => {
+    const sISO = weekISO[Math.max(0, Math.min(6, day - 1))], eISO = weekISO[Math.max(0, Math.min(6, endDay - 1))];
+    return techIds.length > 0 && jobs.some(j => j.id !== ignoreId
       && (j.techs || []).some(t => techIds.includes(t))
-      && day <= (j.endDay || j.day) && j.day <= endDay
+      && sISO <= jobEndISO(j) && jobStartISO(j) <= eISO
       && start < j.start + j.dur && j.start < start + j.dur);
+  };
 
+  /* Utilization = hours booked in the DISPLAYED week. */
+  const weekJobs = jobs.filter(j => jobStartISO(j) <= weekISO[6] && jobEndISO(j) >= weekISO[0]);
   const utilization = techs.map(t => {
-    const bill = jobs.filter(j => (j.techs || []).includes(t.id) && j.type !== 'meeting').reduce((s, j) => s + j.dur * calSpanOf(j), 0);
+    const bill = weekJobs.filter(j => (j.techs || []).includes(t.id) && j.type !== 'meeting').reduce((s, j) => s + j.dur * jobSpanDays(j), 0);
     return { ...t, billableHours: bill, pct: Math.round((bill / 40) * 100) };
   });
   const unassignedCount = jobs.filter(j => !j.techs || j.techs.length === 0).length;
-  const weekRevenue = filteredJobs.filter(j => j.value && j.type !== 'meeting').reduce((s, j) => s + (j.value || 0), 0);
+  const weekRevenue = weekJobs.filter(j => j.value && j.type !== 'meeting').reduce((s, j) => s + (j.value || 0), 0);
 
   // ── Drop-target resolution ──
   const computeTarget = (ev) => {
@@ -104,7 +128,7 @@ function CalendarScreen() {
       let overBarId = null;
       for (const el of els) {
         if (overBarId === null && el.getAttribute && el.getAttribute('data-cal-bar')) overBarId = parseFloat(el.getAttribute('data-cal-bar'));
-        if (el.getAttribute && el.getAttribute('data-cal-day')) return { area: 'month', day: parseInt(el.getAttribute('data-cal-day')), overBarId };
+        if (el.getAttribute && el.getAttribute('data-cal-day')) return { area: 'month', iso: el.getAttribute('data-cal-day'), overBarId };
       }
       return null;
     }
@@ -198,35 +222,43 @@ function CalendarScreen() {
   const ghost = ghostFor(drag);
   const ghostConflict = ghost && ghost.techs && ghost.techs.length > 0 ? wouldConflict(ghost.techs, ghost.day, ghost.endDay, ghost.start, ghost.dur, ghost.ignoreId) : false;
 
-  // ── Month ghost (day-range highlight) ──
+  // ── Month ghost (ISO date-range highlight) ──
   const monthGhost = (() => {
     if (!drag || !drag.target || drag.target.area !== 'month') return null;
     const t = drag.target, j = drag.job;
-    if (drag.kind === 'job') { const span = calSpanOf(j); const a = calClamp(t.day - (drag.dayOffset || 0), 1, 8 - span); return { a, b: a + span - 1 }; }
-    if (drag.kind === 'span-left') return { a: calClamp(t.day, 1, j.endDay || j.day), b: j.endDay || j.day };
-    if (drag.kind === 'span-right') return { a: j.day, b: calClamp(t.day, j.day, 7) };
-    if (drag.kind === 'project') { const days = drag.project.days || 1; const a = calClamp(t.day, 1, 8 - days); return { a, b: a + days - 1 }; }
-    if (drag.kind === 'tech' && !t.overBarId) return { a: t.day, b: t.day };
+    if (drag.kind === 'job') { const span = jobSpanDays(j); const a = addDaysISO(t.iso, -(drag.dayOffset || 0)); return { a, b: addDaysISO(a, span - 1) }; }
+    if (drag.kind === 'span-left') { const e = jobEndISO(j); return { a: t.iso <= e ? t.iso : e, b: e }; }
+    if (drag.kind === 'span-right') { const s = jobStartISO(j); return { a: s, b: t.iso >= s ? t.iso : s }; }
+    if (drag.kind === 'project') { const days = drag.project.days || 1; return { a: t.iso, b: addDaysISO(t.iso, days - 1) }; }
+    if (drag.kind === 'tech' && !t.overBarId) return { a: t.iso, b: t.iso };
     return null;
   })();
 
-  // ── Drop handlers ──
+  // ── Drop handlers (write REAL dates; day columns map through weekISO) ──
+  const gridISO = (day) => weekISO[calClamp(day, 1, 7) - 1];
+  const setJobDates = (id, startISO, endISO, extra) => {
+    setJobs(prev => prev.map(x => x.id === id ? normalizeJobDates({ ...x, ...(extra || {}), date: startISO, endDate: endISO >= startISO ? endISO : startISO }) : x));
+  };
+  const fmtISO = (iso) => dateOfISO(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const handleDrop = (spec, target) => {
     if (!target) return;
     const k = spec.kind, j = spec.job;
+    const real = j && jobs.find(x => x.id === j.id);   // week view passes a projection; act on the real record
 
     if (k === 'job') {
       if (target.area === 'tray') {
         setJobs(prev => prev.filter(x => x.id !== j.id));
-        setBacklog(prev => [{ id: 'p' + j.id, title: j.title, customer: j.customer, type: j.type, dur: j.dur, days: calSpanOf(j), value: j.value || 0 }, ...prev]);
+        setBacklog(prev => [{ id: 'p' + j.id, title: j.title, customer: j.customer, type: j.type, dur: j.dur, days: jobSpanDays(real || j), value: j.value || 0 }, ...prev]);
         setSelectedId(null);
         showToast('Job moved to Unscheduled', 'ok');
       } else if (target.area === 'grid' || target.area === 'month') {
-        const span = calSpanOf(j);
-        const day = calClamp(target.day - (spec.dayOffset || 0), 1, 8 - span);
+        const span = jobSpanDays(real || j);
+        const startISO = target.area === 'grid'
+          ? gridISO(target.day - (spec.dayOffset || 0))
+          : addDaysISO(target.iso, -(spec.dayOffset || 0));
         const start = target.area === 'grid' ? calClamp(calSnap(target.hourRaw - spec.grabOffset), DAY_START, DAY_END - j.dur) : j.start;
-        setJobs(prev => prev.map(x => x.id === j.id ? { ...x, day, endDay: day + span - 1, start } : x));
-        showToast(`Moved to ${dayLabels[day-1]}${span > 1 ? '–' + dayLabels[day+span-2] : ''} ${calFmtH(start)}`, 'ok');
+        setJobDates(j.id, startISO, addDaysISO(startISO, span - 1), { start });
+        showToast(`Moved to ${fmtISO(startISO)}${span > 1 ? ` – ${fmtISO(addDaysISO(startISO, span - 1))}` : ''} ${calFmtH(start)}`, 'ok');
       }
     }
     if (k === 'resize-top' && target.area === 'grid') {
@@ -239,35 +271,39 @@ function CalendarScreen() {
       setJobs(prev => prev.map(x => x.id === j.id ? { ...x, dur } : x));
     }
     if (k === 'span-left' && (target.area === 'grid' || target.area === 'month')) {
-      const a = calClamp(target.day, 1, j.endDay || j.day);
-      setJobs(prev => prev.map(x => x.id === j.id ? { ...x, day: a, endDay: x.endDay || x.day } : x));
-      showToast(`${dayLabels[a-1]} → ${dayLabels[(j.endDay||j.day)-1]}`, 'ok');
+      const endISO = jobEndISO(real || j);
+      let a = target.area === 'grid' ? gridISO(target.day) : target.iso;
+      if (a > endISO) a = endISO;
+      setJobDates(j.id, a, endISO);
+      showToast(`${fmtISO(a)} → ${fmtISO(endISO)}`, 'ok');
     }
     if (k === 'span-right' && (target.area === 'grid' || target.area === 'month')) {
-      const b = calClamp(target.day, j.day, 7);
-      setJobs(prev => prev.map(x => x.id === j.id ? { ...x, endDay: b } : x));
-      showToast(`${dayLabels[j.day-1]} → ${dayLabels[b-1]} (${b - j.day + 1} day${b - j.day ? 's' : ''})`, 'ok');
+      const startISO = jobStartISO(real || j);
+      let b = target.area === 'grid' ? gridISO(target.day) : target.iso;
+      if (b < startISO) b = startISO;
+      setJobDates(j.id, startISO, b);
+      showToast(`${fmtISO(startISO)} → ${fmtISO(b)} (${diffDaysISO(startISO, b) + 1} day${diffDaysISO(startISO, b) ? 's' : ''})`, 'ok');
     }
     if (k === 'tech') {
       const overId = target.area === 'grid' ? (target.overJob && target.overJob.id) : target.overBarId;
       if (overId != null) {
         const job = jobs.find(x => x.id === overId);
         if (job && (job.techs || []).includes(spec.tech.id)) { showToast(`${spec.tech.name.split(' ')[0]} is already on this job`, 'warn'); return; }
-        setJobs(prev => prev.map(x => x.id === overId ? { ...x, techs: [...(x.techs || []), spec.tech.id] } : x));
+        setJobs(prev => prev.map(x => x.id === overId ? { ...x, techs: [...(x.techs || []), spec.tech.id], techIds: [...(x.techIds || []), spec.tech.uid].filter(Boolean) } : x));
         showToast(`${spec.tech.name.split(' ')[0]} added to ${job ? job.title.split('—')[0].trim() : 'job'}`, 'ok');
       } else if (target.area === 'grid') {
-        setNewJobSlot({ day: target.day, start: calClamp(calSnap(target.hourRaw), DAY_START, DAY_END - 1), techs: [spec.tech.id] });
+        setNewJobSlot({ date: gridISO(target.day), start: calClamp(calSnap(target.hourRaw), DAY_START, DAY_END - 1), techs: [spec.tech.id] });
         setShowNewModal(true);
       } else if (target.area === 'month') {
-        setNewJobSlot({ day: target.day, start: 9, techs: [spec.tech.id] });
+        setNewJobSlot({ date: target.iso, start: 9, techs: [spec.tech.id] });
         setShowNewModal(true);
       }
     }
     if (k === 'project' && (target.area === 'grid' || target.area === 'month')) {
       const p = spec.project, days = p.days || 1;
-      const day = calClamp(target.day, 1, 8 - days);
+      const startISO = target.area === 'grid' ? gridISO(target.day) : target.iso;
       const start = target.area === 'grid' ? calClamp(calSnap(target.hourRaw), DAY_START, DAY_END - p.dur) : 9;
-      const newJob = { id: Date.now(), title: p.title, customer: p.customer, techs: [], type: p.type, day, endDay: day + days - 1, start, dur: p.dur, value: p.value };
+      const newJob = normalizeJobDates({ id: Date.now(), title: p.title, customer: p.customer, techs: [], type: p.type, date: startISO, endDate: addDaysISO(startISO, days - 1), start, dur: p.dur, value: p.value });
       setJobs(prev => [...prev, newJob]);
       setBacklog(prev => prev.filter(b => b.id !== p.id));
       setSelectedId(newJob.id);
@@ -275,23 +311,29 @@ function CalendarScreen() {
     }
     if (k === 'create' && target.area === 'grid') {
       const a = spec.anchorHour, b = calSnap(target.hourRaw);
-      setNewJobSlot({ day: spec.day, start: Math.min(a, b), dur: Math.max(0.5, Math.abs(b - a)) });
+      setNewJobSlot({ date: gridISO(spec.day), start: Math.min(a, b), dur: Math.max(0.5, Math.abs(b - a)) });
       setShowNewModal(true);
     }
   };
 
   const toggleJobTech = (jobId, techId) => {
-    setJobs(prev => prev.map(x => x.id === jobId ? { ...x, techs: (x.techs || []).includes(techId) ? x.techs.filter(t => t !== techId) : [...(x.techs || []), techId] } : x));
+    const uid = (techs.find(t => t.id === techId) || {}).uid;
+    setJobs(prev => prev.map(x => x.id === jobId ? {
+      ...x,
+      techs: (x.techs || []).includes(techId) ? x.techs.filter(t => t !== techId) : [...(x.techs || []), techId],
+      techIds: (x.techs || []).includes(techId) ? (x.techIds || []).filter(u => u !== uid) : [...(x.techIds || []), uid].filter(Boolean),
+    } : x));
   };
   const autoAssign = (jobId) => {
+    if (!utilization.length) { showToast('No technicians yet — invite users first', 'warn'); return; }
     const lightest = utilization.reduce((a, b) => (b.billableHours < a.billableHours ? b : a));
-    setJobs(prev => prev.map(x => x.id === jobId ? { ...x, techs: [lightest.id] } : x));
+    setJobs(prev => prev.map(x => x.id === jobId ? { ...x, techs: [lightest.id], techIds: [lightest.uid].filter(Boolean) } : x));
     showToast(`Assigned ${lightest.name} (lightest load)`, 'ok');
   };
 
   const handleSlotClick = (day, hour) => {
     if (didDragRef.current) return;
-    setNewJobSlot({ day, start: hour });
+    setNewJobSlot({ date: gridISO(day), start: hour });
     setShowNewModal(true);
   };
 
@@ -304,11 +346,11 @@ function CalendarScreen() {
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', gap: 12, overflow: 'hidden' }}>
       {/* Top bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-        <button onClick={() => setWeekOffset(w => w - 1)} style={calNavBtn}>‹</button>
-        <button onClick={() => setWeekOffset(0)} style={{ ...calNavBtn, fontSize: 11, padding: '5px 12px', minWidth: 60 }}>Today</button>
-        <button onClick={() => setWeekOffset(w => w + 1)} style={calNavBtn}>›</button>
+        <button onClick={() => view === 'month' ? setMonthOffset(m => m - 1) : setWeekOffset(w => w - 1)} style={calNavBtn}>‹</button>
+        <button onClick={() => { setWeekOffset(0); setMonthOffset(0); }} style={{ ...calNavBtn, fontSize: 11, padding: '5px 12px', minWidth: 60 }}>Today</button>
+        <button onClick={() => view === 'month' ? setMonthOffset(m => m + 1) : setWeekOffset(w => w + 1)} style={calNavBtn}>›</button>
         <span className="display" style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-high)', marginLeft: 4 }}>
-          {view === 'week' ? `${formatDay(weekDays[0])} — ${formatDay(weekDays[6])}, ${weekDays[0].getFullYear()}` : `${monthNames[baseMonday.getMonth()]} ${baseMonday.getFullYear()}`}
+          {view === 'week' ? `${formatDay(weekDays[0])} — ${formatDay(weekDays[6])}, ${weekDays[0].getFullYear()}` : `${monthNames[monthAnchor.getMonth()]} ${monthAnchor.getFullYear()}`}
         </span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, background: 'rgba(63,169,245,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)' }}>
           {['week','month'].map(v => (
@@ -506,10 +548,10 @@ function CalendarScreen() {
             </div>
           </div>
         ) : (
-          <CalMonthView jobs={filteredJobs} techs={techs} drag={drag} monthGhost={monthGhost} conflicts={conflicts} selectedId={selectedId}
-            getJobColor={getJobColor} spanOf={calSpanOf} calFmtH={calFmtH} beginDrag={beginDrag}
+          <CalMonthView jobs={filteredJobs} techs={techs} anchor={monthAnchor} drag={drag} monthGhost={monthGhost} conflicts={conflicts} selectedId={selectedId}
+            getJobColor={getJobColor} calFmtH={calFmtH} beginDrag={beginDrag}
             onSelectJob={j => setSelectedId(selectedId === j.id ? null : j.id)}
-            onCellClick={day => { setNewJobSlot({ day, start: 9 }); setShowNewModal(true); }}
+            onCellClick={iso => { setNewJobSlot({ date: iso, start: 9 }); setShowNewModal(true); }}
             didDrag={() => didDragRef.current} />
         )}
 
@@ -550,8 +592,8 @@ function CalendarScreen() {
 
             {[
               { label: 'Customer', val: selectedJob.customer },
-              { label: 'Schedule', val: `${dayLabels[selectedJob.day-1]}${calSpanOf(selectedJob) > 1 ? ` – ${dayLabels[(selectedJob.endDay||selectedJob.day)-1]}` : ''} · ${calFmtH(selectedJob.start)} – ${calFmtH(selectedJob.start + selectedJob.dur)}` },
-              { label: 'Total Hours', val: `${selectedJob.dur * calSpanOf(selectedJob)}h${calSpanOf(selectedJob) > 1 ? ` (${selectedJob.dur}h × ${calSpanOf(selectedJob)} days)` : ''}` },
+              { label: 'Schedule', val: `${fmtISO(jobStartISO(selectedJob))}${jobSpanDays(selectedJob) > 1 ? ` – ${fmtISO(jobEndISO(selectedJob))}` : ''} · ${calFmtH(selectedJob.start)} – ${calFmtH(selectedJob.start + selectedJob.dur)}` },
+              { label: 'Total Hours', val: `${selectedJob.dur * jobSpanDays(selectedJob)}h${jobSpanDays(selectedJob) > 1 ? ` (${selectedJob.dur}h × ${jobSpanDays(selectedJob)} days)` : ''}` },
               { label: 'Value', val: selectedJob.value ? `$${selectedJob.value.toLocaleString()}` : '—' },
             ].map(r => (
               <div key={r.label}><div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 2 }}>{r.label}</div><div style={{ fontSize: 12, color: 'var(--text-high)' }}>{r.val}</div></div>

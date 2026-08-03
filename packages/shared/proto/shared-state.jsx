@@ -532,6 +532,94 @@ function buildDoc(kind, form) {
     customer_email: form.customer_email || null,
   };
 }
+/* ── Real-date scheduling core ──
+   Jobs historically carried only a weekday index (day 1–7 = Mon–Sun of the
+   CURRENT week), which made scheduling beyond this week impossible. Jobs now
+   carry real ISO dates (date / endDate). These helpers read BOTH shapes:
+   legacy rows resolve against the current week, so nothing already on the
+   calendar moves or disappears. All writers should set date + endDate. */
+function isoOfDate(d) { const p = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; }
+function dateOfISO(iso) { return new Date(String(iso).slice(0, 10) + 'T00:00:00'); }
+function addDaysISO(iso, n) { const d = dateOfISO(iso); d.setDate(d.getDate() + n); return isoOfDate(d); }
+function diffDaysISO(a, b) { return Math.round((dateOfISO(b) - dateOfISO(a)) / 86400000); }
+function mondayOf(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
+function todayISO() { return isoOfDate(new Date()); }
+function jobStartISO(j) {
+  if (j && j.date) return String(j.date).slice(0, 10);
+  const mon = mondayOf(new Date());
+  return addDaysISO(isoOfDate(mon), ((j && j.day) || 1) - 1);
+}
+function jobEndISO(j) {
+  if (j && j.endDate) return String(j.endDate).slice(0, 10);
+  if (j && j.date) return String(j.date).slice(0, 10);
+  const mon = mondayOf(new Date());
+  return addDaysISO(isoOfDate(mon), ((j && (j.endDay || j.day)) || 1) - 1);
+}
+function jobOnISO(j, iso) { return jobStartISO(j) <= iso && iso <= jobEndISO(j); }
+function jobSpanDays(j) { return diffDaysISO(jobStartISO(j), jobEndISO(j)) + 1; }
+/* Weekday index (Mon=1…Sun=7) of an ISO date — kept on every write so any
+   remaining legacy reader still sees a sane day/endDay pair. */
+function weekdayIdxOfISO(iso) { return ((dateOfISO(iso).getDay() + 6) % 7) + 1; }
+function normalizeJobDates(rec) {
+  const date = jobStartISO(rec), endDate = jobEndISO(rec);
+  return { ...rec, date, endDate, day: weekdayIdxOfISO(date), endDay: weekdayIdxOfISO(endDate) };
+}
+
+/* ── Real technician roster ──
+   Scheduling assigns REAL portal users (Supabase profiles), not a hardcoded
+   crew. Roster = every non-customer profile (Technicians + Admin/Staff, who
+   also take jobs). Each entry: { id: initials (job.techs key), uid, name,
+   color, role }. Cached on window so all calendars share one fetch; the demo
+   crew only appears when no backend/profiles exist, so screens never render
+   an empty scheduler. */
+const TECH_PALETTE = ['#3FA9F5', '#34D399', '#FBBF24', '#c084fc', '#F43F5E', '#22D3EE', '#A3E635', '#FB923C', '#818CF8', '#F472B6'];
+const DEMO_TECHS = [
+  { id: 'MR', name: 'Mike Reyes', color: '#3FA9F5' },
+  { id: 'JL', name: 'Jessica Liu', color: '#34D399' },
+  { id: 'KW', name: 'Kevin White', color: '#FBBF24' },
+  { id: 'DP', name: 'Diana Patel', color: '#c084fc' },
+  { id: 'TG', name: 'Tony Garcia', color: '#F43F5E' },
+];
+function techInitialsOf(name, email) {
+  const n = String(name || '').trim();
+  if (n && !n.includes('@')) {
+    const parts = n.split(/\s+/);
+    return (parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : n.slice(0, 2)).toUpperCase();
+  }
+  return String(email || '??').slice(0, 2).toUpperCase();
+}
+function mapProfilesToTechs(rows) {
+  const seen = new Set();
+  return (rows || [])
+    .filter(r => r.role !== 'Customer' && r.role !== 'Client')
+    .map((r, i) => {
+      let id = techInitialsOf(r.name, r.email);
+      let n = 2;
+      while (seen.has(id)) id = techInitialsOf(r.name, r.email).slice(0, 1) + (n++);
+      seen.add(id);
+      return { id, uid: r.id, name: r.name || r.email, email: r.email, role: r.role, color: TECH_PALETTE[i % TECH_PALETTE.length] };
+    });
+}
+function refreshTechRoster() {
+  const sb = window.__shieldSupabase;
+  if (!sb) return Promise.resolve(null);
+  if (window.__shieldTechRosterAt && Date.now() - window.__shieldTechRosterAt < 60000) return Promise.resolve(window.__shieldTechRoster || null);
+  return sb.from('profiles').select('id,email,name,role,app_rights').then(({ data }) => {
+    const mapped = mapProfilesToTechs(data);
+    if (mapped.length) { window.__shieldTechRoster = mapped; window.__shieldTechRosterAt = Date.now(); }
+    return mapped.length ? mapped : null;
+  }).catch(() => null);
+}
+function useTechs() {
+  const [techs, setTechs] = React.useState(() => window.__shieldTechRoster || DEMO_TECHS);
+  React.useEffect(() => {
+    let alive = true;
+    refreshTechRoster().then(r => { if (alive && r && r.length) setTechs(r); });
+    return () => { alive = false; };
+  }, []);
+  return techs;
+}
+
 /* Free-text search over document/list rows: every whitespace-separated term
    must appear in at least one of the given fields (case-insensitive). Empty
    query matches everything, so lists can filter unconditionally. */
@@ -813,6 +901,9 @@ Object.assign(window, {
   projectStore, invoiceStore, estimateStore,
   buildProject, addProject, buildDoc, addInvoice, addEstimate, saveDocEdit,
   nextDocNumber, bidToPipeline, nextProposalId, proposalToDoc, docSearchMatch,
+  isoOfDate, dateOfISO, addDaysISO, diffDaysISO, mondayOf, todayISO,
+  jobStartISO, jobEndISO, jobOnISO, jobSpanDays, weekdayIdxOfISO, normalizeJobDates,
+  DEMO_TECHS, mapProfilesToTechs, refreshTechRoster, useTechs, techInitialsOf,
   localInvoiceRows, localEstimateRows,
   mapInvoiceRow, mapEstimateRow, useMergedInvoices, useMergedEstimates, DocsEmptyRow,
   updateProject, estWorkflowView, projectForEstimate, acceptEstimateToProject,

@@ -26,8 +26,9 @@ function MobileAgendaView({ onNav }) {
   const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const monday = new Date(); monday.setDate(monday.getDate() - (todayIdx - 1));
   const dates = Array.from({ length: 7 }, (_, i) => { const d = new Date(monday); d.setDate(monday.getDate() + i); return d.getDate(); });
-  const dayJobs = jobs.filter(j => j.day <= day && day <= (j.endDay || j.day)).sort((a, b) => a.start - b.start);
-  const weekRevenue = jobs.filter(j => j.value && j.type !== 'meeting').reduce((s, j) => s + (j.value || 0), 0);
+  const weekISO = Array.from({ length: 7 }, (_, i) => addDaysISO(isoOfDate(mondayOf(new Date())), i));
+  const dayJobs = jobs.filter(j => jobOnISO(j, weekISO[day - 1])).sort((a, b) => a.start - b.start);
+  const weekRevenue = jobs.filter(j => j.value && j.type !== 'meeting' && jobStartISO(j) <= weekISO[6] && jobEndISO(j) >= weekISO[0]).reduce((s, j) => s + (j.value || 0), 0);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -40,7 +41,7 @@ function MobileAgendaView({ onNav }) {
       {/* Day pills */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
         {dayLabels.map((d, i) => {
-          const n = jobs.filter(j => j.day <= i + 1 && i + 1 <= (j.endDay || j.day)).length;
+          const n = jobs.filter(j => jobOnISO(j, weekISO[i])).length;
           const on = day === i + 1, today = i + 1 === todayIdx;
           return (
             <button key={d} onClick={() => setDay(i + 1)} style={{ padding: '8px 0 6px', borderRadius: 9, border: '1px solid', borderColor: on ? 'var(--border-strong)' : 'var(--border-subtle)', background: on ? 'rgba(63,169,245,0.12)' : 'transparent', cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
@@ -55,7 +56,7 @@ function MobileAgendaView({ onNav }) {
       {dayJobs.length === 0 && <div className="glass" style={{ padding: 28, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>Nothing scheduled — enjoy it</div>}
       {dayJobs.map(j => {
         const tc = M_AGENDA_TYPES[j.type] || M_AGENDA_TYPES.install;
-        const span = (j.endDay || j.day) - j.day + 1;
+        const span = jobSpanDays(j);
         const unassigned = !j.techs || j.techs.length === 0;
         return (
           <div key={j.id} onClick={() => onNav('workorder')} className="glass" style={{ padding: '12px 14px', borderRadius: 12, borderLeft: `3px solid ${tc.c}`, cursor: 'pointer', border: unassigned ? '1px dashed #94A3B8' : undefined, borderLeftColor: tc.c, borderLeftStyle: 'solid', borderLeftWidth: 3 }}>
@@ -78,7 +79,7 @@ function MobileAgendaView({ onNav }) {
         );
       })}
       <div style={{ fontSize: 9, color: 'var(--text-low)', textAlign: 'center' }}>Drag-and-drop scheduling lives on the desktop calendar — this is your day view.</div>
-      {addJob && <MNewJobSheet defaultDay={day} onClose={() => setAddJob(false)} />}
+      {addJob && <MNewJobSheet defaultDate={weekISO[day - 1]} onClose={() => setAddJob(false)} />}
     </div>
   );
 }

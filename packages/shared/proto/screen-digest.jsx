@@ -7,10 +7,9 @@ function DailyDigestScreen() {
   const [wos] = useShieldStore(workOrderStore);
   const [jobs] = useShieldStore(jobStore);
 
-  const TODAY = 4, TOMORROW = 5; // Thu / Fri of the demo week
   const todayPhotos = photos.filter(p => p.day === 'Today');
-  const todayJobs = jobs.filter(j => j.day <= TODAY && TODAY <= (j.endDay || j.day));
-  const tomorrowJobs = jobs.filter(j => j.day <= TOMORROW && TOMORROW <= (j.endDay || j.day));
+  const todayJobs = jobs.filter(j => jobOnISO(j, todayISO()));
+  const tomorrowJobs = jobs.filter(j => jobOnISO(j, addDaysISO(todayISO(), 1)));
   const issues = todayPhotos.filter(p => p.phase === 'issue');
   const punchClosed = punch.filter(p => p.status !== 'open');
   const punchOpen = punch.filter(p => p.status === 'open');

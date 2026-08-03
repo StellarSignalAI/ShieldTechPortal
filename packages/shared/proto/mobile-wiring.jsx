@@ -5,7 +5,6 @@
    • MTabEditor          — edit the bottom tab bar (allocated slots + locked 'All')
    • MNewJobSheet        — schedule a job → jobStore (shows on desktop calendar too) */
 
-const MW_TECHS = { MR: 'Mike Reyes', JL: 'Jessica Liu', KW: 'Kevin White', DP: 'Diana Patel', TG: 'Tony Garcia' };
 
 /* Shared field styles */
 const mwInput = { width: '100%', padding: '11px 13px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' };
@@ -167,25 +166,26 @@ function MobileCustomerDetail({ customer, onClose, onNav }) {
 }
 
 /* ── New Job sheet → jobStore (live on mobile agenda + desktop calendar) ── */
-function MNewJobSheet({ onClose, onSaved, defaultDay = 3 }) {
+function MNewJobSheet({ onClose, onSaved, defaultDate }) {
   const [allCusts] = useShieldStore(customerStore);
-  const [f, setF] = React.useState({ title: '', customer: '', type: 'install', day: String(defaultDay), start: '9', dur: '2', value: '', tech: '' });
+  const roster = useTechs();
+  const [f, setF] = React.useState({ title: '', customer: '', type: 'install', date: defaultDate || todayISO(), start: '9', dur: '2', value: '', tech: '' });
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
-  const dayOpts = [['1', 'Mon Jun 8'], ['2', 'Tue Jun 9'], ['3', 'Wed Jun 10'], ['4', 'Thu Jun 11'], ['5', 'Fri Jun 12'], ['6', 'Sat Jun 13'], ['7', 'Sun Jun 14']];
   const hourOpts = []; for (let h = 7; h <= 18; h++) hourOpts.push([String(h), `${h > 12 ? h - 12 : h}:00 ${h >= 12 ? 'PM' : 'AM'}`]);
 
   const save = () => {
     if (!f.title.trim()) { showToast('Job title is required', 'warn'); return; }
+    if (!f.date) { showToast('Pick a date', 'warn'); return; }
+    const techRec = roster.find(t => t.id === f.tech);
     jobStore.set(prev => {
       const nextId = prev.reduce((m, j) => Math.max(m, j.id), 0) + 1;
-      const day = Number(f.day);
-      return [...prev, {
-        id: nextId, title: f.title.trim(), techs: f.tech ? [f.tech] : [], type: f.type,
-        day, endDay: day, start: Number(f.start), dur: Number(f.dur),
+      return [...prev, normalizeJobDates({
+        id: nextId, title: f.title.trim(), techs: f.tech ? [f.tech] : [], techIds: techRec && techRec.uid ? [techRec.uid] : [], type: f.type,
+        date: f.date, endDate: f.date, start: Number(f.start), dur: Number(f.dur),
         customer: f.customer || '—', value: Number(f.value) || 0,
-      }];
+      })];
     });
-    showToast('Job scheduled — synced to portal calendar', 'ok');
+    showToast(`Job scheduled for ${dateOfISO(f.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`, 'ok');
     onSaved ? onSaved() : onClose();
   };
 
@@ -196,9 +196,12 @@ function MNewJobSheet({ onClose, onSaved, defaultDay = 3 }) {
         <MWSelect label="Customer" value={f.customer} onChange={set('customer')} options={[{ value: '', label: 'Select customer…' }, ...allCusts.map(c => ({ value: c.name, label: c.name }))]} />
         <div style={{ display: 'flex', gap: 10 }}>
           <div style={{ flex: 1 }}><MWSelect label="Type" value={f.type} onChange={set('type')} options={[{ value: 'install', label: 'Install' }, { value: 'maintenance', label: 'Maintenance' }, { value: 'repair', label: 'Repair' }, { value: 'survey', label: 'Survey' }, { value: 'meeting', label: 'Meeting' }]} /></div>
-          <div style={{ flex: 1 }}><MWSelect label="Assign Tech" value={f.tech} onChange={set('tech')} options={[{ value: '', label: 'Unassigned' }, ...Object.entries(MW_TECHS).map(([id, n]) => ({ value: id, label: n }))]} /></div>
+          <div style={{ flex: 1 }}><MWSelect label="Assign Tech" value={f.tech} onChange={set('tech')} options={[{ value: '', label: 'Unassigned' }, ...roster.map(t => ({ value: t.id, label: t.name }))]} /></div>
         </div>
-        <MWSelect label="Day" value={f.day} onChange={set('day')} options={dayOpts.map(([v, l]) => ({ value: v, label: l }))} />
+        <div>
+          <span style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', marginBottom: 5, display: 'block' }}>Date</span>
+          <input type="date" value={f.date} onChange={set('date')} style={{ width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', colorScheme: 'dark' }} />
+        </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <div style={{ flex: 1 }}><MWSelect label="Start" value={f.start} onChange={set('start')} options={hourOpts.map(([v, l]) => ({ value: v, label: l }))} /></div>
           <div style={{ flex: 1 }}><MWField label="Duration (h)" type="number" value={f.dur} onChange={set('dur')} placeholder="2" /></div>
