@@ -2,36 +2,31 @@
    Reads the live job board, finds problems (unassigned, conflicts, overload),
    solves against skills + certs + drive time, explains every proposal, applies in one click. */
 
-const COPILOT_TECH_META = {
-  MR: { name: 'Mike Reyes',  color: '#3FA9F5' },
-  JL: { name: 'Jessica Liu', color: '#34D399' },
-  KW: { name: 'Kevin White', color: '#FBBF24' },
-  DP: { name: 'Diana Patel', color: '#c084fc' },
-  TG: { name: 'Tony Garcia', color: '#F43F5E' },
-};
-
-function copilotUtil(jobs) {
+function copilotUtil(jobs, techIds) {
   const hrs = {};
-  Object.keys(COPILOT_TECH_META).forEach(t => hrs[t] = 0);
-  jobs.forEach(j => (j.techs || []).forEach(t => { if (hrs[t] !== undefined) hrs[t] += j.dur * ((j.endDay || j.day) - j.day + 1); }));
+  techIds.forEach(t => hrs[t] = 0);
+  jobs.forEach(j => (j.techs || []).forEach(t => { if (hrs[t] !== undefined) hrs[t] += j.dur * jobSpanDays(j); }));
   return hrs;
 }
 
 function SchedCopilotScreen() {
   const [jobs, setJobs] = useShieldStore(jobStore);
   const [skills] = useShieldStore(skillsStore);
+  const roster = useTechs();   // REAL portal users, not a hardcoded crew
+  const COPILOT_TECH_META = React.useMemo(() => Object.fromEntries(roster.map(t => [t.id, t])), [roster]);
   const [stage, setStage] = React.useState('idle'); // idle | solving | proposed
   const [applied, setApplied] = React.useState([]);
 
-  const util = copilotUtil(jobs);
+  const util = copilotUtil(jobs, Object.keys(COPILOT_TECH_META));
   const maxHrs = 40;
+  const fmtJobDate = (j) => dateOfISO(jobStartISO(j)).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   /* ── Issue detection (live) ── */
   const issues = [];
-  jobs.filter(j => !j.techs || j.techs.length === 0).forEach(j => issues.push({ type: 'unassigned', sev: 'critical', label: `${j.title} (${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][j.day-1]}) has no technician`, job: j }));
+  jobs.filter(j => !j.techs || j.techs.length === 0).forEach(j => issues.push({ type: 'unassigned', sev: 'critical', label: `${j.title} (${fmtJobDate(j)}) has no technician`, job: j }));
   Object.entries(util).forEach(([t, h]) => { if (h / maxHrs > 0.9) issues.push({ type: 'overload', sev: 'warn', label: `${COPILOT_TECH_META[t].name} is at ${Math.round(h / maxHrs * 100)}% — burnout risk`, tech: t }); });
   jobs.forEach((a, ai) => jobs.forEach((b, bi) => {
-    if (ai < bi && (a.techs || []).some(t => (b.techs || []).includes(t)) && a.day <= (b.endDay || b.day) && b.day <= (a.endDay || a.day) && a.start < b.start + b.dur && b.start < a.start + a.dur) {
+    if (ai < bi && (a.techs || []).some(t => (b.techs || []).includes(t)) && jobStartISO(a) <= jobEndISO(b) && jobStartISO(b) <= jobEndISO(a) && a.start < b.start + b.dur && b.start < a.start + a.dur) {
       issues.push({ type: 'conflict', sev: 'critical', label: `${a.title} overlaps ${b.title}`, job: a });
     }
   }));
@@ -39,6 +34,7 @@ function SchedCopilotScreen() {
   /* ── Proposals (computed when solving) ── */
   const buildProposals = () => {
     const props = [];
+    if (!roster.length) return props;
     const unassigned = jobs.filter(j => !j.techs || j.techs.length === 0);
     unassigned.forEach(j => {
       // pick best tech: lowest load, then skill fit
@@ -50,7 +46,7 @@ function SchedCopilotScreen() {
         id: 'pr-' + j.id, jobId: j.id, title: j.title,
         from: 'Unassigned', to: best.t,
         reasons: [`Lightest load (${best.load}h this week)`, `Low-voltage L${best.skill} · C-7 licensed`, 'No schedule conflicts that day'],
-        apply: () => setJobs(prev => prev.map(x => x.id === j.id ? { ...x, techs: [best.t] } : x)),
+        apply: () => setJobs(prev => prev.map(x => x.id === j.id ? { ...x, techs: [best.t], techIds: [(COPILOT_TECH_META[best.t] || {}).uid].filter(Boolean) } : x)),
       });
     });
     // rebalance: move one job from most loaded to least loaded (if gap > 8h)
@@ -62,8 +58,8 @@ function SchedCopilotScreen() {
         props.push({
           id: 'pr-bal-' + movable.id, jobId: movable.id, title: movable.title,
           from: hiT, to: loT,
-          reasons: [`Levels ${COPILOT_TECH_META[hiT].name} ${Math.round(hiH/maxHrs*100)}% → ${Math.round((hiH-movable.dur)/maxHrs*100)}%`, `${COPILOT_TECH_META[loT].name} has the ${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][movable.day-1]} window free`, 'Same skill class required'],
-          apply: () => setJobs(prev => prev.map(x => x.id === movable.id ? { ...x, techs: [loT] } : x)),
+          reasons: [`Levels ${COPILOT_TECH_META[hiT].name} ${Math.round(hiH/maxHrs*100)}% → ${Math.round((hiH-movable.dur)/maxHrs*100)}%`, `${COPILOT_TECH_META[loT].name} has the ${fmtJobDate(movable)} window free`, 'Same skill class required'],
+          apply: () => setJobs(prev => prev.map(x => x.id === movable.id ? { ...x, techs: [loT], techIds: [(COPILOT_TECH_META[loT] || {}).uid].filter(Boolean) } : x)),
         });
       }
     }

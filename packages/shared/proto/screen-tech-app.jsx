@@ -97,9 +97,9 @@ function TodayView({ setTab, setSelectedJob }) {
     .map(w => ({ id: w.id, sort: 0, time: w.status === 'active' ? 'Now' : 'Today', customer: w.customer, desc: w.scope || w.type || 'Work order',
       site: w.site || '', status: (w.status === 'done' || w.status === 'completed') ? 'completed' : w.status === 'active' ? 'active' : 'upcoming',
       mine: (me.id && w.assignedTo === me.id) || (myInitials && w.techId === myInitials), _wo: w }));
-  const calToday = (calJobs || []).filter(j => (j.day || 0) <= todayIdx && todayIdx <= (j.endDay || j.day || 0))
+  const calToday = (calJobs || []).filter(j => jobOnISO(j, todayIso))
     .map(j => ({ id: 'cal-' + j.id, sort: j.start || 8, time: fmtTime(j.start), customer: j.customer || j.title || 'Scheduled job', desc: j.title || j.type || '',
-      site: j.site || '', status: 'upcoming', mine: myInitials && (j.techs || []).includes(myInitials), _cal: j }));
+      site: j.site || '', status: 'upcoming', mine: (me.id && (j.techIds || []).includes(me.id)) || (myInitials && (j.techs || []).includes(myInitials)), _cal: j }));
   const all = [...woToday, ...calToday].sort((a, b) => a.sort - b.sort);
   const mineOnly = all.filter(j => j.mine);
   const jobs = mineOnly.length ? mineOnly : all;
@@ -190,7 +190,8 @@ function TodayView({ setTab, setSelectedJob }) {
         <div style={{ display: 'flex', gap: 6 }}>
           {['Mon','Tue','Wed','Thu','Fri'].map((d, i) => {
             const dayN = i + 1;
-            const count = (calJobs || []).filter(j => (j.day || 0) <= dayN && dayN <= (j.endDay || j.day || 0) && (!myInitials || !mineOnly.length || (j.techs || []).includes(myInitials))).length;
+            const dayISO = addDaysISO(isoOfDate(mondayOf(new Date())), i);
+            const count = (calJobs || []).filter(j => jobOnISO(j, dayISO) && (!mineOnly.length || (me.id && (j.techIds || []).includes(me.id)) || (myInitials && (j.techs || []).includes(myInitials)))).length;
             const isNow = dayN === todayIdx;
             return (
               <div key={i} style={{

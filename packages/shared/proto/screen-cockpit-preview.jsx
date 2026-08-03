@@ -98,8 +98,7 @@ function CockpitPreviewScreen() {
   }, []);
   React.useEffect(() => { refreshBids(); }, [refreshBids]);
 
-  const todayIdx = ((new Date().getDay() + 6) % 7) + 1;
-  const todayJobs = (jobs || []).filter(j => j.day <= todayIdx && todayIdx <= (j.endDay || j.day)).sort((a, b) => a.start - b.start);
+  const todayJobs = (jobs || []).filter(j => jobOnISO(j, todayISO())).sort((a, b) => a.start - b.start);
   const openInc = (incidents || []).filter(i => i.status !== 'resolved');
   const hotInvoices = invoices.filter(i => i.status === 'overdue' || i.status === 'pending').sort((a, b) => (b.status === 'overdue') - (a.status === 'overdue')).slice(0, 8);
   const waitingEst = estimates.filter(e => !/accepted|expired|declined/.test(e.status)).slice(0, 6);

@@ -138,7 +138,7 @@ function WWorkOrders({ size }) {
 /* ─────────── Today's Schedule & Dispatch ─────────── */
 function WSchedule({ size }) {
   const [jobs] = useShieldStore(jobStore);
-  const today = jobs.filter(j => j.day <= 3 && 3 <= (j.endDay || j.day)).sort((a, b) => a.start - b.start);
+  const today = jobs.filter(j => jobOnISO(j, todayISO())).sort((a, b) => a.start - b.start);
   const next = today.find(j => j.start >= 9) || today[0];
   const revenue = today.reduce((s, j) => s + (j.value || 0), 0);
   return (
