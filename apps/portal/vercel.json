@@ -3,5 +3,32 @@
   "framework": "vite",
   "installCommand": "cd ../.. && npm install",
   "buildCommand": "cd ../.. && npm run build:portal",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/android",
+      "destination": "https://github.com/StellarSignalAI/ShieldTechPortal/releases/download/mobile-apps-latest/shieldtech-portal.apk",
+      "permanent": false
+    },
+    {
+      "source": "/android.apk",
+      "destination": "https://github.com/StellarSignalAI/ShieldTechPortal/releases/download/mobile-apps-latest/shieldtech-portal.apk",
+      "permanent": false
+    },
+    {
+      "source": "/apps",
+      "destination": "/get-apps.html",
+      "permanent": false
+    },
+    {
+      "source": "/get-app",
+      "destination": "/get-apps.html",
+      "permanent": false
+    },
+    {
+      "source": "/ios",
+      "destination": "/get-apps.html",
+      "permanent": false
+    }
+  ]
 }
