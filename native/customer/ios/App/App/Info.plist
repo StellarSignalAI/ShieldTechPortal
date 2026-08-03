@@ -45,5 +45,15 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>ShieldTech uses the camera to capture job-site photos and receipts.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ShieldTech uses the microphone for video capture on job sites.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>ShieldTech uses your location for dispatch and job routing while on shift.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>ShieldTech saves job photos you capture to your photo library when you export them.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ShieldTech lets you attach existing photos to work orders and receipts.</string>
 </dict>
 </plist>
