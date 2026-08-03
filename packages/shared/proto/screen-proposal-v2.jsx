@@ -8,9 +8,11 @@ function ProposalScreen() {
   const [activeId, setActiveId] = React.useState(null);
   const [previewMode, setPreviewMode] = React.useState(false);
   const [topTab, setTopTab] = React.useState('proposals'); // proposals | tools…
+  const [query, setQuery] = React.useState('');
   const [all] = useShieldStore(proposalStore);
 
   const proposals = (all || []).map(p => ({ ...p, value: proposalValue(p.blocks) }));
+  const shown = proposals.filter(p => docSearchMatch(query, p.id, p.customer, p.title, p.value, p.status || 'draft'));
 
   const newProposal = () => {
     const customer = window.prompt('Customer name for this proposal:', '');
@@ -127,6 +129,8 @@ function ProposalScreen() {
           <p style={{ fontSize: 12, color: 'var(--text-mid)', marginTop: 2 }}>Create, customize, and send interactive proposals — synced with mobile</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search proposals…"
+            style={{ width: 240, padding: '7px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
           <button onClick={newProposal} style={{ padding: '7px 18px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Proposal</button>
         </div>
       </div>
@@ -149,12 +153,12 @@ function ProposalScreen() {
             ))}
           </tr></thead>
           <tbody>
-            {proposals.length === 0 && (
+            {shown.length === 0 && (
               <tr><td colSpan={7} style={{ padding: '26px 14px', fontSize: 12, color: 'var(--text-low)', textAlign: 'center' }}>
-                No proposals yet — hit “+ New Proposal”, or build one from a site survey on mobile and it appears here.
+                {query ? `No proposals match “${query}”.` : 'No proposals yet — hit “+ New Proposal”, or build one from a site survey on mobile and it appears here.'}
               </td></tr>
             )}
-            {proposals.map((p) => (
+            {shown.map((p) => (
               <tr key={p.id} style={{ cursor: 'pointer' }} onClick={() => { setActiveId(p.id); setView('builder'); }}
                 onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'}
                 onMouseLeave={e=>e.currentTarget.style.background='transparent'}>

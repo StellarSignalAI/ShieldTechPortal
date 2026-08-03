@@ -285,7 +285,9 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
     queueEmail(mail);
   };
 
-  const filtered = invFilter === 'All' ? invoices : invoices.filter(i => i.status === invFilter.toLowerCase());
+  const [query, setQuery] = React.useState('');
+  const byStatus = invFilter === 'All' ? invoices : invoices.filter(i => i.status === invFilter.toLowerCase());
+  const filtered = byStatus.filter(i => docSearchMatch(query, i.num, i.customer, i.amount, i.status, i.terms, i.project_id, i.po, (i._raw || {}).estimate_ref));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 1400 }}>
@@ -304,6 +306,8 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
           ))}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          <input value={query} onChange={e => { setQuery(e.target.value); setSelectedInv(null); }} placeholder="⌕ Search invoices…"
+            style={{ width: 240, padding: '6px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
           <button onClick={() => setModal({ type: 'new-invoice' })} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Invoice</button>
         </div>
       </div>
@@ -355,6 +359,7 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
               <DetailField label="Due Date" value={filtered[selectedInv].due} mono />
               <DetailField label="Terms" value={filtered[selectedInv].terms} />
               <DetailField label="PO Number" value={filtered[selectedInv].po || '—'} mono />
+              <DetailField label="Proposal" value={(filtered[selectedInv]._raw || {}).estimate_ref || '—'} mono />
             </div>
 
             {/* Project attachment — invoices ↔ projects, both directions */}

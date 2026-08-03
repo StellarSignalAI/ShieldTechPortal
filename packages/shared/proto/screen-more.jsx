@@ -33,13 +33,19 @@ function ProjectsScreen() {
     progress: p.status === 'complete' ? 100 : p.status === 'review' ? 90 : p.status === 'in-progress' ? 40 : 5,
     pm: p.contact || '', techs: [], start: '', end: '', milestones: [], _rec: p,
   });
-  const projects = (storeProjects && storeProjects.length) ? storeProjects.map(mapProj) : DEMO_PROJECTS;
+  const [query, setQuery] = React.useState('');
+  const allProjects = (storeProjects && storeProjects.length) ? storeProjects.map(mapProj) : DEMO_PROJECTS;
+  const projects = allProjects.filter(p => docSearchMatch(query, p.id, p.name, p.customer, p.pm, p.value, p.stage));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: 'calc(100vh - 100px)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
         <h2 className="display" style={{ fontSize: 20, fontWeight: 300 }}>Projects</h2>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search projects…"
+          style={{ width: 240, padding: '6px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={() => setWizardOpen(true)} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Project</button>
+        </div>
       </div>
       {/* Stats */}
       <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>

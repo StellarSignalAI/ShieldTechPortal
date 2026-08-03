@@ -135,15 +135,19 @@ function FinInvoices() {
   const [openNum, setOpenNum] = React.useState(null);
   const [creating, setCreating] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
+  const [query, setQuery] = React.useState('');
   const rows = useMergedInvoices();
   /* Apply completed payments (Stripe webhook / manual record) on mount. */
   React.useEffect(() => { if (window.__shieldPay) window.__shieldPay.applyPayments(); }, []);
-  const list = filter === 'All' ? rows : rows.filter(i => i.status === filter.toLowerCase());
+  const byStatus = filter === 'All' ? rows : rows.filter(i => i.status === filter.toLowerCase());
+  const list = byStatus.filter(i => docSearchMatch(query, i.num, i.customer, i.amount, i.status, i.project_id, (i._raw || {}).estimate_ref));
   const outstanding = rows.filter(i => i.status !== 'paid' && i.status !== 'draft').reduce((s, i) => s + i.amount, 0);
   const overdue = rows.filter(i => i.status === 'overdue').reduce((s, i) => s + i.amount, 0);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <FinKpis items={[['OUTSTANDING', `$${(outstanding / 1000).toFixed(1)}K`, null, 'var(--status-warn)'], ['OVERDUE', `$${(overdue / 1000).toFixed(1)}K`, null, 'var(--status-critical)']]} />
+      <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search invoices — number, customer, amount…"
+        style={{ width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       <div style={{ display: 'flex', gap: 8 }}>
         <div style={{ flex: 1, overflowX: 'auto' }}><MSegment options={['All', 'Paid', 'Pending', 'Overdue', 'Draft']} value={filter} onChange={setFilter} /></div>
         <button onClick={() => setCreating(true)} style={{ padding: '0 14px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 18, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>+</button>
@@ -173,23 +177,66 @@ function FinInvoices() {
    (same rows the desktop Finance suite and customer tabs render). */
 function MNewInvoiceSheet({ onClose }) {
   const [f, setF] = React.useState({ customer: '', desc: '', amount: '', due: '' });
+  const [estQ, setEstQ] = React.useState('');
+  const [attached, setAttached] = React.useState(null);
+  const estRows = useMergedEstimates();
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
   const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
   const lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
   const ok = f.customer.trim() && Number(f.amount) > 0;
+  /* Attaching a proposal pre-fills the invoice from it. */
+  const attach = (est) => {
+    setAttached(est);
+    setEstQ('');
+    const first = (est.lines || [])[0] || {};
+    setF(p => ({
+      ...p,
+      customer: p.customer || est.customer || '',
+      amount: p.amount || String(est.amount || ''),
+      desc: p.desc || first.desc || '',
+    }));
+  };
+  const estMatches = estQ.trim()
+    ? estRows.filter(e => docSearchMatch(estQ, e.num, e.customer, e.amount, e.status)).slice(0, 5)
+    : [];
   const save = () => {
     if (!ok) return;
     const amt = Number(f.amount) || 0;
+    const attachedLines = attached && (attached._raw && attached._raw.lines && attached._raw.lines.length ? attached._raw.lines : attached.lines);
     const rec = addInvoice({
       customer_name: f.customer.trim(), total: amt, due_date: f.due || null, status: 'open',
-      lines: f.desc ? [{ desc: f.desc, qty: 1, rate: amt }] : null,
+      lines: (attachedLines && attachedLines.length) ? attachedLines : (f.desc ? [{ desc: f.desc, qty: 1, rate: amt }] : null),
+      estimate_ref: attached ? attached.num : null,
+      customer_email: (attached && attached._raw && attached._raw.customer_email) || null,
     });
-    showToast(`Invoice ${rec.doc_number} created`, 'ok');
+    showToast(`Invoice ${rec.doc_number} created${attached ? ` from ${attached.num}` : ''}`, 'ok');
     onClose();
   };
   return (
     <MSheet title="New Invoice" onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div>
+          <span style={lbl}>Attach proposal (optional)</span>
+          {attached ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 13px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 10 }}>
+              <span className="mono" style={{ fontSize: 13, color: 'var(--brand)' }}>◇ {attached.num}</span>
+              <span style={{ flex: 1, fontSize: 12, color: 'var(--text-mid)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{attached.customer} · ${attached.amount.toLocaleString()}</span>
+              <button onClick={() => setAttached(null)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 14, cursor: 'pointer' }}>✕</button>
+            </div>
+          ) : (
+            <>
+              <input value={estQ} onChange={e => setEstQ(e.target.value)} placeholder="Search proposals — number, customer…" style={inp} />
+              {estMatches.map(e => (
+                <div key={e.num} onClick={() => attach(e)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 13px', marginTop: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, cursor: 'pointer' }}>
+                  <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{e.num}</span>
+                  <span style={{ flex: 1, fontSize: 12, color: 'var(--text-mid)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.customer}</span>
+                  <span className="mono" style={{ fontSize: 12, color: 'var(--text-high)' }}>${e.amount.toLocaleString()}</span>
+                </div>
+              ))}
+              {estQ.trim() && estMatches.length === 0 && <div style={{ marginTop: 6, fontSize: 11, color: 'var(--text-low)' }}>No proposals match “{estQ}”.</div>}
+            </>
+          )}
+        </div>
         <div><span style={lbl}>Customer</span><input value={f.customer} onChange={set('customer')} placeholder="Customer name" style={inp} /></div>
         <div><span style={lbl}>Description</span><input value={f.desc} onChange={set('desc')} placeholder="Work / line item" style={inp} /></div>
         <div><span style={lbl}>Amount ($)</span><input type="number" value={f.amount} onChange={set('amount')} placeholder="0.00" style={inp} /></div>
@@ -385,6 +432,7 @@ function FinRecurring() {
    the desktop Estimates tab). */
 function FinEstimates({ onNav }) {
   const [filter, setFilter] = React.useState('All');
+  const [query, setQuery] = React.useState('');
   const [editing, setEditing] = React.useState(null);
   const merged = useMergedEstimates();
   const [projects] = useShieldStore(projectStore);
@@ -435,13 +483,16 @@ function FinEstimates({ onNav }) {
     } else showToast(`Could not create acceptance request: ${(r && r.error) || 'unknown error'}`, 'error');
   };
 
-  const list = filter === 'All' ? rows : rows.filter(e => e.display === filter.toLowerCase());
+  const byStatus = filter === 'All' ? rows : rows.filter(e => e.display === filter.toLowerCase());
+  const list = byStatus.filter(e => docSearchMatch(query, e.num, e.customer, e.amount, e.display, e.project && e.project.number));
   const outstanding = rows.filter(e => e.display === 'sent').reduce((s, e) => s + e.amount, 0);
   const wonCount = rows.filter(e => e.display === 'accepted').length;
   const actBtn = (bg, border, color) => ({ padding: '7px 12px', background: bg, border, borderRadius: 8, color, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' });
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <FinKpis items={[['AWAITING ACCEPT', `$${(outstanding / 1000).toFixed(0)}K`, null, 'var(--brand)'], ['ACCEPTED', wonCount, `of ${rows.length} estimates`, 'var(--status-ok)']]} />
+      <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search proposals — number, customer, amount…"
+        style={{ width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       <MSegment options={['All', 'Draft', 'Sent', 'Accepted', 'Declined']} value={filter} onChange={setFilter} />
       {list.map(e => (
         <div key={e.num} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${FIN_STATUS[e.display]}` }}>

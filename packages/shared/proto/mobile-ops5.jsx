@@ -111,13 +111,17 @@ function MChatN({ onNav }) {
 /* ══════════════ INVOICES / ESTIMATES (real — merged portal+QBO) ══════════════ */
 const OPS5_INV_STATUS = { paid: 'var(--status-ok)', open: 'var(--brand)', overdue: 'var(--status-critical)', draft: 'var(--text-low)', sent: 'var(--brand)' };
 function MInvoicesN({ onNav }) {
-  const rows = useMergedInvoices();
+  const all = useMergedInvoices();
+  const [query, setQuery] = React.useState('');
   const [editing, setEditing] = React.useState(null);
+  const rows = all.filter(r => docSearchMatch(query, r.num, r.customer, r.amount, r.status, (r._raw || {}).estimate_ref));
   const open = rows.filter(r => (r.status || '').toLowerCase() !== 'paid');
   const openTotal = open.reduce((s, r) => s + (Number(r.amount) || 0), 0);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <OpsKpis items={[['INVOICES', rows.length, 'var(--brand)'], ['OPEN', open.length, open.length ? 'var(--status-warn)' : 'var(--status-ok)'], ['OPEN $', ops5$(openTotal), 'var(--text-high)']]} />
+      <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search invoices — number, customer, amount…"
+        style={{ width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       <MSection title="Tap any invoice to edit" action="Money tab" onAction={() => onNav('finance')} />
       {rows.slice(0, 40).map((r, i) => {
         const st = (r.status || 'open').toLowerCase();
@@ -130,13 +134,17 @@ function MInvoicesN({ onNav }) {
   );
 }
 function MEstimatesN({ onNav }) {
-  const rows = useMergedEstimates();
+  const all = useMergedEstimates();
+  const [query, setQuery] = React.useState('');
   const [editing, setEditing] = React.useState(null);
+  const rows = all.filter(r => docSearchMatch(query, r.num, r.customer, r.amount, r.status));
   const pending = rows.filter(r => !/accepted|closed|converted/i.test(r.status || ''));
   const value = rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <OpsKpis items={[['ESTIMATES', rows.length, 'var(--brand)'], ['AWAITING', pending.length, pending.length ? 'var(--status-warn)' : 'var(--status-ok)'], ['PIPELINE', ops5$(value), 'var(--text-high)']]} />
+      <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search proposals — number, customer, amount…"
+        style={{ width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       <MSection title="Tap any estimate to edit" action="Money tab" onAction={() => onNav('finance')} />
       {rows.slice(0, 40).map((r, i) => (
         <MRow key={r.num || i} icon="proposals" title={`${r.num} · ${r.customer}`}
