@@ -114,12 +114,13 @@ function ShieldAuthGate({ appId, children }) {
 }
 
 /* ── Admin → Users & Invites ── */
-const AU_APPS = [['portal', 'Portal'], ['tech', 'Tech App'], ['customer', 'Customer Portal']];
+const AU_APPS = [['portal', 'Portal'], ['tech', 'Tech App'], ['sales', 'Sales App'], ['customer', 'Customer Portal']];
 const AU_ROLE_DEFAULT_RIGHTS = {
-  Admin: { portal: true, tech: true, customer: true },
-  Staff: { portal: true, tech: true, customer: false },
-  Technician: { portal: false, tech: true, customer: false },
-  Client: { portal: false, tech: false, customer: true },
+  Admin: { portal: true, tech: true, customer: true, sales: true },
+  Staff: { portal: true, tech: true, customer: false, sales: true },
+  Technician: { portal: false, tech: true, customer: false, sales: false },
+  Sales: { portal: false, tech: false, customer: false, sales: true },
+  Client: { portal: false, tech: false, customer: true, sales: false },
 };
 
 function UsersScreen() {
@@ -185,7 +186,7 @@ function UsersScreen() {
             <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" style={authInput} /></div>
           <div><label style={authLabel}>Role</label>
             <select value={role} onChange={e => setRoleAndDefaults(e.target.value)} style={{ ...authInput, appearance: 'none' }}>
-              {['Admin', 'Staff', 'Technician', 'Client'].map(r => <option key={r} value={r}>{r}</option>)}
+              {['Admin', 'Staff', 'Technician', 'Sales', 'Client'].map(r => <option key={r} value={r}>{r}</option>)}
             </select></div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 14, flexWrap: 'wrap' }}>
@@ -243,7 +244,7 @@ function UserRow({ r, isSelf, onChange }) {
   const save = async () => {
     setBusy('save');
     const { error } = await window.__shieldSupabase.from('profiles')
-      .update({ role, app_rights: { portal: !!rights.portal, tech: !!rights.tech, customer: !!rights.customer } })
+      .update({ role, app_rights: { portal: !!rights.portal, tech: !!rights.tech, customer: !!rights.customer, sales: !!rights.sales } })
       .eq('id', r.id);
     setBusy('');
     if (error) { showToast(error.message, 'error'); return; }
@@ -288,7 +289,7 @@ function UserRow({ r, isSelf, onChange }) {
             <div style={{ minWidth: 150 }}>
               <label style={authLabel}>Role</label>
               <select value={role} onChange={e => { const nr = e.target.value; setRole(nr); setRights(AU_ROLE_DEFAULT_RIGHTS[nr]); }} style={{ ...authInput, appearance: 'none', cursor: 'pointer' }}>
-                {['Admin', 'Staff', 'Technician', 'Client'].map(x => <option key={x} value={x}>{x}</option>)}
+                {['Admin', 'Staff', 'Technician', 'Sales', 'Client'].map(x => <option key={x} value={x}>{x}</option>)}
               </select>
             </div>
             <div>
