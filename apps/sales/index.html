@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <title>ShieldTech Sales</title>
+  <link rel="icon" type="image/png" href="./sw/shieldtech-emblem.png" />
+  <!-- Installable app (PWA): home-screen on iOS/Android, desktop install on Windows/Mac -->
+  <link rel="manifest" href="/manifest-sales.webmanifest" />
+  <meta name="theme-color" content="#05070A" />
+  <link rel="apple-touch-icon" href="./sw/shieldtech-emblem.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ShieldTech Sales" />
+  <meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' }).then(function (reg) {
+          document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') reg.update().catch(function () {});
+          });
+        }).catch(function () {});
+      });
+    }
+  </script>
+</body>
+</html>

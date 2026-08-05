@@ -1,0 +1,15 @@
+{
+  "name": "shieldtech-sales-native",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Native Android/iOS shell for the ShieldTech Sales app (loads the live production app)",
+  "scripts": {
+    "sync": "cap sync"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^6.2.1",
+    "@capacitor/ios": "^6.2.1"
+  }
+}

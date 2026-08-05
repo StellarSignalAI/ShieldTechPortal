@@ -11,6 +11,7 @@ no reinstall.
 | portal | `com.shieldtech.portal` | https://portal.shieldtechsolutions.com |
 | tech | `com.shieldtech.tech` | https://tech.shieldtechsolutions.com |
 | customer | `com.shieldtech.customer` | https://customer.shieldtechsolutions.com |
+| sales | `com.shieldtech.sales` | https://sales.shieldtechsolutions.com |
 
 ## Android APKs (automated)
 

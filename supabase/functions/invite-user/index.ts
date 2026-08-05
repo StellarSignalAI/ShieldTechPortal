@@ -3,7 +3,7 @@
 // emails), then the auth user with a temp password, then emails the credentials
 // via Resend when RESEND_API_KEY is configured. Response shape: {ok, data|error}.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { credentialsEmail, googleWelcomeEmail, technicianInviteEmail } from "../_shared/email.ts";
+import { credentialsEmail, googleWelcomeEmail, salesInviteEmail, technicianInviteEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -48,13 +48,15 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { return json(400, { ok: false, error: "Invalid JSON" }); }
   const email = (body.email ?? "").trim().toLowerCase();
   const role = body.role ?? "Client";
-  // Technicians always get exactly tech-app access — the office administers
-  // any further rights from the Users console after the fact.
+  // Technicians and Sales reps always get exactly their app — the office
+  // administers any further rights from the Users console after the fact.
   const appRights = role === "Technician"
-    ? { portal: false, tech: true, customer: false }
+    ? { portal: false, tech: true, customer: false, sales: false }
+    : role === "Sales"
+    ? { portal: false, tech: false, customer: false, sales: true }
     : (body.app_rights ?? { portal: false, tech: false, customer: true });
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json(400, { ok: false, error: "Valid email required" });
-  if (!["Admin", "Staff", "Manager", "Technician", "Client"].includes(role)) {
+  if (!["Admin", "Staff", "Manager", "Technician", "Sales", "Client"].includes(role)) {
     return json(400, { ok: false, error: "Unknown role" });
   }
   // Only a full Admin can mint another Admin — a reporting manager cannot escalate.
@@ -110,13 +112,17 @@ Deno.serve(async (req) => {
   const resendKey = Deno.env.get("RESEND_API_KEY");
   const portalUrl = Deno.env.get("PORTAL_URL") ?? "https://portal.shieldtechsolutions.com";
   const techBase = (Deno.env.get("TECH_URL") ?? "https://tech.shieldtechsolutions.com").replace(/\/+$/, "");
+  // Sales app lives at portal.…/sales today; set SALES_URL once the dedicated
+  // sales.shieldtechsolutions.com domain is attached in Vercel.
+  const salesBase = (Deno.env.get("SALES_URL") ?? "https://portal.shieldtechsolutions.com/sales").replace(/\/+$/, "");
   const isDomainUser = email.endsWith("@shieldtechsolutions.com");
   // Technician-app access → include the "Get the Tech App" install link.
   const hasTech = !!appRights.tech;
   const techOnly = hasTech && !appRights.portal && !appRights.customer;
+  const salesOnly = !!(appRights as Record<string, boolean>).sales && !appRights.portal && !hasTech && !appRights.customer;
   const techUrl = hasTech ? `${techBase}/get-tech.html` : undefined;
-  // Tech-only users can't reach the portal — point their sign-in button at the Tech app.
-  const signInUrl = techOnly ? techBase : portalUrl;
+  // Single-app users can't reach the portal — point their sign-in button at their app.
+  const signInUrl = techOnly ? techBase : salesOnly ? salesBase : portalUrl;
   let emailed = false;
   if (resendKey) {
     const apps = Object.entries(appRights).filter(([, v]) => v).map(([k]) => k).join(", ") || "none";
@@ -124,6 +130,8 @@ Deno.serve(async (req) => {
     // (+ credentials when they aren't a Google-domain account).
     const mail = role === "Technician"
       ? technicianInviteEmail({ name: body.name, email, password, techUrl: techBase, installUrl: techUrl, google: isDomainUser })
+      : role === "Sales"
+      ? salesInviteEmail({ name: body.name, email, password, salesUrl: salesBase, installUrl: `${salesBase}/apps`, google: isDomainUser })
       : isDomainUser
         ? googleWelcomeEmail({ name: body.name, apps, portalUrl: signInUrl, techUrl })
         : credentialsEmail({ name: body.name, email, password, apps, portalUrl: signInUrl, techUrl });

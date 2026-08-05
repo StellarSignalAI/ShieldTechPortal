@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [portal, tech, customer]
+        app: [portal, tech, customer, sales]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -98,6 +98,7 @@ jobs:
 
             - **shieldtech-portal.apk** — the operations portal (admins/office)
             - **shieldtech-tech.apk** — the field technician app
+            - **shieldtech-sales.apk** — the sales CRM app
             - **shieldtech-customer.apk** — the customer portal
 
             iPhone/iPad: install from Safari via **Share → Add to Home Screen**
@@ -110,7 +111,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        app: [portal, tech, customer]
+        app: [portal, tech, customer, sales]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

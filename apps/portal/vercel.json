@@ -6,6 +6,16 @@
   "outputDirectory": "dist",
   "redirects": [
     {
+      "source": "/sales/android",
+      "destination": "https://github.com/StellarSignalAI/ShieldTechPortal/releases/download/mobile-apps-latest/shieldtech-sales.apk",
+      "permanent": false
+    },
+    {
+      "source": "/sales/android.apk",
+      "destination": "https://github.com/StellarSignalAI/ShieldTechPortal/releases/download/mobile-apps-latest/shieldtech-sales.apk",
+      "permanent": false
+    },
+    {
       "source": "/android",
       "destination": "https://github.com/StellarSignalAI/ShieldTechPortal/releases/download/mobile-apps-latest/shieldtech-portal.apk",
       "permanent": false

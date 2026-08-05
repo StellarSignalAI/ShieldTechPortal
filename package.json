@@ -9,10 +9,11 @@
   ],
   "scripts": {
     "dev": "npm run dev -w apps/portal",
-    "build": "npm run build -w apps/portal && npm run build -w apps/tech && npm run build -w apps/customer",
-    "build:portal": "npm run build -w apps/portal",
+    "build": "npm run build -w apps/portal && npm run build -w apps/tech && npm run build -w apps/customer && npm run build -w apps/sales",
+    "build:portal": "npm run build -w apps/portal && npm run build -w apps/sales && rm -rf apps/portal/dist/sales && cp -r apps/sales/dist apps/portal/dist/sales",
     "build:tech": "npm run build -w apps/tech",
     "build:customer": "npm run build -w apps/customer",
+    "build:sales": "npm run build -w apps/sales",
     "preview": "npm run preview -w apps/portal"
   },
   "dependencies": {

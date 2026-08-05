@@ -279,17 +279,18 @@ function MDocumentsN() {
 }
 
 /* ══════════════ USERS & INVITES (real — profiles) ══════════════ */
-const OPS5_ROLE_C = { Admin: 'var(--status-critical)', Staff: 'var(--brand)', Technician: 'var(--status-ok)', Customer: 'var(--text-low)' };
+const OPS5_ROLE_C = { Admin: 'var(--status-critical)', Staff: 'var(--brand)', Technician: 'var(--status-ok)', Sales: '#FBBF24', Customer: 'var(--text-low)' };
 /* Full native user console — invite (role-aware emails), role/app-rights
    management, reset/resend/remove. Same backend as desktop (invite-user +
    manage-user edge functions + profiles RLS). */
 const M_ROLE_RIGHTS = {
-  Admin: { portal: true, tech: true, customer: false },
-  Staff: { portal: true, tech: true, customer: false },
-  Technician: { portal: false, tech: true, customer: false },
-  Client: { portal: false, tech: false, customer: true },
+  Admin: { portal: true, tech: true, customer: false, sales: true },
+  Staff: { portal: true, tech: true, customer: false, sales: true },
+  Technician: { portal: false, tech: true, customer: false, sales: false },
+  Sales: { portal: false, tech: false, customer: false, sales: true },
+  Client: { portal: false, tech: false, customer: true, sales: false },
 };
-const M_APPS = [['portal', 'Portal'], ['tech', 'Tech App'], ['customer', 'Customer']];
+const M_APPS = [['portal', 'Portal'], ['tech', 'Tech App'], ['sales', 'Sales'], ['customer', 'Customer']];
 
 function MUsersN({ onNav }) {
   const sb = window.__shieldSupabase;
@@ -373,10 +374,12 @@ function MUsersN({ onNav }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
             <div><span style={lbl}>Email</span><input value={f.email} onChange={e => setF(p => ({ ...p, email: e.target.value }))} placeholder="person@example.com" inputMode="email" autoCapitalize="none" style={inp} /></div>
             <div><span style={lbl}>Name</span><input value={f.name} onChange={e => setF(p => ({ ...p, name: e.target.value }))} placeholder="Full name" style={inp} /></div>
-            <div><span style={lbl}>Role</span><MSegment options={['Technician', 'Staff', 'Admin', 'Client']} value={f.role} onChange={v => setF(p => ({ ...p, role: v }))} /></div>
+            <div><span style={lbl}>Role</span><MSegment options={['Technician', 'Sales', 'Staff', 'Admin', 'Client']} value={f.role} onChange={v => setF(p => ({ ...p, role: v }))} /></div>
             <div style={{ fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.6, padding: '2px 2px 0' }}>
               {f.role === 'Technician'
                 ? <>They'll get one email with their sign-in and a single link to <b style={{ color: 'var(--brand)' }}>tech.shieldtechsolutions.com</b> — you administer any further access here.</>
+                : f.role === 'Sales'
+                ? <>They'll get one email with their sign-in and a single link to the <b style={{ color: 'var(--brand)' }}>Sales CRM app</b> — nothing else; you administer any further access here.</>
                 : <>They'll get a branded email with a temporary password ({M_APPS.filter(([id]) => M_ROLE_RIGHTS[f.role][id]).map(([, l]) => l).join(' + ') || 'no apps'} access).</>}
             </div>
             <button disabled={busy === 'invite'} onClick={invite} style={{ padding: '13px 0', borderRadius: 11, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', opacity: busy === 'invite' ? 0.6 : 1 }}>{busy === 'invite' ? 'Inviting…' : 'Send invite'}</button>
@@ -389,7 +392,7 @@ function MUsersN({ onNav }) {
         <MSheet title={manage.name || manage.email} onClose={() => setManage(null)}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
             <div className="mono" style={{ fontSize: 11.5, color: 'var(--text-low)' }}>{manage.email}</div>
-            <div><span style={lbl}>Role</span><MSegment options={['Technician', 'Staff', 'Admin', 'Client']} value={manage.role} onChange={v => setManage(m => ({ ...m, role: v, app_rights: { ...M_ROLE_RIGHTS[v] } }))} /></div>
+            <div><span style={lbl}>Role</span><MSegment options={['Technician', 'Sales', 'Staff', 'Admin', 'Client']} value={manage.role} onChange={v => setManage(m => ({ ...m, role: v, app_rights: { ...M_ROLE_RIGHTS[v] } }))} /></div>
             <div>
               <span style={lbl}>App access</span>
               <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', padding: '4px 2px' }}>
