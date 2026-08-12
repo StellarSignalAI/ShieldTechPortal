@@ -3,7 +3,7 @@
 // from the client via RLS (admins can update profiles); this function covers the
 // actions that need the service role. Response shape: {ok, data|error}.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { resetEmail } from "../_shared/email.ts";
+import { portalFor, resetEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -64,7 +64,8 @@ Deno.serve(async (req) => {
     await admin.from("profiles").update({ must_change_password: true }).eq("id", target.id);
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
-    const portalUrl = Deno.env.get("PORTAL_URL") ?? "https://portal.shieldtechsolutions.com";
+    // Send the user to THEIR portal (tech/sales/customer/portal by account type).
+    const portalUrl = portalFor(target.app_rights as Record<string, boolean>).url;
     let emailed = false;
     if (resendKey) {
       const mail = resetEmail({ email: target.email, password, portalUrl, resend: action === "resend" });
@@ -72,10 +73,11 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech <no-reply@shieldtechsolutions.com>",
+          from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech Security <no-reply@shieldtechsolutions.com>",
           to: [target.email],
           subject: mail.subject,
           html: mail.html,
+          text: mail.text,
         }),
       });
       emailed = res.ok;

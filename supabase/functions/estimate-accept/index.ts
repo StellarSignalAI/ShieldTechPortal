@@ -11,6 +11,7 @@
 //   rows, renders the confirmation page. The portal polls estimate_acceptances
 //   and turns accepted rows into projects.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { proposalEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -35,9 +36,9 @@ button{border:none;border-radius:9px;padding:13px 26px;font-size:14px;font-weigh
 const page = (title: string, message: string, kind: "ok" | "bad" | "info", extra = "") =>
   new Response(
     `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${title} — ShieldTech Solutions</title><style>${CSS}</style></head>
+<title>${title} — ShieldTech Security</title><style>${CSS}</style></head>
 <body><div class="card"><div class="dot ${kind}">${kind === "ok" ? "✓" : kind === "bad" ? "✕" : "◇"}</div><h1>${title}</h1><p>${message}</p>${extra}
-<div class="brand">ShieldTech Solutions · Security · Monitoring · Service</div></div></body></html>`,
+<div class="brand">ShieldTech Security · Low Voltage. Zero Punch List.</div></div></body></html>`,
     { status: 200, headers: { ...cors, "Content-Type": "text/html; charset=utf-8" } },
   );
 
@@ -70,7 +71,7 @@ Deno.serve(async (req) => {
     const self = `${Deno.env.get("SUPABASE_URL")}/functions/v1/estimate-accept`;
     return page(
       `Proposal ${rec.estimate_ref}`,
-      `Prepared for ${rec.customer_name ?? "you"} by ShieldTech Solutions. Review the details from your email, then confirm your decision below. Accepting starts your project — our team follows up to schedule kickoff.`,
+      `Prepared for ${rec.customer_name ?? "you"} by ShieldTech Security. Review the details from your email, then confirm your decision below. Accepting starts your project — our team follows up to schedule kickoff.`,
       "info",
       `${rec.amount ? `<div class="amt">$${Number(rec.amount).toLocaleString()}</div>` : ""}
 <div class="btns">
@@ -146,24 +147,21 @@ Deno.serve(async (req) => {
   const resendKey = Deno.env.get("RESEND_API_KEY");
   let emailed = false, emailError: string | null = null;
   if (resendKey) {
-    const amountLine = body.amount ? `<p style="font-size:22px;font-weight:600;margin:6px 0 18px">$${Number(body.amount).toLocaleString()}</p>` : "";
+    const mail = proposalEmail({
+      ref: estimateRef,
+      customer: body.customerName ? String(body.customerName) : null,
+      amount: body.amount ? Number(body.amount) : null,
+      link: reviewLink,
+    });
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech <no-reply@shieldtechsolutions.com>",
+        from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech Security <no-reply@shieldtechsolutions.com>",
         to: [customerEmail],
-        subject: `Proposal ${estimateRef} from ShieldTech Solutions — approval requested`,
-        html: `<div style="font-family:-apple-system,'Segoe UI',Roboto,sans-serif;max-width:520px;margin:0 auto;padding:24px">
-<h2 style="font-size:18px;margin:0 0 4px">Proposal ${estimateRef}</h2>
-<p style="color:#556;font-size:14px;margin:0 0 14px">Prepared for ${body.customerName ?? "you"} by ShieldTech Solutions</p>
-${amountLine}
-<p style="font-size:14px;color:#334;line-height:1.6">Please review your proposal and confirm your decision on the secure page below. Accepting starts your project — our team will follow up to schedule kickoff.</p>
-<div style="margin:26px 0">
-<a href="${reviewLink}" style="background:#3fa9f5;color:#fff;text-decoration:none;padding:12px 26px;border-radius:8px;font-size:14px;font-weight:600">Review & respond</a>
-</div>
-<p style="font-size:12px;color:#99a">ShieldTech Solutions LLC · Security · Monitoring · Service<br/>Questions? Just reply to this email.</p>
-</div>`,
+        subject: mail.subject,
+        html: mail.html,
+        text: mail.text,
       }),
     });
     const out = await res.json();

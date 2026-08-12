@@ -17,6 +17,7 @@
 //   branded invoice page with line items; "Pay now" goes to Stripe checkout
 //   when connected, otherwise shows remit-by-check/ACH instructions.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { EMAIL_BRAND, invoiceEmail, invoiceReminderEmail, money } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -27,14 +28,11 @@ const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
 
 const BRAND = {
-  company: "ShieldTech Solutions LLC",
-  tagline: "Security · Monitoring · Service",
-  phone: "(215) 555-0100",
-  email: "billing@shieldtechsolutions.com",
-  license: "PA HIC #PA123456",
+  company: EMAIL_BRAND.company,
+  tagline: EMAIL_BRAND.tagline,
+  phone: EMAIL_BRAND.phone,
+  email: EMAIL_BRAND.support,
 };
-
-const money = (n: unknown) => "$" + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 function payPage(rec: Record<string, unknown>): Response {
   const paid = rec.status === "paid";
@@ -74,7 +72,7 @@ td{padding:7px 0;border-bottom:1px solid #17202e;color:#9fb0c3}.r{text-align:rig
 .paidbox h2{font-size:16px;margin:0 0 6px}.paidbox p{font-size:12px;color:#9fb0c3;margin:2px 0}.thanks{margin-top:8px}
 .foot{text-align:center;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#5b6b7f;margin-top:20px}
 </style></head><body><div class="wrap">
-<div class="head"><div class="logo">ST</div><div><div class="co">${BRAND.company}</div><div class="tag">${BRAND.tagline} · ${BRAND.license}</div></div></div>
+<div class="head"><div class="logo">ST</div><div><div class="co">${BRAND.company}</div><div class="tag">${BRAND.tagline}</div></div></div>
 <div class="card">
 <span class="status">${paid ? "PAID" : "DUE"}</span>
 <span class="ref">${rec.invoice_ref}</span>
@@ -158,19 +156,19 @@ Deno.serve(async (req) => {
     let sent = 0;
     for (const rec of rows ?? []) {
       const days = Math.max(1, Math.round((Date.now() - new Date(rec.due_date + "T00:00:00").getTime()) / 86400000));
+      const mail = invoiceReminderEmail({
+        ref: String(rec.invoice_ref), amount: Number(rec.amount) || 0,
+        dueDate: String(rec.due_date), daysPast: days, link: `${base}?token=${rec.token}`,
+      });
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech <no-reply@shieldtechsolutions.com>",
+          from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech Security <no-reply@shieldtechsolutions.com>",
           to: [rec.customer_email],
-          subject: `Reminder: invoice ${rec.invoice_ref} (${money(rec.amount)}) is ${days} day${days > 1 ? "s" : ""} past due`,
-          html: `<div style="font-family:-apple-system,'Segoe UI',Roboto,sans-serif;max-width:520px;margin:0 auto;padding:24px">
-<h2 style="font-size:17px;margin:0 0 6px">Friendly reminder from ${BRAND.company}</h2>
-<p style="color:#556;font-size:14px;line-height:1.6">Invoice <b>${rec.invoice_ref}</b> for <b>${money(rec.amount)}</b> was due ${new Date(rec.due_date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric" })} and is still open.</p>
-<a href="${base}?token=${rec.token}" style="display:inline-block;padding:12px 28px;border-radius:9px;background:#3fa9f5;color:#fff;font-weight:700;text-decoration:none;margin:10px 0">View & pay invoice</a>
-<p style="color:#889;font-size:12px">Already paid? Please disregard — payments can take a day to post.</p>
-<p style="color:#889;font-size:12px">${BRAND.company} · ${BRAND.phone} · ${BRAND.email}</p></div>`,
+          subject: mail.subject,
+          html: mail.html,
+          text: mail.text,
         }),
       });
       if (res.ok) {
@@ -250,23 +248,18 @@ Deno.serve(async (req) => {
     let emailed = false, emailError: string | null = null;
     if (email && resendKey) {
       const lines = Array.isArray(inv.lines) ? inv.lines as Array<Record<string, unknown>> : [];
-      const lineHtml = lines.slice(0, 12).map((l) =>
-        `<tr><td style="padding:6px 0;border-bottom:1px solid #eee;font-size:13px;color:#445">${String(l.desc ?? "")}</td><td style="padding:6px 0;border-bottom:1px solid #eee;font-size:13px;color:#111;text-align:right">${money((Number(l.qty) || 1) * (Number(l.rate) || 0))}</td></tr>`
-      ).join("");
+      const mail = invoiceEmail({
+        ref, customer, amount, due: (inv.due as string) || null, lines, link,
+      });
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech <no-reply@shieldtechsolutions.com>",
+          from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech Security <no-reply@shieldtechsolutions.com>",
           to: [email],
-          subject: `Invoice ${ref} from ${BRAND.company} — ${money(amount)}`,
-          html: `<div style="font-family:-apple-system,'Segoe UI',Roboto,sans-serif;max-width:520px;margin:0 auto;padding:24px">
-<h2 style="font-size:18px;margin:0 0 4px">Invoice ${ref}</h2>
-<p style="color:#556;font-size:14px;margin:0 0 14px">Prepared for ${customer} by ${BRAND.company}</p>
-<p style="font-size:24px;font-weight:700;margin:6px 0 16px">${money(amount)}${inv.due ? `<span style="font-size:13px;font-weight:400;color:#889"> · due ${new Date(String(inv.due) + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>` : ""}</p>
-${lineHtml ? `<table style="width:100%;border-collapse:collapse;margin-bottom:16px">${lineHtml}</table>` : ""}
-<a href="${link}" style="display:inline-block;padding:13px 30px;border-radius:9px;background:#3fa9f5;color:#fff;font-weight:700;text-decoration:none">View & pay online</a>
-<p style="color:#889;font-size:12px;margin-top:18px">${BRAND.company} · ${BRAND.tagline}<br/>${BRAND.phone} · ${BRAND.email} · ${BRAND.license}</p></div>`,
+          subject: mail.subject,
+          html: mail.html,
+          text: mail.text,
         }),
       });
       emailed = res.ok;

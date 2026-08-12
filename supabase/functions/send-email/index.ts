@@ -1,7 +1,13 @@
 // send-email — actually delivers platform email (invoices, estimates, notices)
 // via Resend. POST {to, subject, html?, text?} with a signed-in session or
 // x-cron-secret. 503 until RESEND_API_KEY is configured.
+//
+// Text-only sends are wrapped in the unified ShieldTech email design system
+// (_shared/email.ts) so ad-hoc messages (e.g. Sales-app follow-ups) carry the
+// same identity as every other automated email. Callers that pass html are
+// trusted to have built it from the same system.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { notificationEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -30,13 +36,23 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { return json(400, { ok: false, error: "Invalid JSON" }); }
   if (!body.to || !body.subject || !(body.html || body.text)) return json(400, { ok: false, error: "to, subject, html|text required" });
 
+  // Wrap bare text in the ShieldTech master template (keeps the raw text as
+  // the plain-text fallback). html callers pass through unchanged.
+  let html = body.html;
+  let text = body.text;
+  if (!html && text) {
+    const wrapped = notificationEmail({ subject: body.subject!, message: text, label: "Message" });
+    html = wrapped.html;
+    text = wrapped.text;
+  }
+
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech <no-reply@shieldtechsolutions.com>",
+      from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech Security <no-reply@shieldtechsolutions.com>",
       to: [body.to], subject: body.subject,
-      html: body.html ?? undefined, text: body.text ?? undefined,
+      html: html ?? undefined, text: text ?? undefined,
     }),
   });
   const out = await res.json();

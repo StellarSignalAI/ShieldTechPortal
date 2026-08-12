@@ -3,7 +3,7 @@
 // emails), then the auth user with a temp password, then emails the credentials
 // via Resend when RESEND_API_KEY is configured. Response shape: {ok, data|error}.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { credentialsEmail, googleWelcomeEmail, salesInviteEmail, technicianInviteEmail } from "../_shared/email.ts";
+import { credentialsEmail, googleWelcomeEmail, portalFor, salesInviteEmail, technicianInviteEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -125,24 +125,25 @@ Deno.serve(async (req) => {
   const signInUrl = techOnly ? techBase : salesOnly ? salesBase : portalUrl;
   let emailed = false;
   if (resendKey) {
-    const apps = Object.entries(appRights).filter(([, v]) => v).map(([k]) => k).join(", ") || "none";
-    // Technicians get the minimal email: just tech.shieldtechsolutions.com
-    // (+ credentials when they aren't a Google-domain account).
+    // Portal routing: the invite email carries ONE destination — the portal
+    // that matches the account type ({{PORTAL_NAME}} / {{ACCESS_URL}}).
+    const portal = portalFor(appRights as Record<string, boolean>, role);
     const mail = role === "Technician"
       ? technicianInviteEmail({ name: body.name, email, password, techUrl: techBase, installUrl: techUrl, google: isDomainUser })
       : role === "Sales"
       ? salesInviteEmail({ name: body.name, email, password, salesUrl: salesBase, installUrl: `${salesBase}/apps`, google: isDomainUser })
       : isDomainUser
-        ? googleWelcomeEmail({ name: body.name, apps, portalUrl: signInUrl, techUrl })
-        : credentialsEmail({ name: body.name, email, password, apps, portalUrl: signInUrl, techUrl });
+        ? googleWelcomeEmail({ name: body.name, portalName: portal.name, accessUrl: signInUrl, installUrl: techUrl })
+        : credentialsEmail({ name: body.name, email, password, portalName: portal.name, accessUrl: signInUrl, installUrl: techUrl });
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech <no-reply@shieldtechsolutions.com>",
+        from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech Security <no-reply@shieldtechsolutions.com>",
         to: [email],
         subject: mail.subject,
         html: mail.html,
+        text: mail.text,
       }),
     });
     emailed = res.ok;
