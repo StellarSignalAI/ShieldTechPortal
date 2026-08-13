@@ -476,6 +476,59 @@ export function proposalEmail(opts: {
   return { subject: subjectFor("Proposal Available"), html, text };
 }
 
+/* Job / project assignment — sent to a technician the moment a scheduled
+   project or job is assigned to them. */
+export function jobAssignedEmail(opts: {
+  name?: string | null; title: string; customer?: string | null; site?: string | null;
+  date?: string | null; endDate?: string | null; startTime?: string | null;
+  hours?: number | string | null; notes?: string | null; jobRef?: string | null;
+}): InviteEmail {
+  const hi = opts.name ? `${esc(String(opts.name).split(/\s+/)[0])}, you've` : "You've";
+  const techUrl = (Deno.env.get("TECH_URL") ?? "https://tech.shieldtechsolutions.com").replace(/\/+$/, "");
+  const fmtDay = (iso?: string | null) => {
+    if (!iso) return null;
+    const d = new Date(`${iso}T12:00:00`);
+    return isNaN(d.getTime()) ? iso : d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  };
+  const when = fmtDay(opts.date);
+  const until = opts.endDate && opts.endDate !== opts.date ? fmtDay(opts.endDate) : null;
+  const html = shell(
+    eyebrow("Job Assigned") +
+    heading("You're On a New Job") +
+    para(`${hi} been assigned to the following job. Full details, site access notes, and photo checklists are in your Technician Portal.`) +
+    infoCard(
+      (opts.jobRef ? kvRow("Job", esc(opts.jobRef), { mono: true }) : "") +
+      kvRow("Project", esc(opts.title)) +
+      (opts.customer ? kvRow("Customer", esc(opts.customer)) : "") +
+      (opts.site ? kvRow("Site", esc(opts.site)) : "") +
+      (when ? kvRow(until ? "Starts" : "Scheduled", esc(when), { highlight: true }) : "") +
+      (until ? kvRow("Through", esc(until)) : "") +
+      (opts.startTime ? kvRow("Start Time", esc(opts.startTime)) : "") +
+      (opts.hours ? kvRow("Est. Hours", esc(String(opts.hours))) : ""),
+    ) +
+    (opts.notes ? para(`<strong style="color:${WHITE};">Notes:</strong> ${esc(opts.notes)}`) : "") +
+    cta("Open Technician Portal →", techUrl) +
+    supportBlock("Questions about this assignment? Reply to this email or"),
+    `New job: ${opts.title}${when ? ` — ${when}` : ""}`,
+  );
+  const text = [
+    "You're on a new job",
+    "", `PROJECT: ${opts.title}`,
+    ...(opts.jobRef ? [`JOB: ${opts.jobRef}`] : []),
+    ...(opts.customer ? [`CUSTOMER: ${opts.customer}`] : []),
+    ...(opts.site ? [`SITE: ${opts.site}`] : []),
+    ...(when ? [`${until ? "STARTS" : "SCHEDULED"}: ${when}`] : []),
+    ...(until ? [`THROUGH: ${until}`] : []),
+    ...(opts.startTime ? [`START TIME: ${opts.startTime}`] : []),
+    ...(opts.hours ? [`EST. HOURS: ${opts.hours}`] : []),
+    ...(opts.notes ? ["", `NOTES: ${opts.notes}`] : []),
+    "", `Open your Technician Portal: ${techUrl}`,
+    "", `Questions? Contact ${EMAIL_BRAND.support}`,
+    textFooter(),
+  ].join("\n");
+  return { subject: subjectFor("New Job Assigned"), html, text };
+}
+
 /* Generic system notification — wraps ad-hoc messages (e.g. the Sales app's
    AI-drafted emails sent through send-email) in the master identity. */
 export function notificationEmail(opts: {

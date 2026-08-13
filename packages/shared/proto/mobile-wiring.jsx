@@ -177,15 +177,15 @@ function MNewJobSheet({ onClose, onSaved, defaultDate }) {
     if (!f.title.trim()) { showToast('Job title is required', 'warn'); return; }
     if (!f.date) { showToast('Pick a date', 'warn'); return; }
     const techRec = roster.find(t => t.id === f.tech);
-    jobStore.set(prev => {
-      const nextId = prev.reduce((m, j) => Math.max(m, j.id), 0) + 1;
-      return [...prev, normalizeJobDates({
-        id: nextId, title: f.title.trim(), techs: f.tech ? [f.tech] : [], techIds: techRec && techRec.uid ? [techRec.uid] : [], type: f.type,
-        date: f.date, endDate: f.date, start: Number(f.start), dur: Number(f.dur),
-        customer: f.customer || '—', value: Number(f.value) || 0,
-      })];
+    const nextId = jobStore.get().reduce((m, j) => Math.max(m, j.id), 0) + 1;
+    const rec = normalizeJobDates({
+      id: nextId, title: f.title.trim(), techs: f.tech ? [f.tech] : [], techIds: techRec && techRec.uid ? [techRec.uid] : [], type: f.type,
+      date: f.date, endDate: f.date, start: Number(f.start), dur: Number(f.dur),
+      customer: f.customer || '—', value: Number(f.value) || 0,
     });
+    jobStore.set(prev => [...prev, rec]);
     showToast(`Job scheduled for ${dateOfISO(f.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`, 'ok');
+    if (f.tech) notifyJobAssigned(rec, [f.tech]);
     onSaved ? onSaved() : onClose();
   };
 
