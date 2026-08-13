@@ -381,9 +381,7 @@ function EmployeeScreen() {
   // Service-role user actions (remove / reset password / resend invite).
   const manageUser = async (action, emp) => {
     if (!window.__shieldSupabase) { shieldToast('Backend not configured', 'warn'); return; }
-    const { data, error } = await window.__shieldSupabase.functions.invoke('manage-user', {
-      body: { action, userId: emp.id },
-    });
+    const { data, error } = await invokeEdgeFn(window.__shieldSupabase, 'manage-user', { action, userId: emp.id });
     if (error || !data || !data.ok) {
       shieldToast((data && data.error) || (error && error.message) || 'Action failed', 'error');
       return;
@@ -544,11 +542,11 @@ function AddEmployeeModal({ onClose, showToast, onDone, team = [] }) {
     const inviteRole = emp.adminEdit ? 'Admin' : emp.portalAccess ? 'Staff' : 'Technician';
     const app_rights = { portal: !!emp.portalAccess, tech: !!emp.techAppAccess, customer: false };
     setBusy(true); setResult(null);
-    const { data, error } = await window.__shieldSupabase.functions.invoke('invite-user', {
-      body: { email, name: name || email, role: inviteRole, app_rights },
+    const { data, error } = await invokeEdgeFn(window.__shieldSupabase, 'invite-user', {
+      email, name: name || email, role: inviteRole, app_rights,
     });
     setBusy(false);
-    if (error || !data || !data.ok) { showToast((data && data.error) || (error && error.message) || 'Could not create team member', 'error'); return; }
+    if (error || !data || !data.ok) { showToast(friendlyInviteError((data && data.error) || (error && error.message), email), 'error'); return; }
     setResult(data.data);
     if (onDone) onDone();
     showToast(data.data.emailed ? `Invite emailed to ${email}` : 'Team member created — copy the temp password below', 'ok');

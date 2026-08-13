@@ -125,7 +125,7 @@ async function salesSendEmail(to, subject, text) {
   const sb = window.__shieldSupabase;
   if (!sb) return { ok: false, error: 'Backend not configured' };
   try {
-    const { data, error } = await sb.functions.invoke('send-email', { body: { to, subject, text } });
+    const { data, error } = await invokeEdgeFn(sb, 'send-email', { to, subject, text });
     if (error || !data || !data.ok) return { ok: false, error: (data && data.error) || (error && error.message) || 'send failed' };
     return { ok: true };
   } catch (e) { return { ok: false, error: String(e) }; }

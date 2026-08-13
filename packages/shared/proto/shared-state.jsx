@@ -630,6 +630,32 @@ function docSearchMatch(query, ...fields) {
   return terms.every(t => hay.includes(t));
 }
 
+/* supabase.functions.invoke() hides the server's error body behind a generic
+   "Edge Function returned a non-2xx status code" — the real {ok:false, error}
+   JSON is on error.context (a Response). This wrapper surfaces it so the UI
+   can show the actual reason (e.g. "already been registered"). */
+async function invokeEdgeFn(sb, name, body) {
+  const { data, error } = await sb.functions.invoke(name, { body });
+  if (!error) return { data, error: null };
+  let message = error.message || 'Request failed';
+  try {
+    const ctx = error.context;
+    if (ctx && typeof ctx.json === 'function') {
+      const j = await ctx.json();
+      if (j && j.error) message = String(j.error);
+    }
+  } catch { /* keep the generic message */ }
+  return { data: null, error: { message } };
+}
+
+/* Turn invite-user's "email already exists" refusal into an actionable hint. */
+function friendlyInviteError(message, email) {
+  if (/already (been )?registered|already exists/i.test(String(message || ''))) {
+    return `${email} already has an account — open their user card and use Reset password / Resend invite instead.`;
+  }
+  return message || 'Invite failed';
+}
+
 function addInvoice(form) { const d = buildDoc('invoice', form); invoiceStore.set(l => [d, ...l]); return d; }
 function addEstimate(form) { const d = buildDoc('estimate', form); estimateStore.set(l => [d, ...l]); return d; }
 

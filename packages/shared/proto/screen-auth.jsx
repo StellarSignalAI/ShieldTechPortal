@@ -153,12 +153,12 @@ function UsersScreen() {
     if (!configured) { showToast('Connect Supabase first — see OUTSTANDING-APIS.md', 'warn'); return; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showToast('Enter a valid email', 'warn'); return; }
     setBusy(true); setResult(null);
-    const { data, error } = await window.__shieldSupabase.functions.invoke('invite-user', {
-      body: { email: email.trim(), name: name.trim(), role, app_rights: rights },
+    const { data, error } = await invokeEdgeFn(window.__shieldSupabase, 'invite-user', {
+      email: email.trim(), name: name.trim(), role, app_rights: rights,
     });
     setBusy(false);
     if (error || !data || !data.ok) {
-      showToast((data && data.error) || (error && error.message) || 'Invite failed', 'error');
+      showToast(friendlyInviteError((data && data.error) || (error && error.message), email.trim()), 'error');
       return;
     }
     setResult(data.data);
@@ -255,7 +255,7 @@ function UserRow({ r, isSelf, onChange }) {
   const callManage = async (action, confirmMsg) => {
     if (confirmMsg && !window.confirm(confirmMsg)) return;
     setBusy(action); setPw(null);
-    const { data, error } = await window.__shieldSupabase.functions.invoke('manage-user', { body: { action, userId: r.id } });
+    const { data, error } = await invokeEdgeFn(window.__shieldSupabase, 'manage-user', { action, userId: r.id });
     setBusy('');
     if (error || !data || !data.ok) { showToast((data && data.error) || (error && error.message) || 'Action failed', 'error'); return; }
     if (action === 'remove') { showToast(`Removed ${r.email}`, 'ok'); onChange(); return; }
