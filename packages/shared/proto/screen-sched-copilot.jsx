@@ -46,7 +46,7 @@ function SchedCopilotScreen() {
         id: 'pr-' + j.id, jobId: j.id, title: j.title,
         from: 'Unassigned', to: best.t,
         reasons: [`Lightest load (${best.load}h this week)`, `Low-voltage L${best.skill} · C-7 licensed`, 'No schedule conflicts that day'],
-        apply: () => setJobs(prev => prev.map(x => x.id === j.id ? { ...x, techs: [best.t], techIds: [(COPILOT_TECH_META[best.t] || {}).uid].filter(Boolean) } : x)),
+        apply: () => { setJobs(prev => prev.map(x => x.id === j.id ? { ...x, techs: [best.t], techIds: [(COPILOT_TECH_META[best.t] || {}).uid].filter(Boolean) } : x)); notifyJobAssigned(j, [best.t]); },
       });
     });
     // rebalance: move one job from most loaded to least loaded (if gap > 8h)
@@ -59,7 +59,7 @@ function SchedCopilotScreen() {
           id: 'pr-bal-' + movable.id, jobId: movable.id, title: movable.title,
           from: hiT, to: loT,
           reasons: [`Levels ${COPILOT_TECH_META[hiT].name} ${Math.round(hiH/maxHrs*100)}% → ${Math.round((hiH-movable.dur)/maxHrs*100)}%`, `${COPILOT_TECH_META[loT].name} has the ${fmtJobDate(movable)} window free`, 'Same skill class required'],
-          apply: () => setJobs(prev => prev.map(x => x.id === movable.id ? { ...x, techs: [loT], techIds: [(COPILOT_TECH_META[loT] || {}).uid].filter(Boolean) } : x)),
+          apply: () => { setJobs(prev => prev.map(x => x.id === movable.id ? { ...x, techs: [loT], techIds: [(COPILOT_TECH_META[loT] || {}).uid].filter(Boolean) } : x)); notifyJobAssigned(movable, [loT]); },
         });
       }
     }

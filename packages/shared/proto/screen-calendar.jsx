@@ -291,6 +291,7 @@ function CalendarScreen() {
         if (job && (job.techs || []).includes(spec.tech.id)) { showToast(`${spec.tech.name.split(' ')[0]} is already on this job`, 'warn'); return; }
         setJobs(prev => prev.map(x => x.id === overId ? { ...x, techs: [...(x.techs || []), spec.tech.id], techIds: [...(x.techIds || []), spec.tech.uid].filter(Boolean) } : x));
         showToast(`${spec.tech.name.split(' ')[0]} added to ${job ? job.title.split('—')[0].trim() : 'job'}`, 'ok');
+        if (job) notifyJobAssigned(job, [spec.tech.id]);
       } else if (target.area === 'grid') {
         setNewJobSlot({ date: gridISO(target.day), start: calClamp(calSnap(target.hourRaw), DAY_START, DAY_END - 1), techs: [spec.tech.id] });
         setShowNewModal(true);
@@ -318,17 +319,22 @@ function CalendarScreen() {
 
   const toggleJobTech = (jobId, techId) => {
     const uid = (techs.find(t => t.id === techId) || {}).uid;
+    const job = jobs.find(x => x.id === jobId);
+    const adding = job && !(job.techs || []).includes(techId);
     setJobs(prev => prev.map(x => x.id === jobId ? {
       ...x,
       techs: (x.techs || []).includes(techId) ? x.techs.filter(t => t !== techId) : [...(x.techs || []), techId],
       techIds: (x.techs || []).includes(techId) ? (x.techIds || []).filter(u => u !== uid) : [...(x.techIds || []), uid].filter(Boolean),
     } : x));
+    if (adding) notifyJobAssigned(job, [techId]);
   };
   const autoAssign = (jobId) => {
     if (!utilization.length) { showToast('No technicians yet — invite users first', 'warn'); return; }
     const lightest = utilization.reduce((a, b) => (b.billableHours < a.billableHours ? b : a));
     setJobs(prev => prev.map(x => x.id === jobId ? { ...x, techs: [lightest.id], techIds: [lightest.uid].filter(Boolean) } : x));
     showToast(`Assigned ${lightest.name} (lightest load)`, 'ok');
+    const job = jobs.find(x => x.id === jobId);
+    if (job) notifyJobAssigned(job, [lightest.id]);
   };
 
   const handleSlotClick = (day, hour) => {
@@ -630,7 +636,7 @@ function CalendarScreen() {
         </div>
       )}
 
-      {showNewModal && <NewJobModal techs={techs} typeColors={typeColors} initialSlot={newJobSlot} calFmtH={calFmtH} onClose={() => setShowNewModal(false)} onCreate={(job) => { setJobs(prev => [...prev, job]); setShowNewModal(false); setSelectedId(job.id); showToast(job.techs.length ? 'Job scheduled' : 'Job scheduled — unassigned', job.techs.length ? 'ok' : 'warn'); }} />}
+      {showNewModal && <NewJobModal techs={techs} typeColors={typeColors} initialSlot={newJobSlot} calFmtH={calFmtH} onClose={() => setShowNewModal(false)} onCreate={(job) => { setJobs(prev => [...prev, job]); setShowNewModal(false); setSelectedId(job.id); showToast(job.techs.length ? 'Job scheduled' : 'Job scheduled — unassigned', job.techs.length ? 'ok' : 'warn'); if (job.techs.length) notifyJobAssigned(job, job.techs); }} />}
     </div>
   );
 }

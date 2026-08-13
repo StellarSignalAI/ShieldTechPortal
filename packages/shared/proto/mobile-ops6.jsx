@@ -466,7 +466,7 @@ function MCopilotFull({ onNav }) {
   });
   const loads = Object.entries(byTech).map(([t, js]) => [t, js.reduce((s, j) => s + (j.dur || 0), 0)]).sort((x, y) => y[1] - x[1]);
   const busiest = loads[0], lightest = loads[loads.length - 1];
-  const assign = (job, tech) => { jobStore.set(prev => prev.map(j => j.id === job.id ? { ...j, techs: [tech] } : j)); showToast(`${job.title} → ${tech}`, 'ok'); };
+  const assign = (job, tech) => { jobStore.set(prev => prev.map(j => j.id === job.id ? { ...j, techs: [tech] } : j)); showToast(`${job.title} → ${tech}`, 'ok'); notifyJobAssigned(job, [tech]); };
   const techIds = Object.keys(window.M_TECH_COLORS || { MR: 1, JL: 1, KW: 1, DP: 1, TG: 1 });
   const sugg = (icon, title, sub, action) => (
     <div className="glass" style={{ padding: '12px 13px', borderRadius: 12 }}>

@@ -610,6 +610,54 @@ function refreshTechRoster() {
     return mapped.length ? mapped : null;
   }).catch(() => null);
 }
+/* ── Assignment notifications ──
+   Email a tech the moment a scheduled job/project is assigned to them, using
+   the unified ShieldTech template (rendered server-side by send-email's
+   'job-assigned' template). Fire-and-forget; dedupes per job+tech+start so
+   toggling an assignment doesn't spam. */
+const notifiedAssignments = new Set();
+async function notifyJobAssigned(job, addedTechInitials) {
+  try {
+    const sb = window.__shieldSupabase;
+    if (!sb || !job || !addedTechInitials || !addedTechInitials.length) return;
+    let roster = window.__shieldTechRoster || [];
+    if (!roster.length) roster = (await refreshTechRoster()) || [];
+    const startISO = jobStartISO(job);
+    const endISO = jobEndISO(job);
+    const fmtTime = (h) => {
+      if (h == null || isNaN(Number(h))) return '';
+      const hr = Math.floor(Number(h)); const m = Math.round((Number(h) - hr) * 60);
+      return `${((hr + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${hr >= 12 ? 'PM' : 'AM'}`;
+    };
+    for (const init of addedTechInitials) {
+      const t = roster.find(r => r.id === init || r.uid === init);
+      if (!t || !t.email) continue;
+      const key = `${job.id}:${t.email}:${startISO}`;
+      if (notifiedAssignments.has(key)) continue;
+      notifiedAssignments.add(key);
+      const { error } = await invokeEdgeFn(sb, 'send-email', {
+        to: t.email,
+        template: 'job-assigned',
+        data: {
+          name: t.name || '',
+          title: job.title || job.customer || 'Scheduled job',
+          customer: job.customer || '',
+          site: job.site || '',
+          date: startISO || '',
+          endDate: endISO || '',
+          startTime: fmtTime(job.start),
+          hours: job.dur ? String(job.dur) : '',
+          notes: job.notes || '',
+          jobRef: job.wo || '',
+        },
+      });
+      const first = (t.name || t.email).split(/\s+/)[0];
+      if (error) { notifiedAssignments.delete(key); showToast(`Could not email ${first} their assignment — ${error.message}`, 'warn'); }
+      else showToast(`Assignment emailed to ${first}`, 'ok');
+    }
+  } catch { /* fire-and-forget: scheduling must never block on email */ }
+}
+
 function useTechs() {
   const [techs, setTechs] = React.useState(() => window.__shieldTechRoster || DEMO_TECHS);
   React.useEffect(() => {
@@ -929,7 +977,7 @@ Object.assign(window, {
   nextDocNumber, bidToPipeline, nextProposalId, proposalToDoc, docSearchMatch,
   isoOfDate, dateOfISO, addDaysISO, diffDaysISO, mondayOf, todayISO,
   jobStartISO, jobEndISO, jobOnISO, jobSpanDays, weekdayIdxOfISO, normalizeJobDates,
-  DEMO_TECHS, mapProfilesToTechs, refreshTechRoster, useTechs, techInitialsOf,
+  DEMO_TECHS, mapProfilesToTechs, refreshTechRoster, useTechs, techInitialsOf, notifyJobAssigned,
   localInvoiceRows, localEstimateRows,
   mapInvoiceRow, mapEstimateRow, useMergedInvoices, useMergedEstimates, DocsEmptyRow,
   updateProject, estWorkflowView, projectForEstimate, acceptEstimateToProject,

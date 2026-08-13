@@ -56,9 +56,13 @@ function MJobEditor({ job, slot, onClose }) {
     if (job) {
       jobStore.set(list => list.map(x => x.id === job.id ? { ...x, ...rec } : x));
       showToast('Job updated — synced to portal', 'ok');
+      const added = f.techs.filter(id => !(job.techs || []).includes(id));
+      if (added.length) notifyJobAssigned({ ...job, ...rec }, added);
     } else {
-      jobStore.set(list => [...list, { ...rec, id: list.reduce((m, j) => Math.max(m, j.id), 0) + 1 }]);
+      const id = jobStore.get().reduce((m, j) => Math.max(m, j.id), 0) + 1;
+      jobStore.set(list => [...list, { ...rec, id }]);
       showToast(`Job scheduled for ${dateOfISO(f.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`, 'ok');
+      if (f.techs.length) notifyJobAssigned({ ...rec, id }, f.techs);
     }
     onClose();
   };

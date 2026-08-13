@@ -23,6 +23,7 @@ const samples = {
   'invoice': E.invoiceEmail({ ref: 'INV-2871', customer: 'Riverside Medical <Group>', amount: 12480.5, due: '2026-09-15', lines: [{ desc: '8× Axis dome cameras', qty: 8, rate: 890 }, { desc: 'Installation labor', qty: 24, rate: 125 }, { desc: 'NVR & licensing', qty: 1, rate: 2360.5 }], link: LINK }),
   'invoice-reminder': E.invoiceReminderEmail({ ref: 'INV-2860', amount: 4200, dueDate: '2026-07-20', daysPast: 12, link: LINK }),
   'proposal': E.proposalEmail({ ref: 'PROP-1042', customer: 'Harbor View Condos', amount: 38500, link: LINK }),
+  'job-assigned': E.jobAssignedEmail({ name: 'Mike Reyes', title: 'Metro Bank — Camera Install', customer: 'Metro Bank', site: '1200 Market St', date: '2026-09-04', endDate: '2026-09-05', startTime: '9:00 AM', hours: 6, notes: 'Lift needed for <exterior> domes', jobRef: 'WO-2871' }),
   'notification': E.notificationEmail({ subject: 'Job Assigned | ShieldTech Security', headline: 'New job assignment', label: 'Job Assigned', message: 'Metro Bank — Camera Install\n\nScheduled Sep 4, 9:00 AM at 1200 Market St.\nCrew: Mike Reyes.', ctaLabel: 'View Job →', ctaUrl: LINK }),
 };
 

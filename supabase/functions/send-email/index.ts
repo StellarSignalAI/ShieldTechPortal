@@ -7,7 +7,7 @@
 // same identity as every other automated email. Callers that pass html are
 // trusted to have built it from the same system.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { notificationEmail } from "../_shared/email.ts";
+import { jobAssignedEmail, notificationEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -32,16 +32,35 @@ Deno.serve(async (req) => {
   }
   if (!authed) return json(401, { ok: false, error: "sign in required" });
 
-  let body: { to?: string; subject?: string; html?: string; text?: string };
+  let body: {
+    to?: string; subject?: string; html?: string; text?: string;
+    template?: string; data?: Record<string, unknown>;
+  };
   try { body = await req.json(); } catch { return json(400, { ok: false, error: "Invalid JSON" }); }
-  if (!body.to || !body.subject || !(body.html || body.text)) return json(400, { ok: false, error: "to, subject, html|text required" });
+
+  // Named design-system templates render server-side so clients never build
+  // raw HTML. Subject comes from the template unless the caller overrides it.
+  let html = body.html;
+  let text = body.text;
+  let subject = body.subject;
+  if (body.template === "job-assigned") {
+    const d = (body.data ?? {}) as Record<string, string>;
+    if (!d.title) return json(400, { ok: false, error: "data.title required for job-assigned" });
+    const mail = jobAssignedEmail({
+      name: d.name, title: String(d.title), customer: d.customer, site: d.site,
+      date: d.date, endDate: d.endDate, startTime: d.startTime,
+      hours: d.hours, notes: d.notes, jobRef: d.jobRef,
+    });
+    html = mail.html; text = mail.text; subject = subject || mail.subject;
+  } else if (body.template) {
+    return json(400, { ok: false, error: `Unknown template: ${body.template}` });
+  }
+  if (!body.to || !subject || !(html || text)) return json(400, { ok: false, error: "to, subject, html|text required" });
 
   // Wrap bare text in the ShieldTech master template (keeps the raw text as
   // the plain-text fallback). html callers pass through unchanged.
-  let html = body.html;
-  let text = body.text;
   if (!html && text) {
-    const wrapped = notificationEmail({ subject: body.subject!, message: text, label: "Message" });
+    const wrapped = notificationEmail({ subject: subject!, message: text, label: "Message" });
     html = wrapped.html;
     text = wrapped.text;
   }
@@ -51,7 +70,7 @@ Deno.serve(async (req) => {
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech Security <no-reply@shieldtechsolutions.com>",
-      to: [body.to], subject: body.subject,
+      to: [body.to], subject,
       html: html ?? undefined, text: text ?? undefined,
     }),
   });
