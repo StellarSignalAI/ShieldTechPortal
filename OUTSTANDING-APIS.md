@@ -182,6 +182,27 @@ as structured JSON to `ingest-alerts`. All land on the Bid Board deduped. The
 | BidNet Direct | Multi-state municipal | email alerts → ingest |
 | GC bid lists (invited) | Private/commercial | forward → ingest-report-text |
 
+## 10b. 🟡 Google Workspace Calendar sync (gcal-sync — BUILT, needs a service account)
+
+The schedule mirrors into a shared **"ShieldTech Schedule"** Google calendar,
+shared with every @shieldtechsolutions.com user except the excluded list
+(default `dave@shieldtechsolutions.com`). Auto-syncs every 30 min (pg_cron) +
+"⟳ Google Sync" button on the portal calendar. To activate:
+
+1. Google Cloud console → create/select a project → enable **Google Calendar API**
+   → IAM & Admin → Service Accounts → create one → Keys → add a JSON key.
+2. Google Admin console (admin.google.com) → Security → Access and data control →
+   API controls → **Domain-wide delegation** → Add new → the service account's
+   **Client ID** with scope `https://www.googleapis.com/auth/calendar`.
+3. Supabase Edge Function secrets:
+   - `GOOGLE_SA_EMAIL` — the service account email (…@…iam.gserviceaccount.com)
+   - `GOOGLE_SA_PRIVATE_KEY` — the `private_key` value from the JSON key
+   - optional `GCAL_IMPERSONATE` (default daniel@shieldtechsolutions.com — owns the calendar),
+     `GCAL_EXCLUDE` (comma-separated emails, default dave@shieldtechsolutions.com),
+     `GCAL_TZ` (default America/New_York)
+4. Hit "⟳ Google Sync" on the portal calendar — it creates the calendar, shares
+   it (Admin/Staff = editor, techs = viewer), and pushes every scheduled job.
+
 ## 11. ⚪ Later-phase integrations (coded as placeholders, not yet wired)
 
 Per the integrations roadmap — these show as "Not connected" on Settings → Integrations:
