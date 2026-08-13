@@ -56,6 +56,7 @@ function CalendarScreen() {
   const [showNewModal, setShowNewModal] = React.useState(false);
   const [newJobSlot, setNewJobSlot] = React.useState(null);
   const [drag, setDrag] = React.useState(null);
+  const [gsyncBusy, setGsyncBusy] = React.useState(false);
 
   const scrollRef = React.useRef(null);
   const contentRef = React.useRef(null);
@@ -388,6 +389,17 @@ function CalendarScreen() {
           ))}
         </div>
         <button onClick={() => { setNewJobSlot(null); setShowNewModal(true); }} style={{ padding: '6px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Job</button>
+        <button disabled={gsyncBusy} onClick={async () => {
+          const sb = window.__shieldSupabase;
+          if (!sb) { showToast('Backend not configured', 'warn'); return; }
+          setGsyncBusy(true);
+          const { data, error } = await invokeEdgeFn(sb, 'gcal-sync', {});
+          setGsyncBusy(false);
+          if (error || !data || !data.ok) { showToast((data && data.error) || (error && error.message) || 'Google sync failed', 'error'); return; }
+          const d = data.data || {};
+          showToast(`Google Calendar synced — ${d.created || 0} added, ${d.updated || 0} updated, ${d.deleted || 0} removed · shared with ${d.users || 0} users`, 'ok');
+        }} title="Push the schedule to the shared ShieldTech Schedule calendar in Google Workspace (auto-syncs every 30 min)"
+          style={{ padding: '6px 14px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 8, color: 'var(--status-ok)', fontSize: 11, fontWeight: 600, cursor: gsyncBusy ? 'wait' : 'pointer', fontFamily: 'var(--font-body)', opacity: gsyncBusy ? 0.6 : 1 }}>{gsyncBusy ? 'Syncing…' : '⟳ Google Sync'}</button>
         <div style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 8, padding: '5px 12px', display: 'flex', gap: 6, alignItems: 'center' }}>
           <span style={{ fontSize: 10, color: 'var(--text-low)' }}>WEEK REVENUE</span>
           <span className="mono" style={{ fontSize: 13, color: 'var(--status-ok)', fontWeight: 600 }}>${weekRevenue.toLocaleString()}</span>
