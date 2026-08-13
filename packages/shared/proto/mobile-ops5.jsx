@@ -313,11 +313,11 @@ function MUsersN({ onNav }) {
     if (!sb) { showToast('Backend not configured', 'warn'); return; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) { showToast('Enter a valid email', 'warn'); return; }
     setBusy('invite'); setResult(null);
-    const { data, error } = await sb.functions.invoke('invite-user', {
-      body: { email: f.email.trim(), name: f.name.trim(), role: f.role, app_rights: M_ROLE_RIGHTS[f.role] },
+    const { data, error } = await invokeEdgeFn(sb, 'invite-user', {
+      email: f.email.trim(), name: f.name.trim(), role: f.role, app_rights: M_ROLE_RIGHTS[f.role],
     });
     setBusy('');
-    if (error || !data || !data.ok) { showToast((data && data.error) || (error && error.message) || 'Invite failed', 'error'); return; }
+    if (error || !data || !data.ok) { showToast(friendlyInviteError((data && data.error) || (error && error.message), f.email.trim()), 'error'); return; }
     setResult(data.data);
     showToast(data.data.emailed
       ? (f.role === 'Technician' ? `Tech App invite emailed to ${data.data.email}` : `Invite emailed to ${data.data.email}`)
@@ -330,7 +330,7 @@ function MUsersN({ onNav }) {
   const callManage = async (action, confirmMsg) => {
     if (confirmMsg && !window.confirm(confirmMsg)) return;
     setBusy(action);
-    const { data, error } = await sb.functions.invoke('manage-user', { body: { action, userId: manage.id } });
+    const { data, error } = await invokeEdgeFn(sb, 'manage-user', { action, userId: manage.id });
     setBusy('');
     if (error || !data || !data.ok) { showToast((data && data.error) || (error && error.message) || 'Action failed', 'error'); return; }
     if (action === 'remove') { showToast(`Removed ${manage.email}`, 'ok'); setManage(null); load(); return; }
