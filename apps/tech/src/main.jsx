@@ -130,7 +130,7 @@ function TechShellV2({ tab, setTab, children }) {
         WebkitBackdropFilter: 'blur(12px)', flexShrink: 0
       }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <img src="uploads/ShieldTech Emblem Transparent MK1 .png" alt="ShieldTech" style={{ height: 22 }} />
+              <img src="sw/shieldtech-tech-emblem.png" alt="ShieldTech Tech" style={{ height: 24 }} />
               <span className="display" style={{ fontSize: 12, fontWeight: 300, letterSpacing: '0.08em', color: 'var(--text-high)' }}>SHIELDTECH</span>
               <span style={{ fontSize: 10, color: 'var(--text-low)', marginLeft: 4 }}>Tech</span>
             </div>

@@ -30,7 +30,22 @@ const calSpanOf = j => (j.endDay || j.day) - j.day + 1;
 function CalendarScreen() {
   const [jobs, setJobs] = useShieldStore(jobStore);
   const [backlog, setBacklog] = useShieldStore(backlogStore);
+  const [projRows] = useShieldStore(projectStore);
   const realTechs = useTechs();
+
+  /* Real projects (accepted proposals / Projects screen) appear in the
+     Unscheduled tray until they're dragged onto the calendar. A scheduled
+     project's job carries projectId, which hides it from the tray. */
+  const scheduledProjectIds = new Set(jobs.map(x => x.projectId).filter(Boolean));
+  const projectTray = (projRows || [])
+    .filter(p => !['completed', 'closed', 'cancelled'].includes(String(p.status || '').toLowerCase()) && !scheduledProjectIds.has(p.number))
+    .map(p => ({
+      id: 'prj:' + p.number, projectId: p.number,
+      title: p.name || p.number, customer: p.customer || '',
+      type: CAL_TYPES[String(p.type || '').toLowerCase()] ? String(p.type).toLowerCase() : 'install',
+      dur: 8, days: 1, value: p.contractTotal || p.estimatedValue || 0,
+    }));
+  const trayItems = [...projectTray, ...backlog];
   const [view, setView] = React.useState('week');
   const [weekOffset, setWeekOffset] = React.useState(0);
   const [monthOffset, setMonthOffset] = React.useState(0);
@@ -248,7 +263,9 @@ function CalendarScreen() {
     if (k === 'job') {
       if (target.area === 'tray') {
         setJobs(prev => prev.filter(x => x.id !== j.id));
-        setBacklog(prev => [{ id: 'p' + j.id, title: j.title, customer: j.customer, type: j.type, dur: j.dur, days: jobSpanDays(real || j), value: j.value || 0 }, ...prev]);
+        // Project-backed jobs reappear in the tray automatically (via projectId);
+        // only ad-hoc jobs need a backlog record.
+        if (!(real || j).projectId) setBacklog(prev => [{ id: 'p' + j.id, title: j.title, customer: j.customer, type: j.type, dur: j.dur, days: jobSpanDays(real || j), value: j.value || 0 }, ...prev]);
         setSelectedId(null);
         showToast('Job moved to Unscheduled', 'ok');
       } else if (target.area === 'grid' || target.area === 'month') {
@@ -304,9 +321,11 @@ function CalendarScreen() {
       const p = spec.project, days = p.days || 1;
       const startISO = target.area === 'grid' ? gridISO(target.day) : target.iso;
       const start = target.area === 'grid' ? calClamp(calSnap(target.hourRaw), DAY_START, DAY_END - p.dur) : 9;
-      const newJob = normalizeJobDates({ id: Date.now(), title: p.title, customer: p.customer, techs: [], type: p.type, date: startISO, endDate: addDaysISO(startISO, days - 1), start, dur: p.dur, value: p.value });
+      const newJob = normalizeJobDates({ id: Date.now(), title: p.title, customer: p.customer, techs: [], type: p.type, date: startISO, endDate: addDaysISO(startISO, days - 1), start, dur: p.dur, value: p.value, projectId: p.projectId || undefined });
       setJobs(prev => [...prev, newJob]);
-      setBacklog(prev => prev.filter(b => b.id !== p.id));
+      // Real projects are virtual tray items (hidden via projectId once scheduled);
+      // ad-hoc backlog entries are removed from the store.
+      if (!p.projectId) setBacklog(prev => prev.filter(b => b.id !== p.id));
       setSelectedId(newJob.id);
       showToast('Scheduled — pick technicians in the panel →', 'warn');
     }
@@ -408,10 +427,10 @@ function CalendarScreen() {
           <div ref={trayRef} style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6, padding: 6, margin: '-6px', borderRadius: 8, border: dragKind === 'job' ? '1px dashed var(--border-strong)' : '1px dashed transparent', background: dragKind === 'job' && drag.target && drag.target.area === 'tray' ? 'rgba(63,169,245,0.08)' : dragKind === 'job' ? 'rgba(63,169,245,0.03)' : 'transparent', transition: 'all 0.15s' }}>
             <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', display: 'flex', alignItems: 'center', gap: 6 }}>
               Unscheduled
-              <span className="mono" style={{ fontSize: 9, background: 'rgba(63,169,245,0.1)', color: 'var(--brand)', borderRadius: 8, padding: '1px 6px' }}>{backlog.length}</span>
+              <span className="mono" style={{ fontSize: 9, background: 'rgba(63,169,245,0.1)', color: 'var(--brand)', borderRadius: 8, padding: '1px 6px' }}>{trayItems.length}</span>
             </div>
             {dragKind === 'job' && <div style={{ fontSize: 10, color: 'var(--brand)', padding: '2px 2px' }}>Drop here to unschedule</div>}
-            {backlog.map(p => {
+            {trayItems.map(p => {
               const tc = typeColors[p.type] || typeColors.install;
               const isDragging = dragKind === 'project' && drag.project.id === p.id;
               return (
@@ -428,7 +447,7 @@ function CalendarScreen() {
                 </div>
               );
             })}
-            {backlog.length === 0 && <div style={{ fontSize: 10, color: 'var(--text-low)', fontStyle: 'italic', padding: '4px 2px' }}>All projects scheduled</div>}
+            {trayItems.length === 0 && <div style={{ fontSize: 10, color: 'var(--text-low)', fontStyle: 'italic', padding: '4px 2px' }}>All projects scheduled</div>}
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: 10, fontSize: 9, color: 'var(--text-low)', lineHeight: 1.5, borderTop: '1px solid var(--border-subtle)' }}>
