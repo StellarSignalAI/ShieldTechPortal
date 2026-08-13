@@ -35,7 +35,7 @@ function WorkOrderScreen() {
       <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-high)' }}>No work orders yet</div>
       <div style={{ fontSize: 12, color: 'var(--text-low)', maxWidth: 340 }}>Create a work order, assign it to a technician, and it appears in their app with the required-shot checklist.</div>
       <button onClick={() => setShowNew(true)} style={{ padding: '9px 18px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Work Order</button>
-      {showNew && <NewWorkOrderModal onClose={() => setShowNew(false)} onCreate={(w) => { workOrderStore.set(prev => [w, ...prev]); setActiveWO(0); setShowNew(false); showToast(`${w.id} created — assigned to ${w.tech}`, 'ok'); }} />}
+      {showNew && <NewWorkOrderModal onClose={() => setShowNew(false)} onCreate={(w) => { workOrderStore.set(prev => [w, ...prev]); setActiveWO(0); setShowNew(false); showToast(`${w.id} created — assigned to ${w.tech}`, 'ok'); notifyWorkOrderAssigned(w); }} />}
     </div>
   );
 
@@ -315,7 +315,7 @@ function WorkOrderScreen() {
 
         </div>
       </div>
-      {showNew && <NewWorkOrderModal onClose={() => setShowNew(false)} onCreate={(w) => { workOrderStore.set(prev => [w, ...prev]); setActiveWO(0); setShowNew(false); showToast(`${w.id} created — assigned to ${w.tech}`, 'ok'); }} />}
+      {showNew && <NewWorkOrderModal onClose={() => setShowNew(false)} onCreate={(w) => { workOrderStore.set(prev => [w, ...prev]); setActiveWO(0); setShowNew(false); showToast(`${w.id} created — assigned to ${w.tech}`, 'ok'); notifyWorkOrderAssigned(w); }} />}
     </div>
   );
 }

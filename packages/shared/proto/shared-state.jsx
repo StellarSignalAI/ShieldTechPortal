@@ -658,6 +658,22 @@ async function notifyJobAssigned(job, addedTechInitials) {
   } catch { /* fire-and-forget: scheduling must never block on email */ }
 }
 
+/* Dispatch work orders: same assignment email, mapped from the WO shape.
+   assignedTo is a profile uuid — the roster lookup matches uid too. */
+function notifyWorkOrderAssigned(wo) {
+  if (!wo || !wo.assignedTo) return;
+  notifyJobAssigned({
+    id: wo.id,
+    title: `${wo.type || 'Work order'} — ${wo.customer || ''}`.replace(/ — $/, ''),
+    customer: wo.customer || '',
+    site: wo.site || '',
+    date: wo.scheduled || '',
+    endDate: wo.scheduled || '',
+    notes: [wo.scope, wo.notes].filter(Boolean).join(' — '),
+    wo: wo.id,
+  }, [wo.assignedTo]);
+}
+
 function useTechs() {
   const [techs, setTechs] = React.useState(() => window.__shieldTechRoster || DEMO_TECHS);
   React.useEffect(() => {
@@ -977,7 +993,7 @@ Object.assign(window, {
   nextDocNumber, bidToPipeline, nextProposalId, proposalToDoc, docSearchMatch,
   isoOfDate, dateOfISO, addDaysISO, diffDaysISO, mondayOf, todayISO,
   jobStartISO, jobEndISO, jobOnISO, jobSpanDays, weekdayIdxOfISO, normalizeJobDates,
-  DEMO_TECHS, mapProfilesToTechs, refreshTechRoster, useTechs, techInitialsOf, notifyJobAssigned,
+  DEMO_TECHS, mapProfilesToTechs, refreshTechRoster, useTechs, techInitialsOf, notifyJobAssigned, notifyWorkOrderAssigned,
   localInvoiceRows, localEstimateRows,
   mapInvoiceRow, mapEstimateRow, useMergedInvoices, useMergedEstimates, DocsEmptyRow,
   updateProject, estWorkflowView, projectForEstimate, acceptEstimateToProject,
