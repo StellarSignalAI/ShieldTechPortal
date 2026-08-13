@@ -17,15 +17,20 @@ function TechPhotosView({ setTab }) {
   const [photos] = useShieldStore(photoStore);
   const [allWos] = useShieldStore(workOrderStore);
   // Only the jobs assigned to me (unassigned WOs stay visible to everyone).
-  const myId = (window.__shieldUser || {}).id;
-  const wos = allWos.filter(w => !w.assignedTo || w.assignedTo === myId);
+  // Assignment can be by profile id OR tech initials — match either.
+  const me = window.__shieldUser || {};
+  const myId = me.id;
+  const myInit = (me.name || '').split(' ').map(w => w[0]).join('').toUpperCase();
+  const wos = allWos.filter(w => !w.assignedTo || w.assignedTo === myId || (myInit && w.techId === myInit));
   const [cam, setCam] = useShieldStore(techCamStore);
   const [lightbox, setLightbox] = React.useState(null);
 
   // Photos no longer require a dispatched job. When the tech has no work order
   // (or explicitly picks "Unassigned"), they can still shoot; the photo lands in
-  // an Unassigned bucket and can be attached to a job afterwards.
-  const activeWo = cam.wo === '__unassigned' ? null : (wos.find(w => w.id === cam.wo) || wos[0] || null);
+  // an Unassigned bucket and can be attached to a job afterwards. An explicitly
+  // targeted job (opened from its detail screen) always resolves, even when
+  // assigned to another tech — never silently swap jobs.
+  const activeWo = cam.wo === '__unassigned' ? null : (allWos.find(w => w.id === cam.wo) || wos[0] || null);
   const comp = activeWo ? photoCompliance(activeWo, photos) : null;
   const woPhotos = activeWo ? photos.filter(p => p.wo === activeWo.id) : [];
   const unassignedPhotos = photos.filter(p => p.tech === techMe().initials && !p.wo);
@@ -155,8 +160,10 @@ function TechPhotosView({ setTab }) {
 /* ── Capture (mock viewfinder) ── */
 function TechCaptureView({ setTab }) {
   const [allWos] = useShieldStore(workOrderStore);
-  const myId = (window.__shieldUser || {}).id;
-  const wos = allWos.filter(w => !w.assignedTo || w.assignedTo === myId);
+  const meCap = window.__shieldUser || {};
+  const myId = meCap.id;
+  const myInitCap = (meCap.name || '').split(' ').map(w => w[0]).join('').toUpperCase();
+  const wos = allWos.filter(w => !w.assignedTo || w.assignedTo === myId || (myInitCap && w.techId === myInitCap));
   const [photos] = useShieldStore(photoStore);
   const [cam, setCam] = useShieldStore(techCamStore);
   const [scene, setScene] = React.useState(randomLook);
@@ -188,7 +195,8 @@ function TechCaptureView({ setTab }) {
 
   // Capture works with or without a job. Unassigned shots (cam.wo === '__unassigned'
   // or no jobs at all) save with wo: null and can be attached to a job later.
-  const activeWo = cam.wo === '__unassigned' ? null : (wos.find(w => w.id === cam.wo) || wos[0] || null);
+  // An explicitly targeted job always resolves even if assigned to another tech.
+  const activeWo = cam.wo === '__unassigned' ? null : (allWos.find(w => w.id === cam.wo) || wos[0] || null);
   const comp = activeWo ? photoCompliance(activeWo, photos) : null;
   const slot = activeWo && cam.slot && comp.missing.includes(cam.slot) ? cam.slot : null;
 

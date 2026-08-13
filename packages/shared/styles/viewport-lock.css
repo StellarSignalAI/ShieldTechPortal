@@ -15,11 +15,14 @@ body {
 }
 #root { height: 100%; }
 
+/* Top inset only: the shell's bottom-most element (tab bar / footer) owns
+   env(safe-area-inset-bottom) itself so its background extends to the true
+   screen edge. Padding here too would double the inset and float the bar
+   above the home indicator by a model-dependent gap. */
 .m-app-shell {
   height: 100% !important;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 /* Dynamic viewport height where supported: tracks Android URL-bar collapse
    and iOS toolbar show/hide exactly. */

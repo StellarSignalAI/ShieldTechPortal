@@ -282,7 +282,7 @@ function TechApp() {
           <ViewFn />
           {tab !== 'capture' && ['today', 'photos'].includes(mainTab) && (
             <button onClick={() => setTab('capture')} title="Open camera" style={{
-              position: 'fixed', bottom: 76, right: 'max(16px, calc(50% - 199px))',
+              position: 'fixed', bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))', right: 'max(16px, calc(50% - 199px))',
               width: 54, height: 54, borderRadius: '50%', zIndex: 500,
               background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))',
               border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',

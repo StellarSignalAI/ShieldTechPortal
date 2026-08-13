@@ -217,6 +217,16 @@ function TodayView({ setTab, setSelectedJob }) {
 /* ── Job Detail View ── */
 function JobDetailView({ job, setTab }) {
   const [status, setStatus] = React.useState('on-site');
+  /* Real photos: shots for this job from the shared photoStore; each tile
+     opens the live camera (capture tab) pre-targeted at this work order.
+     createShieldStore is singleton-per-key, so 'techcam' is the same store
+     the capture screen reads. */
+  const [allPhotos] = useShieldStore(photoStore);
+  const [cam, setCam] = useShieldStore(createShieldStore('techcam', { wo: null, slot: null }));
+  const woId = job ? ((job._wo && job._wo.id) || (job._cal && job._cal.wo) || (/^WO-/.test(String(job.id)) ? job.id : null)) : null;
+  const jobPhotos = (allPhotos || []).filter(p => woId && p.wo === woId);
+  const openCamera = () => { setCam({ ...cam, wo: woId || '__unassigned', slot: null }); setTab('capture'); };
+  const PHASE_TILES = [['Before', 'before'], ['During', 'progress'], ['After', 'after'], ['Issue', 'issue']];
   const [checklist, setChecklist] = React.useState([
     { label: 'Verify scope with customer', done: false },
     { label: 'Check existing cable runs', done: false },
@@ -341,25 +351,42 @@ function JobDetailView({ job, setTab }) {
         </div>
       </GlassPanel>
 
-      {/* Photo capture */}
+      {/* Photo capture — tiles open the live camera aimed at this job; filled
+          tiles show the newest shot of that phase from the shared photo roll. */}
       <GlassPanel>
-        <div className="label-sm" style={{ marginBottom: 8 }}>PHOTOS</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-          {['Before','During','After','Issue'].map((p, i) => (
-            <div key={i} style={{
-              aspectRatio: '1', borderRadius: 8,
-              border: '1px dashed var(--border-subtle)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              justifyContent: 'center', cursor: 'pointer', gap: 4
-            }}>
-              <span style={{ fontSize: 20, opacity: 0.3 }}>◉</span>
-              <span style={{ fontSize: 9, color: 'var(--text-low)' }}>{p}</span>
-            </div>
-          ))}
+        <div className="label-sm" style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+          <span>PHOTOS</span>
+          {jobPhotos.length > 0 && <span style={{ color: 'var(--text-low)' }}>{jobPhotos.length} on this job</span>}
         </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          {PHASE_TILES.map(([label, phase]) => {
+            const shot = jobPhotos.find(p => p.phase === phase);
+            return shot ? (
+              <MockPhoto key={label} photo={shot} stamp={false} onClick={openCamera}
+                style={{ aspectRatio: '1', borderRadius: 8, border: '1px solid var(--border-strong)', cursor: 'pointer' }}>
+                <span style={{ position: 'absolute', left: 4, bottom: 4, fontSize: 8, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.55)', padding: '1px 5px', borderRadius: 3, textTransform: 'uppercase' }}>{label}</span>
+              </MockPhoto>
+            ) : (
+              <div key={label} onClick={openCamera} style={{
+                aspectRatio: '1', borderRadius: 8,
+                border: '1px dashed var(--border-subtle)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', cursor: 'pointer', gap: 4
+              }}>
+                <span style={{ fontSize: 20, opacity: 0.3 }}>◉</span>
+                <span style={{ fontSize: 9, color: 'var(--text-low)' }}>{label}</span>
+              </div>
+            );
+          })}
+        </div>
+        <button onClick={openCamera} style={{
+          width: '100%', marginTop: 10, padding: '10px', background: 'rgba(63,169,245,0.08)',
+          border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)',
+          fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)'
+        }}>◉ Add Photo</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
           <span>⟡</span>
-          <span style={{ fontSize: 11, color: 'var(--brand)' }}>ShieldTech AI Photo QA: 0/4 captured</span>
+          <span style={{ fontSize: 11, color: 'var(--brand)' }}>ShieldTech AI Photo QA: {PHASE_TILES.filter(([, ph]) => jobPhotos.some(p => p.phase === ph)).length}/4 captured</span>
         </div>
       </GlassPanel>
 

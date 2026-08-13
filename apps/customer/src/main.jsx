@@ -332,7 +332,7 @@ function CustomerPortalApp() {
 
       {/* Footer */}
       <footer style={{
-        padding: '8px 32px', borderTop: '1px solid var(--border-subtle)',
+        padding: '8px 32px calc(8px + env(safe-area-inset-bottom, 0px))', borderTop: '1px solid var(--border-subtle)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         fontSize: 10, color: 'var(--text-low)', flexShrink: 0
       }}>

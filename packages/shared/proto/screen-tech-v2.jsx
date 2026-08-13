@@ -74,7 +74,24 @@ function TimeViewV2() {
   });
   const weekLabel = `Week of ${dayLabel(monday)} \u2014 ${dayLabel(new Date(monday.getTime() + 4 * 86400000))}`;
 
-  const projects = ['General','Travel','Admin','Training'];
+  /* Real, pickable work: open projects and work orders from the shared stores —
+     mine first, but ALL open work stays selectable so an assignment to any user
+     never makes a job impossible to log time against. job_ref stores the
+     project/WO number so payroll and job costing can tie hours back. */
+  const [twProjects] = useShieldStore(projectStore);
+  const [twWos] = useShieldStore(workOrderStore);
+  const twMe = window.__shieldUser || {};
+  const twInit = (twMe.name || '').split(' ').map(w => w[0]).join('').toUpperCase();
+  const woMine = w => (twMe.id && w.assignedTo === twMe.id) || (twInit && w.techId === twInit) ? 0 : 1;
+  const openWos = (twWos || [])
+    .filter(w => !['done', 'completed', 'closed', 'cancelled'].includes(String(w.status || '')))
+    .sort((a, b) => woMine(a) - woMine(b));
+  const openProjects = (twProjects || []).filter(p => !['completed', 'closed', 'cancelled'].includes(String(p.status || '')));
+  const projectGroups = [
+    { label: 'Categories', opts: ['General', 'Travel', 'Admin', 'Training'].map(c => ({ ref: c, label: c })) },
+    ...(openProjects.length ? [{ label: 'Projects', opts: openProjects.map(p => ({ ref: p.number, label: `${p.number} — ${p.name}` })) }] : []),
+    ...(openWos.length ? [{ label: 'Work Orders', opts: openWos.map(w => ({ ref: w.id, label: `${w.id} — ${w.customer}${woMine(w) === 0 ? ' (mine)' : ''}` })) }] : []),
+  ];
   const tasks = {
     default: ['Installation','Repair','Maintenance','Survey','Programming','Testing','Documentation']
   };
@@ -100,7 +117,11 @@ function TimeViewV2() {
             padding: '5px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
             borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none'
           }}>
-            {projects.map(p => <option key={p} value={p} style={{ background: 'var(--card)' }}>{p}</option>)}
+            {projectGroups.map(g => (
+              <optgroup key={g.label} label={g.label}>
+                {g.opts.map(o => <option key={o.ref} value={o.ref} style={{ background: 'var(--card)' }}>{o.label}</option>)}
+              </optgroup>
+            ))}
           </select>
           <select value={activeTask} onChange={e => setActiveTask(e.target.value)} style={{
             padding: '5px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
@@ -359,7 +380,11 @@ function TimeViewV2() {
               <div>
                 <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 4 }}>Project</div>
                 <select value={manualEntry.project} onChange={e => setManualEntry(prev => ({...prev, project: e.target.value}))} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }}>
-                  {projects.map(p => <option key={p} value={p}>{p}</option>)}
+                  {projectGroups.map(g => (
+                    <optgroup key={g.label} label={g.label}>
+                      {g.opts.map(o => <option key={o.ref} value={o.ref}>{o.label}</option>)}
+                    </optgroup>
+                  ))}
                 </select>
               </div>
               <div>
