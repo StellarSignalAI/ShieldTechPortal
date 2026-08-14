@@ -132,6 +132,9 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
   const [invoices] = useShieldStore(invoiceStore);
   const [qboEst, setQboEst] = React.useState([]);
   const [pctInput, setPctInput] = React.useState('');
+  const [viewer, setViewer] = React.useState(null);   // {drawing, markup:boolean}
+  const [uploading, setUploading] = React.useState(false);
+  const fileRef = React.useRef(null);
   React.useEffect(() => {
     const q = window.__shieldQBO;
     if (q) q.estimates(500).then(r => setQboEst(r && r.ok && r.data ? r.data : []));
@@ -139,6 +142,24 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
 
   const p = (projects || []).find(x => x.number === number);
   if (!p) return null;
+
+  const scope = projectScope(p);
+  const drawings = p.drawings || [];
+  const uploadDrawing = async (file) => {
+    if (!file) return;
+    const st = window.__shieldStorage;
+    if (!st) { shieldToast('Storage not configured', 'warn'); return; }
+    setUploading(true);
+    const r = await st.uploadFile(file, { folder: 'blueprints', entity: 'project', entityId: p.number, shared: true });
+    setUploading(false);
+    if (!r || !r.ok) { shieldToast('Upload failed: ' + ((r && r.error) || 'unknown'), 'warn'); return; }
+    updateProject(p.number, prev => ({ drawings: [...(prev.drawings || []), { id: genId('dwg'), name: file.name, url: r.url, path: r.path, bucket: r.bucket }] }));
+    shieldToast(`${file.name} attached — techs see it on the scheduled job`, 'ok');
+  };
+  const removeDrawing = (d) => {
+    updateProject(p.number, prev => ({ drawings: (prev.drawings || []).filter(x => x.id !== d.id) }));
+    shieldToast('Drawing removed', 'ok');
+  };
 
   const allEst = [...(localEst || []), ...qboEst].map(estWorkflowView);
   const attachedEst = (p.estimateRefs || []).map(ref => allEst.find(e => e.ref === ref) || { ref, customer: '', total: 0 });
@@ -191,6 +212,32 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
           <span className="label-sm">CONTRACT</span>
           <span className="mono" style={{ fontSize: 14, fontWeight: 600 }}>${contract.toLocaleString()}</span>
         </div>
+
+        {/* Scope of work (carried from the accepted proposal) */}
+        {scope && (
+          <div className="glass" style={{ padding: 14, marginBottom: 16 }}>
+            <div className="label-sm" style={{ marginBottom: 8 }}>SCOPE OF WORK</div>
+            <div style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--text-high)', whiteSpace: 'pre-wrap' }}>{scope}</div>
+          </div>
+        )}
+
+        {/* Blueprints — original vs the tech's live field markup */}
+        <div className="glass" style={{ padding: 14, marginBottom: 16 }}>
+          <div className="label-sm" style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>BLUEPRINTS / DRAWINGS ({drawings.length})</span>
+            <button onClick={() => fileRef.current && fileRef.current.click()} disabled={uploading} style={{ padding: '5px 10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{uploading ? 'Uploading…' : '+ Upload'}</button>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { uploadDrawing(e.target.files && e.target.files[0]); e.target.value = ''; }} />
+          </div>
+          {drawings.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)' }}>No drawings yet — upload the blueprint from the proposal so techs get the digital version on their scheduled job.</div>}
+          <BlueprintRows drawings={drawings} onOpen={d => setViewer({ drawing: d, markup: true })} extra={d => (
+            <>
+              <button onClick={() => setViewer({ drawing: d, markup: false })} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Original</button>
+              <button onClick={() => removeDrawing(d)} style={{ padding: '6px 8px', borderRadius: 6, border: 'none', background: 'transparent', color: 'var(--text-low)', fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>✕</button>
+            </>
+          )} />
+          {drawings.length > 0 && <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 8 }}>Open = tech markup (live) · Original = clean drawing.</div>}
+        </div>
+        {viewer && <BlueprintEditor drawing={viewer.drawing} readOnly showAnnotations={viewer.markup} onClose={() => setViewer(null)} />}
 
         {/* Progress billing */}
         <div className="glass" style={{ padding: 14, marginBottom: 16 }}>

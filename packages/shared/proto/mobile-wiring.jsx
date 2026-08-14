@@ -169,8 +169,19 @@ function MobileCustomerDetail({ customer, onClose, onNav }) {
 function MNewJobSheet({ onClose, onSaved, defaultDate }) {
   const [allCusts] = useShieldStore(customerStore);
   const roster = useTechs();
-  const [f, setF] = React.useState({ title: '', customer: '', type: 'install', date: defaultDate || todayISO(), start: '9', dur: '2', value: '', tech: '' });
+  const [f, setF] = React.useState({ title: '', customer: '', type: 'install', date: defaultDate || todayISO(), start: '9', dur: '2', value: '', tech: '', projectId: '', scope: '' });
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
+  const projects = (useShieldStore(projectStore)[0] || []).filter(p => p.status !== 'complete' && p.status !== 'cancelled');
+  const pickProject = (e) => {
+    const p = projects.find(x => x.number === e.target.value);
+    if (!p) { setF(v => ({ ...v, projectId: '', scope: '' })); return; }
+    setF(v => ({
+      ...v, projectId: p.number,
+      title: p.name || v.title, customer: p.customer || v.customer,
+      value: String(Number(p.contractTotal) || Number(p.estimatedValue) || '') || v.value,
+      scope: projectScope(p),
+    }));
+  };
   const hourOpts = []; for (let h = 7; h <= 18; h++) hourOpts.push([String(h), `${h > 12 ? h - 12 : h}:00 ${h >= 12 ? 'PM' : 'AM'}`]);
 
   const save = () => {
@@ -182,6 +193,7 @@ function MNewJobSheet({ onClose, onSaved, defaultDate }) {
       id: nextId, title: f.title.trim(), techs: f.tech ? [f.tech] : [], techIds: techRec && techRec.uid ? [techRec.uid] : [], type: f.type,
       date: f.date, endDate: f.date, start: Number(f.start), dur: Number(f.dur),
       customer: f.customer || '—', value: Number(f.value) || 0,
+      projectId: f.projectId || undefined, scope: f.scope || undefined,
     });
     jobStore.set(prev => [...prev, rec]);
     showToast(`Job scheduled for ${dateOfISO(f.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`, 'ok');
@@ -192,6 +204,16 @@ function MNewJobSheet({ onClose, onSaved, defaultDate }) {
   return (
     <MSheet title="Schedule a Job" onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {projects.length > 0 && (
+          <div>
+            <MWSelect label="From Project" value={f.projectId} onChange={pickProject} options={[{ value: '', label: '— none (ad-hoc job) —' }, ...projects.map(p => ({ value: p.number, label: `${p.number} · ${p.name}` }))]} />
+            {f.scope && (
+              <div style={{ marginTop: 6, padding: '8px 11px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 9, fontSize: 11, lineHeight: 1.5, color: 'var(--text-mid)', maxHeight: 90, overflowY: 'auto' }}>
+                <span style={{ color: 'var(--brand)', fontWeight: 600 }}>Scope: </span>{f.scope}
+              </div>
+            )}
+          </div>
+        )}
         <MWField label="Job Title *" value={f.title} onChange={set('title')} placeholder="e.g. Metro Bank — Camera Install" />
         <MWSelect label="Customer" value={f.customer} onChange={set('customer')} options={[{ value: '', label: 'Select customer…' }, ...allCusts.map(c => ({ value: c.name, label: c.name }))]} />
         <div style={{ display: 'flex', gap: 10 }}>

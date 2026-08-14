@@ -334,6 +334,8 @@ function buildProject(form) {
     invoiceRefs: form.invoiceRefs || [],     // attached invoice doc numbers (INV-…)
     contractTotal: Number(form.contractTotal) || Number(form.estimatedValue) || 0,
     billing: form.billing || [],             // [{pct, amount, ref, at}] progress invoices cut
+    scope: form.scope || '',                 // scope of work carried from the accepted proposal
+    drawings: form.drawings || [],           // [{id, name, url}] blueprints/drawings attached
   };
 }
 function addProject(form) { const rec = buildProject(form); projectStore.set(l => [rec, ...l]); return rec; }
@@ -397,6 +399,7 @@ function acceptEstimateToProject(est, via) {
     estimateRefs: [v.ref],
     email: v.email, phone: v.phone, contact: v.contact, siteAddr: v.siteAddr,
     source: 'estimate-' + (via || 'manual'),
+    scope,
     notes: `Created from accepted proposal ${v.ref} (${via || 'manual'} acceptance).` + (scope ? `\nScope: ${scope}` : ''),
   });
 }
@@ -1021,6 +1024,20 @@ function fmtSeconds(s) {
   return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
 }
 
+/* ── Blueprint / drawing annotations ──
+   annoMap keyed by drawing id → {objects:[…], updatedAt, by}. Shared store so
+   tech markups made in the field appear in the portal project drawer live. */
+const drawingAnnoStore = createShieldStore('drawanno', {});
+
+/* Scope of work for a project: the dedicated field, falling back to the
+   "Scope: …" line older estimate-created projects embedded in notes. */
+function projectScope(p) {
+  if (!p) return '';
+  if (p.scope) return p.scope;
+  const m = /(?:^|\n)Scope:\s*([\s\S]*)$/.exec(p.notes || '');
+  return m ? m[1].trim() : '';
+}
+
 Object.assign(window, {
   createShieldStore, useShieldStore,
   ticketStore, workOrderStore, incidentStore, jobStore,
@@ -1045,5 +1062,6 @@ Object.assign(window, {
   proposalStore, defaultProposalBlocks, proposalValue,
   surveyStore, surveyTotals, SURVEY_RATE, SURVEY_BOM_SEED, studioInboxStore,
   showToast, navTo, genId, fmtDuration, fmtSeconds, savedScreen, saveScreen,
-  techExpenseStore, rejectTimesheetEntry
+  techExpenseStore, rejectTimesheetEntry,
+  drawingAnnoStore, projectScope
 });
