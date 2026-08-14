@@ -111,9 +111,11 @@ function TimeViewV2() {
           marginBottom: 8
         }}>{fmt(running ? elapsed : 0)}</div>
 
-        {/* Project / Task selector */}
-        <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 12 }}>
+        {/* Project / Task selector — selects size to the ROW, never to their
+            widest option (long WO/PRJ labels), so the card fits every phone. */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12, width: '100%' }}>
           <select value={activeProject} onChange={e => setActiveProject(e.target.value)} style={{
+            flex: '1.4 1 0', minWidth: 0, width: '100%', textOverflow: 'ellipsis',
             padding: '5px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
             borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none'
           }}>
@@ -124,6 +126,7 @@ function TimeViewV2() {
             ))}
           </select>
           <select value={activeTask} onChange={e => setActiveTask(e.target.value)} style={{
+            flex: '1 1 0', minWidth: 0, width: '100%', textOverflow: 'ellipsis',
             padding: '5px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
             borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none'
           }}>
@@ -371,7 +374,7 @@ function TimeViewV2() {
       {/* Manual Time Entry Modal */}
       {manualEntryOpen && (
         <div onClick={() => setManualEntryOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 380, background: 'var(--card)', border: '1px solid var(--border-strong)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', animation: 'fade-up 0.15s ease both' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 380, maxWidth: '94vw', background: 'var(--card)', border: '1px solid var(--border-strong)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', animation: 'fade-up 0.15s ease both' }}>
             <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 15, fontWeight: 500 }}>Manual Time Entry</span>
               <button onClick={() => setManualEntryOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 16, cursor: 'pointer' }}>✕</button>
