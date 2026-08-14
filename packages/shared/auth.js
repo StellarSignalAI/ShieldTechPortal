@@ -110,12 +110,18 @@ if (supabase) {
     state.loading = false;
     publish();
   });
-  supabase.auth.onAuthStateChange(async (event, session) => {
+  supabase.auth.onAuthStateChange((event, session) => {
     state.session = session || null;
     if (event === 'PASSWORD_RECOVERY') state.recovery = true;
-    await loadProfile();
-    state.loading = false;
-    publish();
+    // IMPORTANT: never await Supabase calls inside this callback — the client
+    // holds its auth lock while it runs, so a profiles query here deadlocks
+    // the token refresh (stuck spinner / "logged out" on app reopen after the
+    // access token expires). Defer the profile load past the callback.
+    setTimeout(async () => {
+      await loadProfile();
+      state.loading = false;
+      publish();
+    }, 0);
   });
 } else {
   publish();

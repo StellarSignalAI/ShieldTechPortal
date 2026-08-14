@@ -22,9 +22,10 @@ function TimeViewV2() {
   const [stopNote, setStopNote] = React.useState(null);   // null = closed; string = note being typed on timer stop
   const [manualEntryOpen, setManualEntryOpen] = React.useState(false);
   const [manualEntry, setManualEntry] = React.useState({ project: 'General', task: 'Installation', date: new Date().toISOString().slice(0, 10), startTime: '08:00', endTime: '12:00', billable: true, notes: '' });
-  const [toast, setToast] = React.useState(null);
   const [activeTag, setActiveTag] = React.useState('on-site');
-  const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 3000); };
+  // Global toast host (centered above the tab bar) — the old local toast
+  // rendered under the bottom nav and clipped off-screen.
+  const showToast = (m) => window.showToast(m, /^⚠/.test(String(m)) ? 'warn' : 'info');
 
   React.useEffect(() => {
     if (!running) return;
@@ -478,7 +479,6 @@ function TimeViewV2() {
         </div>
       )}
 
-      {toast && <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, padding: '10px 24px', borderRadius: 8, background: 'var(--card)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 13, fontWeight: 500, boxShadow: 'var(--glow-brand-sm)', animation: 'fade-up 0.3s ease both' }}>{toast}</div>}
     </div>
   );
 }

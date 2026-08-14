@@ -254,8 +254,13 @@ function CustomerPhotosScreen() {
 /* ── Main App ── */
 function CustomerPortalApp() {
   const [t, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
+  // Restore the last screen on refresh/relaunch (device-local).
+  React.useEffect(() => {
+    const s = window.savedScreen('customer', null);
+    if (s && s !== (t.tab || 'dashboard')) setTweak('tab', s);
+  }, []);
   const tab = t.tab || 'dashboard';
-  const setTab = (v) => setTweak('tab', v);
+  const setTab = (v) => { setTweak('tab', v); window.saveScreen('customer', v); };
   const [selectedTicket, setSelectedTicket] = useState(null);
 
   const screens = {

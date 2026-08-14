@@ -239,10 +239,15 @@ function BackWrap({ setTab, children }) {
 function TechApp() {
   const [t, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
   const [selectedJob, setSelectedJob] = useState(null);
+  // Restore the last screen on refresh/relaunch (device-local).
+  React.useEffect(() => {
+    const s = window.savedScreen('tech', null);
+    if (s && s !== 'job-detail' && s !== (t.view || 'today')) setTweak('view', s);
+  }, []);
   const rawTab = t.view || 'today';
   // job-detail needs a selected job; fall back to today on fresh load
   const tab = rawTab === 'job-detail' && !selectedJob ? 'today' : rawTab;
-  const setTab = (v) => setTweak('view', v);
+  const setTab = (v) => { setTweak('view', v); window.saveScreen('tech', v); };
 
   const views = {
     today: () => <TodayView setTab={setTab} setSelectedJob={setSelectedJob} />,

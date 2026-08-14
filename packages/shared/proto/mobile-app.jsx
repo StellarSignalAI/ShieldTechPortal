@@ -321,9 +321,14 @@ function MAvatarMenu({ onNav }) {
 
 function MobilePortalApp() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  // Restore the last screen on refresh/relaunch (device-local).
+  React.useEffect(() => {
+    const s = savedScreen('portal-m', null);
+    if (s && s !== (t.mscreen || 'custom-dashboard')) setTweak('mscreen', s);
+  }, []);
   let screen = t.mscreen || 'custom-dashboard';
   if (screen === 'hermes') screen = 'shieldtech-ai';
-  const handleNav = (id) => setTweak('mscreen', id === 'hermes' ? 'shieldtech-ai' : id);
+  const handleNav = (id) => { const v = id === 'hermes' ? 'shieldtech-ai' : id; setTweak('mscreen', v); saveScreen('portal-m', v); };
   window.__shieldNav = handleNav;
   const [histBack, setHistBack] = useState([]);
   const [tabCfg] = useShieldStore(mobileTabsStore);

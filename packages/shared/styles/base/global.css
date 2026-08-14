@@ -122,9 +122,13 @@ body::after {
 }
 
 /* Stagger animation */
+/* Animates the standalone `translate` property (NOT `transform`) so elements
+   that center themselves with an inline transform: translateX(-50%) — every
+   toast in the app — keep their centering; `animation-fill-mode: both` on a
+   transform keyframe was overwriting it and pinning toasts half off-screen. */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; translate: 0 12px; }
+  to { opacity: 1; translate: 0 0; }
 }
 
 /* Entrance-animation safety net.
