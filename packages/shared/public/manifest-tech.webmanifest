@@ -21,13 +21,13 @@
   ],
   "icons": [
     {
-      "src": "/sw/shieldtech-tech-emblem.png",
+      "src": "/sw/shieldtech-tech-icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/sw/shieldtech-tech-emblem.png",
+      "src": "/sw/shieldtech-tech-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
