@@ -19,6 +19,7 @@ function TimeViewV2() {
       () => {}, { timeout: 4000 });
   }, []);
   const [viewMode, setViewMode] = React.useState('today'); // today | week | pay-period
+  const [stopNote, setStopNote] = React.useState(null);   // null = closed; string = note being typed on timer stop
   const [manualEntryOpen, setManualEntryOpen] = React.useState(false);
   const [manualEntry, setManualEntry] = React.useState({ project: 'General', task: 'Installation', date: new Date().toISOString().slice(0, 10), startTime: '08:00', endTime: '12:00', billable: true, notes: '' });
   const [toast, setToast] = React.useState(null);
@@ -165,12 +166,10 @@ function TimeViewV2() {
           }}>{running ? '⏸' : '▶'}</button>
           {running && (
             <button onClick={() => {
-              const hrs = elapsed / 3600;
-              setRunning(false); setElapsed(0);
-              if (hrs > 0.01 && window.__shieldTime) {
-                window.__shieldTime.submitHours({ workDate: new Date().toISOString().slice(0, 10), hours: hrs, jobRef: activeProject, notes: activeTask, draft: true })
-                  .then(r => { showToast(r.ok ? `Logged ${hrs.toFixed(2)}h \u2014 saved as draft` : (r.error || 'Could not save entry')); refreshEntries(); });
-              }
+              // Pause and require a work note before the entry saves.
+              setRunning(false);
+              if (elapsed / 3600 > 0.01) setStopNote('');
+              else setElapsed(0);
             }} style={{
               width: 44, height: 44, borderRadius: '50%', alignSelf: 'center',
               background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)',
@@ -371,6 +370,35 @@ function TimeViewV2() {
         </GlassPanel>
       ); })()}
 
+      {/* Timer-stop note — required before the entry saves */}
+      {stopNote !== null && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ width: 380, maxWidth: '94vw', background: 'var(--card)', border: '1px solid var(--border-strong)', borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', animation: 'fade-up 0.15s ease both' }}>
+            <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: 15, fontWeight: 500 }}>What did you work on?</div>
+              <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 3 }}>{fmt(elapsed)} on {activeProject} · {activeTask} — a note is required before this entry saves.</div>
+            </div>
+            <div style={{ padding: '14px 18px' }}>
+              <textarea autoFocus value={stopNote} onChange={e => setStopNote(e.target.value)} placeholder="e.g. Mounted 4 domes in the lobby, terminated + tested runs 3–6" rows={3}
+                style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: `1px solid ${stopNote.trim() ? 'var(--border-subtle)' : 'rgba(251,191,36,0.4)'}`, borderRadius: 6, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
+            </div>
+            <div style={{ padding: '12px 18px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button onClick={() => { setStopNote(null); setRunning(true); }} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Keep Timing</button>
+              <button onClick={() => {
+                if (!stopNote.trim()) { showToast('⚠ Add a note describing the work before submitting'); return; }
+                const hrs = elapsed / 3600;
+                const note = stopNote.trim();
+                setStopNote(null); setElapsed(0);
+                if (window.__shieldTime) {
+                  window.__shieldTime.submitHours({ workDate: new Date().toISOString().slice(0, 10), hours: hrs, jobRef: activeProject, notes: `${activeTask} — ${note}`, draft: true })
+                    .then(r => { showToast(r.ok ? `Logged ${hrs.toFixed(2)}h — saved as draft` : (r.error || 'Could not save entry')); refreshEntries(); });
+                } else showToast('Backend not configured');
+              }} style={{ padding: '8px 20px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Entry</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Manual Time Entry Modal */}
       {manualEntryOpen && (
         <div onClick={() => setManualEntryOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -430,8 +458,8 @@ function TimeViewV2() {
                 </label>
               </div>
               <div>
-                <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 4 }}>Notes (optional)</div>
-                <textarea value={manualEntry.notes} onChange={e => setManualEntry(prev => ({...prev, notes: e.target.value}))} placeholder="What did you work on?" rows={2} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
+                <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 4 }}>Notes <span style={{ color: 'var(--status-warn)' }}>*</span> <span style={{ textTransform: 'none', fontWeight: 400 }}>(required)</span></div>
+                <textarea value={manualEntry.notes} onChange={e => setManualEntry(prev => ({...prev, notes: e.target.value}))} placeholder="What did you work on? Required before saving." rows={2} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: `1px solid ${manualEntry.notes.trim() ? 'var(--border-subtle)' : 'rgba(251,191,36,0.4)'}`, borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
               </div>
             </div>
             <div style={{ padding: '12px 18px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
@@ -439,9 +467,10 @@ function TimeViewV2() {
               <button onClick={() => {
                 const t = window.__shieldTime;
                 if (!t) { showToast('Backend not configured'); return; }
+                if (!manualEntry.notes.trim()) { showToast('⚠ Add a note describing the work before saving this entry'); return; }
                 const startAt = `${manualEntry.date}T${manualEntry.startTime}:00`;
                 const endAt = `${manualEntry.date}T${manualEntry.endTime}:00`;
-                t.submitHours({ workDate: manualEntry.date, startAt, endAt, jobRef: manualEntry.project, notes: manualEntry.task, draft: true })
+                t.submitHours({ workDate: manualEntry.date, startAt, endAt, jobRef: manualEntry.project, notes: `${manualEntry.task} — ${manualEntry.notes.trim()}`, draft: true })
                   .then(r => { showToast(r.ok ? `Saved: ${manualEntry.project} — ${manualEntry.task}` : (r.error || 'Could not save entry')); if (r.ok) { setManualEntryOpen(false); refreshEntries(); } });
               }} style={{ padding: '8px 20px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Entry</button>
             </div>
