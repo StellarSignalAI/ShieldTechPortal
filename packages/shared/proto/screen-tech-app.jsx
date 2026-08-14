@@ -242,6 +242,15 @@ function JobDetailView({ job, setTab }) {
 
   const bom = (job && job.bom) || [];
 
+  /* Project link: scheduled jobs built from a project carry projectId + scope.
+     The project's blueprints open in the markup editor right from here. */
+  const [projList] = useShieldStore(projectStore);
+  const project = (job && job._cal && job._cal.projectId)
+    ? (projList || []).find(p => p.number === job._cal.projectId) || null : null;
+  const scope = (job && ((job._cal && job._cal.scope) || (job._wo && job._wo.scope))) || (project ? projectScope(project) : '');
+  const drawings = (project && project.drawings) || [];
+  const [openDrawing, setOpenDrawing] = React.useState(null);
+
   if (!job) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -286,6 +295,24 @@ function JobDetailView({ job, setTab }) {
           })}
         </div>
       </GlassPanel>
+
+      {/* Scope of work — carried from the accepted proposal via the project */}
+      {scope && (
+        <GlassPanel>
+          <div className="label-sm" style={{ marginBottom: 8 }}>SCOPE OF WORK{project ? <span style={{ color: 'var(--text-low)', marginLeft: 6 }}>· {project.number}</span> : null}</div>
+          <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-high)', whiteSpace: 'pre-wrap' }}>{scope}</div>
+        </GlassPanel>
+      )}
+
+      {/* Blueprints — open the digital drawing, mark it up, knock items off */}
+      {drawings.length > 0 && (
+        <GlassPanel>
+          <div className="label-sm" style={{ marginBottom: 8 }}>BLUEPRINTS &amp; DRAWINGS</div>
+          <BlueprintRows drawings={drawings} onOpen={setOpenDrawing} />
+          <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 8 }}>Tap a drawing to open it — draw wire paths, drop device icons, highlight, add notes, and check items off as you install. The office sees your markup live.</div>
+        </GlassPanel>
+      )}
+      {openDrawing && <BlueprintEditor drawing={openDrawing} onClose={() => setOpenDrawing(null)} />}
 
       {/* Contact + access */}
       <GlassPanel>

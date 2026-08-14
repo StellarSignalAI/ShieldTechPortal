@@ -44,6 +44,7 @@ function CalendarScreen() {
       title: p.name || p.number, customer: p.customer || '',
       type: CAL_TYPES[String(p.type || '').toLowerCase()] ? String(p.type).toLowerCase() : 'install',
       dur: 8, days: 1, value: p.contractTotal || p.estimatedValue || 0,
+      scope: projectScope(p),
     }));
   const trayItems = [...projectTray, ...backlog];
   const [view, setView] = React.useState('week');
@@ -322,7 +323,7 @@ function CalendarScreen() {
       const p = spec.project, days = p.days || 1;
       const startISO = target.area === 'grid' ? gridISO(target.day) : target.iso;
       const start = target.area === 'grid' ? calClamp(calSnap(target.hourRaw), DAY_START, DAY_END - p.dur) : 9;
-      const newJob = normalizeJobDates({ id: Date.now(), title: p.title, customer: p.customer, techs: [], type: p.type, date: startISO, endDate: addDaysISO(startISO, days - 1), start, dur: p.dur, value: p.value, projectId: p.projectId || undefined });
+      const newJob = normalizeJobDates({ id: Date.now(), title: p.title, customer: p.customer, techs: [], type: p.type, date: startISO, endDate: addDaysISO(startISO, days - 1), start, dur: p.dur, value: p.value, projectId: p.projectId || undefined, scope: p.scope || undefined });
       setJobs(prev => [...prev, newJob]);
       // Real projects are virtual tray items (hidden via projectId once scheduled);
       // ad-hoc backlog entries are removed from the store.

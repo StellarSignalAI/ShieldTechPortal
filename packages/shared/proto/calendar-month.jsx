@@ -134,12 +134,26 @@ function CalMonthView({ jobs, techs, anchor, drag, monthGhost, conflicts, select
 /* ── New Job Modal (real date + real technicians) ── */
 function NewJobModal({ techs, typeColors, initialSlot, onClose, onCreate, calFmtH }) {
   const customers = [...new Set([...(typeof shieldCustomerNames === 'function' ? shieldCustomerNames() : []), 'Internal'])];
+  const projects = (useShieldStore(projectStore)[0] || []).filter(p => p.status !== 'complete' && p.status !== 'cancelled');
   const [form, setForm] = React.useState({
     title: '', customer: customers[0] || '', techs: initialSlot?.techs || (initialSlot?.tech ? [initialSlot.tech] : []),
-    type: 'install', date: initialSlot?.date || todayISO(), days: 1, start: initialSlot?.start ?? 9, dur: initialSlot?.dur || 2, value: ''
+    type: 'install', date: initialSlot?.date || todayISO(), days: 1, start: initialSlot?.start ?? 9, dur: initialSlot?.dur || 2, value: '',
+    projectId: '', scope: '',
   });
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
   const toggleTech = (id) => setForm(p => ({ ...p, techs: p.techs.includes(id) ? p.techs.filter(t => t !== id) : [...p.techs, id] }));
+  /* Picking a project autofills title, customer, value and carries the
+     proposal's scope of work onto the scheduled job. */
+  const pickProject = (num) => {
+    const p = projects.find(x => x.number === num);
+    if (!p) { setForm(f => ({ ...f, projectId: '', scope: '' })); return; }
+    setForm(f => ({
+      ...f, projectId: p.number,
+      title: p.name || f.title, customer: p.customer || f.customer,
+      value: String(Number(p.contractTotal) || Number(p.estimatedValue) || '') || f.value,
+      scope: projectScope(p),
+    }));
+  };
 
   const submit = () => {
     if (!form.title || !form.date) return;
@@ -149,6 +163,7 @@ function NewJobModal({ techs, typeColors, initialSlot, onClose, onCreate, calFmt
       techIds: form.techs.map(id => (techs.find(t => t.id === id) || {}).uid).filter(Boolean),
       type: form.type, date: form.date, endDate: addDaysISO(form.date, days - 1),
       start: parseFloat(form.start), dur: parseFloat(form.dur), value: parseFloat(form.value) || 0,
+      projectId: form.projectId || undefined, scope: form.scope || undefined,
     }));
   };
 
@@ -160,6 +175,20 @@ function NewJobModal({ techs, typeColors, initialSlot, onClose, onCreate, calFmt
           <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-high)' }}>Schedule New Job</span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 20 }}>×</button>
         </div>
+        {projects.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <div style={calLabelStyle}>From Project <span style={{ color: 'var(--text-low)', textTransform: 'none', letterSpacing: 0 }}>— autofills customer, value &amp; scope</span></div>
+            <select value={form.projectId} onChange={e => pickProject(e.target.value)} style={calSelStyle}>
+              <option value="">— none (ad-hoc job) —</option>
+              {projects.map(p => <option key={p.number} value={p.number}>{p.number} · {p.name}</option>)}
+            </select>
+            {form.scope && (
+              <div style={{ marginTop: 6, padding: '7px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 7, fontSize: 10.5, lineHeight: 1.5, color: 'var(--text-mid)', maxHeight: 80, overflowY: 'auto' }}>
+                <span style={{ color: 'var(--brand)', fontWeight: 600 }}>Scope: </span>{form.scope}
+              </div>
+            )}
+          </div>
+        )}
         <div style={{ marginBottom: 12 }}>
           <div style={calLabelStyle}>Job Title *</div>
           <input value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. City Hall — Access Control Install" style={calInputStyle} />

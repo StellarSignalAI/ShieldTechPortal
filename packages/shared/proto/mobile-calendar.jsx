@@ -34,9 +34,21 @@ function MJobEditor({ job, slot, onClose }) {
       dur: String(base.dur != null ? base.dur : 2),
       value: base.value ? String(base.value) : '',
       techs: base.techs ? [...base.techs] : [],
+      projectId: base.projectId || '', scope: base.scope || '',
     };
   });
+  const projects = (useShieldStore(projectStore)[0] || []).filter(p => p.status !== 'complete' && p.status !== 'cancelled');
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
+  const pickProject = (e) => {
+    const p = projects.find(x => x.number === e.target.value);
+    if (!p) { setF(f => ({ ...f, projectId: '', scope: '' })); return; }
+    setF(f => ({
+      ...f, projectId: p.number,
+      title: p.name || f.title, customer: p.customer || f.customer,
+      value: String(Number(p.contractTotal) || Number(p.estimatedValue) || '') || f.value,
+      scope: projectScope(p),
+    }));
+  };
   const toggleTech = (id) => setF(p => ({ ...p, techs: p.techs.includes(id) ? p.techs.filter(t => t !== id) : [...p.techs, id] }));
   const hourOpts = []; for (let h = MC_H0; h <= MC_H1; h++) { hourOpts.push({ value: String(h), label: mcFmt(h) }); hourOpts.push({ value: String(h + 0.5), label: mcFmt(h + 0.5) }); }
   const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', colorScheme: 'dark' };
@@ -52,6 +64,7 @@ function MJobEditor({ job, slot, onClose }) {
       start: Number(f.start), dur: Number(f.dur) || 1,
       value: Number(f.value) || 0, techs: f.techs,
       techIds: f.techs.map(id => (mcTechOf(roster, id) || {}).uid).filter(Boolean),
+      projectId: f.projectId || undefined, scope: f.scope || undefined,
     });
     if (job) {
       jobStore.set(list => list.map(x => x.id === job.id ? { ...x, ...rec } : x));
@@ -71,6 +84,16 @@ function MJobEditor({ job, slot, onClose }) {
   return (
     <MSheet title={job ? 'Edit Job' : 'New Job'} onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+        {projects.length > 0 && (
+          <div>
+            <MWSelect label="From Project" value={f.projectId} onChange={pickProject} options={[{ value: '', label: '— none (ad-hoc job) —' }, ...projects.map(p => ({ value: p.number, label: `${p.number} · ${p.name}` }))]} />
+            {f.scope && (
+              <div style={{ marginTop: 6, padding: '8px 11px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 9, fontSize: 11, lineHeight: 1.5, color: 'var(--text-mid)', maxHeight: 90, overflowY: 'auto' }}>
+                <span style={{ color: 'var(--brand)', fontWeight: 600 }}>Scope: </span>{f.scope}
+              </div>
+            )}
+          </div>
+        )}
         <MWField label="Job Title *" value={f.title} onChange={set('title')} placeholder="e.g. Metro Bank — Camera Install" />
         <MWSelect label="Customer" value={f.customer} onChange={set('customer')} options={[{ value: '', label: 'Select customer…' }, ...allCusts.map(c => ({ value: c.name, label: c.name }))]} />
 
