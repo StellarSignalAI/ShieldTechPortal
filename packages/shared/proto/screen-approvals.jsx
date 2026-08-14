@@ -12,7 +12,7 @@ function ApprovalsScreen() {
     t.pendingEntries().then(r => {
       if (!r.ok || !Array.isArray(r.data)) return;
       const cards = r.data.map(e => ({
-        id: 'te-' + e.id, entryId: e.id, tag: 'timesheet',
+        id: 'te-' + e.id, entryId: e.id, entry: e, tag: 'timesheet',
         title: `${(e.tech && e.tech.name) || 'Technician'} \u2014 ${Number(e.hours).toFixed(1)}h on ${e.work_date}`,
         risk: 'low', time: e.work_date,
         who: (e.tech && (e.tech.name + ' (' + e.tech.email + ')')) || 'Technician',
@@ -23,22 +23,53 @@ function ApprovalsScreen() {
     });
   }, []);
 
+  // Technician manual expenses (no receipt) flow in from the shared store.
+  const [texpRows, setTexpRows] = useShieldStore(techExpenseStore);
+  const expenseCards = (texpRows || []).filter(e => e.status === 'pending').map(e => ({
+    id: 'exp-' + e.id, expenseId: e.id, tag: 'expense',
+    title: `${e.by || 'Technician'} \u2014 $${Number(e.amount || 0).toFixed(2)} ${e.category || ''}`,
+    risk: 'low', time: e.date,
+    who: e.by || 'Technician',
+    summary: `${e.desc || 'Expense'} \u00b7 ${e.category || 'Uncategorized'} \u00b7 submitted ${e.date}.`,
+    meta: 'Tech expense \u00b7 manual',
+  }));
+  const queue = [...expenseCards, ...approvals];
+
   const resolve = (a, action) => {
-    setApprovals(prev => prev.filter(x => x.id !== a.id));
+    if (a.tag === 'expense' && a.expenseId) {
+      setTexpRows(prev => (prev || []).map(x => x.id === a.expenseId ? { ...x, status: action === 'approve' ? 'approved' : 'rejected' } : x));
+      shieldToast(`${action === 'approve' ? 'Approved' : 'Rejected'}: ${a.title}`, action === 'approve' ? 'ok' : 'warn');
+      return;
+    }
     if (a.tag === 'timesheet' && a.entryId && window.__shieldTime) {
-      window.__shieldTime.setEntryStatus(a.entryId, action === 'approve' ? 'approved' : 'rejected')
+      if (action === 'reject') {
+        // Collect a reviewer note, then reject + email the technician.
+        shieldModal({
+          kind: 'editor', title: 'Reject \u2014 ' + a.title,
+          subtitle: 'This note is emailed to the technician so they know what to fix.',
+          value: '', submitLabel: 'Reject & Email Tech', successMsg: 'Rejected \u2014 technician notified',
+          onSubmit: (note) => {
+            setApprovals(prev => prev.filter(x => x.id !== a.id));
+            rejectTimesheetEntry(a.entry, (note || '').trim()).then(r => {
+              if (!r.ok) shieldToast(r.error || 'Update failed', 'warn');
+            });
+          },
+        });
+        return;
+      }
+      setApprovals(prev => prev.filter(x => x.id !== a.id));
+      window.__shieldTime.setEntryStatus(a.entryId, 'approved')
         .then(r => {
           if (!r.ok) { shieldToast(r.error || 'Update failed', 'warn'); return; }
-          if (action === 'approve') {
-            shieldToast(`Approved: ${a.title}`, 'ok');
-            window.__shieldTime.ripplingSync('push').then(sr => {
-              if (sr.ok) shieldToast('Synced to Rippling', 'ok');
-              else if (sr.error && !String(sr.error).includes('not configured')) shieldToast('Rippling sync: ' + sr.error, 'warn');
-            });
-          } else shieldToast(`Rejected: ${a.title}`, 'warn');
+          shieldToast(`Approved: ${a.title}`, 'ok');
+          window.__shieldTime.ripplingSync('push').then(sr => {
+            if (sr.ok) shieldToast('Synced to Rippling', 'ok');
+            else if (sr.error && !String(sr.error).includes('not configured')) shieldToast('Rippling sync: ' + sr.error, 'warn');
+          });
         });
       return;
     }
+    setApprovals(prev => prev.filter(x => x.id !== a.id));
     if (action === 'approve') shieldToast(`Approved: ${a.title}`, 'ok');
     else shieldToast(`Rejected: ${a.title}`, 'warn');
   };
@@ -50,6 +81,7 @@ function ApprovalsScreen() {
     alarm: { bg: 'rgba(244,63,94,0.12)', color: 'var(--status-critical)', border: 'rgba(244,63,94,0.25)' },
     refund: { bg: 'rgba(52,211,153,0.12)', color: 'var(--status-ok)', border: 'rgba(52,211,153,0.25)' },
     timesheet: { bg: 'rgba(52,211,153,0.12)', color: 'var(--status-ok)', border: 'rgba(52,211,153,0.25)' },
+    expense: { bg: 'rgba(251,191,36,0.12)', color: 'var(--status-warn)', border: 'rgba(251,191,36,0.25)' },
   };
 
   const riskIcons = { low: '○', medium: '◐', high: '●' };
@@ -72,7 +104,7 @@ function ApprovalsScreen() {
             background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)',
             display: 'flex', alignItems: 'center', gap: 6
           }}>
-            <span className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--brand)' }}>{approvals.length}</span>
+            <span className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--brand)' }}>{queue.length}</span>
             <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>pending</span>
           </div>
         </div>
@@ -81,7 +113,7 @@ function ApprovalsScreen() {
       {/* Summary chips */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {Object.entries(tagColors).map(([tag, tc]) => {
-          const count = approvals.filter(a => a.tag === tag).length;
+          const count = queue.filter(a => a.tag === tag).length;
           if (count === 0) return null;
           return (
             <div key={tag} style={{
@@ -97,7 +129,7 @@ function ApprovalsScreen() {
       </div>
 
       {/* Empty state */}
-      {approvals.length === 0 && (
+      {queue.length === 0 && (
         <div className="glass" style={{ padding: '48px 24px', textAlign: 'center' }}>
           <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.5 }}>✓</div>
           <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-high)', marginBottom: 6 }}>All caught up</div>
@@ -107,7 +139,7 @@ function ApprovalsScreen() {
 
       {/* Approval Cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {approvals.map((a, i) => {
+        {queue.map((a, i) => {
           const tc = tagColors[a.tag];
           return (
             <div key={a.id} className="glass" style={{

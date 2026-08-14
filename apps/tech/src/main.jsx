@@ -42,15 +42,40 @@ const React = window.React;
 const ReactDOM = window.ReactDOM;
 const { useState } = React;
 
-/* Auto-GPS: request permission once per device; when granted, this tech's
-   live position streams to the Fleet map whenever the app is open. */
+/* Auto-GPS: the tech accepts location ONCE; from then on their live position
+   streams to the Fleet map automatically on every launch and resumes whenever
+   the app returns to the foreground — no re-prompt, no toggle to remember.
+   (True OS-background tracking with the app fully closed isn't possible on
+   the web; the watch runs the entire time the app is open or foregrounded.) */
 window.addEventListener('shield:auth', function techAutoGps() {
   const u = window.__shieldUser;
   if (!u || !navigator.geolocation) return;
   window.removeEventListener('shield:auth', techAutoGps);
-  navigator.geolocation.getCurrentPosition(
-    () => { try { if (window.startFleetSharing) window.startFleetSharing(u.initials || u.id); localStorage.setItem('st2:gps-on', '1'); } catch {} },
-    () => {}, { timeout: 8000 });
+  const techId = u.initials || u.id;
+  const start = () => {
+    try {
+      if (window.startFleetSharing) window.startFleetSharing(techId, (s) => {
+        try {
+          if (s === 'live') localStorage.setItem('st2:gps-on', '1');
+          if (s === 'denied') localStorage.removeItem('st2:gps-on');
+        } catch {}
+      });
+    } catch {}
+  };
+  const wasOn = (() => { try { return localStorage.getItem('st2:gps-on') === '1'; } catch { return false; } })();
+  const firstAsk = () => navigator.geolocation.getCurrentPosition(() => start(), () => {}, { timeout: 8000 });
+  if (navigator.permissions && navigator.permissions.query) {
+    navigator.permissions.query({ name: 'geolocation' })
+      .then(p => { if (p.state === 'granted' || wasOn) start(); else if (p.state === 'prompt') firstAsk(); })
+      .catch(() => (wasOn ? start() : firstAsk()));
+  } else if (wasOn) start(); else firstAsk();
+  // Keep it alive: restart the watch whenever the app returns to the front.
+  document.addEventListener('visibilitychange', () => {
+    try { if (!document.hidden && localStorage.getItem('st2:gps-on') === '1') start(); } catch {}
+  });
+  window.addEventListener('pageshow', () => {
+    try { if (localStorage.getItem('st2:gps-on') === '1') start(); } catch {}
+  });
 });
 
 requestAnimationFrame(function () {

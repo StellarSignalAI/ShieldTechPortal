@@ -249,7 +249,9 @@ function TimesheetApprovalScreen() {
     if (!t) { shieldToast('Backend not configured', 'warn'); return; }
     const pend = g.entries.filter(e => e.status === 'submitted');
     if (!pend.length) { shieldToast(`Nothing pending for ${g.tech}`, 'info'); return; }
-    Promise.all(pend.map(e => t.setEntryStatus(e.id, approve ? 'approved' : 'rejected', approve ? undefined : 'Returned for correction')))
+    const run = (note) => Promise.all(pend.map(e => approve
+      ? t.setEntryStatus(e.id, 'approved')
+      : rejectTimesheetEntry(e, note)))
       .then(res => {
         const ok = res.every(r => r && r.ok);
         if (approve) {
@@ -263,6 +265,14 @@ function TimesheetApprovalScreen() {
         }
         load();
       });
+    if (approve) { run(); return; }
+    // Rejection requires a note — it's emailed to the tech so they know what to fix.
+    shieldModal({
+      kind: 'editor', title: `Return timesheet — ${g.tech}, ${g.period}`,
+      subtitle: 'This note is emailed to the technician with each returned entry.',
+      value: 'Returned for correction', submitLabel: 'Return & Email Tech', successMsg: 'Returned — technician notified',
+      onSubmit: (note) => run((note || 'Returned for correction').trim()),
+    });
   };
   const totalHours = timesheets.reduce((s, t) => s + t.total, 0);
   const totalBillable = timesheets.reduce((s, t) => s + t.billable, 0);

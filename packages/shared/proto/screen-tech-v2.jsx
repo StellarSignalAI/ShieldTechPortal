@@ -45,7 +45,7 @@ function TimeViewV2() {
   const todayKey = new Date().toISOString().slice(0, 10);
   const fmtClock = (iso) => iso ? new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—';
   const todayEntries = liveEntries
-    .filter(e => e.work_date === todayKey)
+    .filter(e => e.work_date === todayKey || e.status === 'rejected')   // rejected stays visible until fixed
     .map(e => ({
       id: e.id,
       project: e.job_ref || 'General',
@@ -56,6 +56,7 @@ function TimeViewV2() {
       billable: e.job_ref !== 'Travel',
       type: e.job_ref === 'Travel' ? 'drive' : 'work',
       status: e.status,
+      rejection: e.rejection_reason || null,
       tags: [e.status],
     }));
   const delEntry = (id) => {
@@ -236,9 +237,14 @@ function TimeViewV2() {
                 <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{e.task}</div>
                 <div style={{ display: 'flex', gap: 4, marginTop: 3 }}>
                   {e.tags.map(t => (
-                    <span key={t} style={{ fontSize: 8, padding: '1px 5px', borderRadius: 3, background: 'rgba(63,169,245,0.06)', color: 'var(--text-low)', textTransform: 'uppercase' }}>{t}</span>
+                    <span key={t} style={{ fontSize: 8, padding: '1px 5px', borderRadius: 3, background: t === 'rejected' ? 'rgba(244,63,94,0.12)' : 'rgba(63,169,245,0.06)', color: t === 'rejected' ? 'var(--status-critical)' : 'var(--text-low)', textTransform: 'uppercase' }}>{t}</span>
                   ))}
                 </div>
+                {e.status === 'rejected' && e.rejection && (
+                  <div style={{ marginTop: 4, padding: '5px 8px', borderRadius: 5, background: 'rgba(244,63,94,0.07)', border: '1px solid rgba(244,63,94,0.2)', fontSize: 10.5, color: 'var(--status-critical)', lineHeight: 1.4 }}>
+                    Office: {e.rejection} — delete this entry and resubmit corrected time.
+                  </div>
+                )}
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div className="mono" style={{ fontSize: 13, fontWeight: 500, color: e.active ? 'var(--brand)' : 'var(--text-mid)' }}>
@@ -484,7 +490,7 @@ function TimeViewV2() {
 }
 
 /* ── Expense Submission — REAL: quick-snap receipts + shared expense store ── */
-const techExpenseStore = createShieldStore('mexpenses', []);
+/* techExpenseStore now lives in shared-state.jsx (the office approves from it) */
 
 function ExpenseView() {
   const [showForm, setShowForm] = React.useState(false);
@@ -504,15 +510,16 @@ function ExpenseView() {
   /* My expenses from the shared store (approved/rejected by the office). */
   const expenses = (allRows || []).filter(e => !meName || (e.by || '').toLowerCase() === meName);
 
+  const [snapCat, setSnapCat] = React.useState('Materials');
   const snap = async (e) => {
     const file = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!file) return;
     if (!window.__shieldReceipts) { shieldToast('Receipts backend not configured', 'warn'); return; }
     setSnapBusy(true);
-    const r = await window.__shieldReceipts.snap(file, {});
+    const r = await window.__shieldReceipts.snap(file, { category: snapCat });
     setSnapBusy(false);
-    if (r.ok) { shieldToast('Receipt sent to the office — they categorize it, you are done', 'ok'); refreshReceipts(); }
+    if (r.ok) { shieldToast(`Receipt sent to the office as ${snapCat}`, 'ok'); refreshReceipts(); }
     else shieldToast('Upload failed: ' + (r.error || 'unknown'), 'warn');
   };
 
@@ -549,13 +556,18 @@ function ExpenseView() {
         </div>
       </div>
 
-      {/* Quick-snap — the one-tap path */}
+      {/* Quick-snap — pick the category, then shoot */}
+      <div style={{ display: 'flex', gap: 6 }}>
+        {['Materials', 'Fuel', 'Tools', 'Meals', 'Other'].map(c => (
+          <button key={c} onClick={() => setSnapCat(c)} style={{ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, background: snapCat === c ? 'rgba(63,169,245,0.12)' : 'transparent', border: `1px solid ${snapCat === c ? 'var(--brand)' : 'var(--border-subtle)'}`, color: snapCat === c ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
+        ))}
+      </div>
       <input ref={snapRef} type="file" accept="image/*" capture="environment" onChange={snap} style={{ display: 'none' }} />
       <button disabled={snapBusy} onClick={() => snapRef.current && snapRef.current.click()} style={{
         padding: '14px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none',
         borderRadius: 10, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)',
         opacity: snapBusy ? 0.5 : 1, boxShadow: '0 0 18px -6px rgba(63,169,245,0.5)'
-      }}>{snapBusy ? 'Uploading…' : '📷 Snap a receipt — office handles the rest'}</button>
+      }}>{snapBusy ? 'Uploading…' : `📷 Snap a ${snapCat.toLowerCase()} receipt`}</button>
       <button onClick={() => setShowForm(s => !s)} style={{ padding: '9px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
         {showForm ? 'Cancel' : '+ Manual expense (no receipt)'}
       </button>
@@ -591,7 +603,7 @@ function ExpenseView() {
               <div style={{ width: 4, height: 26, borderRadius: 2, background: statusColors[r.status] || 'var(--text-low)' }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12.5, color: 'var(--text-high)' }}>{r.vendor || r.note || 'Receipt'}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{new Date(r.created_at).toLocaleDateString()} · {r.status === 'inbox' ? 'waiting for the office' : r.status}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{new Date(r.created_at).toLocaleDateString()}{r.expense_category ? ` · ${r.expense_category}` : ''} · {r.status === 'inbox' ? 'waiting for the office' : r.status}</div>
               </div>
               {r.amount != null && <span className="mono" style={{ fontSize: 12.5, color: 'var(--text-high)' }}>${Number(r.amount).toFixed(2)}</span>}
             </div>
