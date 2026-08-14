@@ -8,7 +8,7 @@
      • Everything else (Supabase, APIs, cross-origin): passthrough, never cached.
    One shared file is served at each app's origin root, so its scope is that
    single app origin. Bump CACHE_VERSION to force clients onto a fresh cache. */
-const CACHE_VERSION = 'shieldtech-v4';
+const CACHE_VERSION = 'shieldtech-v5';
 const SHELL_URL = './index.html';
 
 self.addEventListener('install', (event) => {

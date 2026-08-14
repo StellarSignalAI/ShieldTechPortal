@@ -26,14 +26,13 @@ const BADGE = `
   </g>
 </svg>`;
 
-/* Composition: shield up-left, badge overlapping bottom-right.
-   artPct scales the whole composition inside the canvas (for icon safe zones). */
+/* Icon composition: the wrench badge ALONE is the app icon (per Daniel) —
+   the ShieldTech shield stays only in in-app branding, not on the icon.
+   artPct scales the badge inside the canvas (for icon safe zones). */
 const page1024 = (artPct, bg) => `<!doctype html><html><body style="margin:0;width:1024px;height:1024px;position:relative;${bg ? `background:${bg};` : ''}">
-  <div style="position:absolute;left:50%;top:50%;width:${artPct * 1024}px;height:${artPct * 1024}px;transform:translate(-50%,-50%)">
-    <img src="data:image/png;base64,${emblemB64}" style="position:absolute;left:0;top:0;width:88%;height:88%;object-fit:contain"/>
-    <div style="position:absolute;right:0;bottom:1%;width:40%;height:40%">${BADGE}</div>
-  </div>
+  <div style="position:absolute;left:50%;top:50%;width:${artPct * 1024}px;height:${artPct * 1024}px;transform:translate(-50%,-50%)">${BADGE}</div>
 </body></html>`;
+void emblemB64; // shield emblem no longer composed into icons
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 const ctx = await browser.newContext({ viewport: { width: 1024, height: 1024 } });
@@ -46,10 +45,10 @@ async function render(key, { artPct, bg, transparent }) {
 }
 
 /* Master transparent mark, home-screen tiles, and adaptive foreground.
-   The tech mark IS the app icon — full-bleed, not a small emblem on padding. */
-await render('mark', { artPct: 0.96, transparent: true });      // favicon / in-app header
-await render('tile', { artPct: 0.94, bg: '#05070A' });          // iOS home screen + legacy Android launcher (full bleed)
-await render('maskable', { artPct: 0.78, bg: '#05070A' });      // Android PWA maskable (art inside the 80% safe circle)
+   The wrench badge IS the app icon — full-bleed, nothing else on it. */
+await render('mark', { artPct: 0.98, transparent: true });      // favicon (transparent wrench disc)
+await render('tile', { artPct: 0.98, bg: '#05070A' });          // iOS home screen + legacy Android launcher (full bleed)
+await render('maskable', { artPct: 0.80, bg: '#05070A' });      // Android PWA maskable (art inside the 80% safe circle)
 await render('fg', { artPct: 1.0, transparent: true });         // adaptive foreground — the launcher XML insets 16.7%/side to the safe zone
 
 /* Resize helper: draw a shot onto a canvas at target size (in-page, lossless). */
