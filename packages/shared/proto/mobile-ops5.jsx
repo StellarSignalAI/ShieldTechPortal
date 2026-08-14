@@ -167,11 +167,23 @@ function MTimesheetsN() {
     t.pendingEntries().then(r => setRows(r.ok ? r.data : []));
   }, []);
   React.useEffect(() => { load(); }, [load]);
-  const act = async (id, status) => {
+  const act = async (entry, status) => {
+    const id = entry.id;
+    if (status === 'rejected') {
+      // Rejection needs a note — it's emailed to the tech so they know what to fix.
+      const note = window.prompt('Why is this entry being rejected? (emailed to the technician)', '');
+      if (note === null) return;
+      setBusy(b => ({ ...b, [id]: true }));
+      const r = await rejectTimesheetEntry(entry, note.trim() || 'Returned for correction');
+      setBusy(b => ({ ...b, [id]: false }));
+      if (r.ok) { showToast('Entry rejected — tech notified', 'ok'); load(); }
+      else showToast(r.error || 'Update failed', 'error');
+      return;
+    }
     setBusy(b => ({ ...b, [id]: true }));
     const r = await window.__shieldTime.setEntryStatus(id, status);
     setBusy(b => ({ ...b, [id]: false }));
-    if (r.ok) { showToast(status === 'approved' ? 'Hours approved' : 'Entry rejected', 'ok'); load(); }
+    if (r.ok) { showToast('Hours approved', 'ok'); load(); }
     else showToast(r.error || 'Update failed', 'error');
   };
   const totalH = (rows || []).reduce((s, e) => s + (Number(e.hours) || 0), 0);
@@ -188,8 +200,8 @@ function MTimesheetsN() {
           </div>
           <div style={{ fontSize: 10.5, color: 'var(--text-low)', margin: '3px 0 9px' }}>{e.work_date}{e.job_ref ? ` · ${e.job_ref}` : ''}{e.notes ? ` · ${e.notes}` : ''}</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button disabled={busy[e.id]} onClick={() => act(e.id, 'approved')} style={{ flex: 1, padding: '9px 0', borderRadius: 9, border: 'none', background: 'rgba(52,211,153,0.14)', color: 'var(--status-ok)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>
-            <button disabled={busy[e.id]} onClick={() => act(e.id, 'rejected')} style={{ flex: 1, padding: '9px 0', borderRadius: 9, border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--status-critical)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✕ Reject</button>
+            <button disabled={busy[e.id]} onClick={() => act(e, 'approved')} style={{ flex: 1, padding: '9px 0', borderRadius: 9, border: 'none', background: 'rgba(52,211,153,0.14)', color: 'var(--status-ok)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>
+            <button disabled={busy[e.id]} onClick={() => act(e, 'rejected')} style={{ flex: 1, padding: '9px 0', borderRadius: 9, border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--status-critical)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✕ Reject</button>
           </div>
         </div>
       ))}

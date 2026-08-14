@@ -529,6 +529,45 @@ export function jobAssignedEmail(opts: {
   return { subject: subjectFor("New Job Assigned"), html, text };
 }
 
+/* Timesheet rejection — tells the technician to fix and resubmit the entry. */
+export function timesheetRejectedEmail(opts: {
+  name?: string | null; workDate?: string | null; hours?: number | string | null;
+  jobRef?: string | null; note?: string | null;
+}): InviteEmail {
+  const hi = opts.name ? `${esc(String(opts.name).split(/\s+/)[0])}, one` : "One";
+  const techUrl = (Deno.env.get("TECH_URL") ?? "https://tech.shieldtechsolutions.com").replace(/\/+$/, "");
+  const day = opts.workDate && /^\d{4}-\d{2}-\d{2}$/.test(String(opts.workDate))
+    ? new Date(`${opts.workDate}T12:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+    : (opts.workDate ?? null);
+  const html = shell(
+    eyebrow("Action Needed", WARN) +
+    heading("Your Time Entry Was Returned") +
+    para(`${hi} of your time entries was reviewed and sent back. Please open the Technician Portal, correct it, and resubmit.`) +
+    infoCard(
+      (day ? kvRow("Work Date", esc(day)) : "") +
+      (opts.hours ? kvRow("Hours", esc(String(opts.hours))) : "") +
+      (opts.jobRef ? kvRow("Project / Job", esc(opts.jobRef)) : "") +
+      (opts.note ? kvRow("Reviewer Note", esc(opts.note), { highlight: true }) : ""),
+    ) +
+    (opts.note ? "" : para("No note was included — check with the office if you're unsure what needs to change.")) +
+    cta("Fix Your Time Entry →", techUrl) +
+    supportBlock("Questions about this review? Reply to this email or"),
+    `Time entry ${day ? `for ${day} ` : ""}was returned — please fix and resubmit.`,
+  );
+  const text = [
+    "Your time entry was returned",
+    "", "One of your time entries was reviewed and sent back. Please correct it and resubmit.",
+    ...(day ? ["", `WORK DATE: ${day}`] : []),
+    ...(opts.hours ? [`HOURS: ${opts.hours}`] : []),
+    ...(opts.jobRef ? [`PROJECT / JOB: ${opts.jobRef}`] : []),
+    ...(opts.note ? [`REVIEWER NOTE: ${opts.note}`] : []),
+    "", `Fix it in the Technician Portal: ${techUrl}`,
+    "", `Questions? Contact ${EMAIL_BRAND.support}`,
+    textFooter(),
+  ].join("\n");
+  return { subject: subjectFor("Time Entry Rejected"), html, text };
+}
+
 /* Generic system notification — wraps ad-hoc messages (e.g. the Sales app's
    AI-drafted emails sent through send-email) in the master identity. */
 export function notificationEmail(opts: {

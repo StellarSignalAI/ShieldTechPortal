@@ -7,7 +7,7 @@
 // same identity as every other automated email. Callers that pass html are
 // trusted to have built it from the same system.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { jobAssignedEmail, notificationEmail } from "../_shared/email.ts";
+import { jobAssignedEmail, notificationEmail, timesheetRejectedEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -50,6 +50,12 @@ Deno.serve(async (req) => {
       name: d.name, title: String(d.title), customer: d.customer, site: d.site,
       date: d.date, endDate: d.endDate, startTime: d.startTime,
       hours: d.hours, notes: d.notes, jobRef: d.jobRef,
+    });
+    html = mail.html; text = mail.text; subject = subject || mail.subject;
+  } else if (body.template === "timesheet-rejected") {
+    const d = (body.data ?? {}) as Record<string, string>;
+    const mail = timesheetRejectedEmail({
+      name: d.name, workDate: d.workDate, hours: d.hours, jobRef: d.jobRef, note: d.note,
     });
     html = mail.html; text = mail.text; subject = subject || mail.subject;
   } else if (body.template) {

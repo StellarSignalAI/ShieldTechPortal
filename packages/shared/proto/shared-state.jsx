@@ -954,6 +954,38 @@ function showToast(msg, type = 'info') {
   window.dispatchEvent(new CustomEvent('shield:toast', { detail: { msg, type } }));
 }
 
+/* ── Tech expenses (manual, no receipt) — shared so the office approves them ── */
+const techExpenseStore = createShieldStore('mexpenses', []);
+
+/* Reject a timesheet entry with a reviewer note and email the technician a
+   branded fix-and-resubmit notice (send-email 'timesheet-rejected' template).
+   entry needs {id, work_date, hours, job_ref, tech:{name,email}}. */
+async function rejectTimesheetEntry(entry, note) {
+  const t = window.__shieldTime;
+  if (!t) return { ok: false, error: 'Backend not configured' };
+  const r = await t.setEntryStatus(entry.id, 'rejected', note || null);
+  if (!r.ok) return r;
+  const email = entry.tech && entry.tech.email;
+  const sb = window.__shieldSupabase;
+  if (sb && email) {
+    invokeEdgeFn(sb, 'send-email', {
+      to: email,
+      template: 'timesheet-rejected',
+      data: {
+        name: (entry.tech && entry.tech.name) || '',
+        workDate: entry.work_date || '',
+        hours: entry.hours != null ? String(entry.hours) : '',
+        jobRef: entry.job_ref || 'General',
+        note: note || '',
+      },
+    }).then(({ error }) => {
+      if (error) showToast(`Rejection saved — email failed: ${error.message}`, 'warn');
+      else showToast(`Rejection emailed to ${email}`, 'ok');
+    });
+  }
+  return r;
+}
+
 /* ── Screen persistence (device-local, NOT synced) ──
    Each app remembers the screen the user was on, so a refresh or app
    relaunch lands back on the same screen instead of resetting to home. */
@@ -1012,5 +1044,6 @@ Object.assign(window, {
   mobileTabsStore, M_ALL_TAB, approvalStore,
   proposalStore, defaultProposalBlocks, proposalValue,
   surveyStore, surveyTotals, SURVEY_RATE, SURVEY_BOM_SEED, studioInboxStore,
-  showToast, navTo, genId, fmtDuration, fmtSeconds, savedScreen, saveScreen
+  showToast, navTo, genId, fmtDuration, fmtSeconds, savedScreen, saveScreen,
+  techExpenseStore, rejectTimesheetEntry
 });

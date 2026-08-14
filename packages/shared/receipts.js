@@ -33,6 +33,7 @@ async function snap(input, meta = {}) {
       path, note: meta.note || null, vendor: meta.vendor || null,
       amount: meta.amount != null && meta.amount !== '' ? Number(meta.amount) : null,
       job_ref: meta.jobRef || null,
+      expense_category: meta.category || null,
     }).select().single();
     if (error) return { ok: false, error: error.message };
     return { ok: true, data };
