@@ -954,6 +954,16 @@ function showToast(msg, type = 'info') {
   window.dispatchEvent(new CustomEvent('shield:toast', { detail: { msg, type } }));
 }
 
+/* ── Screen persistence (device-local, NOT synced) ──
+   Each app remembers the screen the user was on, so a refresh or app
+   relaunch lands back on the same screen instead of resetting to home. */
+function savedScreen(appKey, fallback) {
+  try { return localStorage.getItem('st2:screen-' + appKey) || fallback; } catch { return fallback; }
+}
+function saveScreen(appKey, id) {
+  try { localStorage.setItem('st2:screen-' + appKey, String(id)); } catch {}
+}
+
 /* ── Cross-nav helper ── */
 function navTo(screen) { window.__shieldNav?.(screen); }
 
@@ -1002,5 +1012,5 @@ Object.assign(window, {
   mobileTabsStore, M_ALL_TAB, approvalStore,
   proposalStore, defaultProposalBlocks, proposalValue,
   surveyStore, surveyTotals, SURVEY_RATE, SURVEY_BOM_SEED, studioInboxStore,
-  showToast, navTo, genId, fmtDuration, fmtSeconds
+  showToast, navTo, genId, fmtDuration, fmtSeconds, savedScreen, saveScreen
 });

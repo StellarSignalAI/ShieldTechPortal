@@ -679,7 +679,9 @@ function SalesAvatarMenu() {
 }
 
 function SalesApp() {
-  const [tab, setTab] = React.useState('pipeline');
+  // Restore the last screen on refresh/relaunch (device-local).
+  const [tab, setTabState] = React.useState(() => savedScreen('sales', 'pipeline'));
+  const setTab = (v) => { setTabState(v); saveScreen('sales', v); };
   const [openedItem, setOpenedItem] = React.useState(null);
   const [dealFor, setDealFor] = React.useState(null);
   const [wide, setWide] = React.useState(() => window.innerWidth >= 960);
