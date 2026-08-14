@@ -45,10 +45,12 @@ async function render(key, { artPct, bg, transparent }) {
   shots[key] = await page.screenshot({ omitBackground: !!transparent });
 }
 
-/* Master transparent mark, full-bleed dark tile, and adaptive foreground. */
-await render('mark', { artPct: 0.96, transparent: true });
-await render('tile', { artPct: 0.72, bg: '#05070A' });          // legacy launcher / maskable
-await render('fg', { artPct: 0.52, transparent: true });        // Android adaptive foreground
+/* Master transparent mark, home-screen tiles, and adaptive foreground.
+   The tech mark IS the app icon — full-bleed, not a small emblem on padding. */
+await render('mark', { artPct: 0.96, transparent: true });      // favicon / in-app header
+await render('tile', { artPct: 0.94, bg: '#05070A' });          // iOS home screen + legacy Android launcher (full bleed)
+await render('maskable', { artPct: 0.78, bg: '#05070A' });      // Android PWA maskable (art inside the 80% safe circle)
+await render('fg', { artPct: 1.0, transparent: true });         // adaptive foreground — the launcher XML insets 16.7%/side to the safe zone
 
 /* Resize helper: draw a shot onto a canvas at target size (in-page, lossless). */
 async function resize(buf, size) {
@@ -66,9 +68,10 @@ async function resize(buf, size) {
 
 const out = (p, buf) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, buf); console.log('wrote', p, buf.length); };
 
-/* Web: favicon/PWA icon (transparent) + maskable (dark, safe zone). */
+/* Web: favicon (transparent), home-screen icon (full-bleed tile), maskable. */
 out(path.join(ROOT, 'packages/shared/public/sw/shieldtech-tech-emblem.png'), await resize(shots.mark, 512));
-out(path.join(ROOT, 'packages/shared/public/sw/shieldtech-tech-maskable.png'), await resize(shots.tile, 512));
+out(path.join(ROOT, 'packages/shared/public/sw/shieldtech-tech-icon.png'), await resize(shots.tile, 512));
+out(path.join(ROOT, 'packages/shared/public/sw/shieldtech-tech-maskable.png'), await resize(shots.maskable, 512));
 
 /* Android launcher mipmaps (native/tech). */
 const DENSITIES = { ldpi: [36, 81], mdpi: [48, 108], hdpi: [72, 162], xhdpi: [96, 216], xxhdpi: [144, 324], xxxhdpi: [192, 432] };
