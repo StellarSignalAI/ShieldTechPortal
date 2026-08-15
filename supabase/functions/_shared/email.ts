@@ -568,6 +568,47 @@ export function timesheetRejectedEmail(opts: {
   return { subject: subjectFor("Time Entry Rejected"), html, text };
 }
 
+/* Timesheet submission — alerts the office that hours are waiting for review.
+   Covers a single entry or a whole-week submit (count > 1). */
+export function timesheetSubmittedEmail(opts: {
+  techName?: string | null; workDate?: string | null; hours?: number | string | null;
+  jobRef?: string | null; notes?: string | null; count?: number | null;
+}): InviteEmail {
+  const portalUrl = portalBase();
+  const many = Number(opts.count) > 1;
+  const who = opts.techName ? esc(opts.techName) : "A technician";
+  const day = opts.workDate && /^\d{4}-\d{2}-\d{2}$/.test(String(opts.workDate))
+    ? new Date(`${opts.workDate}T12:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+    : (opts.workDate ?? null);
+  const html = shell(
+    eyebrow("Timesheet") +
+    heading(many ? "Week of Time Entries Submitted" : "New Time Entry Submitted") +
+    para(`${who} submitted ${many ? `${esc(String(opts.count))} time entries` : "a time entry"} for approval. Review ${many ? "them" : "it"} in the portal's approval queue.`) +
+    infoCard(
+      (opts.techName ? kvRow("Technician", esc(opts.techName)) : "") +
+      (day ? kvRow(many ? "Latest Work Date" : "Work Date", esc(day)) : "") +
+      (opts.hours ? kvRow("Hours", esc(String(opts.hours))) : "") +
+      (opts.jobRef ? kvRow("Project / Job", esc(opts.jobRef)) : "") +
+      (opts.notes ? kvRow("Notes", esc(opts.notes)) : ""),
+    ) +
+    cta("Review & Approve →", portalUrl) +
+    supportBlock(),
+    `${opts.techName ?? "A technician"} submitted ${many ? "time entries" : "a time entry"} for approval.`,
+  );
+  const text = [
+    many ? "Week of time entries submitted" : "New time entry submitted",
+    "", `${opts.techName ?? "A technician"} submitted ${many ? `${opts.count} time entries` : "a time entry"} for approval.`,
+    ...(day ? ["", `WORK DATE: ${day}`] : []),
+    ...(opts.hours ? [`HOURS: ${opts.hours}`] : []),
+    ...(opts.jobRef ? [`PROJECT / JOB: ${opts.jobRef}`] : []),
+    ...(opts.notes ? [`NOTES: ${opts.notes}`] : []),
+    "", `Review in the portal: ${portalUrl}`,
+    "", `Questions? Contact ${EMAIL_BRAND.support}`,
+    textFooter(),
+  ].join("\n");
+  return { subject: subjectFor("Time Entry Submitted"), html, text };
+}
+
 /* Generic system notification — wraps ad-hoc messages (e.g. the Sales app's
    AI-drafted emails sent through send-email) in the master identity. */
 export function notificationEmail(opts: {
