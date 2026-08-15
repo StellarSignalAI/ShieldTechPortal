@@ -171,7 +171,12 @@ function TodayView({ setTab, setSelectedJob }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontSize: 11, color: 'var(--text-low)' }}>⌖ {job.site}</span>
                 {job.status === 'upcoming' && (
-                  <button onClick={e => e.stopPropagation()} style={{
+                  <button onClick={e => {
+                    e.stopPropagation();
+                    const dest = job.site || job.customer || '';
+                    if (!dest) { showToast('No site address on this job — ask dispatch', 'warn'); return; }
+                    window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest), '_blank');
+                  }} style={{
                     marginLeft: 'auto', padding: '3px 10px',
                     background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)',
                     borderRadius: 4, color: 'var(--brand)', fontSize: 10,
@@ -216,7 +221,16 @@ function TodayView({ setTab, setSelectedJob }) {
 
 /* ── Job Detail View ── */
 function JobDetailView({ job, setTab }) {
-  const [status, setStatus] = React.useState('on-site');
+  /* Job status PERSISTS to the shared stores — dispatch/portal see progress
+     live instead of a phone-local useState that vanished on tab switch. */
+  const persisted = (job && ((job._wo && job._wo.fieldStatus) || (job._cal && job._cal.fieldStatus))) || 'en-route';
+  const [status, setStatusLocal] = React.useState(persisted);
+  const setStatus = (s) => {
+    setStatusLocal(s);
+    if (job && job._wo) workOrderStore.set(list => (list || []).map(w => w.id === job._wo.id
+      ? { ...w, fieldStatus: s, status: s === 'complete' ? 'done' : (w.status === 'done' ? 'done' : 'active') } : w));
+    if (job && job._cal) jobStore.set(list => (list || []).map(j => j.id === job._cal.id ? { ...j, fieldStatus: s } : j));
+  };
   /* Real photos: shots for this job from the shared photoStore; each tile
      opens the live camera (capture tab) pre-targeted at this work order.
      createShieldStore is singleton-per-key, so 'techcam' is the same store
@@ -224,8 +238,11 @@ function JobDetailView({ job, setTab }) {
   const [allPhotos] = useShieldStore(photoStore);
   const [cam, setCam] = useShieldStore(createShieldStore('techcam', { wo: null, slot: null }));
   const woId = job ? ((job._wo && job._wo.id) || (job._cal && job._cal.wo) || (/^WO-/.test(String(job.id)) ? job.id : null)) : null;
-  const jobPhotos = (allPhotos || []).filter(p => woId && p.wo === woId);
-  const openCamera = () => { setCam({ ...cam, wo: woId || '__unassigned', slot: null }); setTab('capture'); };
+  const jobProjectId = (job && job._cal && job._cal.projectId) || null;
+  const jobPhotos = (allPhotos || []).filter(p => (woId && p.wo === woId) || (jobProjectId && p.projectId === jobProjectId));
+  // The camera opens pre-tagged: work order AND project (if the job came from
+  // one), so shots land on the project for the office automatically.
+  const openCamera = () => { setCam({ ...cam, wo: woId || '__unassigned', slot: null, project: jobProjectId || cam.project || null }); setTab('capture'); };
   const PHASE_TILES = [['Before', 'before'], ['During', 'progress'], ['After', 'after'], ['Issue', 'issue']];
   const [checklist, setChecklist] = React.useState([
     { label: 'Verify scope with customer', done: false },
@@ -426,7 +443,23 @@ function JobDetailView({ job, setTab }) {
           cursor: 'pointer', fontFamily: 'var(--font-body)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
         }}>🛡 Put Alarm on Test</button>
-        <button onClick={() => shieldModal({ kind: 'signature', title: 'Capture Signature', subtitle: `Job ${job.id} — ${job.customer}`, signPrompt: 'Have the customer sign below to confirm the work is complete and acceptable.', submitLabel: 'Save & Complete Job', successMsg: 'Job completed — signature captured', onSave: () => { if (setTab) setTab('today'); } })} style={{
+        <button onClick={() => shieldModal({ kind: 'signature', title: 'Capture Signature', subtitle: `Job ${job.id} — ${job.customer}`, signPrompt: 'Have the customer sign below to confirm the work is complete and acceptable.', submitLabel: 'Save & Complete Job', successMsg: 'Job completed — signature saved', onSave: async (dataUrl) => {
+          /* The ink is REAL now: upload it, attach the URL to the job/WO, and
+             mark the job complete in the shared stores. */
+          try {
+            if (dataUrl && window.__shieldStorage) {
+              const r = await window.__shieldStorage.uploadDataUrl(dataUrl, {
+                folder: 'signatures', entity: 'work_order', entityId: String(woId || job.id),
+                name: `signature-${woId || job.id}.png`, shared: true,
+              });
+              const url = r && r.ok ? r.url : null;
+              if (url && job._wo) workOrderStore.set(list => (list || []).map(w => w.id === job._wo.id ? { ...w, signatureUrl: url, signedAt: Date.now() } : w));
+              if (url && job._cal) jobStore.set(list => (list || []).map(j => j.id === job._cal.id ? { ...j, signatureUrl: url, signedAt: Date.now() } : j));
+            }
+          } catch { /* signature upload is best-effort; completion still records */ }
+          setStatus('complete');
+          if (setTab) setTab('today');
+        } })} style={{
           padding: '12px', background: 'var(--brand)', border: 'none', borderRadius: 8,
           color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
           fontFamily: 'var(--font-body)',

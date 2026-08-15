@@ -33,12 +33,24 @@ function TechPhotosView({ setTab }) {
   const activeWo = cam.wo === '__unassigned' ? null : (allWos.find(w => w.id === cam.wo) || wos[0] || null);
   const comp = activeWo ? photoCompliance(activeWo, photos) : null;
   const woPhotos = activeWo ? photos.filter(p => p.wo === activeWo.id) : [];
-  const unassignedPhotos = photos.filter(p => p.tech === techMe().initials && !p.wo);
+  const unassignedPhotos = photos.filter(p => p.tech === techMe().initials && !p.wo && !p.projectId);
   const otherPhotos = photos.filter(p => p.tech === techMe().initials && p.wo && (!activeWo || p.wo !== activeWo.id));
 
   const shootSlot = (slot) => { setCam({ ...cam, wo: activeWo.id, slot }); setTab('capture'); };
-  const assignPhoto = (photoId, woId) => {
-    const w = wos.find(x => x.id === woId);
+  const [projListRoll] = useShieldStore(projectStore);
+  const rollProjects = (projListRoll || []).filter(p => !['completed', 'closed', 'cancelled'].includes(String(p.status || '').toLowerCase()));
+  const assignPhoto = (photoId, target) => {
+    // target is 'wo:<id>' or 'prj:<number>' — photos attach to a job OR a
+    // project after the fact; project photos show on the project in the portal.
+    if (target.startsWith('prj:')) {
+      const num = target.slice(4);
+      const proj = rollProjects.find(x => x.number === num);
+      if (!proj) return;
+      photoStore.set(prev => prev.map(p => p.id === photoId ? { ...p, projectId: proj.number, customer: proj.customer || p.customer, label: p.label && !p.label.startsWith('Field photo') ? p.label : `${proj.number} — ${proj.customer}` } : p));
+      showToast(`Photo attached to project ${num} — visible in the portal`, 'ok');
+      return;
+    }
+    const w = wos.find(x => x.id === target.replace(/^wo:/, ''));
     if (!w) return;
     photoStore.set(prev => prev.map(p => p.id === photoId ? { ...p, wo: w.id, customer: w.customer, site: w.site, label: p.label && !p.label.startsWith('Field photo') ? p.label : `Field photo — ${w.customer}` } : p));
     showToast(`Photo attached to ${w.id} · ${w.customer}`, 'ok');
@@ -83,10 +95,15 @@ function TechPhotosView({ setTab }) {
                   <div style={{ fontSize: 11, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.label}</div>
                   <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{p.time} · {p.day}</div>
                 </div>
-                {wos.length > 0 ? (
-                  <select defaultValue="" onChange={e => { if (e.target.value) assignPhoto(p.id, e.target.value); }} style={{ flexShrink: 0, maxWidth: 130, padding: '5px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontFamily: 'var(--font-body)' }}>
-                    <option value="">Attach to job…</option>
-                    {wos.map(w => <option key={w.id} value={w.id}>{w.id} · {w.customer}</option>)}
+                {(wos.length > 0 || rollProjects.length > 0) ? (
+                  <select defaultValue="" onChange={e => { if (e.target.value) assignPhoto(p.id, e.target.value); }} style={{ flexShrink: 0, maxWidth: 140, padding: '5px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontFamily: 'var(--font-body)' }}>
+                    <option value="">Attach to…</option>
+                    {wos.length > 0 && <optgroup label="Work Orders">
+                      {wos.map(w => <option key={w.id} value={'wo:' + w.id}>{w.id} · {w.customer}</option>)}
+                    </optgroup>}
+                    {rollProjects.length > 0 && <optgroup label="Projects">
+                      {rollProjects.map(pr => <option key={pr.number} value={'prj:' + pr.number}>{pr.number} · {pr.name}</option>)}
+                    </optgroup>}
                   </select>
                 ) : <span style={{ fontSize: 9, color: 'var(--text-low)' }}>No jobs yet</span>}
               </div>
@@ -200,6 +217,12 @@ function TechCaptureView({ setTab }) {
   const comp = activeWo ? photoCompliance(activeWo, photos) : null;
   const slot = activeWo && cam.slot && comp.missing.includes(cam.slot) ? cam.slot : null;
 
+  // Photos can also tag a PROJECT — picked here before shooting, or attached
+  // afterwards from the roll. Project photos show on the project in the portal.
+  const [projList] = useShieldStore(projectStore);
+  const projects = (projList || []).filter(p => !['completed', 'closed', 'cancelled'].includes(String(p.status || '').toLowerCase()));
+  const activeProject = projects.find(p => p.number === cam.project) || null;
+
   const capture = async () => {
     const cam = window.__shieldCamera;
     // Real capture only — never fabricate a photo. If the camera isn't live,
@@ -214,10 +237,13 @@ function TechCaptureView({ setTab }) {
     const me = techMe();
     const shot = await cam.savePhoto(frame, { id, wo: activeWo ? activeWo.id : 'unassigned' });
     const photo = {
-      id, wo: activeWo ? activeWo.id : null, customer: activeWo ? activeWo.customer : 'Unassigned', site: activeWo ? activeWo.site : '—',
+      id, wo: activeWo ? activeWo.id : null,
+      projectId: activeProject ? activeProject.number : null,
+      customer: activeWo ? activeWo.customer : activeProject ? activeProject.customer : 'Unassigned',
+      site: activeWo ? activeWo.site : activeProject ? (activeProject.siteAddr || '—') : '—',
       tech: me.initials || '—', techName: me.name || 'Technician',
       phase: slot ? (slot.toLowerCase().includes('before') || slot === 'Issue found' || slot === 'Site — before' ? 'before' : slot.toLowerCase().includes('after') || slot.toLowerCase().includes('complete') || slot.toLowerCase().includes('final') ? 'after' : 'progress') : phase,
-      slot, label: slot || (activeWo ? `Field photo — ${activeWo.customer}` : `Field photo — Unassigned`),
+      slot, label: slot || (activeWo ? `Field photo — ${activeWo.customer}` : activeProject ? `${activeProject.number} — ${activeProject.customer}` : `Field photo — Unassigned`),
       day: 'Today', time: nowTime(), look: null, pair: null, annotations: [],
       url: (shot && shot.url) || null, dataUrl: (shot && shot.dataUrl) || null,
     };
@@ -226,7 +252,10 @@ function TechCaptureView({ setTab }) {
     setLastShot(photo);
     setScene(randomLook());
     const after = activeWo ? photoCompliance(activeWo, [photo, ...photos]) : null;
-    showToast(slot && after ? `✓ ${slot} captured (${after.done.length}/${after.required.length})` : activeWo ? 'Photo saved to job' : 'Photo saved — attach it to a job from the roll', 'ok');
+    showToast(slot && after ? `✓ ${slot} captured (${after.done.length}/${after.required.length})`
+      : activeWo ? 'Photo saved to job'
+      : activeProject ? `Photo saved to ${activeProject.number} — visible on the project in the portal`
+      : 'Photo saved — attach it to a job or project from the roll', 'ok');
     if (slot && after) {
       const nextSlot = after.missing[0] || null;
       setCam({ ...cam, slot: nextSlot });
@@ -240,10 +269,22 @@ function TechCaptureView({ setTab }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px 0' }}>
         <button onClick={() => setTab('photos')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0 }}>← Roll</button>
         <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-          <div className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{activeWo ? activeWo.id : 'UNASSIGNED'}</div>
-          <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{activeWo ? `${activeWo.customer} · ${activeWo.site}` : 'attach to a job later'}</div>
+          <div className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{activeWo ? activeWo.id : activeProject ? activeProject.number : 'UNASSIGNED'}</div>
+          <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{activeWo ? `${activeWo.customer} · ${activeWo.site}` : activeProject ? activeProject.customer : 'attach to a job later'}</div>
         </div>
       </div>
+
+      {/* Project tag — shots save straight onto the project for the portal */}
+      {projects.length > 0 && (
+        <div style={{ margin: '0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-low)', flexShrink: 0 }}>Project</span>
+          <select value={cam.project || ''} onChange={e => setCam({ ...cam, project: e.target.value || null })}
+            style={{ flex: 1, minWidth: 0, padding: '5px 10px', background: 'rgba(5,7,10,0.5)', border: `1px solid ${activeProject ? 'var(--border-strong)' : 'var(--border-subtle)'}`, borderRadius: 7, color: activeProject ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' }}>
+            <option value="">— none —</option>
+            {projects.map(p => <option key={p.number} value={p.number}>{p.number} · {p.name}</option>)}
+          </select>
+        </div>
+      )}
 
       {/* Slot banner */}
       {slot ? (

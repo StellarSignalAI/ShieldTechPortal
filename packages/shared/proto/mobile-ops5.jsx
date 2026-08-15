@@ -963,7 +963,10 @@ const M_OPS5 = {
   invoices: MInvoicesN,
   estimates: MEstimatesN,
   timesheets: MTimesheetsN,
-  expenses: MExpensesN,
+  // The real approval screen (shared with desktop) — MExpensesN was an intro
+  // placeholder that shadowed it, so tech receipts could never be approved
+  // from a phone.
+  expenses: (props) => window.ExpenseApprovalScreen ? <ExpenseApprovalScreen /> : <MExpensesN {...props} />,
   employees: MEmployeesN,
   pricebook: MPricebookN,
   'product-library': MProductLibraryN,

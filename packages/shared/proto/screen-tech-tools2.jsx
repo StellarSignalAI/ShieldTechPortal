@@ -1,9 +1,28 @@
 /* Tech App — Field Tools II: Offline Sync Queue, Upsell Spotter, Lone-Worker Safety, Cert Skill Tree, Toolbox Talk */
 
-/* ── 6. Offline Sync Queue ── */
+/* ── 6. Offline Sync Queue — honest: shows REAL connectivity and which
+   local stores are still device-only (over the sync size cap or offline). ── */
 function TechSyncView() {
-  const [online, setOnline] = React.useState(true);
-  const [items, setItems] = React.useState([]);
+  const [online, setOnline] = React.useState(navigator.onLine);
+  React.useEffect(() => {
+    const on = () => setOnline(true), off = () => setOnline(false);
+    window.addEventListener('online', on); window.addEventListener('offline', off);
+    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); };
+  }, []);
+  // Device-local stores that exceed the sync cap never reach the server —
+  // surface them instead of pretending everything synced.
+  const [items] = React.useState(() => {
+    const out = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith('st2_')) continue;
+        const v = localStorage.getItem(k) || '';
+        if (v.length > 400_000) out.push({ id: k, kind: 'form', label: `${k.slice(4)} (too large to sync — ${Math.round(v.length / 1024)} KB)`, size: `${Math.round(v.length / 1024)} KB`, state: 'queued' });
+      }
+    } catch { /* storage blocked */ }
+    return out;
+  });
   const kindIcon = { photo: 'cameras', form: 'clipboard', time: 'timesheets' };
   const pending = items.filter(i => i.state !== 'synced').length;
 
@@ -35,7 +54,7 @@ function TechSyncView() {
           </div>
         ))}
       </div>}
-      <div style={{ fontSize: 9, color: 'var(--text-low)', lineHeight: 1.5 }}>Photos, forms, time entries, and signatures queue locally when you lose signal. Nothing is ever lost — the queue retries automatically and resolves conflicts office-side.</div>
+      <div style={{ fontSize: 9, color: 'var(--text-low)', lineHeight: 1.5 }}>Store data saves to this phone first and syncs when you have signal. Anything listed above is device-only (usually a store that grew past the sync size cap — tell the office so nothing gets stranded on this phone).</div>
     </div>
   );
 }
@@ -105,18 +124,33 @@ function TechSafetyView() {
             <span style={{ fontSize: 8, letterSpacing: '0.1em', color: 'var(--text-low)' }}>NEXT CHECK-IN</span>
           </div>
         </div>
-        <button onClick={() => { setLeft(CHECK_INTERVAL); setEscalated(false); showToast('Check-in logged — dispatch sees you’re OK', 'ok'); }}
+        <button onClick={() => {
+          setLeft(CHECK_INTERVAL); setEscalated(false);
+          // A check-in must actually REACH dispatch — send it through Messages
+          // with a GPS fix when we have one.
+          const chat = window.__shieldChat;
+          const sendIt = (loc) => {
+            if (chat && chat.myThreadId()) {
+              chat.send(chat.myThreadId(), `✅ Lone-worker check-in: I'm OK${loc ? ` (${loc})` : ''}`)
+                .then(r => showToast(r.ok ? "Check-in sent — dispatch sees you're OK" : `Check-in NOT sent (${r.error}) — call dispatch`, r.ok ? 'ok' : 'warn'));
+            } else showToast('Messaging not available — call dispatch to check in', 'warn');
+          };
+          if (navigator.geolocation) navigator.geolocation.getCurrentPosition(
+            p => sendIt(`${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`),
+            () => sendIt(null), { timeout: 3000 });
+          else sendIt(null);
+        }}
           style={{ marginTop: 16, padding: '12px 42px', background: 'linear-gradient(135deg, var(--status-ok), #1f9e6e)', border: 'none', borderRadius: 24, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 6px 20px rgba(52,211,153,0.3)' }}>I'm OK ✓</button>
         <div style={{ marginTop: 10, fontSize: 9, color: 'var(--text-low)' }}>Timer auto-sets when a lone-work geofence is entered</div>
       </div>
       {/* Escalation ladder */}
       <div className="glass" style={{ padding: 14, borderRadius: 'var(--radius-md)' }}>
-        <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 10 }}>If a check-in is missed</div>
+        <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 10 }}>How it works today</div>
         {[
-          ['+0 min', 'Push + loud tone on this phone'],
-          ['+3 min', 'SMS to you and dispatch'],
-          ['+6 min', 'Dispatch calls; nearest tech pinged'],
-          ['+10 min', 'Emergency contact + site supervisor notified'],
+          ['Check-in', 'Sends an "I\'m OK" message with your GPS to the office Messages queue'],
+          ['Emergency', 'Sends a man-down alert with a maps link to dispatch immediately'],
+          ['No signal', 'The buttons tell you honestly if the alert could not send — call 911 / dispatch'],
+          ['Always', 'Your live GPS is on the office Fleet map while location sharing is on'],
         ].map(([t, txt], i) => (
           <div key={i} style={{ display: 'flex', gap: 10, padding: '6px 0', alignItems: 'baseline' }}>
             <span className="mono" style={{ fontSize: 10, fontWeight: 700, color: i < 2 ? 'var(--status-warn)' : 'var(--status-critical)', width: 50, flexShrink: 0 }}>{t}</span>
@@ -124,7 +158,26 @@ function TechSafetyView() {
           </div>
         ))}
       </div>
-      <button onClick={() => { setEscalated(true); showToast('🚨 Man-down alert sent — dispatch + nearest tech notified', 'warn'); }}
+      <button onClick={() => {
+        // LIFE-SAFETY: this must send something real, and must say so honestly
+        // if it can't.
+        const chat = window.__shieldChat;
+        const sendIt = (loc) => {
+          if (chat && chat.myThreadId()) {
+            chat.send(chat.myThreadId(), `🚨 EMERGENCY — MAN DOWN. Need immediate help.${loc ? ` Location: ${loc}` : ' Location unavailable.'}`)
+              .then(r => {
+                setEscalated(r.ok);
+                showToast(r.ok ? '🚨 Emergency alert sent to dispatch — CALL 911 if life-threatening' : `⚠ Alert FAILED (${r.error}) — CALL 911 / dispatch by phone NOW`, 'warn');
+              });
+          } else {
+            showToast('⚠ No connection to dispatch — CALL 911 / dispatch by phone NOW', 'warn');
+          }
+        };
+        if (navigator.geolocation) navigator.geolocation.getCurrentPosition(
+          p => sendIt(`https://maps.google.com/?q=${p.coords.latitude},${p.coords.longitude}`),
+          () => sendIt(null), { timeout: 3000 });
+        else sendIt(null);
+      }}
         style={{ padding: '13px 0', background: escalated ? 'rgba(244,63,94,0.2)' : 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.4)', borderRadius: 10, color: 'var(--status-critical)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
         {escalated ? '🚨 ALERT ACTIVE — dispatch responding' : 'Emergency — alert dispatch now'}
       </button>

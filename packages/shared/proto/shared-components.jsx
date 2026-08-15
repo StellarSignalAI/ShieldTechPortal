@@ -622,7 +622,15 @@ function ShieldModalHost() {
             finish(cfg.downloadMsg || 'Document exported');
           }} label={cfg.downloadLabel || 'Download PDF'} />}
           {kind === 'confirm' && <ModalPrimary busy={busy} danger={cfg.danger} onClick={confirmAction} label={cfg.confirmLabel || 'Confirm'} />}
-          {kind === 'signature' && <ModalPrimary busy={busy} onClick={() => { if (!hasInk.current) { shieldToast('Please capture a signature first', 'warn'); return; } if (cfg.onSave) cfg.onSave(); finish(cfg.successMsg || 'Signature captured'); }} label={cfg.submitLabel || 'Save & Complete'} />}
+          {kind === 'signature' && <ModalPrimary busy={busy} onClick={() => {
+            if (!hasInk.current) { shieldToast('Please capture a signature first', 'warn'); return; }
+            // Hand the actual ink to the caller — a signature that's captured
+            // on screen and then discarded is legally worthless.
+            let dataUrl = null;
+            try { dataUrl = sigRef.current ? sigRef.current.toDataURL('image/png') : null; } catch { /* canvas gone */ }
+            if (cfg.onSave) cfg.onSave(dataUrl);
+            finish(cfg.successMsg || 'Signature captured');
+          }} label={cfg.submitLabel || 'Save & Complete'} />}
           {kind === 'detail' && (cfg.actions || []).map((a, ai) => (
             a.primary || a.danger
               ? <ModalPrimary key={ai} busy={busy} danger={a.danger} onClick={() => { if (a.onClick) a.onClick(); if (a.close !== false) finish(a.successMsg); }} label={a.label} />

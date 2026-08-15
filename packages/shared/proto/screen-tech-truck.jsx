@@ -26,7 +26,7 @@ function TechTruckView() {
       }, ...prev]);
       showToast(`${item.name} below minimum — restock auto-requested (×${reorder})`, 'warn');
     } else {
-      showToast(`${item.name} logged to job`, 'ok');
+      showToast(`${item.name} removed from truck stock`, 'ok');
     }
   };
   const restock = (sku) => {
@@ -43,7 +43,7 @@ function TechTruckView() {
         <span className="mono" style={{ fontSize: 11, color: lowCount ? 'var(--status-warn)' : 'var(--status-ok)' }}>{lowCount ? `${lowCount} below min` : 'fully stocked'}</span>
       </div>
       <div style={{ fontSize: 10, color: 'var(--text-low)', lineHeight: 1.5, marginTop: -6 }}>
-        "Use on job" logs the part to your active work order. Anything that drops below minimum files a warehouse restock request automatically.
+        "Use on job" takes the part out of your truck count. Anything that drops below minimum files a warehouse restock request automatically.
       </div>
       {items.length === 0 && <div className="glass" style={{ padding: 24, textAlign: 'center', fontSize: 12, color: 'var(--text-low)', borderRadius: 'var(--radius-md)' }}>No van stock configured yet — inventory assigned to your truck appears here.</div>}
       {items.map(item => {

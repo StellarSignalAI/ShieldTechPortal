@@ -239,6 +239,9 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
         </div>
         {viewer && <BlueprintEditor drawing={viewer.drawing} readOnly showAnnotations={viewer.markup} onClose={() => setViewer(null)} />}
 
+        {/* Field photos — shots the techs tagged to this project */}
+        <ProjectPhotosSection projectNumber={p.number} />
+
         {/* Progress billing */}
         <div className="glass" style={{ padding: 14, marginBottom: 16 }}>
           <div className="label-sm" style={{ marginBottom: 8 }}>PROGRESS BILLING</div>
@@ -322,6 +325,30 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
 
         <button onClick={() => onNewInvoice(p)} style={{ width: '100%', padding: '9px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Invoice for this Project</button>
       </div>
+    </div>
+  );
+}
+
+/* ── Project field photos — the shots techs tag to a project from the app ── */
+function ProjectPhotosSection({ projectNumber }) {
+  const [photos] = useShieldStore(photoStore);
+  const [lightbox, setLightbox] = React.useState(null);
+  const mine = (photos || []).filter(ph => ph.projectId === projectNumber);
+  return (
+    <div className="glass" style={{ padding: 14, marginBottom: 16 }}>
+      <div className="label-sm" style={{ marginBottom: 8 }}>FIELD PHOTOS ({mine.length})</div>
+      {mine.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)' }}>No photos yet — techs tag shots to this project from the app camera (or attach them from their roll).</div>}
+      {mine.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(92px, 1fr))', gap: 8 }}>
+          {mine.map(ph => (
+            <MockPhoto key={ph.id} photo={ph} stamp={false} onClick={() => setLightbox(ph.id)}
+              style={{ aspectRatio: '4/3', borderRadius: 7, border: '1px solid var(--border-subtle)', cursor: 'pointer' }}>
+              <span style={{ position: 'absolute', left: 4, bottom: 4, fontSize: 7, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.55)', padding: '1px 5px', borderRadius: 3, textTransform: 'uppercase' }}>{ph.phase}</span>
+            </MockPhoto>
+          ))}
+        </div>
+      )}
+      {lightbox && window.PhotoLightbox && <PhotoLightbox photoId={lightbox} onClose={() => setLightbox(null)} />}
     </div>
   );
 }

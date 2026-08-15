@@ -141,7 +141,7 @@ function BlueprintEditor({ drawing, readOnly = false, showAnnotations = true, on
   const btn = (on) => ({ width: 40, height: 40, borderRadius: 9, border: `1px solid ${on ? 'var(--brand)' : 'var(--border-subtle)'}`, background: on ? 'rgba(63,169,245,0.16)' : 'rgba(10,14,20,0.9)', color: on ? 'var(--brand)' : 'var(--text-mid)', fontSize: 17, cursor: 'pointer', flexShrink: 0, fontFamily: 'var(--font-body)' });
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9500, background: '#04070c', display: 'flex', flexDirection: 'column', paddingTop: 'env(safe-area-inset-top)' }}>
+    <div data-no-ptr style={{ position: 'fixed', inset: 0, zIndex: 9500, background: '#04070c', display: 'flex', flexDirection: 'column', paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0 }}>← Done</button>

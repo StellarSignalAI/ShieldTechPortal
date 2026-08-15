@@ -51,8 +51,13 @@ try { window.__shieldBuild = typeof __SHIELD_BUILD__ !== 'undefined' ? __SHIELD_
   window.addEventListener('touchstart', (e) => {
     if (e.touches.length !== 1) return reset();
     const t = e.touches[0];
-    // Ignore drags that start on interactive drag surfaces (calendar, sliders).
-    if (e.target.closest && e.target.closest('input[type="range"], canvas, video')) return;
+    // Ignore drags that start on interactive drag surfaces — sliders, canvases,
+    // SVGs (blueprint markup!), text fields, and anything inside an open modal
+    // or an element marked data-no-ptr. A downward pen stroke must never
+    // reload the app and destroy unsaved state.
+    if (e.target.closest && e.target.closest('input, textarea, select, canvas, video, svg, [data-no-ptr], [role="dialog"]')) return;
+    const zTrap = e.target.closest && e.target.closest('div[style*="position: fixed"], div[style*="position:fixed"]');
+    if (zTrap && zTrap !== document.body && /(^|\D)9\d{3}/.test(zTrap.style.zIndex || '')) return; // full-screen overlays (modals, editors)
     if (scrolledAncestor(e.target)) return;
     startY = t.clientY; dist = 0; pulling = false;
   }, { passive: true });
