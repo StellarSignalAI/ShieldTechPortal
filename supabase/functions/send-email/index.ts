@@ -25,18 +25,40 @@ Deno.serve(async (req) => {
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   const cron = Deno.env.get("CRON_SECRET");
-  let authed = Boolean(cron && req.headers.get("x-cron-secret") === cron);
-  if (!authed) {
+  const isCron = Boolean(cron && req.headers.get("x-cron-secret") === cron);
+  let callerRole: string | null = null;
+  if (!isCron) {
     const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
-    if (jwt) { const { data } = await admin.auth.getUser(jwt); authed = Boolean(data?.user); }
+    if (jwt) {
+      const { data } = await admin.auth.getUser(jwt);
+      if (data?.user) {
+        const { data: prof } = await admin.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
+        callerRole = prof?.role ?? null;
+      }
+    }
   }
-  if (!authed) return json(401, { ok: false, error: "sign in required" });
+  if (!isCron && !callerRole) return json(401, { ok: false, error: "sign in required" });
 
   let body: {
     to?: string | string[]; subject?: string; html?: string; text?: string;
     template?: string; data?: Record<string, unknown>;
   };
   try { body = await req.json(); } catch { return json(400, { ok: false, error: "Invalid JSON" }); }
+
+  // ── Authorization matrix ──
+  // Cron + office roles (Admin/Staff/Manager): any send.
+  // Everyone else (Technician/Sales/Client): ONLY the timesheet-submitted
+  // office alert, and the recipients are forced server-side — a field login
+  // must never become an open relay from the company's no-reply address.
+  const officeSender = isCron || ["Admin", "Staff", "Manager"].includes(callerRole ?? "");
+  if (!officeSender) {
+    if (body.template !== "timesheet-submitted") {
+      return json(403, { ok: false, error: "This account can only send timesheet notifications" });
+    }
+    body.to = (Deno.env.get("TIME_ALERT_EMAILS") ?? "daniel@shieldtechsolutions.com,aaron@shieldtechsolutions.com")
+      .split(",").map((s) => s.trim()).filter(Boolean);
+    body.html = undefined; body.text = undefined; body.subject = undefined;
+  }
 
   // Named design-system templates render server-side so clients never build
   // raw HTML. Subject comes from the template unless the caller overrides it.

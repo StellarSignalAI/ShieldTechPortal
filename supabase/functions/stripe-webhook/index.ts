@@ -18,7 +18,11 @@ async function verify(payload: string, sigHeader: string, secret: string): Promi
   );
   const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${t}.${payload}`));
   const hex = Array.from(new Uint8Array(mac)).map((b) => b.toString(16).padStart(2, "0")).join("");
-  return hex === v1;
+  // Constant-time compare — a char-by-char === leaks how many prefix bytes match.
+  if (hex.length !== v1.length) return false;
+  let diff = 0;
+  for (let i = 0; i < hex.length; i++) diff |= hex.charCodeAt(i) ^ v1.charCodeAt(i);
+  return diff === 0;
 }
 
 Deno.serve(async (req) => {
@@ -43,9 +47,23 @@ Deno.serve(async (req) => {
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
         { auth: { persistSession: false } },
       );
-      await admin.from("invoice_links").update({
-        status: "paid", paid_at: new Date().toISOString(), paid_via: "stripe",
-      }).eq("invoice_ref", ref).eq("status", "sent");
+      // Never close an invoice off metadata alone — the paid amount and
+      // currency must match the invoice_links row, or a smaller/replayed
+      // payment would clear the full balance.
+      const { data: link } = await admin.from("invoice_links")
+        .select("id, amount").eq("invoice_ref", ref).eq("status", "sent").maybeSingle();
+      const cents = Math.round((Number(link?.amount) || 0) * 100);
+      const paidCents = Number(session.amount_total);
+      const currency = String(session.currency ?? "").toLowerCase();
+      if (link && paidCents === cents && cents > 0 && currency === "usd") {
+        await admin.from("invoice_links").update({
+          status: "paid", paid_at: new Date().toISOString(), paid_via: "stripe",
+        }).eq("id", link.id);
+      } else if (link) {
+        await admin.from("invoice_links").update({
+          status: "review", paid_via: "stripe",
+        }).eq("id", link.id);
+      }
     }
   }
   return json(200, { received: true });

@@ -11,7 +11,7 @@
 //   rows, renders the confirmation page. The portal polls estimate_acceptances
 //   and turns accepted rows into projects.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { proposalEmail } from "../_shared/email.ts";
+import { esc, proposalEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -63,20 +63,20 @@ Deno.serve(async (req) => {
       const already = rec.status === "accepted" ? "accepted" : "declined";
       return page(
         `Proposal already ${already}`,
-        `Proposal ${rec.estimate_ref} was ${already} on ${new Date(rec.responded_at).toLocaleDateString()}. No further action is needed.`,
+        `Proposal ${esc(rec.estimate_ref)} was ${already} on ${new Date(rec.responded_at).toLocaleDateString()}. No further action is needed.`,
         rec.status === "accepted" ? "ok" : "bad",
       );
     }
 
     const self = `${Deno.env.get("SUPABASE_URL")}/functions/v1/estimate-accept`;
     return page(
-      `Proposal ${rec.estimate_ref}`,
-      `Prepared for ${rec.customer_name ?? "you"} by ShieldTech Security. Review the details from your email, then confirm your decision below. Accepting starts your project — our team follows up to schedule kickoff.`,
+      `Proposal ${esc(rec.estimate_ref)}`,
+      `Prepared for ${esc(rec.customer_name ?? "you")} by ShieldTech Security. Review the details from your email, then confirm your decision below. Accepting starts your project — our team follows up to schedule kickoff.`,
       "info",
       `${rec.amount ? `<div class="amt">$${Number(rec.amount).toLocaleString()}</div>` : ""}
 <div class="btns">
-<form method="POST" action="${self}"><input type="hidden" name="token" value="${rec.token}"/><input type="hidden" name="action" value="accept"/><button class="accept" type="submit">Accept Proposal</button></form>
-<form method="POST" action="${self}"><input type="hidden" name="token" value="${rec.token}"/><input type="hidden" name="action" value="decline"/><button class="decline" type="submit">Decline</button></form>
+<form method="POST" action="${self}"><input type="hidden" name="token" value="${esc(rec.token)}"/><input type="hidden" name="action" value="accept"/><button class="accept" type="submit">Accept Proposal</button></form>
+<form method="POST" action="${self}"><input type="hidden" name="token" value="${esc(rec.token)}"/><input type="hidden" name="action" value="decline"/><button class="decline" type="submit">Decline</button></form>
 </div>`,
     );
   }
@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
     if (!rec) return page("Link not found", "This proposal link is invalid or has been removed.", "bad");
     if (rec.status !== "pending") {
       const already = rec.status === "accepted" ? "accepted" : "declined";
-      return page(`Proposal already ${already}`, `Proposal ${rec.estimate_ref} was ${already} on ${new Date(rec.responded_at).toLocaleDateString()}.`, rec.status === "accepted" ? "ok" : "bad");
+      return page(`Proposal already ${already}`, `Proposal ${esc(rec.estimate_ref)} was ${already} on ${new Date(rec.responded_at).toLocaleDateString()}.`, rec.status === "accepted" ? "ok" : "bad");
     }
     await admin.from("estimate_acceptances").update({
       status: action, accepted_via: "email", responded_at: new Date().toISOString(),
@@ -111,8 +111,8 @@ Deno.serve(async (req) => {
       await admin.from("qbo_estimates").update({ status: "accepted" }).eq("qbo_id", rec.estimate_qbo_id);
     }
     return action === "accepted"
-      ? page("Proposal accepted", `Thank you! Proposal ${rec.estimate_ref}${rec.amount ? ` ($${Number(rec.amount).toLocaleString()})` : ""} has been accepted. Our team will reach out shortly to schedule the project kickoff.`, "ok")
-      : page("Proposal declined", `Proposal ${rec.estimate_ref} has been marked declined. If this was a mistake or you'd like to discuss changes, just reply to the original email.`, "bad");
+      ? page("Proposal accepted", `Thank you! Proposal ${esc(rec.estimate_ref)}${rec.amount ? ` ($${Number(rec.amount).toLocaleString()})` : ""} has been accepted. Our team will reach out shortly to schedule the project kickoff.`, "ok")
+      : page("Proposal declined", `Proposal ${esc(rec.estimate_ref)} has been marked declined. If this was a mistake or you'd like to discuss changes, just reply to the original email.`, "bad");
   }
 
   // ── Staff POST: create the acceptance record + email the customer ──

@@ -59,9 +59,12 @@ Deno.serve(async (req) => {
   if (!["Admin", "Staff", "Manager", "Technician", "Sales", "Client"].includes(role)) {
     return json(400, { ok: false, error: "Unknown role" });
   }
-  // Only a full Admin can mint another Admin — a reporting manager cannot escalate.
-  if (role === "Admin" && callerRole !== "Admin") {
-    return json(403, { ok: false, error: "Only an Admin can create another Admin" });
+  // Escalation guard: only a full Admin can mint privileged accounts.
+  // Staff/Manager may invite field & customer accounts (Technician/Sales/Client)
+  // but cannot create peers or admins — compromising one staff login must not
+  // yield another portal-rights account.
+  if (callerRole !== "Admin" && !["Technician", "Sales", "Client"].includes(role)) {
+    return json(403, { ok: false, error: "Only an Admin can create Admin, Staff, or Manager accounts" });
   }
 
   // ── 1) Pre-create the invite profile BEFORE the auth user. ──
