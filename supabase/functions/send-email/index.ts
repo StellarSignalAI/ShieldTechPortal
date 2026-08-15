@@ -7,7 +7,7 @@
 // same identity as every other automated email. Callers that pass html are
 // trusted to have built it from the same system.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { jobAssignedEmail, notificationEmail, timesheetRejectedEmail, timesheetSubmittedEmail } from "../_shared/email.ts";
+import { jobAssignedEmail, notificationEmail, supportTicketEmail, timesheetRejectedEmail, timesheetSubmittedEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -47,13 +47,14 @@ Deno.serve(async (req) => {
 
   // ── Authorization matrix ──
   // Cron + office roles (Admin/Staff/Manager): any send.
-  // Everyone else (Technician/Sales/Client): ONLY the timesheet-submitted
-  // office alert, and the recipients are forced server-side — a field login
-  // must never become an open relay from the company's no-reply address.
+  // Everyone else (Technician/Sales/Client): ONLY the fixed office-alert
+  // templates (timesheet-submitted, support-ticket), and the recipients are
+  // forced server-side — a field or customer login must never become an open
+  // relay from the company's no-reply address.
   const officeSender = isCron || ["Admin", "Staff", "Manager"].includes(callerRole ?? "");
   if (!officeSender) {
-    if (body.template !== "timesheet-submitted") {
-      return json(403, { ok: false, error: "This account can only send timesheet notifications" });
+    if (body.template !== "timesheet-submitted" && body.template !== "support-ticket") {
+      return json(403, { ok: false, error: "This account can only send office notifications" });
     }
     body.to = (Deno.env.get("TIME_ALERT_EMAILS") ?? "daniel@shieldtechsolutions.com,aaron@shieldtechsolutions.com")
       .split(",").map((s) => s.trim()).filter(Boolean);
@@ -78,6 +79,14 @@ Deno.serve(async (req) => {
     const d = (body.data ?? {}) as Record<string, string>;
     const mail = timesheetRejectedEmail({
       name: d.name, workDate: d.workDate, hours: d.hours, jobRef: d.jobRef, note: d.note,
+    });
+    html = mail.html; text = mail.text; subject = subject || mail.subject;
+  } else if (body.template === "support-ticket") {
+    const d = (body.data ?? {}) as Record<string, string>;
+    const mail = supportTicketEmail({
+      ref: d.ref, company: d.company, contactName: d.contactName, subject: d.ticketSubject,
+      description: d.description, category: d.category, priority: d.priority,
+      reply: d.reply === "true",
     });
     html = mail.html; text = mail.text; subject = subject || mail.subject;
   } else if (body.template === "timesheet-submitted") {

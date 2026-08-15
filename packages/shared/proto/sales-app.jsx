@@ -88,7 +88,16 @@ function useSalesPipeline() {
       });
     });
 
-    return out.map(it => ov[it.key] && !it._deal ? { ...it, stage: ov[it.key] } : it);
+    return out.map(it => {
+      if (it._deal) return it;
+      /* A sent proposal's row key changes 'prop-<id>' → 'q-<num>' (same ref),
+         so honor the override under either key — manual stages must survive
+         the transition. A derived terminal stage (won/lost from the real
+         accepted/declined status) always beats a stale manual override. */
+      const o = ov[it.key] ?? (it.key.startsWith('q-') ? ov['prop-' + it.ref] : undefined);
+      const terminal = it.stage === 'won' || it.stage === 'lost';
+      return o && !terminal ? { ...it, stage: o } : it;
+    });
   }, [deals, props, merged, opps, projects, overrides]);
 
   return items;

@@ -97,7 +97,27 @@ function ShieldAuthGate({ appId, children }) {
     return window.__shieldAuth.onAuthChange(s => { setSnap({ ...s }); force(); });
   }, []);
 
-  if (!snap.configured) { window.__shieldAuthed = true; return children; }
+  if (!snap.configured) {
+    /* Unconfigured backend: FAIL CLOSED in production. The old behavior
+       rendered the app fully unauthenticated whenever VITE_SUPABASE_* was
+       missing from a deploy. Local dev/preview keeps the bypass so the
+       prototype remains explorable without credentials. */
+    const local = ['localhost', '127.0.0.1', ''].includes(location.hostname) || location.protocol === 'file:';
+    if (local) { window.__shieldAuthed = true; return children; }
+    window.__shieldAuthed = false;
+    return (
+      <div style={{ width: '100vw', height: '100vh', background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <div className="glass" style={{ maxWidth: 380, padding: 28, textAlign: 'center', borderRadius: 14 }}>
+          <div style={{ fontSize: 26, marginBottom: 10 }}>🛡</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-high)', marginBottom: 8 }}>Temporarily unavailable</div>
+          <div style={{ fontSize: 12.5, color: 'var(--text-mid)', lineHeight: 1.6 }}>
+            This app isn't configured to reach its backend right now. Please try again shortly, or contact
+            {' '}<span style={{ color: 'var(--brand)' }}>customer@shieldtechsolutions.com</span>.
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (snap.loading) {
     return (
       <div style={{ width: '100vw', height: '100vh', background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

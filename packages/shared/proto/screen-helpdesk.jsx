@@ -1,12 +1,42 @@
 /* Screen — Help Desk (v2: fully interactive) */
 
 function HelpdeskScreen() {
-  const [tickets, setTickets] = useShieldStore(ticketStore);
+  const [storeTickets, setTickets] = useShieldStore(ticketStore);
   const [activeTab, setActiveTab] = React.useState('open');
-  const [selectedId, setSelectedId] = React.useState(tickets[0]?.id);
   const [replyText, setReplyText] = React.useState('');
   const [showNewModal, setShowNewModal] = React.useState(false);
   const [now, setNow] = React.useState(Date.now());
+
+  /* Customer-submitted tickets (support_tickets table via __shieldTickets) —
+     staff see the whole queue; replies land in the customer portal thread. */
+  const [custTickets, setCustTickets] = React.useState([]);
+  const loadCust = React.useCallback(() => {
+    const t = window.__shieldTickets;
+    if (t) t.list().then(r => { if (r.ok) setCustTickets(r.data || []); });
+  }, []);
+  React.useEffect(() => { loadCust(); }, [loadCust]);
+
+  const mapCust = (t) => ({
+    id: t.ref, _support: t,
+    priority: ['urgent'].includes(t.priority) ? 'critical' : (t.priority || 'medium'),
+    status: t.status === 'resolved' || t.status === 'closed' ? 'resolved'
+      : t.status === 'open' ? 'open' : 'in-progress',
+    customer: t.company || t.contact_name || t.contact_email || 'Customer',
+    contact: t.contact_name || t.contact_email || '',
+    subject: t.subject, created: new Date(t.created_at).getTime(),
+    sla: { total: t.priority === 'urgent' ? 4 : t.priority === 'high' ? 8 : 24 },
+    tags: [t.category, 'customer-portal'].filter(Boolean),
+    assignee: null, relatedAsset: '', aiSuggestion: null,
+    thread: (t.thread || []).map(m => ({
+      from: m.from === 'shieldtech' ? (m.by || 'ShieldTech') : (m.by || 'Customer'),
+      time: m.at ? new Date(m.at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '',
+      msg: m.text, system: false,
+    })),
+  });
+  const tickets = React.useMemo(
+    () => [...custTickets.map(mapCust), ...storeTickets],
+    [custTickets, storeTickets]);
+  const [selectedId, setSelectedId] = React.useState(null);
 
   // Tick clock for SLA countdowns
   React.useEffect(() => {
@@ -40,15 +70,31 @@ function HelpdeskScreen() {
     return (rem / t.sla.total) * 100;
   };
 
-  const sendReply = () => {
+  const sendReply = async () => {
     if (!replyText.trim() || !tk) return;
-    const msg = { from: 'John Mitchell', time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), msg: replyText.trim(), system: false };
+    if (tk._support) {
+      const r = await window.__shieldTickets.addMessage(tk._support.id, replyText.trim(), true);
+      if (!r.ok) { showToast(`Reply failed: ${r.error}`, 'warn'); return; }
+      if (tk._support.status === 'open') await window.__shieldTickets.setStatus(tk._support.id, 'waiting');
+      setReplyText(''); loadCust();
+      showToast('Reply sent — visible in the customer portal', 'ok');
+      return;
+    }
+    const me = (window.__shieldUser && window.__shieldUser.name) || 'ShieldTech';
+    const msg = { from: me, time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), msg: replyText.trim(), system: false };
     setTickets(prev => prev.map(t => t.id === tk.id ? { ...t, thread: [...t.thread, msg] } : t));
     setReplyText('');
-    showToast('Reply sent', 'ok');
+    showToast('Reply added to the ticket thread', 'ok');
   };
 
   const changeStatus = (id, status) => {
+    const target = tickets.find(t => t.id === id);
+    if (target && target._support) {
+      window.__shieldTickets.setStatus(target._support.id, status === 'resolved' ? 'resolved' : 'in-progress')
+        .then(r => { if (!r.ok) showToast(`Update failed: ${r.error}`, 'warn'); loadCust(); });
+      showToast(`Ticket ${status}`, status === 'resolved' ? 'ok' : 'info');
+      return;
+    }
     setTickets(prev => prev.map(t => {
       if (t.id !== id) return t;
       const msg = { from: 'System', time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), msg: `Ticket status changed to ${status}.`, system: true };
@@ -58,6 +104,8 @@ function HelpdeskScreen() {
   };
 
   const assignTech = (id, techId) => {
+    const target = tickets.find(t => t.id === id);
+    if (target && target._support) { showToast('Customer-portal tickets are worked from this queue — assignment lives on the dispatch board', 'info'); return; }
     setTickets(prev => prev.map(t => {
       if (t.id !== id) return t;
       const tech = techs.find(x => x.id === techId);

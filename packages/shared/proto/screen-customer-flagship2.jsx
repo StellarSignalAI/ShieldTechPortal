@@ -134,7 +134,13 @@ function CustApprovalsInboxView() {
   const [items, setItems] = useState([]);
   const act = (id, approve) => {
     setItems(prev => prev.map(x => x.id === id ? { ...x, status: approve ? 'approved' : 'declined' } : x));
-    showToast(approve ? 'Approved — e-signature recorded' : 'Declined — your account manager will follow up', approve ? 'ok' : 'warn');
+    showToast(approve ? 'Response recorded — your account manager will confirm' : 'Declined — your account manager will follow up', approve ? 'ok' : 'warn');
+  };
+  const askQuestion = async (item) => {
+    const t = window.__shieldTickets;
+    if (!t) { showToast('Support backend not configured', 'warn'); return; }
+    const r = await t.create({ subject: `Question about ${item.kind} ${item.id}`, description: item.title, category: 'billing', priority: 'medium' });
+    showToast(r.ok ? `Question ${r.data.ref} sent — we'll get back to you` : `Could not send: ${r.error}`, r.ok ? 'ok' : 'warn');
   };
   return (
     <div>
@@ -153,7 +159,7 @@ function CustApprovalsInboxView() {
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => act(item.id, true)} style={{ padding: '8px 22px', background: 'linear-gradient(135deg, var(--status-ok), #1f9e6e)', border: 'none', borderRadius: 7, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve & sign</button>
               <button onClick={() => act(item.id, false)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-low)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Decline</button>
-              <button onClick={() => showToast('Question sent to your account manager', 'ok')} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Ask a question</button>
+              <button onClick={() => askQuestion(item)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Ask a question</button>
             </div>
           ) : (
             <span style={{ fontSize: 11, fontWeight: 700, color: item.status === 'approved' ? 'var(--status-ok)' : 'var(--status-warn)' }}>{item.status === 'approved' ? '✓ Approved — signed electronically' : 'Declined'}</span>
@@ -169,9 +175,18 @@ function CustClaimPackView() {
   const [building, setBuilding] = useState(null);
   const [ready, setReady] = useState([]);
   const incidents = [];
-  const build = (id) => {
+  /* Claim packs are assembled by the office — the request is a real ticket,
+     never a fake progress bar that produces no file. */
+  const build = async (id) => {
+    const t = window.__shieldTickets;
+    if (!t) { showToast('Support backend not configured', 'warn'); return; }
     setBuilding(id);
-    setTimeout(() => { setBuilding(null); setReady(r => [...r, id]); showToast('Claim pack ready — PDF + evidence ZIP', 'ok'); }, 2200);
+    const inc = incidents.find(x => x.id === id);
+    const r = await t.create({ subject: `Insurance claim pack — ${inc ? inc.title : id}`, description: 'Customer requested a claim pack (timeline, footage stills, device logs, service records).', category: 'other', priority: 'high' });
+    setBuilding(null);
+    if (!r.ok) { showToast(`Could not send: ${r.error}`, 'warn'); return; }
+    setReady(rd => [...rd, id]);
+    showToast(`Request ${r.data.ref} sent — we'll compile the pack and email it to you`, 'ok');
   };
   return (
     <div>

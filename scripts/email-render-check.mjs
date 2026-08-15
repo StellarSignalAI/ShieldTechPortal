@@ -27,6 +27,8 @@ const samples = {
   'timesheet-rejected': E.timesheetRejectedEmail({ name: 'Mike Reyes', workDate: '2026-09-04', hours: 4, jobRef: 'WO-2871', note: 'Hours overlap the Metro Bank job — split the <entry> into two' }),
   'timesheet-submitted': E.timesheetSubmittedEmail({ techName: 'Mike <Reyes>', workDate: '2026-09-04', hours: 6.5, jobRef: 'PRJ-1101 — Metro Bank', notes: 'Pulled cable for the east wing drops' }),
   'timesheet-submitted-week': E.timesheetSubmittedEmail({ techName: 'Mike Reyes', workDate: '2026-09-05', hours: 38.5, count: 5 }),
+  'support-ticket': E.supportTicketEmail({ ref: 'TKT-M9X2AB', company: 'Riverside <Medical>', contactName: 'Karen Mills', subject: 'Rear camera offline', description: 'The rear exit camera dropped offline this morning & nobody can view it.', category: 'camera', priority: 'urgent' }),
+  'support-ticket-reply': E.supportTicketEmail({ ref: 'TKT-M9X2AB', company: 'Riverside Medical', contactName: 'Karen Mills', description: 'Still down after the reboot you suggested.', reply: true }),
   'notification': E.notificationEmail({ subject: 'Job Assigned | ShieldTech Security', headline: 'New job assignment', label: 'Job Assigned', message: 'Metro Bank — Camera Install\n\nScheduled Sep 4, 9:00 AM at 1200 Market St.\nCrew: Mike Reyes.', ctaLabel: 'View Job →', ctaUrl: LINK }),
 };
 

@@ -24,6 +24,7 @@ import '@shared/supabase.js';
 import '@shared/auth.js';
 import '@shared/passkey.js';
 import '@shared/ai.js';
+import '@shared/qbo.js';
 import '@shared/acceptance.js';
 import '@shared/bids.js';
 import '@shared/email.js';

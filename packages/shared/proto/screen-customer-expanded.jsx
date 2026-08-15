@@ -1,4 +1,29 @@
-/* Expanded Customer Portal — Tickets, Remote Sessions, AI Chat */
+/* Expanded Customer Portal — Tickets, Remote Sessions, AI Concierge.
+   REAL data only: tickets live in the RLS-scoped support_tickets table via
+   window.__shieldTickets (customers see their own; office roles see all).
+   No fixture customers, no fabricated stats — empty states are honest. */
+
+/* Load the caller-visible tickets (RLS decides scope). */
+function useSupportTickets() {
+  const [state, setState] = React.useState({ loading: true, error: null, tickets: [] });
+  const refresh = React.useCallback(() => {
+    const t = window.__shieldTickets;
+    if (!t) { setState({ loading: false, error: 'Backend not configured', tickets: [] }); return; }
+    t.list().then(r => {
+      setState({ loading: false, error: r.ok ? null : r.error, tickets: r.data || [] });
+    }).catch(e => setState({ loading: false, error: String(e), tickets: [] }));
+  }, []);
+  React.useEffect(() => { refresh(); }, [refresh]);
+  return [state, refresh];
+}
+
+const TKT_STATUS = {
+  'open':        { color: 'var(--brand)', label: 'Open' },
+  'in-progress': { color: 'var(--status-warn)', label: 'In Progress' },
+  'waiting':     { color: '#c084fc', label: 'Waiting on You' },
+  'resolved':    { color: 'var(--status-ok)', label: 'Resolved' },
+  'closed':      { color: 'var(--text-low)', label: 'Closed' },
+};
 
 function CustomerExpandedScreen() {
   const [view, setView] = React.useState('dashboard');
@@ -21,7 +46,7 @@ function CustomerExpandedScreen() {
         {[
           { id: 'dashboard', label: 'Dashboard', icon: '◉' },
           { id: 'new-ticket', label: 'Submit a Ticket', icon: '＋' },
-          { id: 'tickets', label: 'My Tickets', icon: '☰', count: 3 },
+          { id: 'tickets', label: 'Tickets', icon: '☰' },
           { id: 'remote-session', label: 'Remote Sessions', icon: '⊙' },
           { id: 'ai-chat', label: 'Ask AI', icon: '⟡' },
         ].map(tab => (
@@ -35,12 +60,6 @@ function CustomerExpandedScreen() {
           }}>
             <span style={{ fontSize: 14 }}>{tab.icon}</span>
             {tab.label}
-            {tab.count && (
-              <span className="mono" style={{
-                fontSize: 10, background: 'rgba(63,169,245,0.15)', padding: '1px 6px',
-                borderRadius: 100, color: 'var(--brand)'
-              }}>{tab.count}</span>
-            )}
           </button>
         ))}
       </div>
@@ -54,16 +73,25 @@ function CustomerExpandedScreen() {
   );
 }
 
-/* ── Dashboard View (same as before but with quick actions) ── */
+/* ── Dashboard View — real ticket stats + quick actions, nothing invented ── */
 function CustomerDashboardView({ onNavigate }) {
+  const [{ loading, tickets }] = useSupportTickets();
+  const me = window.__shieldUser || {};
+  const open = tickets.filter(t => t.status === 'open' || t.status === 'in-progress');
+  const waiting = tickets.filter(t => t.status === 'waiting');
+  const recent = tickets.slice(0, 4);
+  // Shell nav ids differ between the customer app ('ai') and this screen's
+  // own sub-nav ('ai-chat'); prefer whichever the host handles.
+  const goAI = () => onNavigate(typeof onNavigate === 'function' ? 'ai-chat' : 'ai-chat');
+
   return (
     <div>
       {/* Welcome */}
       <div style={{ marginBottom: 24, animation: 'fade-up 0.5s ease both' }}>
         <h1 className="display" style={{ fontSize: 26, fontWeight: 200, color: 'var(--text-high)' }}>
-          Welcome back, <span style={{ fontWeight: 400 }}>{(window.__shieldUser && window.__shieldUser.name) || 'Acme Dental Group'}</span>
+          Welcome back{me.name ? <span style={{ fontWeight: 400 }}>, {me.name}</span> : ''}
         </h1>
-        <p style={{ fontSize: 14, color: 'var(--text-mid)', marginTop: 6 }}>Site A — 1247 Market Street</p>
+        {me.company && <p style={{ fontSize: 14, color: 'var(--text-mid)', marginTop: 6 }}>{me.company}</p>}
       </div>
 
       {/* Quick actions */}
@@ -73,7 +101,7 @@ function CustomerDashboardView({ onNavigate }) {
           { label: 'I need footage', icon: '▶', action: () => onNavigate('new-ticket') },
           { label: 'Add access user', icon: '⊠', action: () => onNavigate('new-ticket') },
           { label: 'Schedule service', icon: '⚙', action: () => onNavigate('new-ticket') },
-          { label: 'Ask AI assistant', icon: '⟡', action: () => onNavigate('ai-chat') },
+          { label: 'Ask AI assistant', icon: '⟡', action: goAI },
         ].map((qa, i) => (
           <button key={i} onClick={qa.action} className="glass" style={{
             padding: '14px 18px', cursor: 'pointer', border: '1px solid var(--border-subtle)',
@@ -91,60 +119,59 @@ function CustomerDashboardView({ onNavigate }) {
         ))}
       </div>
 
-      {/* Health + KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 20, marginBottom: 20 }}>
-        <GlassPanel style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 28 }}>
-          <div className="label-sm" style={{ marginBottom: 16 }}>SITE HEALTH</div>
-          <HealthRing value={94} size={140} strokeWidth={10} label="out of 100" />
-        </GlassPanel>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <StatCard label="DEVICES ONLINE" value="23 / 24" mono={false} delay={100} />
-          <StatCard label="30-DAY UPTIME" value="99.2%" mono={false} delay={180} />
-          <StatCard label="OPEN TICKETS" value={1} delay={260} />
-          <StatCard label="NEXT SERVICE" value="Jun 28" mono={false} delay={340} />
-        </div>
+      {/* Real ticket stats */}
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
+        <StatCard label="OPEN TICKETS" value={loading ? '…' : open.length} delay={100} />
+        <StatCard label="WAITING ON YOU" value={loading ? '…' : waiting.length} delay={180} />
+        <StatCard label="RESOLVED" value={loading ? '…' : tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length} delay={260} />
       </div>
 
-      {/* AI Cards */}
-      <div style={{ display: 'flex', gap: 12 }}>
-        <GlassPanel style={{ flex: 1, borderLeft: '3px solid var(--status-warn)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-            <span>⟡</span>
-            <span className="label-sm" style={{ color: 'var(--brand)' }}>AI RECOMMENDATION</span>
-          </div>
-          <p style={{ fontSize: 13, color: 'var(--text-high)', lineHeight: 1.5, marginBottom: 10 }}>
-            The rear exit camera has gone offline 3 times this week. We recommend a technician inspection.
-          </p>
-          <button onClick={() => onNavigate('new-ticket')} style={{
-            background: 'var(--brand)', border: 'none', borderRadius: 6,
-            padding: '6px 16px', color: '#fff', fontSize: 12, fontWeight: 500,
-            cursor: 'pointer', fontFamily: 'var(--font-body)'
-          }}>Request Service</button>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16 }}>
+        {/* Recent tickets */}
+        <GlassPanel>
+          <SectionHeader title="Recent Tickets" />
+          {loading && <div style={{ padding: 18, fontSize: 12, color: 'var(--text-low)' }}>Loading…</div>}
+          {!loading && recent.length === 0 && (
+            <div style={{ padding: 18, fontSize: 12, color: 'var(--text-low)' }}>
+              No tickets yet. If anything needs attention — a camera, a door, footage, billing — submit a ticket and our team will jump on it.
+            </div>
+          )}
+          {recent.map(t => {
+            const st = TKT_STATUS[t.status] || TKT_STATUS.open;
+            return (
+              <div key={t.id} onClick={() => onNavigate('tickets')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', cursor: 'pointer' }}>
+                <span className="mono" style={{ fontSize: 11, color: 'var(--brand)' }}>{t.ref}</span>
+                <span style={{ flex: 1, fontSize: 13, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.subject}</span>
+                <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', padding: '2px 8px', borderRadius: 4, background: `${st.color}15`, color: st.color }}>{st.label}</span>
+              </div>
+            );
+          })}
         </GlassPanel>
-        <GlassPanel style={{ flex: 1, borderLeft: '3px solid var(--brand)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-            <span>⟡</span>
-            <span className="label-sm" style={{ color: 'var(--brand)' }}>INSIGHT</span>
+
+        {/* Support contact — real numbers, no invented SLAs */}
+        <GlassPanel>
+          <SectionHeader title="Reach Us" />
+          <div style={{ fontSize: 13, color: 'var(--text-high)', lineHeight: 2 }}>
+            <div>📞 <span className="mono" style={{ color: 'var(--brand)' }}>484-800-1220</span></div>
+            <div>✉️ <span style={{ color: 'var(--brand)' }}>customer@shieldtechsolutions.com</span></div>
           </div>
-          <p style={{ fontSize: 13, color: 'var(--text-high)', lineHeight: 1.5, marginBottom: 10 }}>
-            Your access control firmware is due for update. Enhanced encryption protocols available.
-          </p>
-          <button onClick={() => shieldToast('Opening plan details…')} style={{
-            background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)',
-            borderRadius: 6, padding: '6px 16px', color: 'var(--brand)',
-            fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)'
-          }}>Learn More</button>
+          <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 10, lineHeight: 1.6 }}>
+            Tickets are the fastest way to get help — they go straight to our office queue and you can track every reply here.
+          </div>
         </GlassPanel>
       </div>
     </div>
   );
 }
 
-/* ── New Ticket Form ── */
+/* ── New Ticket Form — writes a real support_tickets row ── */
 function NewTicketView({ onNavigate }) {
+  const [subject, setSubject] = React.useState('');
+  const [description, setDescription] = React.useState('');
   const [category, setCategory] = React.useState('');
   const [priority, setPriority] = React.useState('medium');
-  const [submitted, setSubmitted] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const [created, setCreated] = React.useState(null);
 
   const quickPicks = [
     { label: 'A camera is offline', cat: 'camera', pri: 'high', icon: '◉' },
@@ -155,7 +182,18 @@ function NewTicketView({ onNavigate }) {
     { label: 'Billing question', cat: 'billing', pri: 'low', icon: '▭' },
   ];
 
-  if (submitted) {
+  const submit = async () => {
+    if (!subject.trim()) { shieldToast('Add a short subject first', 'warn'); return; }
+    const t = window.__shieldTickets;
+    if (!t) { shieldToast('Support backend not configured', 'warn'); return; }
+    setBusy(true);
+    const r = await t.create({ subject, description, category, priority });
+    setBusy(false);
+    if (!r.ok) { shieldToast(`Could not submit: ${r.error}`, 'warn'); return; }
+    setCreated(r.data);
+  };
+
+  if (created) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 0', animation: 'fade-up 0.5s ease both' }}>
         <div style={{
@@ -165,14 +203,9 @@ function NewTicketView({ onNavigate }) {
           fontSize: 32, boxShadow: '0 0 24px rgba(52,211,153,0.15)'
         }}>✓</div>
         <h2 className="display" style={{ fontSize: 22, fontWeight: 300, marginBottom: 8 }}>Ticket Submitted</h2>
-        <p className="mono" style={{ fontSize: 16, color: 'var(--brand)', marginBottom: 8 }}>TKT-2847</p>
-        <p style={{ fontSize: 14, color: 'var(--text-mid)', marginBottom: 4 }}>
-          Estimated response time: <strong style={{ color: 'var(--text-high)' }}>
-            {priority === 'urgent' ? '15 minutes' : priority === 'high' ? '1 hour' : '4 hours'}
-          </strong>
-        </p>
+        <p className="mono" style={{ fontSize: 16, color: 'var(--brand)', marginBottom: 8 }}>{created.ref}</p>
         <p style={{ fontSize: 13, color: 'var(--text-low)', marginBottom: 24 }}>
-          Our team has been notified and will respond shortly.
+          Our team has been notified by email and will respond as soon as possible. You can track replies on the Tickets tab.
         </p>
         <button onClick={() => onNavigate('tickets')} style={{
           background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)',
@@ -192,7 +225,7 @@ function NewTicketView({ onNavigate }) {
         <div className="label-sm" style={{ marginBottom: 10 }}>QUICK SELECT</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
           {quickPicks.map((qp, i) => (
-            <button key={i} onClick={() => { setCategory(qp.cat); setPriority(qp.pri); }} className="glass" style={{
+            <button key={i} onClick={() => { setCategory(qp.cat); setPriority(qp.pri); if (!subject) setSubject(qp.label); }} className="glass" style={{
               padding: '12px 14px', cursor: 'pointer', textAlign: 'left',
               border: `1px solid ${category === qp.cat ? 'var(--border-strong)' : 'var(--border-subtle)'}`,
               background: category === qp.cat ? 'rgba(63,169,245,0.08)' : 'var(--glass-bg)',
@@ -209,8 +242,8 @@ function NewTicketView({ onNavigate }) {
       {/* Form */}
       <GlassPanel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <FormField label="Subject" placeholder="Brief description of the issue" />
-          <FormField label="Description" placeholder="Please provide details about what you're experiencing…" textarea />
+          <FormField label="Subject" placeholder="Brief description of the issue" value={subject} onChange={e => setSubject(e.target.value)} />
+          <FormField label="Description" placeholder="Please provide details about what you're experiencing…" textarea value={description} onChange={e => setDescription(e.target.value)} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <FormSelect label="Category" value={category} onChange={setCategory}
               options={[
@@ -232,153 +265,138 @@ function NewTicketView({ onNavigate }) {
               ]}
             />
           </div>
-          <FormSelect label="Site" value="site-a" onChange={() => {}}
-            options={[{ value: 'site-a', label: 'Site A — 1247 Market Street' }]}
-          />
-          <FormSelect label="Affected Device (optional)" value="" onChange={() => {}}
-            options={[
-              { value: '', label: 'Select device…' },
-              { value: 'd1', label: 'Hikvision DS-2CD2143 — Rear Exit' },
-              { value: 'd2', label: 'Axis P3265-V — Main Entrance' },
-              { value: 'd3', label: 'HID iCLASS SE — Front Door' },
-            ]}
-          />
 
-          {/* File upload */}
-          <div>
-            <div className="label-sm" style={{ marginBottom: 6 }}>ATTACHMENTS</div>
-            <div style={{
-              padding: 24, borderRadius: 'var(--radius-sm)',
-              border: '1px dashed var(--border-subtle)', textAlign: 'center',
-              cursor: 'pointer', transition: 'border-color 0.2s'
-            }}>
-              <span style={{ fontSize: 24, opacity: 0.4 }}>⧉</span>
-              <p style={{ fontSize: 12, color: 'var(--text-low)', marginTop: 6 }}>
-                Drag & drop photos, screenshots, or videos here
-              </p>
-              <p style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 2 }}>PNG, JPG, MP4 up to 25MB</p>
-            </div>
-          </div>
-
-          <button onClick={() => setSubmitted(true)} style={{
+          <button onClick={submit} disabled={busy} style={{
             padding: '12px', background: 'var(--brand)', border: 'none',
             borderRadius: 'var(--radius-sm)', color: '#fff', fontSize: 14,
-            fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)',
+            fontWeight: 600, cursor: busy ? 'default' : 'pointer', fontFamily: 'var(--font-body)',
+            opacity: busy ? 0.6 : 1,
             boxShadow: '0 0 20px -4px rgba(63,169,245,0.4)'
-          }}>Submit Ticket</button>
+          }}>{busy ? 'Submitting…' : 'Submit Ticket'}</button>
         </div>
       </GlassPanel>
     </div>
   );
 }
 
-/* ── Ticket List ── */
+/* ── Ticket List — real rows + real message thread ── */
 function TicketListView({ onNavigate, selectedTicket, setSelectedTicket }) {
-  const tickets = [
-    { id: 'TKT-2845', subject: 'Rear exit camera intermittent', cat: 'Camera', priority: 'high', status: 'in-progress', created: 'Jun 3, 2026', updated: '2h ago', assignee: 'Mike Reyes' },
-    { id: 'TKT-2839', subject: 'Add badge for new employee — Sarah Kim', cat: 'Access Control', priority: 'low', status: 'waiting', created: 'Jun 1, 2026', updated: '1d ago', assignee: 'Jessica Liu' },
-    { id: 'TKT-2831', subject: 'Monthly maintenance completed', cat: 'Maintenance', priority: 'low', status: 'resolved', created: 'May 28, 2026', updated: '5d ago', assignee: 'Tony Garcia' },
-  ];
+  const [{ loading, error, tickets }, refresh] = useSupportTickets();
+  const [draft, setDraft] = React.useState('');
+  const [sending, setSending] = React.useState(false);
 
-  const statusMap = {
-    'open': { color: 'var(--brand)', label: 'Open' },
-    'in-progress': { color: 'var(--status-warn)', label: 'In Progress' },
-    'waiting': { color: '#c084fc', label: 'Waiting on You' },
-    'resolved': { color: 'var(--status-ok)', label: 'Resolved' },
-    'closed': { color: 'var(--text-low)', label: 'Closed' },
+  const sel = tickets.find(t => t.id === selectedTicket) || null;
+
+  const send = async () => {
+    if (!sel || !draft.trim() || sending) return;
+    setSending(true);
+    const r = await window.__shieldTickets.addMessage(sel.id, draft);
+    setSending(false);
+    if (!r.ok) { shieldToast(`Could not send: ${r.error}`, 'warn'); return; }
+    setDraft('');
+    refresh();
   };
-
-  const sel = selectedTicket !== null ? tickets[selectedTicket] : null;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: sel ? '1fr 400px' : '1fr', gap: 16 }}>
       <GlassPanel style={{ padding: 0 }}>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
-          <SectionHeader title="My Tickets" count={tickets.length} />
+          <SectionHeader title="Tickets" count={tickets.length} />
           <button onClick={() => onNavigate('new-ticket')} style={{
             background: 'var(--brand)', border: 'none', borderRadius: 6,
             padding: '6px 14px', color: '#fff', fontSize: 12, cursor: 'pointer',
             fontFamily: 'var(--font-body)'
           }}>+ New Ticket</button>
         </div>
-        {tickets.map((t, i) => {
-          const st = statusMap[t.status];
+        {loading && <div style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>Loading tickets…</div>}
+        {!loading && error && <div style={{ padding: 26, textAlign: 'center', color: 'var(--status-warn)', fontSize: 12 }}>Couldn't load tickets: {error}</div>}
+        {!loading && !error && tickets.length === 0 && (
+          <div style={{ padding: 30, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>
+            No tickets yet — anything you submit shows up here with our replies.
+          </div>
+        )}
+        {tickets.map(t => {
+          const st = TKT_STATUS[t.status] || TKT_STATUS.open;
+          const isSel = selectedTicket === t.id;
           return (
-            <div key={i} onClick={() => setSelectedTicket(i)} style={{
+            <div key={t.id} onClick={() => setSelectedTicket(t.id)} style={{
               padding: '14px 20px', borderBottom: '1px solid rgba(63,169,245,0.04)',
-              cursor: 'pointer', background: selectedTicket === i ? 'rgba(63,169,245,0.06)' : 'transparent',
+              cursor: 'pointer', background: isSel ? 'rgba(63,169,245,0.06)' : 'transparent',
               transition: 'background 0.15s'
             }}
-            onMouseEnter={e => { if (selectedTicket !== i) e.currentTarget.style.background = 'rgba(63,169,245,0.03)'; }}
-            onMouseLeave={e => { if (selectedTicket !== i) e.currentTarget.style.background = 'transparent'; }}
+            onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(63,169,245,0.03)'; }}
+            onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{t.id}</span>
+                <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{t.ref}</span>
                 <span style={{
                   fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
                   padding: '2px 8px', borderRadius: 4,
                   background: `${st.color}15`, color: st.color,
                   letterSpacing: '0.04em'
                 }}>{st.label}</span>
-                <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-low)' }}>{t.updated}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-low)' }}>{new Date(t.updated_at || t.created_at).toLocaleDateString()}</span>
               </div>
               <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-high)', marginBottom: 4 }}>{t.subject}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-low)' }}>{t.cat} · {t.priority} priority · {t.assignee}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-low)' }}>{[t.category, `${t.priority} priority`, t.company].filter(Boolean).join(' · ')}</div>
             </div>
           );
         })}
       </GlassPanel>
 
-      {/* Ticket Detail with messages */}
+      {/* Ticket Detail with the real message thread */}
       {sel && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <GlassPanel>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span className="mono" style={{ fontSize: 14, color: 'var(--brand)' }}>{sel.id}</span>
+              <span className="mono" style={{ fontSize: 14, color: 'var(--brand)' }}>{sel.ref}</span>
               <span style={{
                 fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
                 padding: '3px 10px', borderRadius: 4,
-                background: `${statusMap[sel.status].color}15`, color: statusMap[sel.status].color
-              }}>{statusMap[sel.status].label}</span>
+                background: `${(TKT_STATUS[sel.status] || TKT_STATUS.open).color}15`, color: (TKT_STATUS[sel.status] || TKT_STATUS.open).color
+              }}>{(TKT_STATUS[sel.status] || TKT_STATUS.open).label}</span>
             </div>
             <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 8 }}>{sel.subject}</h3>
-            {/* Status timeline */}
             <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
               {['open','in-progress','waiting','resolved','closed'].map((s, i) => {
                 const idx = ['open','in-progress','waiting','resolved','closed'].indexOf(sel.status);
                 const done = i <= idx;
                 return (
-                  <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: done ? statusMap[s].color : 'rgba(63,169,245,0.08)' }} />
+                  <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: done ? (TKT_STATUS[s] || {}).color : 'rgba(63,169,245,0.08)' }} />
                 );
               })}
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-low)' }}>
-              Created {sel.created} · Assigned to {sel.assignee}
+              Created {new Date(sel.created_at).toLocaleDateString()}{sel.company ? ` · ${sel.company}` : ''}
             </div>
           </GlassPanel>
 
           {/* Messages */}
           <GlassPanel style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <SectionHeader title="Messages" />
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
-              <MessageBubble from="ShieldTech" time="Jun 3, 2:30 PM"
-                text="Hi Jennifer, we've identified the issue with your rear exit camera. Our diagnostics show intermittent PoE loss. We've scheduled technician Mike Reyes to inspect the cable run." />
-              <MessageBubble from="You" time="Jun 3, 3:15 PM" isUser
-                text="Thanks for the quick response. The camera seems to be working again now but it keeps dropping out." />
-              <MessageBubble from="ShieldTech" time="Jun 4, 9:00 AM"
-                text="That's consistent with a loose connector. Mike will be on-site Thursday between 10 AM–12 PM. We'll re-terminate the cable and test for 24h." />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12, maxHeight: 340, overflowY: 'auto' }}>
+              {(sel.thread || []).length === 0 && <div style={{ fontSize: 12, color: 'var(--text-low)', padding: '8px 0' }}>No messages yet — add one below.</div>}
+              {(sel.thread || []).map((m, i) => (
+                <MessageBubble key={i}
+                  from={m.from === 'shieldtech' ? 'ShieldTech' : (m.by || 'You')}
+                  time={m.at ? new Date(m.at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''}
+                  isUser={m.from !== 'shieldtech'}
+                  text={m.text} />
+              ))}
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <input placeholder="Type a message…" style={{
-                flex: 1, padding: '8px 12px', background: 'rgba(5,7,10,0.5)',
-                border: '1px solid var(--border-subtle)', borderRadius: 6,
-                color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none'
-              }} />
-              <button onClick={() => shieldToast('Message sent', 'ok')} style={{
+              <input placeholder="Type a message…" value={draft} onChange={e => setDraft(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') send(); }}
+                style={{
+                  flex: 1, padding: '8px 12px', background: 'rgba(5,7,10,0.5)',
+                  border: '1px solid var(--border-subtle)', borderRadius: 6,
+                  color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none'
+                }} />
+              <button onClick={send} disabled={sending || !draft.trim()} style={{
                 background: 'var(--brand)', border: 'none', borderRadius: 6,
                 padding: '8px 14px', color: '#fff', fontSize: 12, cursor: 'pointer',
-                fontFamily: 'var(--font-body)'
-              }}>Send</button>
+                fontFamily: 'var(--font-body)', opacity: sending || !draft.trim() ? 0.5 : 1
+              }}>{sending ? '…' : 'Send'}</button>
             </div>
           </GlassPanel>
         </div>
@@ -387,13 +405,31 @@ function TicketListView({ onNavigate, selectedTicket, setSelectedTicket }) {
   );
 }
 
-/* ── Remote Session View ── */
+/* ── Remote Session View — requests are real tickets; no invented sessions ── */
 function RemoteSessionView() {
   const [requesting, setRequesting] = React.useState(false);
-  const sessions = [
-    { id: 'RS-0042', date: 'May 28, 2026', tech: 'Kevin White', duration: '45 min', summary: 'NVR firmware update + camera repositioning via PTZ', status: 'completed' },
-    { id: 'RS-0038', date: 'Apr 12, 2026', tech: 'Mike Reyes', duration: '20 min', summary: 'Access control user provisioning — 3 new badges', status: 'completed' },
-  ];
+  const [reason, setReason] = React.useState('');
+  const [system, setSystem] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+  const [{ loading, tickets }, refresh] = useSupportTickets();
+  const remoteTickets = tickets.filter(t => t.category === 'remote-access');
+
+  const submit = async () => {
+    if (!reason.trim()) { shieldToast('Tell us what you need help with', 'warn'); return; }
+    const t = window.__shieldTickets;
+    if (!t) { shieldToast('Support backend not configured', 'warn'); return; }
+    setBusy(true);
+    const r = await t.create({
+      subject: `Remote session request${system ? ` — ${system}` : ''}`,
+      description: reason,
+      category: 'remote-access', priority: 'high',
+    });
+    setBusy(false);
+    if (!r.ok) { shieldToast(`Could not submit: ${r.error}`, 'warn'); return; }
+    shieldToast(`Request ${r.data.ref} sent — our team will coordinate the session with you`, 'ok');
+    setRequesting(false); setReason(''); setSystem('');
+    refresh();
+  };
 
   return (
     <div style={{ maxWidth: 700 }}>
@@ -412,24 +448,17 @@ function RemoteSessionView() {
         <GlassPanel style={{ marginBottom: 20, borderLeft: '3px solid var(--brand)', animation: 'fade-up 0.3s ease both' }}>
           <h3 style={{ fontSize: 14, fontWeight: 500, marginBottom: 12 }}>Request Remote Access</h3>
           <p style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 14, lineHeight: 1.5 }}>
-            A technician will request to remotely access your system. You'll approve the session, which is time-limited and fully logged.
+            This opens a high-priority ticket with our team. A technician will contact you to arrange and authorize the session — remote access only ever happens with your approval.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <FormField label="Reason" placeholder="What do you need help with?" />
-            <FormSelect label="Device / System (optional)" value="" onChange={() => {}}
-              options={[
-                { value: '', label: 'Select…' },
-                { value: 'nvr', label: 'Hanwha XNR-6410 NVR' },
-                { value: 'panel', label: 'DSC PowerSeries Neo Panel' },
-                { value: 'ac', label: 'HID Access Control System' },
-              ]}
-            />
+            <FormField label="Reason" placeholder="What do you need help with?" value={reason} onChange={e => setReason(e.target.value)} />
+            <FormField label="Device / System (optional)" placeholder="e.g. NVR, alarm panel, access control" value={system} onChange={e => setSystem(e.target.value)} />
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setRequesting(false)} style={{
+              <button onClick={submit} disabled={busy} style={{
                 padding: '8px 18px', background: 'var(--brand)', border: 'none',
                 borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600,
-                cursor: 'pointer', fontFamily: 'var(--font-body)'
-              }}>Submit Request</button>
+                cursor: 'pointer', fontFamily: 'var(--font-body)', opacity: busy ? 0.6 : 1
+              }}>{busy ? 'Sending…' : 'Submit Request'}</button>
               <button onClick={() => setRequesting(false)} style={{
                 padding: '8px 18px', background: 'transparent',
                 border: '1px solid var(--border-subtle)', borderRadius: 6,
@@ -441,115 +470,43 @@ function RemoteSessionView() {
         </GlassPanel>
       )}
 
-      {/* Pending approval card */}
-      <GlassPanel style={{ marginBottom: 16, borderLeft: '3px solid var(--status-warn)', animation: 'fade-up 0.4s ease both' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <StatusBadge status="pending" label="Pending Your Approval" />
-          <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)', marginLeft: 'auto' }}>Just now</span>
-        </div>
-        <p style={{ fontSize: 13, color: 'var(--text-high)', marginBottom: 6 }}>
-          <strong>Mike Reyes</strong> is requesting remote access to your <strong>NVR system</strong> to update firmware.
-        </p>
-        <p style={{ fontSize: 12, color: 'var(--text-low)', marginBottom: 12 }}>Session will auto-expire after 2 hours. All actions are logged.</p>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => shieldToast('Remote session approved — access granted for 2 hours', 'ok')} style={{
-            background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.3)',
-            color: 'var(--status-ok)', padding: '7px 18px', borderRadius: 6,
-            fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)'
-          }}>✓ Approve Session</button>
-          <button onClick={() => shieldToast('Remote session denied', 'warn')} style={{
-            background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)',
-            color: 'var(--status-critical)', padding: '7px 14px', borderRadius: 6,
-            fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)'
-          }}>Deny</button>
-        </div>
-      </GlassPanel>
-
-      {/* Session history */}
+      {/* Request history — real remote-access tickets */}
       <GlassPanel>
-        <SectionHeader title="Session History" />
-        {sessions.map((s, i) => (
-          <div key={i} style={{
-            padding: '12px 0', borderBottom: i < sessions.length - 1 ? '1px solid rgba(63,169,245,0.05)' : 'none',
-            display: 'flex', gap: 12
-          }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{s.id}</span>
-                <StatusBadge status="online" label="Completed" />
-              </div>
-              <div style={{ fontSize: 13, color: 'var(--text-high)', marginBottom: 2 }}>{s.summary}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{s.tech} · {s.duration} · {s.date}</div>
-            </div>
+        <SectionHeader title="Requests & Sessions" />
+        {loading && <div style={{ padding: 14, fontSize: 12, color: 'var(--text-low)' }}>Loading…</div>}
+        {!loading && remoteTickets.length === 0 && (
+          <div style={{ padding: 14, fontSize: 12, color: 'var(--text-low)' }}>
+            No remote sessions yet. When you request one, it shows up here and our team coordinates a time with you.
           </div>
-        ))}
+        )}
+        {remoteTickets.map(t => {
+          const st = TKT_STATUS[t.status] || TKT_STATUS.open;
+          return (
+            <div key={t.id} style={{ padding: '12px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', display: 'flex', gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{t.ref}</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', padding: '2px 8px', borderRadius: 4, background: `${st.color}15`, color: st.color }}>{st.label}</span>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-high)', marginBottom: 2 }}>{t.subject}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{new Date(t.created_at).toLocaleDateString()}</div>
+              </div>
+            </div>
+          );
+        })}
       </GlassPanel>
     </div>
   );
 }
 
-/* ── Customer AI Chat ── */
+/* ── Customer AI Chat — the REAL concierge (no canned transcripts) ── */
 function CustomerAIChatView() {
+  const Concierge = window.CustConciergeView;
+  if (Concierge) return <Concierge />;
   return (
-    <div style={{ maxWidth: 700 }}>
-      <GlassPanel style={{ padding: 0, overflow: 'hidden' }}>
-        {/* Header */}
-        <div style={{
-          padding: '14px 20px', borderBottom: '1px solid var(--border-subtle)',
-          display: 'flex', alignItems: 'center', gap: 10
-        }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, boxShadow: 'var(--glow-brand-sm)'
-          }}>⟡</div>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 500 }}>ShieldTech Assistant</div>
-            <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Ask anything about your security systems</div>
-          </div>
-        </div>
-
-        {/* Chat messages */}
-        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14, minHeight: 300 }}>
-          <MessageBubble from="AI" time=""
-            text="Hi! I'm your ShieldTech assistant. I can help you check system status, view footage schedules, start support tickets, or answer questions about your security setup. What can I help with?" />
-          <MessageBubble from="You" time="" isUser
-            text="Is everything online right now?" />
-          <MessageBubble from="AI" time=""
-            text="Almost! 23 of your 24 devices are online. The Hikvision camera at the rear exit has been intermittent — your team already has a ticket open (TKT-2845) and a technician visit is scheduled for Thursday." />
-          <MessageBubble from="You" time="" isUser
-            text="When is my next scheduled maintenance?" />
-          <MessageBubble from="AI" time=""
-            text="Your next scheduled maintenance visit is June 28, 2026. It will cover quarterly camera cleaning, NVR health check, and access control firmware updates." />
-        </div>
-
-        {/* Suggested actions */}
-        <div style={{ padding: '0 20px 12px', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {['Check system status', 'View upcoming service', 'Start a ticket', 'How do I view footage?'].map((s, i) => (
-            <button key={i} onClick={() => shieldToast(s)} style={{
-              padding: '5px 12px', borderRadius: 100,
-              background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)',
-              color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)'
-            }}>{s}</button>
-          ))}
-        </div>
-
-        {/* Input */}
-        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 8 }}>
-          <input placeholder="Ask anything…" style={{
-            flex: 1, padding: '10px 14px', background: 'rgba(5,7,10,0.5)',
-            border: '1px solid var(--border-subtle)', borderRadius: 8,
-            color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none'
-          }} />
-          <button onClick={() => shieldToast('Message sent to ShieldTech AI', 'ok')} style={{
-            background: 'var(--brand)', border: 'none', borderRadius: 8,
-            padding: '8px 16px', color: '#fff', fontSize: 13, cursor: 'pointer',
-            fontFamily: 'var(--font-body)', fontWeight: 500
-          }}>Send</button>
-        </div>
-      </GlassPanel>
-    </div>
+    <GlassPanel style={{ maxWidth: 700, padding: 30, textAlign: 'center', color: 'var(--text-low)', fontSize: 13 }}>
+      The AI assistant isn't available right now — submit a ticket and a human will help instead.
+    </GlassPanel>
   );
 }
 
@@ -583,7 +540,7 @@ function FormField({ label, placeholder, textarea, value, onChange }) {
     <div>
       <div className="label-sm" style={{ marginBottom: 6 }}>{label}</div>
       {textarea ? (
-        <textarea placeholder={placeholder} rows={4} style={style} />
+        <textarea placeholder={placeholder} rows={4} style={style} value={value} onChange={onChange} />
       ) : (
         <input placeholder={placeholder} style={style} value={value} onChange={onChange} />
       )}
@@ -611,5 +568,5 @@ function FormSelect({ label, value, onChange, options }) {
 Object.assign(window, {
   CustomerExpandedScreen, CustomerDashboardView, NewTicketView,
   TicketListView, RemoteSessionView, CustomerAIChatView,
-  MessageBubble, FormSelect
+  MessageBubble, FormSelect, useSupportTickets, TKT_STATUS
 });

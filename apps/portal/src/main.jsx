@@ -22,6 +22,7 @@ import '@shared/email.js';
 import '@shared/acceptance.js';
 import '@shared/pay.js';
 import '@shared/receipts.js';
+import '@shared/tickets.js';
 import '@shared/bids.js';
 import '@shared/pdf.js';
 
