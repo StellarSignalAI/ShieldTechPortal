@@ -17,7 +17,7 @@
 //   branded invoice page with line items; "Pay now" goes to Stripe checkout
 //   when connected, otherwise shows remit-by-check/ACH instructions.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { EMAIL_BRAND, invoiceEmail, invoiceReminderEmail, money } from "../_shared/email.ts";
+import { EMAIL_BRAND, esc, invoiceEmail, invoiceReminderEmail, money } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -38,17 +38,21 @@ function payPage(rec: Record<string, unknown>): Response {
   const paid = rec.status === "paid";
   const lines = Array.isArray(rec.lines) ? rec.lines as Array<Record<string, unknown>> : [];
   const lineRows = lines.map((l) =>
-    `<tr><td>${String(l.desc ?? "")}</td><td class="r">${Number(l.qty) > 1 ? `${l.qty} × ${money(l.rate)}` : ""}</td><td class="r b">${money((Number(l.qty) || 1) * (Number(l.rate) || 0))}</td></tr>`
+    `<tr><td>${esc(l.desc ?? "")}</td><td class="r">${Number(l.qty) > 1 ? `${Number(l.qty)} × ${money(l.rate)}` : ""}</td><td class="r b">${money((Number(l.qty) || 1) * (Number(l.rate) || 0))}</td></tr>`
   ).join("");
+  // Only ever link out to Stripe-hosted checkout — a poisoned stripe_url must
+  // not become a lookalike-checkout or javascript: vector on our origin.
+  const stripeUrl = typeof rec.stripe_url === "string"
+    && /^https:\/\/[a-z0-9.-]*stripe\.com\//i.test(rec.stripe_url) ? rec.stripe_url : null;
   const due = rec.due_date ? new Date(String(rec.due_date) + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : null;
   const payBlock = paid
-    ? `<div class="paidbox"><div class="dot ok">✓</div><h2>Payment received</h2><p>${rec.invoice_ref} · ${money(rec.amount)}${rec.paid_at ? ` · ${new Date(String(rec.paid_at)).toLocaleDateString()}` : ""}</p><p class="thanks">Thank you for your business.</p></div>`
-    : rec.stripe_url
-      ? `<a class="paybtn" href="${rec.stripe_url}">Pay ${money(rec.amount)} securely</a><p class="secure">🔒 Secure card / bank payment via Stripe</p>`
+    ? `<div class="paidbox"><div class="dot ok">✓</div><h2>Payment received</h2><p>${esc(rec.invoice_ref)} · ${money(rec.amount)}${rec.paid_at ? ` · ${new Date(String(rec.paid_at)).toLocaleDateString()}` : ""}</p><p class="thanks">Thank you for your business.</p></div>`
+    : stripeUrl
+      ? `<a class="paybtn" href="${esc(stripeUrl)}">Pay ${money(rec.amount)} securely</a><p class="secure">🔒 Secure card / bank payment via Stripe</p>`
       : `<div class="remit"><h3>How to pay</h3><p>Please remit ${money(rec.amount)} by check to ${BRAND.company}, or reply to your invoice email to arrange ACH.</p><p>Questions? ${BRAND.email} · ${BRAND.phone}</p></div>`;
   return new Response(
     `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Invoice ${rec.invoice_ref} — ${BRAND.company}</title>
+<title>Invoice ${esc(rec.invoice_ref)} — ${BRAND.company}</title>
 <style>
 body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:#0a0e14;color:#e6edf3;display:flex;justify-content:center;min-height:100vh}
 .wrap{width:100%;max-width:540px;padding:28px 16px}
@@ -75,8 +79,8 @@ td{padding:7px 0;border-bottom:1px solid #17202e;color:#9fb0c3}.r{text-align:rig
 <div class="head"><div class="logo">ST</div><div><div class="co">${BRAND.company}</div><div class="tag">${BRAND.tagline}</div></div></div>
 <div class="card">
 <span class="status">${paid ? "PAID" : "DUE"}</span>
-<span class="ref">${rec.invoice_ref}</span>
-<div class="billed">Billed to <b>${rec.customer_name ?? "Customer"}</b>${due ? ` · due ${due}` : ""}</div>
+<span class="ref">${esc(rec.invoice_ref)}</span>
+<div class="billed">Billed to <b>${esc(rec.customer_name ?? "Customer")}</b>${due ? ` · due ${due}` : ""}</div>
 ${lineRows ? `<table>${lineRows}</table>` : ""}
 <div class="total"><span>Total due</span><span class="amt">${money(rec.amount)}</span></div>
 </div>
