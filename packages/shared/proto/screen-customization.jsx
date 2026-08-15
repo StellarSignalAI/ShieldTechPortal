@@ -1050,25 +1050,25 @@ function CommandPalette({ onClose, onNav, showToast }) {
   const [selected, setSelected] = React.useState(0);
 
   const allCommands = [
-  { label: 'Go to Mission Control', cat: 'Navigation', action: () => {onNav?.('dashboard');onClose();} },
+  { label: 'Go to Mission Control', cat: 'Navigation', action: () => {onNav?.('custom-dashboard');onClose();} },
   { label: 'Go to Finance', cat: 'Navigation', action: () => {onNav?.('finance');onClose();} },
   { label: 'Go to Dispatch', cat: 'Navigation', action: () => {onNav?.('dispatch');onClose();} },
   { label: 'Go to Pipeline / CRM', cat: 'Navigation', action: () => {onNav?.('crm');onClose();} },
   { label: 'Go to Proposals', cat: 'Navigation', action: () => {onNav?.('proposals');onClose();} },
   { label: 'Go to Projects', cat: 'Navigation', action: () => {onNav?.('projects');onClose();} },
-  { label: 'Go to Inventory', cat: 'Navigation', action: () => {onNav?.('inventory');onClose();} },
-  { label: 'New Invoice', cat: 'Actions', action: () => {showToast('New Invoice modal');onClose();} },
+  { label: 'Go to Inventory', cat: 'Navigation', action: () => {onNav?.('purchase-orders');onClose();} },
+  { label: 'New Invoice', cat: 'Actions', action: () => {onNav?.('finance');onClose();} },
   { label: 'New Proposal', cat: 'Actions', action: () => {onNav?.('proposals');onClose();} },
-  { label: 'New Estimate', cat: 'Actions', action: () => {showToast('New Estimate');onClose();} },
-  { label: 'New Customer', cat: 'Actions', action: () => {showToast('New Customer modal');onClose();} },
-  { label: 'New Ticket', cat: 'Actions', action: () => {showToast('New Ticket created');onClose();} },
-  { label: 'Record Payment', cat: 'Actions', action: () => {showToast('Record Payment');onClose();} },
+  { label: 'New Estimate', cat: 'Actions', action: () => {onNav?.('proposals');onClose();} },
+  { label: 'New Customer', cat: 'Actions', action: () => {onNav?.('customers-list');onClose();} },
+  { label: 'New Ticket', cat: 'Actions', action: () => {onNav?.('helpdesk');onClose();} },
+  { label: 'Record Payment', cat: 'Actions', action: () => {onNav?.('finance');onClose();} },
   { label: 'Search Invoices...', cat: 'Search', action: () => {onNav?.('finance');onClose();} },
-  { label: 'Search Customers...', cat: 'Search', action: () => {onNav?.('customer');onClose();} },
+  { label: 'Search Customers...', cat: 'Search', action: () => {onNav?.('customers-list');onClose();} },
   { label: 'Search Proposals...', cat: 'Search', action: () => {onNav?.('proposals');onClose();} },
-  { label: 'Ask ShieldTech AI: What\'s my cash position?', cat: 'AI', action: () => {onNav?.('hermes');onClose();} },
-  { label: 'Ask ShieldTech AI: Who\'s overdue?', cat: 'AI', action: () => {onNav?.('hermes');onClose();} },
-  { label: 'Ask ShieldTech AI: Profitability by service line?', cat: 'AI', action: () => {onNav?.('hermes');onClose();} }];
+  { label: 'Ask ShieldTech AI: What\'s my cash position?', cat: 'AI', action: () => {onNav?.('shieldtech-ai');onClose();} },
+  { label: 'Ask ShieldTech AI: Who\'s overdue?', cat: 'AI', action: () => {onNav?.('shieldtech-ai');onClose();} },
+  { label: 'Ask ShieldTech AI: Profitability by service line?', cat: 'AI', action: () => {onNav?.('shieldtech-ai');onClose();} }];
 
 
   const filtered = query ? allCommands.filter((c) => c.label.toLowerCase().includes(query.toLowerCase())) : allCommands;

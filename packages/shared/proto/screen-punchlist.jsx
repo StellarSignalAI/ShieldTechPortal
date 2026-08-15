@@ -72,6 +72,23 @@ function PunchListScreen() {
   };
   const removeItem = (id) => { punchStore.set(prev => prev.filter(p => p.id !== id)); if (selected === id) setSelected(null); showToast(`${id} removed`, 'warn'); };
 
+  // Sign-off actually emails the customer a summary — no fake "sent" toast.
+  const sendForSignoff = () => {
+    const email = window.__shieldEmail;
+    if (!email) { showToast('Email backend not configured — sign-off email unavailable', 'warn'); return; }
+    shieldModal({ kind: 'form', title: 'Send for customer sign-off',
+      fields: [{ key: 'to', label: 'Customer email', placeholder: 'name@company.com', required: true, full: true }],
+      onSubmit: async (v) => {
+        const to = (v.to || '').trim();
+        if (!to) return;
+        const lines = items.map(i => `• ${i.id} — ${i.title} [${(PUNCH_STATUS[i.status] || {}).label || i.status}]`).join('\n');
+        const r = await email.send({ to, subject: 'Punch list complete — please review and sign off',
+          text: `All punch list items are complete:\n\n${lines}\n\nReply to this email to confirm sign-off, or note anything still outstanding.\n\n— ShieldTech Solutions` });
+        showToast(r && r.ok ? `Sign-off request sent to ${to}` : 'Send failed — check email backend', r && r.ok ? 'ok' : 'warn');
+      },
+    });
+  };
+
   const shown = statusFilter === 'all' ? items : items.filter(i => i.status === statusFilter);
   const counts = { open: items.filter(i => i.status === 'open').length, done: items.filter(i => i.status === 'done').length, verified: items.filter(i => i.status === 'verified').length };
   const pct = items.length ? Math.round(((counts.done + counts.verified) / items.length) * 100) : 0;
@@ -93,7 +110,7 @@ function PunchListScreen() {
             <div style={{ width: `${pct}%`, height: '100%', background: pct === 100 ? 'var(--status-ok)' : 'var(--brand)', borderRadius: 3, transition: 'width 0.3s' }}></div>
           </div>
           <button onClick={() => { setAddMode(a => !a); setDraft(null); }} style={{ padding: '7px 14px', background: addMode ? 'rgba(251,191,36,0.12)' : 'rgba(63,169,245,0.08)', border: `1px solid ${addMode ? 'rgba(251,191,36,0.4)' : 'var(--border-strong)'}`, borderRadius: 8, color: addMode ? 'var(--status-warn)' : 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{addMode ? 'Cancel pin' : '+ Add pin'}</button>
-          <button onClick={() => showToast('Punch list sent for customer sign-off', 'ok')} disabled={counts.open > 0} style={{ padding: '7px 14px', background: counts.open === 0 ? 'rgba(52,211,153,0.1)' : 'rgba(148,163,184,0.05)', border: `1px solid ${counts.open === 0 ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'}`, borderRadius: 8, color: counts.open === 0 ? 'var(--status-ok)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: counts.open === 0 ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }} title={counts.open > 0 ? `${counts.open} items still open` : 'Send to customer'}>Customer sign-off →</button>
+          <button onClick={sendForSignoff} disabled={counts.open > 0} style={{ padding: '7px 14px', background: counts.open === 0 ? 'rgba(52,211,153,0.1)' : 'rgba(148,163,184,0.05)', border: `1px solid ${counts.open === 0 ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'}`, borderRadius: 8, color: counts.open === 0 ? 'var(--status-ok)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: counts.open === 0 ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }} title={counts.open > 0 ? `${counts.open} items still open` : 'Send to customer'}>Customer sign-off →</button>
         </div>
       </div>
 

@@ -219,7 +219,8 @@ function TeamScreenPlus() {
   })();
   const approveWeek = (row) => {
     const t = window.__shieldTime;
-    if (!t || !row.pendingIds.length) { showToast('Timesheet approved \u2014 ' + row.tech); return; }
+    if (!row.pendingIds.length) { showToast('Nothing pending for ' + row.tech + ' this week'); return; }
+    if (!t) { showToast('Time backend unavailable \u2014 approval not saved. Reload and try again.'); return; }
     Promise.all(row.pendingIds.map(id => t.setEntryStatus(id, 'approved'))).then(() => {
       showToast('Timesheet approved \u2014 ' + row.tech);
       t.ripplingSync('push').then(sr => { if (sr.ok) showToast('Synced to Rippling \u2014 ' + row.tech); });

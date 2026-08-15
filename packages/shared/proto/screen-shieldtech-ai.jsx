@@ -39,7 +39,7 @@ function ShieldAIScreen() {
   return (
     <div style={{ display: 'flex', gap: 20, height: 'calc(100vh - 100px)' }}>
       {/* Background content (dimmed dashboard) — click to dismiss */}
-      <div onClick={() => { if (window.__shieldNav) window.__shieldNav('dashboard'); }} style={{ flex: 1, opacity: 0.3, filter: 'blur(2px)', cursor: 'pointer', overflow: 'hidden' }}>
+      <div onClick={() => { if (window.__shieldNav) window.__shieldNav('custom-dashboard'); }} style={{ flex: 1, opacity: 0.3, filter: 'blur(2px)', cursor: 'pointer', overflow: 'hidden' }}>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 20 }}>
           <StatCard label="REVENUE TODAY" value={18420} suffix="USD" delay={0} />
           <StatCard label="OPEN TICKETS" value={14} delay={0} />

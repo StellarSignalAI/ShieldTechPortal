@@ -135,7 +135,7 @@ function DashboardScreen() {
               <div className="mono" style={{ fontSize: 11, color: 'var(--text-mid)' }}>{r.renewal}</div>
             </div>
           )) : <Empty>No contracts yet — renewals will appear here.</Empty>}
-          <button onClick={() => window.__shieldNav && window.__shieldNav('contracts')} style={{
+          <button onClick={() => window.__shieldNav && window.__shieldNav('mrr')} style={{
             width: '100%', marginTop: 10, padding: '6px', fontSize: 11,
             background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)',
             borderRadius: 6, color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)'

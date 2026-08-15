@@ -484,8 +484,15 @@ function TBStatement() {
 }
 
 /* ── Bank Reconciliation ── */
+/* Check-off progress and completed sessions persist so "Finish Later" is real. */
+const reconcileStore = createShieldStore('reconcile', { cleared: {}, sessions: [] });
 function FinanceReconcile({ showToast }) {
-  const [cleared, setCleared] = React.useState({});
+  const [recon, setRecon] = useShieldStore(reconcileStore);
+  const cleared = (recon && recon.cleared) || {};
+  const setCleared = (updater) => setRecon(prev => {
+    const p = prev || { cleared: {}, sessions: [] };
+    return { ...p, cleared: typeof updater === 'function' ? updater(p.cleared || {}) : updater };
+  });
   const txns = [
     { id: 1, date: 'Jun 5', desc: 'Deposit — City Hall payment', amount: 22100, type: 'deposit' },
     { id: 2, date: 'Jun 4', desc: 'Stripe payout', amount: 8400, type: 'deposit' },
@@ -528,8 +535,16 @@ function FinanceReconcile({ showToast }) {
           </div>
         ))}
         <div style={{ padding: '12px 16px', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={() => showToast('Progress saved — finish later')} style={{ padding: '7px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Finish Later</button>
-          <button onClick={() => showToast('Reconciliation complete ✓')} style={{ padding: '7px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Reconcile</button>
+          <button onClick={() => showToast('Progress saved — your checked items are kept for next time')} style={{ padding: '7px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Finish Later</button>
+          <button onClick={() => {
+            const clearedIds = Object.keys(cleared).filter(k => cleared[k]);
+            if (!clearedIds.length) { showToast('Check the cleared items first'); return; }
+            setRecon(prev => {
+              const p = prev || { cleared: {}, sessions: [] };
+              return { cleared: {}, sessions: [{ at: Date.now(), clearedIds, clearedTotal, diff }, ...(p.sessions || [])] };
+            });
+            showToast('Reconciliation recorded ✓');
+          }} style={{ padding: '7px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Reconcile</button>
         </div>
       </GlassPanel>
     </div>

@@ -72,7 +72,7 @@ function DispatchScreen() {
           <div style={{ padding: '4px 10px', borderRadius: 4, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-low)' }}>
             GPS: live phone positions
           </div>
-          <button onClick={() => showToast('ShieldTech AI optimizing routes...')} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button onClick={() => showToast('Route optimization needs live GPS + scheduled jobs — not available yet')} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
             <span>⟡</span> Optimize Routes
           </button>
         </div>
@@ -230,8 +230,20 @@ function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMe
 
             {/* Quick Actions */}
             <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <button onClick={() => showToast(active.length ? 'Broadcast sent to all techs' : 'No techs online to broadcast')} style={{ width: '100%', padding: '8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast All Techs</button>
-              <button onClick={() => showToast('Geofence report generated')} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Today's Geofence Report</button>
+              <button onClick={() => {
+                // A broadcast must actually land in the techs' Messages inboxes.
+                const chat = window.__shieldChat;
+                if (!chat) { showToast('Messaging not configured'); return; }
+                shieldModal({ kind: 'editor', title: 'Broadcast to all techs', placeholder: 'Message every technician…', submitLabel: 'Send Broadcast', successMsg: null, onSubmit: async (txt) => {
+                  if (!txt || !txt.trim()) return;
+                  const ths = await chat.threads();
+                  if (!ths || !ths.length) { showToast('No technician threads yet — techs appear after their first sign-in'); return; }
+                  const results = await Promise.all(ths.map(th => chat.send(th.threadId, `📢 BROADCAST: ${txt.trim()}`)));
+                  const sent = results.filter(r => r && r.ok).length;
+                  showToast(sent ? `Broadcast delivered to ${sent} technician${sent === 1 ? '' : 's'}` : 'Broadcast failed — try Messages directly');
+                } });
+              }} style={{ width: '100%', padding: '8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast All Techs</button>
+              <button onClick={() => showToast('Geofence reports need telematics history — not wired up yet')} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Today's Geofence Report</button>
             </div>
           </div>
         </div>
@@ -247,18 +259,15 @@ function DispatchContextMenu({ x, y, tech, onClose, notifyOnSite, setNotifyOnSit
     { label: `Notify when on-site`, icon: '⊙', toggle: true, active: notifyOnSite[tech.id], action: () => { setNotifyOnSite(p => ({...p, [tech.id]: !p[tech.id]})); showToast(notifyOnSite[tech.id] ? 'On-site notification disabled' : `Will notify when ${tech.name} arrives on-site`); }},
     { label: `Notify when they leave`, icon: '⊘', toggle: true, active: notifyLeave[tech.id], action: () => { setNotifyLeave(p => ({...p, [tech.id]: !p[tech.id]})); showToast(notifyLeave[tech.id] ? 'Departure notification disabled' : `Will notify when ${tech.name} leaves site`); }},
     { divider: true },
-    { label: 'View route (today)', icon: '⤳', action: () => { showToast(`Route history for ${tech.name} loaded`); onClose(); }},
-    { label: 'Route history playback', icon: '▶', action: () => { showToast('Playback mode — drag timeline to scrub'); onClose(); }},
     { label: `View ETA`, icon: '◔', action: () => { showToast(`${tech.name}: ETA ${tech.eta}`); onClose(); }},
+    { label: 'View location on map', icon: '⤳', action: () => { if (tech.lat != null && tech.lng != null) { window.open(`https://www.google.com/maps?q=${tech.lat},${tech.lng}`, '_blank'); } else { showToast('No GPS position shared yet'); } onClose(); }},
     { divider: true },
-    { label: `Call ${tech.name.split(' ')[0]}`, icon: '✆', action: () => { showToast(`Calling ${tech.phone}...`); onClose(); }},
-    { label: 'Send message', icon: '✉', action: () => { showToast('Message composer opened'); onClose(); }},
+    { label: `Call ${tech.name.split(' ')[0]}`, icon: '✆', action: () => { if (tech.phone && tech.phone !== '—') { window.location.href = `tel:${tech.phone}`; } else { showToast('No phone number on file for this tech'); } onClose(); }},
+    { label: 'Send message', icon: '✉', action: () => { if (window.navTo) window.navTo('messages'); else showToast('Open Messages to reach this tech'); onClose(); }},
     { divider: true },
-    { label: 'Assign job', icon: '◎', action: () => { showToast('Job assignment panel opened'); onClose(); }},
-    { label: 'View timesheet / hours', icon: '◔', action: () => { setDrawerOpen(tech); onClose(); }},
-    { label: 'View driving behavior', icon: '⚠', action: () => { showToast(`Safety score: ${tech.id === 'TG' ? '72 — needs review' : '94 — good'}`); onClose(); }},
+    { label: 'Assign job', icon: '◎', action: () => { if (window.navTo) window.navTo('calendar'); else showToast('Assign jobs from the Calendar'); onClose(); }},
+    { label: 'View tech details', icon: '◔', action: () => { setDrawerOpen(tech); onClose(); }},
     { divider: true },
-    { label: 'Edit geofence radius', icon: '◉', action: () => { showToast('Geofence editor: drag to resize (default 150ft)'); onClose(); }},
     { label: 'Center on map', icon: '⊕', action: () => { setSelectedTech(tech.id); onClose(); }},
   ];
 
@@ -319,8 +328,17 @@ function DispatchScheduleBoard({ techs, showToast }) {
   const activeTechs = techs.filter(t => t.status !== 'clocked-out');
 
   /* Blank canvas: the board starts empty — jobs are added here or arrive from
-     the Calendar's unscheduled tray. Click a slot / "+ Add Job" to schedule. */
-  const [schedule, setSchedule] = React.useState({});
+     the Calendar's unscheduled tray. Click a slot / "+ Add Job" to schedule.
+     The board is kept per-day so Prev / Today / Next actually move dates. */
+  const [dayOffset, setDayOffset] = React.useState(0);
+  const dayDate = new Date(Date.now() + dayOffset * 86400000);
+  const dayKey = dayDate.toISOString().slice(0, 10);
+  const [scheduleByDay, setScheduleByDay] = React.useState({});
+  const schedule = scheduleByDay[dayKey] || {};
+  const setSchedule = (updater) => setScheduleByDay(prev => ({
+    ...prev,
+    [dayKey]: typeof updater === 'function' ? updater(prev[dayKey] || {}) : updater,
+  }));
 
   const [dragging, setDragging] = React.useState(null);
   const [dragOver, setDragOver] = React.useState(null);
@@ -434,7 +452,7 @@ function DispatchScheduleBoard({ techs, showToast }) {
   return (
     <div style={{ height: '100%', overflow: 'auto' }} onClick={() => { setCtxMenu(null); setSelected(null); }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-        <SectionHeader title={`Schedule Board — ${schedView === 'day' ? 'Today' : 'This Week'}`} icon="◎" />
+        <SectionHeader title={`Schedule Board — ${schedView === 'day' ? (dayOffset === 0 ? 'Today' : dayDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })) : 'This Week'}`} icon="◎" />
         <div style={{ display: 'flex', gap: 6 }}>
           {/* View toggle */}
           <div style={{ display: 'flex', gap: 0, borderRadius: 5, overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
@@ -442,9 +460,9 @@ function DispatchScheduleBoard({ techs, showToast }) {
               <button key={v.id} onClick={() => setSchedView(v.id)} style={{ padding: '4px 10px', fontSize: 10, fontWeight: 500, background: schedView===v.id?'rgba(63,169,245,0.12)':'transparent', border: 'none', color: schedView===v.id?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{v.l}</button>
             ))}
           </div>
-          <button onClick={() => shieldToast('Showing previous day')} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>← Prev</button>
-          <button onClick={() => shieldToast('Jumped to today')} style={{ padding: '4px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Today</button>
-          <button onClick={() => shieldToast('Showing next day')} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Next →</button>
+          <button onClick={() => setDayOffset(d => d - 1)} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>← Prev</button>
+          <button onClick={() => setDayOffset(0)} style={{ padding: '4px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Today</button>
+          <button onClick={() => setDayOffset(d => d + 1)} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Next →</button>
           <button onClick={() => setAddModal({ techId: activeTechs[0]?.id || 'MR', start: 4 })} style={{ padding: '4px 12px', background: 'var(--brand)', border: 'none', borderRadius: 4, color: '#fff', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Job</button>
         </div>
       </div>
@@ -766,13 +784,7 @@ function DispatchQueue({ jobs, techs, showToast }) {
                 <div style={{ fontSize: 10, color: 'var(--text-low)' }}>SLA Remaining</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginLeft: 14 }}>
-                <select onChange={(e) => { if (e.target.value) showToast(`${e.target.value} assigned to ${job.id}`); }} style={{ padding: '5px 8px', background: 'var(--card)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', cursor: 'pointer' }}>
-                  <option value="">Quick Assign...</option>
-                  {availTechs.map(t => (
-                    <option key={t.id} value={t.name}>{t.name} ({t.status})</option>
-                  ))}
-                </select>
-                <button onClick={() => showToast(`Customer notified about ${job.id}`)} style={{ padding: '4px 8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Notify Customer</button>
+                <button onClick={() => { if (window.navTo) window.navTo('calendar'); else showToast('Open Calendar & Copilot to schedule this job'); }} style={{ padding: '6px 10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Schedule on Calendar</button>
               </div>
             </div>
           </GlassPanel>
@@ -784,10 +796,14 @@ function DispatchQueue({ jobs, techs, showToast }) {
         <div onClick={() => setQueueCtx(null)} style={{ position: 'fixed', inset: 0, zIndex: 9998 }}>
           <div onClick={e => e.stopPropagation()} style={{ position: 'fixed', left: queueCtx.x, top: queueCtx.y, zIndex: 9999, minWidth: 200, padding: '6px 0', borderRadius: 8, background: 'var(--modal)', border: '1px solid var(--border-strong)', boxShadow: '0 12px 40px rgba(0,0,0,0.5)', animation: 'fade-up 0.12s ease both' }}>
             <div style={{ padding: '6px 14px', fontSize: 11, fontWeight: 600, color: 'var(--text-low)' }}>{queueCtx.job.id} — {queueCtx.job.customer}</div>
-            {['Assign to nearest tech','Reschedule','Set priority → Critical','Notify customer ETA','View on map','Cancel job'].map((label, i) => (
-              <button key={i} onClick={() => { showToast(`${label} — ${queueCtx.job.id}`); setQueueCtx(null); }} style={{ display: 'block', width: '100%', padding: '7px 14px', background: 'none', border: 'none', color: i===5?'var(--status-critical)':'var(--text-high)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}
+            {[
+              { label: 'Schedule on Calendar', action: () => { if (window.navTo) window.navTo('calendar'); else showToast('Open Calendar & Copilot to schedule this job'); } },
+              { label: 'View address in Maps', action: () => { if (queueCtx.job.addr && queueCtx.job.addr !== '—') window.open(`https://www.google.com/maps/search/${encodeURIComponent(queueCtx.job.addr)}`, '_blank'); else showToast('No address on file for this job'); } },
+              { label: 'Copy job ref', action: () => { try { navigator.clipboard.writeText(queueCtx.job.id); showToast(`${queueCtx.job.id} copied`); } catch { showToast('Copy failed'); } } },
+            ].map((item, i) => (
+              <button key={i} onClick={() => { item.action(); setQueueCtx(null); }} style={{ display: 'block', width: '100%', padding: '7px 14px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.06)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'none'}>{label}</button>
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}>{item.label}</button>
             ))}
           </div>
         </div>
@@ -953,7 +969,7 @@ function DispatchTechDrawer({ tech, onClose, showToast }) {
         })()}
         <div className="label-sm" style={{ marginBottom: 8 }}>ACTIONS</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <button onClick={() => showToast('Calling...')} style={{ width: '100%', padding: '8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✆ Call {tech.name.split(' ')[0]}</button>
+          <button onClick={() => { if (tech.phone && tech.phone !== '—') window.location.href = `tel:${tech.phone}`; else showToast('No phone number on file for this tech'); }} style={{ width: '100%', padding: '8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✆ Call {tech.name.split(' ')[0]}</button>
           <button onClick={async () => {
             // Open the real conversation with this tech. Resolve their profile id
             // (the thread key) from their name, then jump to Messages.
@@ -965,8 +981,8 @@ function DispatchTechDrawer({ tech, onClose, showToast }) {
             onClose();
             if (window.navTo) window.navTo('messages');
           }} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✉ Send Message</button>
-          <button onClick={() => showToast('Route displayed')} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⤳ View Today's Route</button>
-          <button onClick={() => showToast('Timesheet opened')} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◔ Full Timesheet</button>
+          <button onClick={() => { if (tech.lat != null && tech.lng != null) window.open(`https://www.google.com/maps?q=${tech.lat},${tech.lng}`, '_blank'); else showToast('No GPS position shared yet'); }} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⤳ View Location on Map</button>
+          <button onClick={() => { onClose(); if (window.navTo) window.navTo('approvals'); else showToast('Open Approvals & Expenses for timesheets'); }} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◔ Full Timesheet</button>
         </div>
       </div>
     </div>

@@ -304,7 +304,7 @@ function FinanceBankFeed({ showToast }) {
               <span className="mono" style={{ fontSize: 12, width: 100, textAlign: 'right' }}>Stmt: ${r.stmt.toLocaleString()}</span>
               <span className="mono" style={{ fontSize: 12, width: 100, textAlign: 'right' }}>Book: ${r.book.toLocaleString()}</span>
               <StatusBadge status="online" label={r.status} />
-              <button onClick={() => showToast('Discrepancy report')} style={{ padding: '3px 8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Report</button>
+              <button onClick={() => showToast('Discrepancy reports aren\'t wired up yet')} style={{ padding: '3px 8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Report</button>
             </div>
           ))}
         </GlassPanel>
@@ -332,6 +332,21 @@ function FinanceReportsCenter({ showToast }) {
   const filtered = search ? allReports.filter(r => r.name.toLowerCase().includes(search.toLowerCase())) : null;
 
   if (selectedReport) {
+    const isAging = selectedReport.includes('Aging');
+    const agingRows = [{c:'Metro Bank Corp',v:[67500,0,0,0]},{c:'Pacific Rim Hotels',v:[48000,0,0,0]},{c:'Marina District Dental',v:[24800,0,0,0]},{c:'Embarcadero Partners',v:[18900,0,0,0]},{c:'Acme Dental Group',v:[0,0,14250,0]},{c:'Harbor View Condos',v:[0,0,5200,0]}];
+    const exportCsv = () => {
+      if (!isAging) { showToast('This report isn\'t connected to live data yet — no export available'); return; }
+      const cols = ['Customer','Current','1-30','31-60','60+','Total'];
+      const csv = [cols.join(','), ...agingRows.map(r => [`"${r.c}"`, ...r.v, r.v.reduce((s,x)=>s+x,0)].join(','))].join('\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `${selectedReport.toLowerCase().replace(/[^a-z0-9]+/g,'-')}.csv`; a.click();
+      showToast('CSV downloaded', 'ok');
+    };
+    const exportPdf = () => {
+      if (!window.__shieldPdf) { showToast('PDF export unavailable'); return; }
+      if (!isAging) { showToast('This report isn\'t connected to live data yet — no export available'); return; }
+      window.__shieldPdf.exportDoc({ kind: 'report', number: selectedReport, date: new Date().toLocaleDateString(), customer: '',
+        sections: agingRows.map(r => ({ title: r.c, body: `Current $${r.v[0].toLocaleString()} · 1-30 $${r.v[1].toLocaleString()} · 31-60 $${r.v[2].toLocaleString()} · 60+ $${r.v[3].toLocaleString()} · Total $${r.v.reduce((s,x)=>s+x,0).toLocaleString()}` })) });
+    };
     return (
       <div style={{ maxWidth: 1000 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -346,11 +361,11 @@ function FinanceReportsCenter({ showToast }) {
                 activeStyle={{ background: 'rgba(63,169,245,0.1)', border: '1px solid var(--brand)', color: 'var(--brand)' }}
                 idleStyle={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-low)' }} />
             </div>
-            <button onClick={() => showToast('Report memorized')} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>★ Save</button>
-            <button onClick={() => showToast('Email scheduled')} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✉ Schedule</button>
-            <button onClick={() => showToast('Exported PDF')} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>PDF</button>
-            <button onClick={() => showToast('Exported CSV')} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>CSV</button>
-            <button onClick={() => showToast('Exported Excel')} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Excel</button>
+            <button onClick={() => showToast('Saved reports aren\'t wired up yet')} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>★ Save</button>
+            <button onClick={() => showToast('Scheduled report emails aren\'t wired up yet')} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✉ Schedule</button>
+            <button onClick={exportPdf} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>PDF</button>
+            <button onClick={exportCsv} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>CSV</button>
+            <button onClick={() => showToast('Use CSV — it opens directly in Excel')} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Excel</button>
           </div>
         </div>
         <GlassPanel>
@@ -366,7 +381,7 @@ function FinanceReportsCenter({ showToast }) {
                 <th key={i} style={{ textAlign: i>0?'right':'left', padding: '8px 10px', fontSize: 10, fontWeight: 600, color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
               ))}</tr></thead>
               <tbody>
-                {[{c:'Metro Bank Corp',v:[67500,0,0,0]},{c:'Pacific Rim Hotels',v:[48000,0,0,0]},{c:'Marina District Dental',v:[24800,0,0,0]},{c:'Embarcadero Partners',v:[18900,0,0,0]},{c:'Acme Dental Group',v:[0,0,14250,0]},{c:'Harbor View Condos',v:[0,0,5200,0]}].map((r,i) => (
+                {agingRows.map((r,i) => (
                   <tr key={i}><td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{r.c}</td>{r.v.map((v,j) => <td key={j} className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, textAlign: 'right', color: j>=2&&v>0?'var(--status-critical)':'var(--text-mid)' }}>{v>0?`$${v.toLocaleString()}`:''}</td>)}<td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500, textAlign: 'right' }}>${r.v.reduce((s,x)=>s+x,0).toLocaleString()}</td></tr>
                 ))}
                 <tr style={{ borderTop: '2px solid var(--border-strong)' }}><td style={{ padding: '8px 10px', fontWeight: 600, fontSize: 12 }}>Total</td><td className="mono" style={{ padding: '8px 10px', fontSize: 12, fontWeight: 600, textAlign: 'right' }}>$159,200</td><td className="mono" style={{ padding: '8px 10px', fontSize: 12, textAlign: 'right' }}>$0</td><td className="mono" style={{ padding: '8px 10px', fontSize: 12, textAlign: 'right', color: 'var(--status-critical)' }}>$19,450</td><td className="mono" style={{ padding: '8px 10px', fontSize: 12, textAlign: 'right' }}>$0</td><td className="mono" style={{ padding: '8px 10px', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>$178,650</td></tr>

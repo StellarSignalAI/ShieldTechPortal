@@ -8,7 +8,7 @@
      • Everything else (Supabase, APIs, cross-origin): passthrough, never cached.
    One shared file is served at each app's origin root, so its scope is that
    single app origin. Bump CACHE_VERSION to force clients onto a fresh cache. */
-const CACHE_VERSION = 'shieldtech-v5';
+const CACHE_VERSION = 'shieldtech-v6';
 const SHELL_URL = './index.html';
 
 self.addEventListener('install', (event) => {
@@ -28,8 +28,10 @@ self.addEventListener('activate', (event) => {
 });
 
 function isStaticAsset(url) {
-  return /\.(?:js|css|woff2?|ttf|otf|png|jpe?g|svg|gif|webp|ico|json|webmanifest)$/i.test(url.pathname)
-    || url.pathname.includes('/assets/');
+  // Only Vite's content-hashed output under /assets/ is safe to cache-first
+  // forever. Other same-origin files (manifests, icons, /sw/ images) can change
+  // between deploys without a filename change, so they go network-first below.
+  return url.pathname.includes('/assets/');
 }
 
 self.addEventListener('fetch', (event) => {

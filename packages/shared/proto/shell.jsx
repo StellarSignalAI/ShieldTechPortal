@@ -256,6 +256,24 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
     window.addEventListener('shield:auth', on);
     return () => window.removeEventListener('shield:auth', on);
   }, []);
+  // Live unread badge: pull the count from chat on mount, on new realtime
+  // messages, and whenever auth resolves (unreadTotal needs a signed-in user).
+  React.useEffect(() => {
+    let alive = true;
+    const refresh = () => {
+      const chat = window.__shieldChat;
+      if (!chat || !chat.unreadTotal) return;
+      Promise.resolve(chat.unreadTotal()).then(n => {
+        if (!alive) return;
+        const next = Number(n) || 0;
+        if (next !== (window.__shieldUnreadCount || 0)) { window.__shieldUnreadCount = next; authTick(); }
+      }).catch(() => {});
+    };
+    refresh();
+    window.addEventListener('shield:auth', refresh);
+    const unsub = (window.__shieldChat && window.__shieldChat.subscribe) ? window.__shieldChat.subscribe(refresh) : null;
+    return () => { alive = false; window.removeEventListener('shield:auth', refresh); if (unsub) unsub(); };
+  }, []);
   // Appearance + presence are per-user config, remembered across reloads and
   // synced to whatever device this user signs in on (userPrefsStore).
   const [prefs, setPrefs] = useShieldStore(userPrefsStore);

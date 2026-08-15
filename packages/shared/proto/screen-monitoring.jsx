@@ -3,21 +3,22 @@
    Replaces: CameraGridView, NetworkTopologyView, FloorPlanView, AnomalyView, WarRoomView */
 
 function MonitoringConsole() {
-  const [selectedCustomer, setSelectedCustomer] = React.useState('metro-bank');
+  const [selectedCustomer, setSelectedCustomer] = React.useState(null);
   const [activeTab, setActiveTab] = React.useState('topology');
   const [custDropdown, setCustDropdown] = React.useState(false);
+  const [custSearch, setCustSearch] = React.useState('');
   const [toast, setToast] = React.useState(null);
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 3000); };
 
-  const customers = [
-    { id: 'metro-bank', name: 'Metro Bank Corp', sites: 3, devices: 42, status: 'healthy' },
-    { id: 'acme-dental', name: 'Acme Dental', sites: 1, devices: 18, status: 'warning' },
-    { id: 'city-hall', name: 'City Hall', sites: 2, devices: 36, status: 'healthy' },
-    { id: 'riverside-med', name: 'Riverside Medical', sites: 1, devices: 24, status: 'critical' },
-    { id: 'pacific-rim', name: 'Pacific Rim Hotels', sites: 5, devices: 128, status: 'healthy' },
-    { id: 'harbor-view', name: 'Harbor View Condos', sites: 1, devices: 14, status: 'healthy' },
-    { id: 'westfield', name: 'Westfield Mall', sites: 1, devices: 52, status: 'warning' },
-  ];
+  /* REAL customers + their documented device counts (assetStore). The old
+     hardcoded list hid Daniel's actual customers from the monitoring screen. */
+  const [allCusts] = useShieldStore(customerStore);
+  const [allAssets] = useShieldStore(assetStore);
+  const customers = (allCusts || []).map(c => {
+    const devices = (allAssets || []).filter(a => a.customer === c.name);
+    const flagged = devices.some(a => a.status === 'flagged' || a.status === 'offline');
+    return { id: c.id || c.name, name: c.name, sites: [...new Set(devices.map(a => a.site).filter(Boolean))].length || 1, devices: devices.length, status: flagged ? 'warning' : 'healthy' };
+  }).filter(c => !custSearch || c.name.toLowerCase().includes(custSearch.toLowerCase()));
 
   const tabs = [
     { id: 'topology', label: 'Network Map', icon: '⊚' },
@@ -29,7 +30,7 @@ function MonitoringConsole() {
     { id: 'alerts', label: 'Critical Alerts', icon: '⚠' },
   ];
 
-  const cust = customers.find(c => c.id === selectedCustomer);
+  const cust = customers.find(c => c.id === selectedCustomer) || customers[0] || null;
   const statusColor = cust?.status === 'healthy' ? 'var(--status-ok)' : cust?.status === 'warning' ? 'var(--status-warn)' : 'var(--status-critical)';
 
   return (
@@ -44,14 +45,14 @@ function MonitoringConsole() {
             borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-body)', minWidth: 220
           }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor }} />
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)', flex: 1, textAlign: 'left' }}>{cust?.name}</span>
-            <span style={{ fontSize: 10, color: 'var(--text-low)' }}>{cust?.devices} devices</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)', flex: 1, textAlign: 'left' }}>{cust ? cust.name : 'No customers yet'}</span>
+            <span style={{ fontSize: 10, color: 'var(--text-low)' }}>{cust ? `${cust.devices} devices` : ''}</span>
             <span style={{ fontSize: 8, color: 'var(--text-low)', marginLeft: 4 }}>▼</span>
           </button>
           {custDropdown && (
             <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, width: 300, background: 'var(--modal)', border: '1px solid var(--border-strong)', borderRadius: 8, zIndex: 100, boxShadow: '0 12px 40px rgba(0,0,0,0.5)', padding: '6px 0', maxHeight: 300, overflow: 'auto' }}>
               <div style={{ padding: '4px 12px 8px' }}>
-                <input placeholder="Search customers..." autoFocus style={{ width: '100%', padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+                <input value={custSearch} onChange={e => setCustSearch(e.target.value)} placeholder="Search customers..." autoFocus style={{ width: '100%', padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
               </div>
               {customers.map(c => (
                 <button key={c.id} onClick={() => { setSelectedCustomer(c.id); setCustDropdown(false); }} style={{
