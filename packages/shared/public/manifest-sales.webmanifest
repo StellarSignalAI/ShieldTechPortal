@@ -2,18 +2,40 @@
   "id": "/?app=sales",
   "name": "ShieldTech Sales",
   "short_name": "ShieldTech Sales",
-  "description": "Sales CRM — pipeline, leads, quotes, tasks, and forecasts wired live into the ShieldTech platform.",
+  "description": "Sales CRM \u2014 pipeline, leads, quotes, tasks, and forecasts wired live into the ShieldTech platform.",
   "start_url": "/?src=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "fullscreen",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#05070A",
   "theme_color": "#05070A",
-  "categories": ["business", "productivity"],
+  "categories": [
+    "business",
+    "productivity"
+  ],
   "icons": [
-    { "src": "/sw/shieldtech-emblem.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/sw/shieldtech-emblem.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/sw/shieldtech-emblem.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/sw/shieldtech-emblem-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/sw/shieldtech-emblem-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/sw/shieldtech-emblem-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

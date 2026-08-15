@@ -5,6 +5,7 @@ function PurchaseOrdersScreen() {
   const [selected, setSelected] = React.useState(0);
   const [tab, setTab] = React.useState('all');
   const [showNewPO, setShowNewPO] = React.useState(false);
+  const [newPo, setNewPo] = React.useState({});
 
   const statusMap = {
     draft:    { color: 'var(--text-low)',       bg: 'rgba(92,111,134,0.15)',  label: 'Draft' },
@@ -210,16 +211,24 @@ function PurchaseOrdersScreen() {
               <span style={{ fontSize:15, fontWeight:600, color:'var(--text-high)' }}>New Purchase Order</span>
               <button onClick={() => setShowNewPO(false)} style={{ background:'none', border:'none', color:'var(--text-low)', cursor:'pointer', fontSize:20 }}>x</button>
             </div>
-            {[{l:'Vendor Name',ph:'e.g. Axis Communications'},{l:'Related Job/Project',ph:'e.g. Metro Bank Install'}].map(f => (
+            {[{l:'Vendor Name',k:'vendor',ph:'e.g. Axis Communications'},{l:'Related Job/Project',k:'job',ph:'e.g. Metro Bank Install'}].map(f => (
               <div key={f.l} style={{ marginBottom:12 }}>
                 <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--text-low)', marginBottom:4 }}>{f.l}</div>
-                <input placeholder={f.ph} style={{ width:'100%', background:'rgba(63,169,245,0.04)', border:'1px solid var(--border-subtle)', borderRadius:7, padding:'8px 12px', color:'var(--text-high)', fontSize:12, fontFamily:'var(--font-body)', outline:'none' }} />
+                <input value={newPo[f.k] || ''} onChange={e => setNewPo(prev => ({ ...prev, [f.k]: e.target.value }))} placeholder={f.ph} style={{ width:'100%', background:'rgba(63,169,245,0.04)', border:'1px solid var(--border-subtle)', borderRadius:7, padding:'8px 12px', color:'var(--text-high)', fontSize:12, fontFamily:'var(--font-body)', outline:'none' }} />
               </div>
             ))}
             <div style={{ padding:'12px 14px', background:'rgba(63,169,245,0.04)', border:'1px solid var(--border-subtle)', borderRadius:8, fontSize:11, color:'var(--text-low)', marginBottom:20 }}>Add line items after creation in the PO detail view.</div>
             <div style={{ display:'flex', gap:8 }}>
               <button onClick={() => setShowNewPO(false)} style={{ flex:1, padding:'9px 0', background:'transparent', border:'1px solid var(--border-subtle)', borderRadius:7, color:'var(--text-low)', fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)' }}>Cancel</button>
-              <button onClick={() => { const id = genId('PO'); setPos(prev => [...prev, {id, vendor:'New Vendor', status:'draft', date:'Jun 10, 2026', total:0, items:[]}]); setSelected(pos.length); setShowNewPO(false); showToast(id+' created as draft','ok'); }} style={{ flex:2, padding:'9px 0', background:'rgba(63,169,245,0.12)', border:'1px solid var(--border-strong)', borderRadius:7, color:'var(--brand)', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)' }}>Create Draft PO</button>
+              <button onClick={() => {
+                // The typed vendor/job actually land on the record now — no
+                // more permanent "New Vendor / Jun 10, 2026" junk rows.
+                if (!(newPo.vendor || '').trim()) { showToast('Enter the vendor name first', 'warn'); return; }
+                const id = genId('PO');
+                setPos(prev => [...prev, { id, vendor: newPo.vendor.trim(), job: (newPo.job || '').trim(), status: 'draft', date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), total: 0, items: [] }]);
+                setSelected(pos.length); setShowNewPO(false); setNewPo({});
+                showToast(`${id} created as draft — ${newPo.vendor.trim()}`, 'ok');
+              }} style={{ flex:2, padding:'9px 0', background:'rgba(63,169,245,0.12)', border:'1px solid var(--border-strong)', borderRadius:7, color:'var(--brand)', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)' }}>Create Draft PO</button>
             </div>
           </div>
         </>

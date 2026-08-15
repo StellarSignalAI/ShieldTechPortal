@@ -123,14 +123,14 @@ function OutboxScreen() {
           {open === m.id && (
             <div style={{ marginTop: 10, padding: '12px 14px', borderRadius: 8, background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)' }}>
               <pre style={{ margin: 0, fontSize: 11, color: 'var(--text-mid)', whiteSpace: 'pre-wrap', fontFamily: 'var(--font-body)', lineHeight: 1.6 }}>
-                {m.body.split(m.payLink || ' ').map((part, i, arr) => (
+                {m.payLink ? m.body.split(m.payLink).map((part, i, arr) => (
                   <React.Fragment key={i}>
                     {part}
                     {i < arr.length - 1 && (
                       <a onClick={e => { e.stopPropagation(); openPay(m); }} style={{ color: 'var(--brand)', textDecoration: 'underline', cursor: 'pointer' }}>{m.payLink}</a>
                     )}
                   </React.Fragment>
-                ))}
+                )) : m.body}
               </pre>
               {m.invoice && (
                 <button onClick={e => { e.stopPropagation(); openPay(m); }} style={{ marginTop: 10, padding: '7px 16px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 7, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open customer pay page →</button>

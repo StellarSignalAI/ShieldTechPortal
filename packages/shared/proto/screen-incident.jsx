@@ -239,35 +239,63 @@ function IncidentScreen() {
         </div>
       )}
 
-      {/* Post-Mortem Modal */}
+      {/* Post-Mortem Modal — edits persist to the incident record */}
       {showPostMortem && inc && (
-        <>
-          <div onClick={() => setShowPostMortem(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900, backdropFilter: 'blur(4px)' }} />
-          <div className="glass" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 560, maxHeight: '80vh', zIndex: 901, padding: 24, overflow: 'auto', boxShadow: '0 24px 60px rgba(0,0,0,0.6)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-high)' }}>Post-Mortem Report — {inc.id}</span>
-              <button onClick={() => setShowPostMortem(false)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 20 }}>×</button>
-            </div>
-            {[
-              { label: 'Incident Summary', content: inc.title },
-              { label: 'Customer Affected', content: inc.customer },
-              { label: 'Duration', content: fmtDuration(now - inc.openedAt) },
-              { label: 'Severity', content: `${inc.severity} — ${ss.label}` },
-              { label: 'Resolution Steps', content: inc.playbook.filter(s => s.done).map((s, i) => `${i + 1}. ${s.step}`).join('\n') || 'No steps completed' },
-              { label: 'Timeline Summary', content: (inc.timeline || []).map(e => `${e.time} [${e.actor}] ${e.msg}`).join('\n') },
-              { label: 'Root Cause (draft)', content: 'To be completed by assignee.' },
-              { label: 'Action Items', content: 'To be completed by assignee.' },
-            ].map(s => (
-              <div key={s.label} style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--brand)', marginBottom: 5 }}>{s.label}</div>
-                <textarea defaultValue={s.content} style={{ width: '100%', minHeight: 60, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none', resize: 'vertical', lineHeight: 1.6 }} />
-              </div>
-            ))}
-            <button onClick={() => { setShowPostMortem(false); showToast('Post-mortem saved', 'ok'); }} style={{ width: '100%', padding: '10px 0', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Post-Mortem</button>
-          </div>
-        </>
+        <PostMortemModal
+          inc={inc} ss={ss} now={now} fmtDuration={fmtDuration}
+          onClose={() => setShowPostMortem(false)}
+          onSave={(draft) => {
+            setIncidents(prev => prev.map(i => i.id === inc.id ? { ...i, postMortem: draft } : i));
+            setShowPostMortem(false);
+            showToast('Post-mortem saved', 'ok');
+          }}
+        />
       )}
     </div>
+  );
+}
+
+function PostMortemModal({ inc, ss, now, fmtDuration, onClose, onSave }) {
+  const pm = inc.postMortem || {};
+  const [draft, setDraft] = React.useState(() => ({
+    summary: pm.summary != null ? pm.summary : inc.title,
+    customer: pm.customer != null ? pm.customer : inc.customer,
+    duration: pm.duration != null ? pm.duration : fmtDuration(now - inc.openedAt),
+    severity: pm.severity != null ? pm.severity : `${inc.severity} — ${ss.label}`,
+    resolution: pm.resolution != null ? pm.resolution : (inc.playbook.filter(s => s.done).map((s, i) => `${i + 1}. ${s.step}`).join('\n') || 'No steps completed'),
+    timeline: pm.timeline != null ? pm.timeline : (inc.timeline || []).map(e => `${e.time} [${e.actor}] ${e.msg}`).join('\n'),
+    rootCause: pm.rootCause != null ? pm.rootCause : '',
+    actionItems: pm.actionItems != null ? pm.actionItems : '',
+  }));
+  const fields = [
+    { key: 'summary', label: 'Incident Summary' },
+    { key: 'customer', label: 'Customer Affected' },
+    { key: 'duration', label: 'Duration' },
+    { key: 'severity', label: 'Severity' },
+    { key: 'resolution', label: 'Resolution Steps' },
+    { key: 'timeline', label: 'Timeline Summary' },
+    { key: 'rootCause', label: 'Root Cause' },
+    { key: 'actionItems', label: 'Action Items' },
+  ];
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 900, backdropFilter: 'blur(4px)' }} />
+      <div className="glass" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 560, maxHeight: '80vh', zIndex: 901, padding: 24, overflow: 'auto', boxShadow: '0 24px 60px rgba(0,0,0,0.6)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-high)' }}>Post-Mortem Report — {inc.id}</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 20 }}>×</button>
+        </div>
+        {fields.map(f => (
+          <div key={f.key} style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--brand)', marginBottom: 5 }}>{f.label}</div>
+            <textarea value={draft[f.key]} onChange={(e) => setDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
+              placeholder={f.key === 'rootCause' || f.key === 'actionItems' ? 'To be completed by assignee.' : ''}
+              style={{ width: '100%', minHeight: 60, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none', resize: 'vertical', lineHeight: 1.6 }} />
+          </div>
+        ))}
+        <button onClick={() => onSave(draft)} style={{ width: '100%', padding: '10px 0', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Post-Mortem</button>
+      </div>
+    </>
   );
 }
 

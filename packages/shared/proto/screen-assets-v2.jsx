@@ -345,6 +345,8 @@ function AssetTypesManager({ showToast }) {
 
 /* ── Create Asset (Configuration) Modal ── */
 function CreateAssetModal({ onClose, showToast }) {
+  const [f, setF] = React.useState({});
+  const bind = (k) => (e) => setF(prev => ({ ...prev, [k]: e.target.value }));
   const [assetType, setAssetType] = React.useState('IP Camera');
   const [step, setStep] = React.useState(1);
   const types = ['IP Camera','NVR / DVR','Access Reader','Access Panel','Alarm Panel','Fire Panel','Network Switch','UPS / Power','Intercom','Other'];
@@ -376,11 +378,11 @@ function CreateAssetModal({ onClose, showToast }) {
               ))}
             </div>
             <div className="label-sm" style={{ marginTop: 4 }}>CUSTOMER & LOCATION</div>
-            <CustomerSelector style={{}} showToast={showToast} />
+            <CustomerSelector style={{}} showToast={showToast} value={f.customer || ''} onChange={(v) => setF(prev => ({ ...prev, customer: v }))} />
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="Site" placeholder="Main Office" style={{ flex: 1 }} />
-              <FormField label="Room / Location" placeholder="Lobby" style={{ flex: 1 }} />
-              <FormField label="Floor" placeholder="1" style={{ flex: 1 }} />
+              <FormField label="Site" value={f['Site'] || ''} onChange={bind('Site')} placeholder="Main Office" style={{ flex: 1 }} />
+              <FormField label="Room / Location" value={f['Room / Location'] || ''} onChange={bind('Room / Location')} placeholder="Lobby" style={{ flex: 1 }} />
+              <FormField label="Floor" value={f['Floor'] || ''} onChange={bind('Floor')} placeholder="1" style={{ flex: 1 }} />
             </div>
           </div>
         )}
@@ -389,33 +391,33 @@ function CreateAssetModal({ onClose, showToast }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div className="label-sm">IDENTITY</div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="Name" placeholder="CAM-01 (Lobby)" style={{ flex: 2 }} />
-              <FormField label="Asset Tag" placeholder="ST-40012 (auto)" style={{ flex: 1 }} />
+              <FormField label="Name" value={f['Name'] || ''} onChange={bind('Name')} placeholder="CAM-01 (Lobby)" style={{ flex: 2 }} />
+              <FormField label="Asset Tag" value={f['Asset Tag'] || ''} onChange={bind('Asset Tag')} placeholder="ST-40012 (auto)" style={{ flex: 1 }} />
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="Manufacturer" placeholder="Axis" style={{ flex: 1 }} />
-              <FormField label="Model" placeholder="P3265-V" style={{ flex: 1 }} />
+              <FormField label="Manufacturer" value={f['Manufacturer'] || ''} onChange={bind('Manufacturer')} placeholder="Axis" style={{ flex: 1 }} />
+              <FormField label="Model" value={f['Model'] || ''} onChange={bind('Model')} placeholder="P3265-V" style={{ flex: 1 }} />
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="Serial Number" placeholder="ACCC8EF01234" style={{ flex: 1 }} />
-              <FormField label="MAC Address" placeholder="AC:CC:8E:F0:12:34" style={{ flex: 1 }} />
+              <FormField label="Serial Number" value={f['Serial Number'] || ''} onChange={bind('Serial Number')} placeholder="ACCC8EF01234" style={{ flex: 1 }} />
+              <FormField label="MAC Address" value={f['MAC Address'] || ''} onChange={bind('MAC Address')} placeholder="AC:CC:8E:F0:12:34" style={{ flex: 1 }} />
             </div>
-            <FormField label="Hostname" placeholder="cam-lobby-01" />
+            <FormField label="Hostname" value={f['Hostname'] || ''} onChange={bind('Hostname')} placeholder="cam-lobby-01" />
 
             <div className="label-sm" style={{ marginTop: 4 }}>NETWORK</div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="IP Address" placeholder="192.168.1.101" style={{ flex: 1 }} />
-              <FormField label="Subnet" placeholder="/24" style={{ flex: 1 }} />
-              <FormField label="Gateway" placeholder="192.168.1.1" style={{ flex: 1 }} />
-              <FormField label="VLAN" placeholder="10" style={{ flex: 1 }} />
+              <FormField label="IP Address" value={f['IP Address'] || ''} onChange={bind('IP Address')} placeholder="192.168.1.101" style={{ flex: 1 }} />
+              <FormField label="Subnet" value={f['Subnet'] || ''} onChange={bind('Subnet')} placeholder="/24" style={{ flex: 1 }} />
+              <FormField label="Gateway" value={f['Gateway'] || ''} onChange={bind('Gateway')} placeholder="192.168.1.1" style={{ flex: 1 }} />
+              <FormField label="VLAN" value={f['VLAN'] || ''} onChange={bind('VLAN')} placeholder="10" style={{ flex: 1 }} />
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="HTTP Port" placeholder="80" style={{ flex: 1 }} />
-              <FormField label="HTTPS Port" placeholder="443" style={{ flex: 1 }} />
-              <FormField label="RTSP Port" placeholder="554" style={{ flex: 1 }} />
-              <FormField label="ONVIF Port" placeholder="8080" style={{ flex: 1 }} />
+              <FormField label="HTTP Port" value={f['HTTP Port'] || ''} onChange={bind('HTTP Port')} placeholder="80" style={{ flex: 1 }} />
+              <FormField label="HTTPS Port" value={f['HTTPS Port'] || ''} onChange={bind('HTTPS Port')} placeholder="443" style={{ flex: 1 }} />
+              <FormField label="RTSP Port" value={f['RTSP Port'] || ''} onChange={bind('RTSP Port')} placeholder="554" style={{ flex: 1 }} />
+              <FormField label="ONVIF Port" value={f['ONVIF Port'] || ''} onChange={bind('ONVIF Port')} placeholder="8080" style={{ flex: 1 }} />
             </div>
-            <FormField label="RTSP URL" placeholder="rtsp://192.168.1.101:554/axis-media/media.amp" />
+            <FormField label="RTSP URL" value={f['RTSP URL'] || ''} onChange={bind('RTSP URL')} placeholder="rtsp://192.168.1.101:554/axis-media/media.amp" />
           </div>
         )}
 
@@ -423,7 +425,7 @@ function CreateAssetModal({ onClose, showToast }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div className="label-sm">INSTALLATION</div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="Firmware Version" placeholder="11.8.64" style={{ flex: 1 }} />
+              <FormField label="Firmware Version" value={f['Firmware Version'] || ''} onChange={bind('Firmware Version')} placeholder="11.8.64" style={{ flex: 1 }} />
               <div style={{ flex: 1 }}>
                 <div className="label-sm" style={{ marginBottom: 4 }}>PoE Powered</div>
                 <div style={{ display: 'flex', gap: 6 }}>
@@ -435,31 +437,31 @@ function CreateAssetModal({ onClose, showToast }) {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="Mount Type" placeholder="10ft ceiling" style={{ flex: 1 }} />
-              <FormField label="Cable Type" placeholder="Cat6A" style={{ flex: 1 }} />
-              <FormField label="Switch / Port" placeholder="SW-01 Port 3" style={{ flex: 1 }} />
+              <FormField label="Mount Type" value={f['Mount Type'] || ''} onChange={bind('Mount Type')} placeholder="10ft ceiling" style={{ flex: 1 }} />
+              <FormField label="Cable Type" value={f['Cable Type'] || ''} onChange={bind('Cable Type')} placeholder="Cat6A" style={{ flex: 1 }} />
+              <FormField label="Switch / Port" value={f['Switch / Port'] || ''} onChange={bind('Switch / Port')} placeholder="SW-01 Port 3" style={{ flex: 1 }} />
             </div>
 
             <div className="label-sm" style={{ marginTop: 4 }}>DATES & WARRANTY</div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="Purchase Date" placeholder="Dec 20, 2024" style={{ flex: 1 }} />
-              <FormField label="Install Date" placeholder="Jan 15, 2025" style={{ flex: 1 }} />
-              <FormField label="Warranty Expires" placeholder="Jan 15, 2028" style={{ flex: 1 }} />
+              <FormField label="Purchase Date" value={f['Purchase Date'] || ''} onChange={bind('Purchase Date')} placeholder="Dec 20, 2024" style={{ flex: 1 }} />
+              <FormField label="Install Date" value={f['Install Date'] || ''} onChange={bind('Install Date')} placeholder="Jan 15, 2025" style={{ flex: 1 }} />
+              <FormField label="Warranty Expires" value={f['Warranty Expires'] || ''} onChange={bind('Warranty Expires')} placeholder="Jan 15, 2028" style={{ flex: 1 }} />
             </div>
 
             <div className="label-sm" style={{ marginTop: 4 }}>COST (INTERNAL)</div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="Purchase Cost" placeholder="$520" style={{ flex: 1 }} />
-              <FormField label="Install Cost" placeholder="$280" style={{ flex: 1 }} />
+              <FormField label="Purchase Cost" value={f['Purchase Cost'] || ''} onChange={bind('Purchase Cost')} placeholder="$520" style={{ flex: 1 }} />
+              <FormField label="Install Cost" value={f['Install Cost'] || ''} onChange={bind('Install Cost')} placeholder="$280" style={{ flex: 1 }} />
             </div>
 
             <div className="label-sm" style={{ marginTop: 4 }}>CREDENTIALS (OPTIONAL)</div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <FormField label="Username" placeholder="admin" style={{ flex: 1 }} />
-              <FormField label="Password" placeholder="••••••••" style={{ flex: 1 }} />
+              <FormField label="Username" value={f['Username'] || ''} onChange={bind('Username')} placeholder="admin" style={{ flex: 1 }} />
+              <FormField label="Password" value={f['Password'] || ''} onChange={bind('Password')} placeholder="••••••••" style={{ flex: 1 }} />
             </div>
 
-            <FormField label="Notes" placeholder="Additional notes about this device..." />
+            <FormField label="Notes" value={f['Notes'] || ''} onChange={bind('Notes')} placeholder="Additional notes about this device..." />
           </div>
         )}
 
@@ -470,7 +472,20 @@ function CreateAssetModal({ onClose, showToast }) {
           {step < 3 ? (
             <button onClick={() => setStep(step + 1)} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Next →</button>
           ) : (
-            <button onClick={() => { onClose(); showToast('Configuration created'); }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Asset</button>
+            <button onClick={() => {
+              const rec = {
+                id: genId('CFG'), status: 'online', customer: f.customer || '\u2014',
+                name: f['Name'] || `${assetType} \u2014 ${f.customer || 'unnamed'}`, type: assetType,
+                mfg: f['Manufacturer'] || '', model: f['Model'] || '', serial: f['Serial Number'] || '',
+                mac: f['MAC Address'] || '', ip: f['IP Address'] || '', site: f['Site'] || '', room: f['Room / Location'] || '',
+                firmware: f['Firmware Version'] || '', fwUpdate: false,
+                mount: f['Mount Type'] || '', cable: f['Cable Type'] || '', switchPort: f['Switch / Port'] || '',
+                notes: f['Notes'] || '',
+              };
+              assetStore.set(list => [rec, ...(list || [])]);
+              if (f['Password']) assetPwStore.set(list => [{ id: genId('PW'), customer: f.customer || '\u2014', label: `${rec.name} admin`, device: rec.name, username: f['Username'] || 'admin', password: f['Password'], type: 'Device' }, ...(list || [])]);
+              onClose(); showToast(`${rec.name} created \u2014 synced everywhere`);
+            }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Asset</button>
           )}
         </div>
       </div>
@@ -480,6 +495,8 @@ function CreateAssetModal({ onClose, showToast }) {
 
 /* ── Create Flexible Asset Modal ── */
 function CreateFlexAssetModal({ onClose, showToast }) {
+  const [f, setF] = React.useState({});
+  const bind = (k) => (e) => setF(prev => ({ ...prev, [k]: e.target.value }));
   const [selectedType, setSelectedType] = React.useState('CCTV System');
   const flexTypes = {
     'CCTV System': ['NVR Model','NVR IP Address','Camera Count','Total Storage (TB)','Retention (days)','VMS Software','Recording Resolution','Frame Rate','Motion Detection','Analytics Enabled'],
@@ -504,17 +521,27 @@ function CreateFlexAssetModal({ onClose, showToast }) {
               <button key={t} onClick={() => setSelectedType(t)} style={{ padding: '6px 14px', borderRadius: 6, fontSize: 11, background: selectedType===t?'rgba(63,169,245,0.12)':'transparent', border: `1px solid ${selectedType===t?'var(--brand)':'var(--border-subtle)'}`, color: selectedType===t?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t}</button>
             ))}
           </div>
-          <CustomerSelector style={{}} showToast={showToast} />
-          <FormField label="Asset Name" placeholder={`e.g. ${selectedType} — Main Office`} />
+          <CustomerSelector style={{}} showToast={showToast} value={f.customer || ''} onChange={(v) => setF(prev => ({ ...prev, customer: v }))} />
+          <FormField label="Asset Name" value={f['Asset Name'] || ''} onChange={bind('Asset Name')} placeholder={`e.g. ${selectedType} — Main Office`} />
           <div className="label-sm" style={{ marginTop: 4 }}>{selectedType.toUpperCase()} FIELDS</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {fields.map((f, i) => <FormField key={i} label={f} placeholder={`Enter ${f.toLowerCase()}...`} />)}
           </div>
-          <FormField label="Notes" placeholder="Additional notes..." />
+          <FormField label="Notes" value={f['Notes'] || ''} onChange={bind('Notes')} placeholder="Additional notes..." />
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{ padding: '8px 20px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-          <button onClick={() => { onClose(); showToast(`${selectedType} created`); }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create</button>
+          <button onClick={() => {
+            const fieldNotes = fields.map(fl => f[fl] ? `${fl}: ${f[fl]}` : null).filter(Boolean).join('\n');
+            assetStore.set(list => [{
+              id: genId('FLX'), status: 'online', customer: f.customer || '\u2014',
+              name: f['Asset Name'] || `${selectedType} \u2014 ${f.customer || 'unnamed'}`, type: selectedType,
+              mfg: '', model: '', serial: '', mac: '', ip: '', site: '', room: '',
+              firmware: '', fwUpdate: false, mount: '', cable: '', switchPort: '',
+              notes: [fieldNotes, f['Notes'] || ''].filter(Boolean).join('\n'),
+            }, ...(list || [])]);
+            onClose(); showToast(`${selectedType} created \u2014 synced everywhere`);
+          }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create</button>
         </div>
       </div>
     </div>
@@ -523,6 +550,8 @@ function CreateFlexAssetModal({ onClose, showToast }) {
 
 /* ── Create Password Modal ── */
 function CreatePasswordModal({ onClose, showToast }) {
+  const [f, setF] = React.useState({});
+  const bind = (k) => (e) => setF(prev => ({ ...prev, [k]: e.target.value }));
   const [genPass, setGenPass] = React.useState('');
   const generate = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%&*';
@@ -537,7 +566,7 @@ function CreatePasswordModal({ onClose, showToast }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <FormField label="Name" placeholder="e.g. NVR Admin, Camera Wi-Fi, Panel Installer" />
+          <FormField label="Name" value={f['Name'] || ''} onChange={bind('Name')} placeholder="e.g. NVR Admin, Camera Wi-Fi, Panel Installer" />
           <div>
             <div className="label-sm" style={{ marginBottom: 4 }}>Category</div>
             <select style={{ width: '100%', padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', cursor: 'pointer', outline: 'none' }}>
@@ -545,13 +574,13 @@ function CreatePasswordModal({ onClose, showToast }) {
             </select>
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
-            <FormField label="Username" placeholder="admin" style={{ flex: 1 }} />
-            <FormField label="URL" placeholder="https://192.168.1.100" style={{ flex: 1 }} />
+            <FormField label="Username" value={f['Username'] || ''} onChange={bind('Username')} placeholder="admin" style={{ flex: 1 }} />
+            <FormField label="URL" value={f['URL'] || ''} onChange={bind('URL')} placeholder="https://192.168.1.100" style={{ flex: 1 }} />
           </div>
           <div>
             <div className="label-sm" style={{ marginBottom: 4 }}>Password</div>
             <div style={{ display: 'flex', gap: 6 }}>
-              <input defaultValue={genPass} placeholder="Enter or generate..." style={{ flex: 1, padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none' }} />
+              <input value={f['Password'] ?? genPass} onChange={bind('Password')} placeholder="Enter or generate..." style={{ flex: 1, padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none' }} />
               <button onClick={generate} style={{ padding: '7px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Generate</button>
             </div>
             {genPass && <div className="mono" style={{ fontSize: 11, color: 'var(--status-ok)', marginTop: 6, padding: '4px 8px', borderRadius: 4, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)' }}>{genPass}</div>}
@@ -564,14 +593,23 @@ function CreatePasswordModal({ onClose, showToast }) {
             </select>
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
-            <FormField label="Password Expiry" placeholder="Optional — e.g. Aug 2026" style={{ flex: 1 }} />
-            <FormField label="Rotation Reminder" placeholder="e.g. 90 days" style={{ flex: 1 }} />
+            <FormField label="Password Expiry" value={f['Password Expiry'] || ''} onChange={bind('Password Expiry')} placeholder="Optional — e.g. Aug 2026" style={{ flex: 1 }} />
+            <FormField label="Rotation Reminder" value={f['Rotation Reminder'] || ''} onChange={bind('Rotation Reminder')} placeholder="e.g. 90 days" style={{ flex: 1 }} />
           </div>
-          <FormField label="Notes" placeholder="Who has access, special instructions..." />
+          <FormField label="Notes" value={f['Notes'] || ''} onChange={bind('Notes')} placeholder="Who has access, special instructions..." />
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{ padding: '8px 20px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-          <button onClick={() => { onClose(); showToast('Credential saved'); }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Credential</button>
+          <button onClick={() => {
+            const pw = f['Password'] ?? genPass;
+            if (!(f['Name'] || '').trim() || !pw) { showToast('Name and password are required'); return; }
+            assetPwStore.set(list => [{
+              id: genId('PW'), customer: f.customer || '\u2014', label: f['Name'].trim(),
+              device: f['URL'] || '', username: f['Username'] || '', password: pw, type: 'Device',
+              expiry: f['Password Expiry'] || '', notes: f['Notes'] || '',
+            }, ...(list || [])]);
+            onClose(); showToast('Credential saved to the shared vault');
+          }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Credential</button>
         </div>
       </div>
     </div>
@@ -580,6 +618,8 @@ function CreatePasswordModal({ onClose, showToast }) {
 
 /* ── Create Document Modal ── */
 function CreateDocumentModal({ onClose, showToast }) {
+  const [f, setF] = React.useState({});
+  const bind = (k) => (e) => setF(prev => ({ ...prev, [k]: e.target.value }));
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9000 }}>
       <div onClick={e => e.stopPropagation()} className="glass" style={{ width: 520, maxHeight: '85vh', overflow: 'auto', padding: 24, animation: 'fade-up 0.2s ease both' }}>
@@ -588,14 +628,14 @@ function CreateDocumentModal({ onClose, showToast }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <FormField label="Document Title" placeholder="e.g. Network Diagram — Main Office" />
+          <FormField label="Document Title" value={f['Document Title'] || ''} onChange={bind('Document Title')} placeholder="e.g. Network Diagram — Main Office" />
           <div>
             <div className="label-sm" style={{ marginBottom: 4 }}>Document Type</div>
             <select style={{ width: '100%', padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', cursor: 'pointer', outline: 'none' }}>
               <option>As-Built</option><option>Diagram</option><option>Runbook</option><option>SOP</option><option>Checklist</option><option>Contract</option><option>Floor Plan</option><option>Wiring Schedule</option><option>Other</option>
             </select>
           </div>
-          <CustomerSelector style={{}} showToast={showToast} />
+          <CustomerSelector style={{}} showToast={showToast} value={f.customer || ''} onChange={(v) => setF(prev => ({ ...prev, customer: v }))} />
           <div>
             <div className="label-sm" style={{ marginBottom: 4 }}>Content</div>
             <textarea placeholder="Start typing your document content here... Supports rich text, tables, and embedded images." style={{ width: '100%', minHeight: 120, padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', lineHeight: 1.6 }} />
@@ -614,14 +654,30 @@ function CreateDocumentModal({ onClose, showToast }) {
                 <option>NVR-01 (Server Room)</option><option>CAM-01 (Lobby)</option><option>SW-01 (IDF)</option><option>Panel-01 (Alarm)</option>
               </select>
             </div>
-            <FormField label="Version" placeholder="v1" style={{ flex: 0.4 }} />
+            <FormField label="Version" value={f['Version'] || ''} onChange={bind('Version')} placeholder="v1" style={{ flex: 0.4 }} />
           </div>
-          <FormField label="Tags" placeholder="network, diagram, as-built" />
+          <FormField label="Tags" value={f['Tags'] || ''} onChange={bind('Tags')} placeholder="network, diagram, as-built" />
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{ padding: '8px 20px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-          <button onClick={() => { onClose(); showToast('Document saved as draft'); }} style={{ padding: '8px 20px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Draft</button>
-          <button onClick={() => { onClose(); showToast('Document published'); }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Publish</button>
+          <button onClick={() => {
+            if (!(f['Document Title'] || '').trim()) { showToast('Add a document title first'); return; }
+            assetDocStore.set(list => [{
+              id: genId('DOC'), customer: f.customer || '\u2014', name: f['Document Title'].trim(),
+              type: 'Document', size: '\u2014', date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+              url: null, status: 'draft',
+            }, ...(list || [])]);
+            onClose(); showToast('Document saved as draft');
+          }} style={{ padding: '8px 20px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Draft</button>
+          <button onClick={() => {
+            if (!(f['Document Title'] || '').trim()) { showToast('Add a document title first'); return; }
+            assetDocStore.set(list => [{
+              id: genId('DOC'), customer: f.customer || '\u2014', name: f['Document Title'].trim(),
+              type: 'Document', size: '\u2014', date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+              url: null, status: 'published',
+            }, ...(list || [])]);
+            onClose(); showToast('Document published \u2014 synced everywhere');
+          }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Publish</button>
         </div>
       </div>
     </div>
@@ -630,6 +686,8 @@ function CreateDocumentModal({ onClose, showToast }) {
 
 /* ── Create Network Modal ── */
 function CreateNetworkModal({ onClose, showToast }) {
+  const [f, setF] = React.useState({});
+  const bind = (k) => (e) => setF(prev => ({ ...prev, [k]: e.target.value }));
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9000 }}>
       <div onClick={e => e.stopPropagation()} className="glass" style={{ width: 520, maxHeight: '85vh', overflow: 'auto', padding: 24, animation: 'fade-up 0.2s ease both' }}>
@@ -638,8 +696,8 @@ function CreateNetworkModal({ onClose, showToast }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <FormField label="Network Name" placeholder="e.g. Security VLAN, Camera VLAN, Management" />
-          <CustomerSelector style={{}} showToast={showToast} />
+          <FormField label="Network Name" value={f['Network Name'] || ''} onChange={bind('Network Name')} placeholder="e.g. Security VLAN, Camera VLAN, Management" />
+          <CustomerSelector style={{}} showToast={showToast} value={f.customer || ''} onChange={(v) => setF(prev => ({ ...prev, customer: v }))} />
           <div>
             <div className="label-sm" style={{ marginBottom: 4 }}>Site</div>
             <select style={{ width: '100%', padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', cursor: 'pointer', outline: 'none' }}>
@@ -648,16 +706,16 @@ function CreateNetworkModal({ onClose, showToast }) {
           </div>
           <div className="label-sm" style={{ marginTop: 4 }}>NETWORK DETAILS</div>
           <div style={{ display: 'flex', gap: 12 }}>
-            <FormField label="Subnet" placeholder="192.168.1.0/24" style={{ flex: 2 }} />
-            <FormField label="VLAN ID" placeholder="10" style={{ flex: 1 }} />
+            <FormField label="Subnet" value={f['Subnet'] || ''} onChange={bind('Subnet')} placeholder="192.168.1.0/24" style={{ flex: 2 }} />
+            <FormField label="VLAN ID" value={f['VLAN ID'] || ''} onChange={bind('VLAN ID')} placeholder="10" style={{ flex: 1 }} />
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
-            <FormField label="Gateway" placeholder="192.168.1.1" style={{ flex: 1 }} />
-            <FormField label="Subnet Mask" placeholder="255.255.255.0" style={{ flex: 1 }} />
+            <FormField label="Gateway" value={f['Gateway'] || ''} onChange={bind('Gateway')} placeholder="192.168.1.1" style={{ flex: 1 }} />
+            <FormField label="Subnet Mask" value={f['Subnet Mask'] || ''} onChange={bind('Subnet Mask')} placeholder="255.255.255.0" style={{ flex: 1 }} />
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
-            <FormField label="DNS Primary" placeholder="8.8.8.8" style={{ flex: 1 }} />
-            <FormField label="DNS Secondary" placeholder="8.8.4.4" style={{ flex: 1 }} />
+            <FormField label="DNS Primary" value={f['DNS Primary'] || ''} onChange={bind('DNS Primary')} placeholder="8.8.8.8" style={{ flex: 1 }} />
+            <FormField label="DNS Secondary" value={f['DNS Secondary'] || ''} onChange={bind('DNS Secondary')} placeholder="8.8.4.4" style={{ flex: 1 }} />
           </div>
           <div>
             <div className="label-sm" style={{ marginBottom: 4 }}>DHCP</div>
@@ -669,14 +727,22 @@ function CreateNetworkModal({ onClose, showToast }) {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
-            <FormField label="DHCP Range Start" placeholder="192.168.1.100" style={{ flex: 1 }} />
-            <FormField label="DHCP Range End" placeholder="192.168.1.200" style={{ flex: 1 }} />
+            <FormField label="DHCP Range Start" value={f['DHCP Range Start'] || ''} onChange={bind('DHCP Range Start')} placeholder="192.168.1.100" style={{ flex: 1 }} />
+            <FormField label="DHCP Range End" value={f['DHCP Range End'] || ''} onChange={bind('DHCP Range End')} placeholder="192.168.1.200" style={{ flex: 1 }} />
           </div>
-          <FormField label="Purpose / Notes" placeholder="Security cameras, access control, etc." />
+          <FormField label="Purpose / Notes" value={f['Purpose / Notes'] || ''} onChange={bind('Purpose / Notes')} placeholder="Security cameras, access control, etc." />
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{ padding: '8px 20px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-          <button onClick={() => { onClose(); showToast('Network range created'); }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Network</button>
+          <button onClick={() => {
+            if (!(f['Network Name'] || '').trim()) { showToast('Add a network name first'); return; }
+            assetNetStore.set(list => [{
+              id: genId('NET'), customer: f.customer || '\u2014', name: f['Network Name'].trim(),
+              subnet: f['Subnet (CIDR)'] || f['Subnet'] || '', gw: f['Gateway'] || '', vlan: f['VLAN ID'] || '',
+              devices: 0, type: 'Wired', notes: f['Notes'] || '',
+            }, ...(list || [])]);
+            onClose(); showToast('Network documented \u2014 synced everywhere');
+          }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Network</button>
         </div>
       </div>
     </div>
@@ -685,6 +751,8 @@ function CreateNetworkModal({ onClose, showToast }) {
 
 /* ── Create Asset Type Modal ── */
 function CreateAssetTypeModal({ onClose, showToast }) {
+  const [f, setF] = React.useState({});
+  const bind = (k) => (e) => setF(prev => ({ ...prev, [k]: e.target.value }));
   const [fields, setFields] = React.useState([{ name: '', type: 'text', required: false }]);
   const addField = () => setFields(prev => [...prev, { name: '', type: 'text', required: false }]);
   const removeField = (idx) => setFields(prev => prev.filter((_, i) => i !== idx));
@@ -698,10 +766,10 @@ function CreateAssetTypeModal({ onClose, showToast }) {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ display: 'flex', gap: 12 }}>
-            <FormField label="Type Name" placeholder="e.g. Intercom Station, Gate Operator" style={{ flex: 2 }} />
-            <FormField label="Icon" placeholder="◉" style={{ flex: 0.5 }} />
+            <FormField label="Type Name" value={f['Type Name'] || ''} onChange={bind('Type Name')} placeholder="e.g. Intercom Station, Gate Operator" style={{ flex: 2 }} />
+            <FormField label="Icon" value={f['Icon'] || ''} onChange={bind('Icon')} placeholder="◉" style={{ flex: 0.5 }} />
           </div>
-          <FormField label="Description" placeholder="Short description of this configuration type" />
+          <FormField label="Description" value={f['Description'] || ''} onChange={bind('Description')} placeholder="Short description of this configuration type" />
 
           <div className="label-sm" style={{ marginTop: 4 }}>CUSTOM FIELDS</div>
           <div style={{ fontSize: 11, color: 'var(--text-low)', marginBottom: 4 }}>Define the fields that appear on every configuration of this type (in addition to standard fields like Name, Serial, IP, etc.)</div>
@@ -739,11 +807,11 @@ function CreateAssetTypeModal({ onClose, showToast }) {
               </label>
             ))}
           </div>
-          <FormField label="Tag Prefix" placeholder="e.g. INT for Intercom → ST-INT-001" />
+          <FormField label="Tag Prefix" value={f['Tag Prefix'] || ''} onChange={bind('Tag Prefix')} placeholder="e.g. INT for Intercom → ST-INT-001" />
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{ padding: '8px 20px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-          <button onClick={() => { onClose(); showToast('Asset type created'); }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Type</button>
+          <button onClick={() => { onClose(); showToast('Custom asset types are coming soon — use Flexible Assets meanwhile'); }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Type</button>
         </div>
       </div>
     </div>

@@ -112,7 +112,7 @@ function WallboardScreen() {
           <span style={{ fontSize: 11, color: 'var(--status-ok)', letterSpacing: '0.1em' }}>ALL SYSTEMS NOMINAL</span>
         </span>
         <span className="mono" style={{ marginLeft: 'auto', fontSize: 30, fontWeight: 300, color: 'var(--text-high)' }}>{now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-        <button onClick={() => navTo('dashboard')} style={{ padding: '6px 16px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Exit ✕</button>
+        <button onClick={() => navTo('custom-dashboard')} style={{ padding: '6px 16px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Exit ✕</button>
       </div>
 
       {/* Rotating panel */}

@@ -15,6 +15,7 @@ import { supabase, supabaseConfigured } from './supabase.js';
 const PERSONAL_KEYS = new Set(['userprefs', 'appcontext', 'mobiletabs', 'ssprefs', 'svprefs', 'wofocus']);
 
 const muted = new Set();          // keys currently applying a remote value
+const oversizedWarned = new Set();// keys we've already warned about (too big to sync)
 const dirty = new Map();          // key -> debounce timer
 const lastSeen = new Map();       // key -> updated_at we already applied
 let uid = null;
@@ -48,7 +49,16 @@ function push(key) {
   const store = stores[key];
   if (!store || !uid) return;
   // Guard: oversized state (e.g. offline photo dataURLs) stays device-local.
-  try { if (JSON.stringify(store.get()).length > 400_000) return; } catch { return; }
+  // Surface it once so the user knows this data won't reach other devices.
+  try {
+    if (JSON.stringify(store.get()).length > 400_000) {
+      if (!oversizedWarned.has(key)) {
+        oversizedWarned.add(key);
+        try { if (window.shieldToast) window.shieldToast(`"${key}" data is too large to sync — it stays on this device only`, 'warn'); } catch {}
+      }
+      return;
+    }
+  } catch { return; }
   const now = new Date().toISOString();
   lastSeen.set(key, now);
   supabase.from('app_state').upsert({

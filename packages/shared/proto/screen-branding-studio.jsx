@@ -31,10 +31,37 @@ function BrandingStudio({ showToast: parentToast }) {
 
 /* ── Brand Kit ── */
 function BrandKit({ showToast }) {
+  // Backed by the real brand store — the pay page and outgoing email
+  // templates read the same record, so Save here changes those too.
+  const [brand, setBrand] = useShieldStore(brandStore);
   const [logo, setLogo] = React.useState('shield');
-  const [primaryColor, setPrimaryColor] = React.useState('#3FA9F5');
-  const [secondaryColor, setSecondaryColor] = React.useState('#0A0E14');
-  const [font, setFont] = React.useState('Montserrat');
+  const [primaryColor, setPrimaryColor] = React.useState(brand.primaryColor || '#3FA9F5');
+  const [secondaryColor, setSecondaryColor] = React.useState(brand.secondaryColor || '#0A0E14');
+  const [font, setFont] = React.useState(brand.font || 'Montserrat');
+  const [footer, setFooter] = React.useState(brand.footer || 'Thank you for your business. Payment due upon receipt unless terms specified. Make checks payable to ShieldTech Solutions LLC. For questions, contact billing@shieldtechsolutions.com.');
+  const saveKit = () => {
+    setBrand(prev => ({ ...(prev || {}), primaryColor, secondaryColor, font, footer }));
+    showToast('Brand Kit saved — invoices, estimates, and emails use it');
+  };
+  const editCompanyInfo = () => {
+    shieldModal({ kind: 'form', title: 'Company Info',
+      fields: [
+        { key: 'company', label: 'Company', placeholder: brand.company || '' },
+        { key: 'address', label: 'Address', placeholder: brand.address || '', full: true },
+        { key: 'phone', label: 'Phone', placeholder: brand.phone || '' },
+        { key: 'email', label: 'Email', placeholder: brand.email || '' },
+        { key: 'license', label: 'License', placeholder: brand.license || '' },
+      ],
+      onSubmit: (v) => {
+        setBrand(prev => {
+          const next = { ...(prev || {}) };
+          ['company', 'address', 'phone', 'email', 'license'].forEach(k => { if (v[k] && v[k].trim()) next[k] = v[k].trim(); });
+          return next;
+        });
+        showToast('Company info updated');
+      },
+    });
+  };
 
   return (
     <div style={{ maxWidth: 900, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -43,7 +70,7 @@ function BrandKit({ showToast }) {
           <h2 className="display" style={{ fontSize: 18, fontWeight: 300 }}>Brand Kit</h2>
           <p style={{ fontSize: 12, color: 'var(--text-mid)', marginTop: 2 }}>Applied across invoices, estimates, and proposals</p>
         </div>
-        <button onClick={() => showToast('Brand Kit saved')} style={{ padding: '7px 18px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Brand Kit</button>
+        <button onClick={saveKit} style={{ padding: '7px 18px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Brand Kit</button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -51,7 +78,7 @@ function BrandKit({ showToast }) {
         <GlassPanel>
           <div className="label-sm" style={{ marginBottom: 12 }}>LOGO</div>
           <div style={{ display: 'flex', gap: 14 }}>
-            <div style={{ width: 120, height: 80, borderRadius: 8, border: '2px dashed var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(63,169,245,0.03)' }} onClick={() => showToast('Logo upload dialog')}>
+            <div style={{ width: 120, height: 80, borderRadius: 8, border: '2px dashed var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(63,169,245,0.03)' }} onClick={() => showToast('Custom logo upload isn\'t wired up yet — the ShieldTech emblem is used')}>
               <ShieldLogo size={40} />
             </div>
             <div style={{ flex: 1 }}>
@@ -82,7 +109,7 @@ function BrandKit({ showToast }) {
               <div key={i}>
                 <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: 4 }}>{c.label}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 6, background: c.color, border: '2px solid rgba(255,255,255,0.1)', cursor: 'pointer' }} onClick={() => showToast('Color picker')} />
+                  <input type="color" value={c.color} onChange={(e) => c.setter(e.target.value)} style={{ width: 32, height: 32, borderRadius: 6, border: '2px solid rgba(255,255,255,0.1)', cursor: 'pointer', padding: 0, background: 'transparent' }} />
                   <span className="mono" style={{ fontSize: 11, color: 'var(--text-mid)' }}>{c.color}</span>
                 </div>
               </div>
@@ -108,9 +135,12 @@ function BrandKit({ showToast }) {
 
         {/* Company Info */}
         <GlassPanel>
-          <div className="label-sm" style={{ marginBottom: 12 }}>COMPANY INFO</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <div className="label-sm">COMPANY INFO</div>
+            <button onClick={editCompanyInfo} style={{ padding: '3px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit</button>
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[{l:'Company',v:'ShieldTech Solutions LLC'},{l:'Address',v:'1234 Security Way, Philadelphia, PA 19103'},{l:'Phone',v:'(215) 555-0100'},{l:'Email',v:'billing@shieldtechsolutions.com'},{l:'License',v:'PA HIC #PA123456'}].map((f,i) => (
+            {[{l:'Company',v:brand.company || '—'},{l:'Address',v:brand.address || '—'},{l:'Phone',v:brand.phone || '—'},{l:'Email',v:brand.email || '—'},{l:'License',v:brand.license || '—'}].map((f,i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
                 <span style={{ fontSize: 11, color: 'var(--text-low)' }}>{f.l}</span>
                 <span style={{ fontSize: 11, color: 'var(--text-mid)' }}>{f.v}</span>
@@ -123,7 +153,7 @@ function BrandKit({ showToast }) {
       {/* Default Footer & Terms */}
       <GlassPanel>
         <div className="label-sm" style={{ marginBottom: 8 }}>DEFAULT FOOTER & PAYMENT INSTRUCTIONS</div>
-        <textarea defaultValue="Thank you for your business. Payment due upon receipt unless terms specified. Make checks payable to ShieldTech Solutions LLC. For questions, contact billing@shieldtechsolutions.com." style={{ width: '100%', minHeight: 60, padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
+        <textarea value={footer} onChange={(e) => setFooter(e.target.value)} style={{ width: '100%', minHeight: 60, padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
       </GlassPanel>
     </div>
   );
@@ -131,19 +161,42 @@ function BrandKit({ showToast }) {
 
 /* ── Template Editor (3-tab: Design, Content, Emails) + Live Preview ── */
 function TemplateEditor({ docType, showToast }) {
+  // Settings persist per doc type on the shared brand store, so a saved
+  // template survives reloads and is visible to whoever renders documents.
+  const saved = ((brandStore.get() || {}).templates || {})[docType] || {};
   const [activeTemplate, setActiveTemplate] = React.useState(0);
   const [editorTab, setEditorTab] = React.useState('design');
-  const [layout, setLayout] = React.useState('modern');
-  const [logoPos, setLogoPos] = React.useState('left');
-  const [accentColor, setAccentColor] = React.useState('#3FA9F5');
-  const [headerFont, setHeaderFont] = React.useState('Montserrat');
-  const [showPO, setShowPO] = React.useState(true);
-  const [showTerms, setShowTerms] = React.useState(true);
-  const [showSalesRep, setShowSalesRep] = React.useState(false);
-  const [showSig, setShowSig] = React.useState(docType !== 'invoice');
-  const [pricingMode, setPricingMode] = React.useState('itemized');
-  const [emailSubject, setEmailSubject] = React.useState(`Your ${docType} from ShieldTech Solutions — {amount}`);
-  const [emailBody, setEmailBody] = React.useState(`Hi {customer},\n\nPlease find your ${docType} attached. Total: {amount}, due {due_date}.\n\nView and pay online: {link}\n\nThank you,\nShieldTech Solutions`);
+  const [layout, setLayout] = React.useState(saved.layout || 'modern');
+  const [logoPos, setLogoPos] = React.useState(saved.logoPos || 'left');
+  const [accentColor, setAccentColor] = React.useState(saved.accentColor || '#3FA9F5');
+  const [headerFont, setHeaderFont] = React.useState(saved.headerFont || 'Montserrat');
+  const [showPO, setShowPO] = React.useState(saved.showPO != null ? saved.showPO : true);
+  const [showTerms, setShowTerms] = React.useState(saved.showTerms != null ? saved.showTerms : true);
+  const [showSalesRep, setShowSalesRep] = React.useState(saved.showSalesRep != null ? saved.showSalesRep : false);
+  const [showSig, setShowSig] = React.useState(saved.showSig != null ? saved.showSig : docType !== 'invoice');
+  const [pricingMode, setPricingMode] = React.useState(saved.pricingMode || 'itemized');
+  const [emailSubject, setEmailSubject] = React.useState(saved.emailSubject || `Your ${docType} from ShieldTech Solutions — {amount}`);
+  const [emailBody, setEmailBody] = React.useState(saved.emailBody || `Hi {customer},\n\nPlease find your ${docType} attached. Total: {amount}, due {due_date}.\n\nView and pay online: {link}\n\nThank you,\nShieldTech Solutions`);
+
+  const saveTemplate = () => {
+    brandStore.set(prev => ({
+      ...(prev || {}),
+      templates: {
+        ...((prev || {}).templates || {}),
+        [docType]: { layout, logoPos, accentColor, headerFont, showPO, showTerms, showSalesRep, showSig, pricingMode, emailSubject, emailBody },
+      },
+    }));
+    showToast('Template saved');
+  };
+
+  const sendTestEmail = async () => {
+    const email = window.__shieldEmail;
+    const me = window.__shieldUser || {};
+    if (!email || !me.email) { showToast(me.email ? 'Email backend not configured' : 'Sign in to send a test email'); return; }
+    const merge = (s) => s.replace(/\{customer\}/g, me.name || 'Customer').replace(/\{amount\}/g, '$1,234.00').replace(/\{due_date\}/g, 'in 30 days').replace(/\{link\}/g, '(pay link appears here)').replace(/\{invoice_num\}/g, 'INV-SAMPLE').replace(/\{company\}/g, (brandStore.get() || {}).company || 'ShieldTech Solutions');
+    const r = await email.send({ to: me.email, subject: `[TEST] ${merge(emailSubject)}`, text: merge(emailBody) });
+    showToast(r && r.ok ? `Test email sent to ${me.email}` : 'Test email failed — check email backend');
+  };
 
   const templates = [
     { name: 'Modern (Default)', id: 'modern' },
@@ -170,11 +223,11 @@ function TemplateEditor({ docType, showToast }) {
               <span style={{ fontSize: 12, color: activeTemplate===i?'var(--brand)':'var(--text-mid)' }}>{t.name}</span>
               <div style={{ display: 'flex', gap: 3 }}>
                 {activeTemplate===i && <span style={{ fontSize: 9, color: 'var(--status-ok)', padding: '1px 6px', borderRadius: 3, background: 'rgba(52,211,153,0.08)' }}>Default</span>}
-                <button onClick={(e) => { e.stopPropagation(); showToast('Template duplicated'); }} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>⊕</button>
+                <button onClick={(e) => { e.stopPropagation(); showToast('Multiple template variants aren\'t supported yet'); }} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>⊕</button>
               </div>
             </div>
           ))}
-          <button onClick={() => showToast('New template created')} style={{ width: '100%', padding: '6px', marginTop: 4, background: 'transparent', border: '1px dashed var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Template</button>
+          <button onClick={() => showToast('Multiple template variants aren\'t supported yet — customize the default')} style={{ width: '100%', padding: '6px', marginTop: 4, background: 'transparent', border: '1px dashed var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Template</button>
         </GlassPanel>
 
         {/* Editor Tabs */}
@@ -281,7 +334,7 @@ function TemplateEditor({ docType, showToast }) {
             <div className="label-sm" style={{ marginBottom: 6 }}>MERGE TOKENS</div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 }}>
               {['{customer}','{amount}','{due_date}','{link}','{invoice_num}','{company}'].map(t => (
-                <span key={t} className="mono" style={{ padding: '2px 8px', borderRadius: 3, background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', fontSize: 9, color: 'var(--brand)', cursor: 'pointer' }} onClick={() => showToast(`Copied: ${t}`)}>{t}</span>
+                <span key={t} className="mono" style={{ padding: '2px 8px', borderRadius: 3, background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', fontSize: 9, color: 'var(--brand)', cursor: 'pointer' }} onClick={() => { try { navigator.clipboard.writeText(t); showToast(`Copied: ${t}`); } catch { showToast('Copy failed'); } }}>{t}</span>
               ))}
             </div>
 
@@ -295,15 +348,15 @@ function TemplateEditor({ docType, showToast }) {
             <div className="label-sm" style={{ marginBottom: 6, marginTop: 10 }}>REMINDER EMAIL</div>
             <textarea defaultValue={`Hi {customer},\n\nThis is a friendly reminder that {invoice_num} for {amount} is due on {due_date}.\n\nPay online: {link}\n\nThank you,\nShieldTech Solutions`} style={{ width: '100%', minHeight: 80, padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', lineHeight: 1.5 }} />
 
-            <button onClick={() => showToast('Test email sent to your inbox')} style={{ width: '100%', marginTop: 10, padding: '8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✉ Send Test Email</button>
+            <button onClick={sendTestEmail} style={{ width: '100%', marginTop: 10, padding: '8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✉ Send Test Email</button>
           </GlassPanel>
         )}
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => showToast('Template saved')} style={{ flex: 1, padding: '8px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Template</button>
-          <button onClick={() => showToast('Preview updated')} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Preview</button>
-          <button onClick={() => showToast('PDF downloaded')} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>PDF</button>
+          <button onClick={saveTemplate} style={{ flex: 1, padding: '8px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Template</button>
+          <button onClick={() => showToast('The preview on the right is live — changes apply instantly')} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Preview</button>
+          <button onClick={() => showToast('PDFs use this template when you download a document from Finance')} style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>PDF</button>
         </div>
       </div>
 

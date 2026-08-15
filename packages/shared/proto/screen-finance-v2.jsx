@@ -437,31 +437,57 @@ function FinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, setS
               </div>
             ))}
 
-            {/* Action buttons */}
+            {/* Action buttons — every one of these does the REAL thing now */}
+            {(() => {
+              const dinv = filtered[selectedInv];
+              const setLocalStatus = (num, status) => invoiceStore.set(list => (list || []).map(d => ((d.doc_number || d.num) === num) ? { ...d, status } : d));
+              const custEmail = (dinv._raw && (dinv._raw.customer_email || dinv._raw.email)) || '';
+              const sendLink = async (label) => {
+                const pay = window.__shieldPay;
+                if (!pay) { showToast('Payments backend not configured', 'warn'); return;             }
+                const r = await pay.createLink({ ref: dinv.num, customer: dinv.customer, amount: dinv.amount, lines: dinv.lines, due: dinv.due }, custEmail || undefined);
+                if (!r || !r.ok) { showToast(`Could not create link: ${(r && r.error) || 'unknown'}`, 'warn'); return; }
+                try { await navigator.clipboard.writeText(r.link); } catch { /* clipboard blocked */ }
+                showToast(`${label} — link copied${r.emailed ? ` and emailed to ${custEmail}` : custEmail ? '' : ' (no customer email on file — send it manually)'}`, 'ok');
+              };
+              return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 14 }}>
-              {filtered[selectedInv].status === 'draft' && (
-                <button onClick={() => showToast('Invoice finalized and sent')} style={{ width: '100%', padding: '9px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Finalize & Send</button>
+              {dinv.status === 'draft' && (
+                <button onClick={async () => { setLocalStatus(dinv.num, 'pending'); await sendLink('Invoice finalized'); }} style={{ width: '100%', padding: '9px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Finalize & Send</button>
               )}
-              {filtered[selectedInv].status === 'pending' && <>
-                <button onClick={() => showToast('Stripe payment link created')} style={{ width: '100%', padding: '9px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                  <span>⊛</span> Create Stripe Payment Link
+              {dinv.status === 'pending' && <>
+                <button onClick={() => sendLink('Payment link ready')} style={{ width: '100%', padding: '9px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <span>⊛</span> Create Payment Link
                 </button>
-                <button onClick={() => showToast('Payment recorded')} style={{ width: '100%', padding: '9px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Record Payment</button>
+                <button onClick={async () => {
+                  const pay = window.__shieldPay;
+                  if (pay) { const r = await pay.recordPaid(dinv.num); if (r && !r.ok && r.error) showToast(`Pay page not updated: ${r.error}`, 'warn'); }
+                  setLocalStatus(dinv.num, 'paid');
+                  showToast(`${dinv.num} marked paid`, 'ok');
+                }} style={{ width: '100%', padding: '9px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Record Payment</button>
               </>}
-              {filtered[selectedInv].status === 'overdue' && <>
-                <button onClick={() => showToast('Reminder drafted → Approvals')} style={{ width: '100%', padding: '9px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                  <span>⟡</span> AI Draft Reminder
-                </button>
-                <button onClick={() => showToast('Payment link sent via email')} style={{ width: '100%', padding: '9px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send Payment Link</button>
+              {dinv.status === 'overdue' && <>
+                <button onClick={() => sendLink('Payment link ready')} style={{ width: '100%', padding: '9px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send Payment Link</button>
+                <button onClick={async () => {
+                  const pay = window.__shieldPay;
+                  if (pay) { const r = await pay.recordPaid(dinv.num); if (r && !r.ok && r.error) showToast(`Pay page not updated: ${r.error}`, 'warn'); }
+                  setLocalStatus(dinv.num, 'paid');
+                  showToast(`${dinv.num} marked paid`, 'ok');
+                }} style={{ width: '100%', padding: '9px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Record Payment</button>
               </>}
               <div style={{ display: 'flex', gap: 6 }}>
-                <button onClick={() => { if (window.__shieldPdf) window.__shieldPdf.exportDoc({ kind: 'invoice', number: (typeof inv !== 'undefined' && inv && inv.num) || 'Invoice', customer: (typeof inv !== 'undefined' && inv && inv.customer) || '', lineItems: (typeof inv !== 'undefined' && inv && inv.lines) || [], total: (typeof inv !== 'undefined' && inv && inv.amount) || 0 }); showToast('Invoice exported'); }} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Download PDF</button>
-                <button onClick={() => showToast('Invoice duplicated')} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Duplicate</button>
-                {filtered[selectedInv].status !== 'paid' && (
-                  <button onClick={() => showToast('Invoice voided')} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 5, color: 'var(--status-critical)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Void</button>
+                <button onClick={() => { if (!window.__shieldPdf) { showToast('PDF module not loaded', 'warn'); return; } window.__shieldPdf.exportDoc({ kind: 'invoice', number: dinv.num, customer: dinv.customer, lineItems: dinv.lines || [], total: dinv.amount || 0 }); showToast(`${dinv.num} exported`, 'ok'); }} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Download PDF</button>
+                <button onClick={() => {
+                  const d = addInvoice({ customer_name: dinv.customer, total: dinv.amount, status: 'draft', lines: dinv.lines || [] });
+                  showToast(`Duplicated as ${d.doc_number || d.num}`, 'ok');
+                }} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Duplicate</button>
+                {dinv.status !== 'paid' && (
+                  <button onClick={() => { setLocalStatus(dinv.num, 'void'); setSelectedInv(null); showToast(`${dinv.num} voided`, 'warn'); }} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 5, color: 'var(--status-critical)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Void</button>
                 )}
               </div>
             </div>
+              );
+            })()}
           </GlassPanel>
         )}
       </div>
