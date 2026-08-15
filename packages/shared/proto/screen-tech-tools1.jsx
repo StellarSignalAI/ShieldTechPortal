@@ -114,7 +114,7 @@ function TechVoiceView() {
           </div>
         )}
       </div>
-      <div style={{ fontSize: 10, color: 'var(--text-low)', textAlign: 'center', lineHeight: 1.5 }}>Dictations are transcribed and parsed into work-order notes, parts used, time entries and follow-ups by ShieldTech AI.</div>
+      <div style={{ fontSize: 10, color: 'var(--text-low)', textAlign: 'center', lineHeight: 1.5 }}>Voice transcription isn't connected yet — recordings are not kept. For now, use Messages or job notes to log what you did.</div>
     </div>
   );
 }
@@ -183,9 +183,23 @@ function TechScannerView() {
   );
 }
 
-/* ── 4. Smart Day Route ── */
+/* ── 4. Smart Day Route — REAL: built from today's dispatched WOs + calendar jobs ── */
 function TechRouteView() {
-  const stops = [];
+  const [wos] = useShieldStore(workOrderStore);
+  const [calJobs] = useShieldStore(jobStore);
+  const me = window.__shieldUser || {};
+  const myInitials = (me.name || '').split(' ').map(w => w[0]).join('').toUpperCase();
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const fmtT = (h) => { const hr = Math.floor(h || 8); const m = Math.round(((h || 8) - hr) * 60); return `${((hr + 11) % 12) + 1}:${String(m).padStart(2, '0')}${hr >= 12 ? 'p' : 'a'}`; };
+  const woStops = (wos || []).filter(w => (w.scheduled === todayIso || w.status === 'active')
+      && ((me.id && w.assignedTo === me.id) || (myInitials && w.techId === myInitials) || (!w.assignedTo && !w.techId)))
+    .map(w => ({ t: w.status === 'active' ? 'Now' : 'Today', sort: 0, job: `${w.id} — ${w.customer}`, addr: w.site || '', dur: w.scope || w.type || '',
+      status: (w.status === 'done' || w.status === 'completed') ? 'done' : w.status === 'active' ? 'now' : 'next' }));
+  const calStops = (calJobs || []).filter(j => jobOnISO(j, todayIso)
+      && (!(j.techs || []).length || (me.id && (j.techIds || []).includes(me.id)) || (myInitials && (j.techs || []).includes(myInitials))))
+    .map(j => ({ t: fmtT(j.start), sort: j.start || 8, job: j.title || j.customer, addr: j.site || j.customer || '', dur: `${j.dur || 2}h`,
+      status: j.fieldStatus === 'complete' ? 'done' : j.fieldStatus ? 'now' : 'next' }));
+  const stops = [...woStops, ...calStops].sort((a, b) => a.sort - b.sort);
   const statusC = { done: 'var(--text-low)', now: 'var(--status-ok)', next: 'var(--brand)', later: 'var(--text-mid)' };
 
   return (
@@ -198,7 +212,7 @@ function TechRouteView() {
       <div style={{ position: 'relative', paddingLeft: 22 }}>
         {stops.length > 0 && <div style={{ position: 'absolute', left: 8, top: 10, bottom: 10, width: 2, background: 'rgba(63,169,245,0.15)' }}></div>}
         {stops.map((s, i) => (
-          <div key={s.job} style={{ position: 'relative', marginBottom: 10 }}>
+          <div key={i} style={{ position: 'relative', marginBottom: 10 }}>
             <span style={{ position: 'absolute', left: -20, top: 16, width: 12, height: 12, borderRadius: '50%', background: s.status === 'now' ? 'var(--status-ok)' : 'var(--canvas)', border: `2px solid ${statusC[s.status]}`, boxShadow: s.status === 'now' ? '0 0 8px var(--status-ok)' : 'none' }}></span>
             {s.drive && <div className="mono" style={{ fontSize: 9, color: s.drive.includes('⚠') ? 'var(--status-warn)' : 'var(--text-low)', padding: '0 0 4px 4px' }}>↓ {s.drive}</div>}
             <div className="glass" style={{ padding: '11px 14px', borderRadius: 'var(--radius-md)', opacity: s.status === 'done' ? 0.55 : 1, border: s.status === 'now' ? '1px solid rgba(52,211,153,0.35)' : '1px solid var(--border-subtle)' }}>
@@ -208,13 +222,13 @@ function TechRouteView() {
                   <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', textDecoration: s.status === 'done' ? 'line-through' : 'none' }}>{s.job}</div>
                   <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{s.addr} · {s.dur}</div>
                 </div>
-                {s.status === 'now' && <button onClick={() => showToast('Navigation opened', 'ok')} style={{ padding: '5px 12px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Navigate</button>}
+                {s.status !== 'done' && <button onClick={() => { const dest = s.addr || s.job; if (dest) window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest), '_blank'); else showToast('No address on this stop', 'warn'); }} style={{ padding: '5px 12px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Navigate</button>}
               </div>
             </div>
           </div>
         ))}
       </div>
-      <div style={{ fontSize: 9, color: 'var(--text-low)' }}>ETA changes auto-notify customers via the portal tracker</div>
+      <div style={{ fontSize: 9, color: 'var(--text-low)' }}>Built live from today's dispatched work orders and scheduled jobs</div>
     </div>
   );
 }

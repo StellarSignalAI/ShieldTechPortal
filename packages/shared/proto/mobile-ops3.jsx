@@ -2,7 +2,11 @@
    Site Photos · Punch List · Subcontractors · Projects · Proposals
    Photo & Punch screens are store-backed and sync live to the desktop portal. */
 
-const phLook = (l) => `linear-gradient(150deg, hsl(${l.h} 32% 22%), hsl(${(l.h + 25) % 360} 28% 12%))`;
+/* Real captured photos have look=null — never dereference it (white-screened
+   the mobile Site Photos screen the moment one real photo existed). */
+const phLook = (l) => l && l.h != null
+  ? `linear-gradient(150deg, hsl(${l.h} 32% 22%), hsl(${(l.h + 25) % 360} 28% 12%))`
+  : 'linear-gradient(150deg, #16202c, #0a0f16)';
 const PH_PHASE = { before:'#94A3B8', progress:'var(--brand)', after:'var(--status-ok)', issue:'var(--status-critical)' };
 
 /* ══════════════ SITE PHOTOS ══════════════ */
@@ -21,11 +25,15 @@ function MPhotos({ onNav }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
         {list.map(p => (
           <div key={p.id} onClick={() => setOpenId(p.id)} className="glass" style={{ padding: 0, overflow: 'hidden', cursor: 'pointer', borderColor: p.phase === 'issue' ? 'rgba(244,63,94,0.35)' : 'var(--border-subtle)' }}>
-            <div style={{ height: 96, background: phLook(p.look), position: 'relative', display: 'flex', alignItems: 'flex-end' }}>
+            {(p.url || p.dataUrl)
+              ? <MockPhoto photo={p} stamp={false} style={{ height: 96, borderRadius: 0 }}>
+                  <span style={{ position: 'absolute', top: 6, left: 6, fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#fff', background: `${PH_PHASE[p.phase]}cc`, borderRadius: 6, padding: '2px 7px' }}>{p.phase}</span>
+                </MockPhoto>
+              : <div style={{ height: 96, background: phLook(p.look), position: 'relative', display: 'flex', alignItems: 'flex-end' }}>
               <div style={{ position: 'absolute', top: 6, left: 6 }}><span style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#fff', background: `${PH_PHASE[p.phase]}cc`, borderRadius: 6, padding: '2px 7px' }}>{p.phase}</span></div>
               {p.annotations && p.annotations.length > 0 && <div style={{ position: 'absolute', top: 6, right: 6, width: 16, height: 16, borderRadius: '50%', background: 'var(--status-critical)', color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{p.annotations.length}</div>}
               <div style={{ width: '100%', padding: '14px 8px 6px', background: 'linear-gradient(transparent, rgba(0,0,0,0.55))' }}><span className="mono" style={{ fontSize: 8, color: 'rgba(255,255,255,0.8)' }}>{p.time}</span></div>
-            </div>
+            </div>}
             <div style={{ padding: '7px 9px' }}>
               <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-high)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.label}</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.customer}</div>
@@ -46,14 +54,18 @@ function MPhotoDetail({ id, onClose, onNav }) {
   return (
     <MSheet title={p.label} onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
-        <div style={{ height: 200, borderRadius: 12, background: phLook(p.look), position: 'relative', border: '1px solid var(--border-subtle)' }}>
+        {(p.url || p.dataUrl)
+          ? <MockPhoto photo={p} stamp={false} style={{ height: 200, borderRadius: 12, border: '1px solid var(--border-subtle)' }}>
+              <div style={{ position: 'absolute', bottom: 8, left: 10 }}><MBadge color={PH_PHASE[p.phase]}>{p.phase}</MBadge></div>
+            </MockPhoto>
+          : <div style={{ height: 200, borderRadius: 12, background: phLook(p.look), position: 'relative', border: '1px solid var(--border-subtle)' }}>
           {(p.annotations || []).map((an, i) => (
             <div key={i} style={{ position: 'absolute', left: `${an.x}%`, top: `${an.y}%`, transform: 'translate(-50%,-50%)' }}>
               <span style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--status-critical)', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 700 }}>{i + 1}</span>
             </div>
           ))}
           <div style={{ position: 'absolute', bottom: 8, left: 10 }}><MBadge color={PH_PHASE[p.phase]}>{p.phase}</MBadge></div>
-        </div>
+        </div>}
         {(p.annotations || []).map((an, i) => (
           <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 12, color: 'var(--text-mid)' }}><span style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--status-critical)', color: '#fff', fontSize: 10, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</span>{an.label}</div>
         ))}

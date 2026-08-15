@@ -206,7 +206,7 @@ function MDispatchView({ onNav }) {
               <MBadge color={t.c}>{t.STATUS}</MBadge>
             </div>
             <div style={{ display: 'flex', gap: 7, marginTop: 9 }}>
-              <button onClick={() => showToast(`Message sent to ${t.name.split(' ')[0]}`, 'ok')} style={mDispBtn}>Message</button>
+              <button onClick={() => onNav('messages')} style={mDispBtn}>Message</button>
               <button onClick={() => onNav('fleet')} style={mDispBtn}>Locate</button>
               {t.status === 'idle' && <button onClick={() => onNav('calendar')} style={{ ...mDispBtn, color: 'var(--status-warn)', borderColor: 'rgba(251,191,36,0.3)' }}>Assign job</button>}
               <span className="mono" style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-low)', alignSelf: 'center' }}>{t.hours}</span>
@@ -214,7 +214,19 @@ function MDispatchView({ onNav }) {
           </div>
         ))}
       </MSection>
-      <button onClick={() => showToast(techs.length ? 'Broadcast sent to all field techs' : 'No techs online to broadcast', techs.length ? 'ok' : 'warn')} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast all techs</button>
+      <button onClick={() => {
+        // A broadcast must actually reach the techs' Messages inboxes.
+        const chat = window.__shieldChat;
+        if (!chat) { showToast('Messaging not configured', 'warn'); return; }
+        shieldModal({ kind: 'editor', title: 'Broadcast to all techs', placeholder: 'Message every technician…', submitLabel: 'Send Broadcast', successMsg: null, onSubmit: async (txt) => {
+          if (!txt || !txt.trim()) return;
+          const ths = await chat.threads();
+          if (!ths || !ths.length) { showToast('No technician threads yet — techs appear after their first message or sign-in', 'warn'); return; }
+          const results = await Promise.all(ths.map(th => chat.send(th.threadId, `📢 BROADCAST: ${txt.trim()}`)));
+          const sent = results.filter(r => r && r.ok).length;
+          showToast(sent ? `Broadcast delivered to ${sent} technician${sent === 1 ? '' : 's'}` : 'Broadcast failed — try Messages directly', sent ? 'ok' : 'warn');
+        } });
+      }} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast all techs</button>
     </div>
   );
 }

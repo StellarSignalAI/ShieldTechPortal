@@ -1024,6 +1024,12 @@ function fmtSeconds(s) {
   return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
 }
 
+/* ── Asset documentation stores (IT-Glue style) — shared between the portal
+   Assets screen and the tech app's Assets tab, so "Save & Sync" is real. ── */
+const assetPwStore = createShieldStore('assetpw', []);    // credential vault [{id, customer, label, device, username, password, type}]
+const assetDocStore = createShieldStore('assetdocs', []); // documents [{id, customer, name, type, size, date, url}]
+const assetNetStore = createShieldStore('assetnets', []); // networks [{id, customer, name, subnet, gw, vlan, type, notes}]
+
 /* ── Blueprint / drawing annotations ──
    annoMap keyed by drawing id → {objects:[…], updatedAt, by}. Shared store so
    tech markups made in the field appear in the portal project drawer live. */
@@ -1063,5 +1069,6 @@ Object.assign(window, {
   surveyStore, surveyTotals, SURVEY_RATE, SURVEY_BOM_SEED, studioInboxStore,
   showToast, navTo, genId, fmtDuration, fmtSeconds, savedScreen, saveScreen,
   techExpenseStore, rejectTimesheetEntry,
-  drawingAnnoStore, projectScope
+  drawingAnnoStore, projectScope,
+  assetPwStore, assetDocStore, assetNetStore
 });

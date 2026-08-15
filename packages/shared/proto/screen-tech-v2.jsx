@@ -4,13 +4,30 @@
 function TimeViewV2() {
   const [running, setRunning] = React.useState(false);
   const [elapsed, setElapsed] = React.useState(0);
+  const [billable, setBillable] = React.useState(true);
   const [activeProject, setActiveProject] = React.useState('General');
   const [activeTask, setActiveTask] = React.useState('Installation');
+  /* The clock is anchored to a WALL-CLOCK start persisted in localStorage —
+     switching tabs, backgrounding the browser, or a reload can no longer
+     reset or undercount a day's labor. */
+  const startRef = React.useRef(null);
+  const persistTimer = (patch = {}) => {
+    try {
+      localStorage.setItem('st2:timer', JSON.stringify({
+        start: startRef.current, project: activeProject, task: activeTask, ...patch,
+      }));
+    } catch { /* quota */ }
+  };
+  const clearTimer = () => { startRef.current = null; try { localStorage.removeItem('st2:timer'); } catch {} };
   const [liveEntries, setLiveEntries] = React.useState([]);
   const [gps, setGps] = React.useState('\u2014');
+  const [loadError, setLoadError] = React.useState(null);
   const refreshEntries = React.useCallback(() => {
     const t = window.__shieldTime;
-    if (t) t.myEntries().then(r => { if (r.ok) setLiveEntries(r.data || []); });
+    if (!t) return;
+    t.myEntries()
+      .then(r => { if (r.ok) { setLiveEntries(r.data || []); setLoadError(null); } else setLoadError(r.error || 'load failed'); })
+      .catch(e => setLoadError(String(e)));
   }, []);
   React.useEffect(() => { refreshEntries(); }, [refreshEntries]);
   React.useEffect(() => {
@@ -27,9 +44,27 @@ function TimeViewV2() {
   // rendered under the bottom nav and clipped off-screen.
   const showToast = (m) => window.showToast(m, /^⚠/.test(String(m)) ? 'warn' : 'info');
 
+  /* Restore a timer that survived a tab switch / reload. */
+  React.useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('st2:timer') || 'null');
+      if (saved && saved.start) {
+        startRef.current = saved.start;
+        if (saved.project) setActiveProject(saved.project);
+        if (saved.task) setActiveTask(saved.task);
+        setElapsed(Math.max(0, Math.floor((Date.now() - saved.start) / 1000)));
+        setRunning(true);
+      } else if (saved && saved.pausedElapsed) {
+        setElapsed(saved.pausedElapsed);
+      }
+    } catch { /* corrupt state — start fresh */ }
+  }, []);
+
   React.useEffect(() => {
     if (!running) return;
-    const t = setInterval(() => setElapsed(e => e + 1), 1000);
+    if (!startRef.current) { startRef.current = Date.now() - elapsed * 1000; persistTimer(); }
+    // Wall-clock derived — background interval throttling can't undercount.
+    const t = setInterval(() => setElapsed(Math.max(0, Math.floor((Date.now() - startRef.current) / 1000))), 1000);
     return () => clearInterval(t);
   }, [running]);
 
@@ -140,7 +175,7 @@ function TimeViewV2() {
         {/* Billable toggle */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 14 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-mid)', cursor: 'pointer' }}>
-            <input type="checkbox" defaultChecked style={{ accentColor: 'var(--brand)' }} /> Billable
+            <input type="checkbox" checked={billable} onChange={e => setBillable(e.target.checked)} style={{ accentColor: 'var(--brand)' }} /> Billable
           </label>
           <span style={{ color: 'var(--border-subtle)' }}>|</span>
           <div style={{ display: 'flex', gap: 4 }}>
@@ -158,7 +193,18 @@ function TimeViewV2() {
 
         {/* Control buttons */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
-          <button onClick={() => setRunning(!running)} style={{
+          <button onClick={() => {
+            if (running) {
+              // Pause: freeze elapsed, remember it in case the app closes.
+              setRunning(false);
+              startRef.current = null;
+              try { localStorage.setItem('st2:timer', JSON.stringify({ pausedElapsed: elapsed })); } catch {}
+            } else {
+              startRef.current = Date.now() - elapsed * 1000;
+              persistTimer();
+              setRunning(true);
+            }
+          }} style={{
             width: 56, height: 56, borderRadius: '50%',
             background: running ? 'rgba(244,63,94,0.12)' : 'rgba(52,211,153,0.12)',
             border: `2px solid ${running ? 'var(--status-critical)' : 'var(--status-ok)'}`,
@@ -189,8 +235,8 @@ function TimeViewV2() {
 
         {/* GPS */}
         <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-          <StatusDot status="online" size={4} pulse />
-          GPS: 37.7749° N, 122.4194° W
+          <StatusDot status={gps === '—' ? 'offline' : 'online'} size={4} pulse={gps !== '—'} />
+          GPS: {gps}
         </div>
       </GlassPanel>
 
@@ -213,7 +259,12 @@ function TimeViewV2() {
             <span>TODAY'S ENTRIES</span>
             <span>{(todayEntries.reduce((s, e) => s + e.dur, 0) / 3600).toFixed(1)}h total</span>
           </div>
-          {todayEntries.length === 0 && (
+          {loadError && (
+            <div style={{ padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', fontSize: 11, color: 'var(--status-warn)' }}>
+              ⚠ Couldn't load your entries ({loadError}) — <span onClick={refreshEntries} style={{ textDecoration: 'underline', cursor: 'pointer' }}>retry</span>
+            </div>
+          )}
+          {!loadError && todayEntries.length === 0 && (
             <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--text-low)', fontSize: 12, border: '1px dashed var(--border-subtle)', borderRadius: 8 }}>
               No time logged today yet. Start the timer or add a manual entry with ＋.
             </div>
@@ -334,8 +385,8 @@ function TimeViewV2() {
         <GlassPanel>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 500 }}>Pay Period: May 26 — Jun 8</div>
-              <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Bi-weekly · 10 working days</div>
+              <div style={{ fontSize: 13, fontWeight: 500 }}>Pay Period: {ppLabel}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Trailing 14 days</div>
             </div>
             <StatusBadge status="pending" label="In Progress" />
           </div>
@@ -390,16 +441,25 @@ function TimeViewV2() {
                 style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: `1px solid ${stopNote.trim() ? 'var(--border-subtle)' : 'rgba(251,191,36,0.4)'}`, borderRadius: 6, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
             </div>
             <div style={{ padding: '12px 18px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-              <button onClick={() => { setStopNote(null); setRunning(true); }} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Keep Timing</button>
+              <button onClick={() => { setStopNote(null); startRef.current = Date.now() - elapsed * 1000; persistTimer(); setRunning(true); }} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Keep Timing</button>
               <button onClick={() => {
                 if (!stopNote.trim()) { showToast('⚠ Add a note describing the work before submitting'); return; }
+                if (!window.__shieldTime) { showToast('Backend not configured'); return; }
                 const hrs = elapsed / 3600;
                 const note = stopNote.trim();
-                setStopNote(null); setElapsed(0);
-                if (window.__shieldTime) {
-                  window.__shieldTime.submitHours({ workDate: new Date().toISOString().slice(0, 10), hours: hrs, jobRef: activeProject, notes: `${activeTask} — ${note}`, draft: true })
-                    .then(r => { showToast(r.ok ? `Logged ${hrs.toFixed(2)}h — saved as draft` : (r.error || 'Could not save entry')); refreshEntries(); });
-                } else showToast('Backend not configured');
+                const meta = [activeTag !== 'on-site' ? activeTag : null, billable ? null : 'non-billable'].filter(Boolean);
+                // The clock only resets AFTER the entry saves — a failed write
+                // (offline, RLS, expired session) keeps the hours on screen.
+                window.__shieldTime.submitHours({ workDate: new Date().toISOString().slice(0, 10), hours: hrs, jobRef: activeProject, notes: `${activeTask} — ${note}${meta.length ? ` [${meta.join(', ')}]` : ''}`, draft: true })
+                  .then(r => {
+                    if (r.ok) {
+                      setStopNote(null); setElapsed(0); clearTimer();
+                      showToast(`Logged ${hrs.toFixed(2)}h — saved as draft`);
+                      refreshEntries();
+                    } else {
+                      showToast(`⚠ Could not save (${r.error || 'unknown'}) — your time is still here, try again`);
+                    }
+                  });
               }} style={{ padding: '8px 20px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Entry</button>
             </div>
           </div>
@@ -477,7 +537,7 @@ function TimeViewV2() {
                 if (!manualEntry.notes.trim()) { showToast('⚠ Add a note describing the work before saving this entry'); return; }
                 const startAt = `${manualEntry.date}T${manualEntry.startTime}:00`;
                 const endAt = `${manualEntry.date}T${manualEntry.endTime}:00`;
-                t.submitHours({ workDate: manualEntry.date, startAt, endAt, jobRef: manualEntry.project, notes: `${manualEntry.task} — ${manualEntry.notes.trim()}`, draft: true })
+                t.submitHours({ workDate: manualEntry.date, startAt, endAt, jobRef: manualEntry.project, notes: `${manualEntry.task} — ${manualEntry.notes.trim()}${manualEntry.billable ? '' : ' [non-billable]'}`, draft: true })
                   .then(r => { showToast(r.ok ? `Saved: ${manualEntry.project} — ${manualEntry.task}` : (r.error || 'Could not save entry')); if (r.ok) { setManualEntryOpen(false); refreshEntries(); } });
               }} style={{ padding: '8px 20px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Entry</button>
             </div>
@@ -585,7 +645,7 @@ function ExpenseView() {
               <input value={f.desc} onChange={e => setF(p => ({ ...p, desc: e.target.value }))} placeholder="What was this for?" style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 16, fontFamily: 'var(--font-body)', outline: 'none' }} />
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              {['Materials','Fuel','Tools','Other'].map(c => (
+              {['Materials','Fuel','Tools','Meals','Other'].map(c => (
                 <button key={c} onClick={() => setF(p => ({ ...p, category: c }))} style={{ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, background: f.category === c ? 'rgba(63,169,245,0.12)' : 'transparent', border: `1px solid ${f.category === c ? 'var(--brand)' : 'var(--border-subtle)'}`, color: f.category === c ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
               ))}
             </div>
@@ -636,39 +696,65 @@ function ExpenseView() {
   );
 }
 
-/* ── Vehicle Inspection ── */
+/* ── Vehicle Inspection — nothing pre-ticked, submissions persist ── */
+const vehicleInspStore = createShieldStore('vinspect', []);
 function VehicleInspectionView() {
+  const [issueText, setIssueText] = React.useState('');
   const [checks, setChecks] = React.useState([
     { cat: 'Exterior', items: [
-      { label: 'Body damage — none', done: true },
-      { label: 'Tires — adequate tread', done: true },
+      { label: 'Body damage — none', done: false },
+      { label: 'Tires — adequate tread', done: false },
       { label: 'Lights — all working', done: false },
       { label: 'Ladder rack — secure', done: false },
     ]},
     { cat: 'Interior', items: [
-      { label: 'Mirrors adjusted', done: true },
-      { label: 'Seat belt functional', done: true },
+      { label: 'Mirrors adjusted', done: false },
+      { label: 'Seat belt functional', done: false },
       { label: 'Dash warning lights — none', done: false },
       { label: 'Fire extinguisher present', done: false },
     ]},
     { cat: 'Truck Stock', items: [
-      { label: 'Tool bag — complete', done: true },
-      { label: 'Drill / impact driver', done: true },
+      { label: 'Tool bag — complete', done: false },
+      { label: 'Drill / impact driver', done: false },
       { label: 'Cable tester', done: false },
       { label: 'Laptop + charger', done: false },
       { label: 'PPE — hard hat, safety vest', done: false },
     ]},
   ]);
+  const [inspections, setInspections] = useShieldStore(vehicleInspStore);
+  const me = window.__shieldUser || {};
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const submittedToday = (inspections || []).some(r => r.tech === (me.initials || me.name) && r.date === todayIso);
 
   const totalItems = checks.reduce((s, c) => s + c.items.length, 0);
   const doneItems = checks.reduce((s, c) => s + c.items.filter(i => i.done).length, 0);
+
+  const submitInspection = () => {
+    if (doneItems !== totalItems) return;
+    setInspections(list => [{
+      id: genId('INSP'), tech: me.initials || me.name || 'Tech', techName: me.name || 'Technician',
+      date: todayIso, at: Date.now(), items: totalItems,
+    }, ...(list || [])]);
+    shieldToast('Inspection recorded — synced to the portal', 'ok');
+  };
+  const submitIssue = () => {
+    if (!issueText.trim()) { shieldToast('Describe the issue first', 'warn'); return; }
+    const chat = window.__shieldChat;
+    if (chat && chat.myThreadId()) {
+      chat.send(chat.myThreadId(), `🚐 VEHICLE ISSUE: ${issueText.trim()}`)
+        .then(r => shieldToast(r.ok ? 'Issue sent to dispatch — check Messages for replies' : `Could not send: ${r.error}`, r.ok ? 'warn' : 'warn'));
+    } else {
+      shieldToast('Messaging not available — call dispatch', 'warn');
+    }
+    setIssueText('');
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontSize: 16, fontWeight: 500 }}>Daily Vehicle Inspection</div>
-          <div style={{ fontSize: 12, color: 'var(--text-low)' }}>Vehicle V-12 · Jun 5, 2026 · Pre-trip</div>
+          <div style={{ fontSize: 12, color: 'var(--text-low)' }}>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · Pre-trip{submittedToday ? ' · ✓ submitted today' : ''}</div>
         </div>
         <HealthRing value={Math.round(doneItems/totalItems*100)} size={50} strokeWidth={4} label="" />
       </div>
@@ -701,14 +787,13 @@ function VehicleInspectionView() {
       {/* Report issue */}
       <GlassPanel style={{ borderLeft: '3px solid var(--status-warn)' }}>
         <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Report an Issue</div>
-        <textarea placeholder="Describe the issue (flat tire, missing tool, vehicle damage)…" rows={3} style={{ width: '100%', padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
+        <textarea value={issueText} onChange={e => setIssueText(e.target.value)} placeholder="Describe the issue (flat tire, missing tool, vehicle damage)…" rows={3} style={{ width: '100%', padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
         <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-          <button onClick={() => shieldToast('Camera opened — attach a photo')} style={{ padding: '8px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◉ Photo</button>
-          <button onClick={() => shieldToast('Issue report submitted to dispatch', 'warn')} style={{ flex: 1, padding: '8px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 6, color: 'var(--status-warn)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Submit Issue Report</button>
+          <button onClick={submitIssue} style={{ flex: 1, padding: '8px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 6, color: 'var(--status-warn)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send Issue to Dispatch</button>
         </div>
       </GlassPanel>
 
-      <button onClick={() => doneItems === totalItems && shieldToast('Inspection submitted', 'ok')} style={{
+      <button onClick={submitInspection} style={{
         padding: '12px', background: doneItems === totalItems ? 'var(--status-ok)' : 'var(--brand)',
         border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 600,
         cursor: doneItems === totalItems ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-body)',
@@ -720,21 +805,46 @@ function VehicleInspectionView() {
   );
 }
 
-/* ── Parts Request ── */
+/* ── Parts Request — the REAL shared queue (truck auto-restocks land here) ── */
 function PartsRequestView() {
-  const requests = [
-    { id: 'PR-108', item: 'Axis P3265-V Dome Camera', qty: 2, urgency: 'standard', status: 'approved', date: 'Jun 4', job: 'J-4203' },
-    { id: 'PR-107', item: 'Cat6A Patch Cables (25-pack)', qty: 1, urgency: 'rush', status: 'shipped', date: 'Jun 3', job: 'J-4202', tracking: 'UPS 1Z999AA10' },
-    { id: 'PR-106', item: 'Conduit fittings assorted', qty: 1, urgency: 'standard', status: 'delivered', date: 'Jun 1', job: 'J-4195' },
-  ];
+  const [allReqs] = useShieldStore(partsReqStore);
+  const me = window.__shieldUser || {};
+  const meId = me.initials || 'ME';
+  const requests = (allReqs || [])
+    .filter(r => !r.tech || r.tech === meId)
+    .map(r => ({
+      id: r.id, status: r.status || 'requested',
+      item: (r.parts || []).map(p => `${p.qty > 1 ? p.qty + '× ' : ''}${p.name}`).join(', ') || r.item || 'Parts',
+      qty: (r.parts || []).reduce((s, p) => s + (Number(p.qty) || 1), 0) || r.qty || 1,
+      urgency: r.urgency || 'standard', job: r.job || '—', tracking: r.tracking,
+    }));
+
+  const newRequest = () => shieldModal({
+    kind: 'form', title: 'New Parts Request', submitLabel: 'Send Request',
+    successMsg: 'Request sent to the office', fields: [
+      { key: 'item', label: 'Part / Material', placeholder: 'e.g. Axis P3265-V Dome Camera', required: true, full: true },
+      { key: 'qty', label: 'Quantity', placeholder: '1' },
+      { key: 'urgency', label: 'Urgency', type: 'select', options: ['standard', 'rush', 'urgent'] },
+      { key: 'job', label: 'Job / WO (optional)', placeholder: 'e.g. WO-2871' },
+    ],
+    onSubmit: (v) => {
+      partsReqStore.set(prev => [{
+        id: genId('REQ'), tech: meId, techName: me.name || 'Technician', status: 'requested',
+        urgency: v.urgency || 'standard', job: v.job || '',
+        parts: [{ name: v.item, sku: '', qty: Number(v.qty) || 1 }],
+        submitted: 'just now', notes: 'Requested from the tech app',
+      }, ...(prev || [])]);
+    },
+  });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 16, fontWeight: 500 }}>Parts Requests</div>
-        <button onClick={() => shieldToast('New parts request — opening form', 'info')} style={{ padding: '6px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Request</button>
+        <button onClick={newRequest} style={{ padding: '6px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Request</button>
       </div>
 
+      {requests.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, border: '1px dashed var(--border-subtle)', borderRadius: 10 }}>No parts requests yet — truck auto-restocks and anything you request show up here.</div>}
       {requests.map((r, i) => (
         <GlassPanel key={i}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -761,57 +871,111 @@ function PartsRequestView() {
   );
 }
 
-/* ── Tech Assets View V2 (Mobile IT Glue — matches portal) ── */
+/* ── Tech Assets View V2 (Mobile IT Glue — matches portal) ──
+   REAL data: the same shared stores the portal Assets screen writes
+   (assetStore / assetPwStore / assetDocStore / assetNetStore). No more
+   fabricated devices, IPs, or — worst of all — fake device passwords. */
 function TechAssetsView() {
   const [search, setSearch] = React.useState('');
   const [selectedAsset, setSelectedAsset] = React.useState(null);
   const [activeTab, setActiveTab] = React.useState('configs');
   const [filter, setFilter] = React.useState('all');
   const [revealed, setRevealed] = React.useState({});
-  const [toast, setToast] = React.useState(null);
-  const [selectedCustomer, setSelectedCustomer] = React.useState('Metro Bank');
-  const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 2500); };
-  const [addConfigOpen, setAddConfigOpen] = React.useState(false);
-  const [addPasswordOpen, setAddPasswordOpen] = React.useState(false);
-  const [addDocOpen, setAddDocOpen] = React.useState(false);
-  const [addNetworkOpen, setAddNetworkOpen] = React.useState(false);
+  const [selectedCustomer, setSelectedCustomer] = React.useState('');
+  const showToast = (m) => window.showToast(m, 'info');
+  const docFileRef = React.useRef(null);
 
-  const customers = ['Metro Bank', 'Acme Dental', 'City Hall', 'Harbor View'];
+  const [allConfigs] = useShieldStore(assetStore);
+  const [allPasswords, setAllPasswords] = useShieldStore(assetPwStore);
+  const [allDocs, setAllDocs] = useShieldStore(assetDocStore);
+  const [allNets, setAllNets] = useShieldStore(assetNetStore);
 
-  const configs = [
-    { id: 'CFG-001', name: 'CAM-01 (Lobby)', type: 'IP Camera', mfg: 'Axis', model: 'P3265-V', ip: '192.168.1.101', mac: 'AC:CC:8E:F0:12:34', serial: 'ACCC8EF01234', status: 'online', site: 'Main Office', room: 'Lobby', firmware: '11.8.64', fwUpdate: true, mount: '10ft ceiling', cable: 'Cat6A', switchPort: 'SW-01 Port 3', notes: 'Covers main entrance + ATM area' },
-    { id: 'CFG-002', name: 'CAM-02 (Parking N)', type: 'IP Camera', mfg: 'Axis', model: 'P3265-V', ip: '192.168.1.102', mac: 'AC:CC:8E:F0:12:35', serial: 'ACCC8EF01235', status: 'online', site: 'Main Office', room: 'Parking N', firmware: '11.8.64', fwUpdate: false, mount: '15ft pole', cable: 'Cat6A', switchPort: 'SW-01 Port 4', notes: '' },
-    { id: 'CFG-003', name: 'NVR-01', type: 'NVR', mfg: 'Hanwha', model: 'XNR-6410', ip: '192.168.1.100', mac: '00:09:18:A0:12:34', serial: 'HWV2605001234', status: 'online', site: 'Main Office', room: 'Server Room', firmware: '2.01.04', fwUpdate: true, mount: 'Rack U4', cable: 'Cat6A', switchPort: 'SW-01 Port 1', notes: '8TB RAID5, 30-day retention' },
-    { id: 'CFG-004', name: 'RDR-01 (Front Door)', type: 'Access Reader', mfg: 'HID', model: 'iCLASS SE RK40', ip: '', mac: '', serial: 'HID8820001234', status: 'online', site: 'Main Office', room: 'Main Entrance', firmware: 'R3.4', fwUpdate: false, mount: '48in AFF', cable: '18/4 + 22/6', switchPort: '', notes: 'Wiegand to VertX V1000' },
-    { id: 'CFG-005', name: 'SW-01 (IDF)', type: 'Network Switch', mfg: 'Cisco', model: 'CBS350-24P', ip: '192.168.1.2', mac: '00:1A:2B:3C:4D:5E', serial: 'FCW12345678', status: 'online', site: 'Main Office', room: 'Server Room', firmware: '3.2.0.84', fwUpdate: false, mount: 'Rack U10', cable: 'Cat6A', switchPort: 'Core Port 24', notes: '24-port PoE+, 370W budget' },
-    { id: 'CFG-006', name: 'Panel-01 (Alarm)', type: 'Alarm Panel', mfg: 'DSC', model: 'PowerSeries Neo', ip: '', mac: '', serial: 'DSC7801234567', status: 'online', site: 'Main Office', room: 'Utility Room', firmware: '1.40', fwUpdate: false, mount: 'Wall 60in', cable: '22/4 + 18/4', switchPort: '', notes: '52 zones. CS acct: MB-20250' },
-    { id: 'CFG-007', name: 'AP-01 (Lobby)', type: 'Access Point', mfg: 'Ubiquiti', model: 'U6-Pro', ip: '192.168.1.50', mac: 'FC:EC:DA:12:56:78', serial: 'FECDA1256789', status: 'online', site: 'Main Office', room: 'Lobby', firmware: '6.6.55', fwUpdate: false, mount: 'Ceiling', cable: 'Cat6A', switchPort: 'SW-01 Port 20', notes: '5 GHz, 12 clients' },
-  ];
+  const customers = [...new Set([
+    ...(allConfigs || []).map(c => c.customer),
+    ...(allPasswords || []).map(p => p.customer),
+    ...(allDocs || []).map(d => d.customer),
+    ...(allNets || []).map(n => n.customer),
+  ].filter(Boolean))];
+  const byCust = (rows) => (rows || []).filter(r => !selectedCustomer || r.customer === selectedCustomer);
+  const configs = byCust(allConfigs);
+  const passwords = byCust(allPasswords);
+  const documents = byCust(allDocs);
+  const networks = byCust(allNets);
 
-  const passwords = [
-    { id: 'PW-001', label: 'NVR Admin', device: 'NVR-01', username: 'admin', password: 'Nvr@Metr0!2025', type: 'Device' },
-    { id: 'PW-002', label: 'Camera Admin', device: 'All Axis', username: 'admin', password: 'X#k9$mP2!qR7', type: 'Device' },
-    { id: 'PW-003', label: 'Switch Admin', device: 'SW-01', username: 'admin', password: 'C!sc0-Sw#2025', type: 'Device' },
-    { id: 'PW-004', label: 'Alarm Installer', device: 'Panel-01', username: 'installer', password: '5555', type: 'Device' },
-    { id: 'PW-005', label: 'Alarm Master', device: 'Panel-01', username: 'customer', password: '1234', type: 'Customer' },
-    { id: 'PW-006', label: 'WiFi Admin', device: 'AP-01', username: 'admin', password: 'Ub!qu1t1_2025', type: 'Device' },
-    { id: 'PW-007', label: 'VPN Access', device: 'Firewall', username: 'shieldtech', password: 'Vpn$ecure!2025', type: 'Remote' },
-  ];
-
-  const documents = [
-    { name: 'Floor Plan (PDF)', type: 'Floor Plan', size: '2.4 MB', date: 'May 15' },
-    { name: 'Camera Placement Drawing', type: 'Design', size: '1.8 MB', date: 'May 20' },
-    { name: 'Alarm Zone List', type: 'Programming', size: '45 KB', date: 'Apr 3' },
-    { name: 'Access Control Door Schedule', type: 'Programming', size: '62 KB', date: 'Apr 3' },
-    { name: 'As-Built Network Diagram', type: 'Network', size: '890 KB', date: 'Mar 15' },
-    { name: 'Service Agreement', type: 'Contract', size: '120 KB', date: 'Jan 10' },
-  ];
-
-  const networks = [
-    { name: 'Security VLAN 10', subnet: '192.168.1.0/24', gw: '192.168.1.1', devices: 12, type: 'Wired' },
-    { name: 'Guest WiFi', subnet: '10.10.10.0/24', gw: '10.10.10.1', devices: 0, type: 'Wireless' },
-    { name: 'Corp Network', subnet: '172.16.0.0/16', gw: '172.16.0.1', devices: 45, type: 'Wired' },
-  ];
+  const addConfig = () => shieldModal({
+    kind: 'form', title: 'New Configuration', submitLabel: 'Save & Sync',
+    successMsg: 'Configuration saved — synced to the portal', fields: [
+      { key: 'name', label: 'Device Name', placeholder: 'e.g. CAM-04 (Loading Dock)', required: true, full: true },
+      { key: 'type', label: 'Type', type: 'select', options: ['IP Camera','NVR','Network Switch','Access Reader','Alarm Panel','Access Point','Other'] },
+      { key: 'customer', label: 'Customer', placeholder: selectedCustomer || 'Customer name', required: !selectedCustomer },
+      { key: 'mfg', label: 'Manufacturer', placeholder: 'e.g. Axis' },
+      { key: 'model', label: 'Model', placeholder: 'e.g. P3265-V' },
+      { key: 'serial', label: 'Serial', placeholder: 'Serial number' },
+      { key: 'ip', label: 'IP Address', placeholder: 'e.g. 192.168.1.104' },
+      { key: 'site', label: 'Site / Room', placeholder: 'e.g. Main Office / Lobby' },
+      { key: 'notes', label: 'Notes', placeholder: 'Mount, cable, port…', full: true },
+    ],
+    onSubmit: (v) => {
+      assetStore.set(list => [{
+        id: genId('CFG'), status: 'online',
+        customer: v.customer || selectedCustomer || '—',
+        name: v.name, type: v.type || 'Other', mfg: v.mfg || '', model: v.model || '',
+        serial: v.serial || '', ip: v.ip || '', mac: '', site: v.site || '', room: '',
+        firmware: '', fwUpdate: false, mount: '', cable: '', switchPort: '', notes: v.notes || '',
+      }, ...(list || [])]);
+    },
+  });
+  const addPassword = () => shieldModal({
+    kind: 'form', title: 'Add Password', submitLabel: 'Save & Sync',
+    successMsg: 'Credential saved to the shared vault', fields: [
+      { key: 'label', label: 'Label', placeholder: 'e.g. NVR Admin', required: true, full: true },
+      { key: 'device', label: 'Device / System', placeholder: 'e.g. NVR-01' },
+      { key: 'customer', label: 'Customer', placeholder: selectedCustomer || 'Customer name', required: !selectedCustomer },
+      { key: 'username', label: 'Username', placeholder: 'admin' },
+      { key: 'password', label: 'Password', placeholder: 'Enter password', required: true },
+      { key: 'type', label: 'Type', type: 'select', options: ['Device','Customer','Remote','Service'] },
+    ],
+    onSubmit: (v) => {
+      setAllPasswords(list => [{
+        id: genId('PW'), customer: v.customer || selectedCustomer || '—',
+        label: v.label, device: v.device || '', username: v.username || '',
+        password: v.password, type: v.type || 'Device',
+      }, ...(list || [])]);
+    },
+  });
+  const addNetwork = () => shieldModal({
+    kind: 'form', title: 'Add Network', submitLabel: 'Save & Sync',
+    successMsg: 'Network documented — synced to the portal', fields: [
+      { key: 'name', label: 'Network Name', placeholder: 'e.g. Security VLAN 20', required: true, full: true },
+      { key: 'customer', label: 'Customer', placeholder: selectedCustomer || 'Customer name', required: !selectedCustomer },
+      { key: 'subnet', label: 'Subnet', placeholder: 'e.g. 192.168.2.0/24' },
+      { key: 'gw', label: 'Gateway', placeholder: 'e.g. 192.168.2.1' },
+      { key: 'vlan', label: 'VLAN ID', placeholder: 'e.g. 20' },
+      { key: 'type', label: 'Type', type: 'select', options: ['Wired','Wireless','VPN','VLAN'] },
+    ],
+    onSubmit: (v) => {
+      setAllNets(list => [{
+        id: genId('NET'), customer: v.customer || selectedCustomer || '—',
+        name: v.name, subnet: v.subnet || '', gw: v.gw || '', vlan: v.vlan || '',
+        devices: 0, type: v.type || 'Wired', notes: '',
+      }, ...(list || [])]);
+    },
+  });
+  const uploadDoc = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    const st = window.__shieldStorage;
+    if (!st) { showToast('Storage not configured'); return; }
+    const r = await st.uploadFile(file, { folder: 'asset-docs', entity: 'asset-doc', entityId: selectedCustomer || 'general', shared: true });
+    if (!r || !r.ok) { window.showToast('Upload failed: ' + ((r && r.error) || 'unknown'), 'warn'); return; }
+    setAllDocs(list => [{
+      id: genId('DOC'), customer: selectedCustomer || '—', name: file.name,
+      type: 'Document', size: `${Math.max(1, Math.round(file.size / 1024))} KB`,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), url: r.url,
+    }, ...(list || [])]);
+    window.showToast('Document uploaded — synced to the portal', 'ok');
+  };
 
   const typeIcons = { 'IP Camera': 'cam-dome', 'NVR': 'nvr-box', 'Access Reader': 'reader', 'Network Switch': 'switch-ports', 'Alarm Panel': 'alarm-panel', 'Access Point': 'ap-ceiling' };
   const typeColors = { 'IP Camera': 'var(--brand)', 'NVR': 'var(--status-ok)', 'Access Reader': '#c084fc', 'Network Switch': 'var(--status-ok)', 'Alarm Panel': 'var(--status-warn)', 'Access Point': '#a78bfa' };
@@ -828,9 +992,8 @@ function TechAssetsView() {
         <StatusDot status={a.status==='online'?'online':'warning'} size={10} />
       </div>
       <div style={{ display: 'flex', gap: 6 }}>
-        {a.ip && <button onClick={() => showToast('Opening web UI...')} className="glass" style={{ flex: 1, padding: '10px', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="link" size={12} color="var(--brand)" /> Web UI</button>}
-        <button onClick={() => showToast('Ping: 2ms')} className="glass" style={{ flex: 1, padding: '10px', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="topology" size={12} color="var(--text-mid)" /> Ping</button>
-        <button onClick={() => showToast('Photo captured')} className="glass" style={{ flex: 1, padding: '10px', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="photo" size={12} color="var(--text-mid)" /> Photo</button>
+        {a.ip && <button onClick={() => window.open('http://' + a.ip, '_blank')} className="glass" style={{ flex: 1, padding: '10px', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="link" size={12} color="var(--brand)" /> Web UI</button>}
+        {a.ip && <button onClick={() => { navigator.clipboard?.writeText?.(a.ip); showToast('IP copied'); }} className="glass" style={{ flex: 1, padding: '10px', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="topology" size={12} color="var(--text-mid)" /> Copy IP</button>}
       </div>
       <GlassPanel style={{ padding: 12 }}><div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}><Icon name="info" size={12} color="var(--text-low)" /><span className="label-sm">IDENTITY</span></div>
         {[{l:'ID',v:a.id},{l:'Type',v:a.type},{l:'Mfg',v:a.mfg},{l:'Model',v:a.model},{l:'Serial',v:a.serial},{l:'MAC',v:a.mac||'—'}].map((f,i) => (<div key={i} onClick={() => {if(f.v!=='—'){navigator.clipboard?.writeText?.(f.v);showToast('Copied');}}} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(63,169,245,0.04)', cursor: f.v!=='—'?'pointer':'default' }}><span style={{ fontSize: 12, color: 'var(--text-low)' }}>{f.l}</span><span className="mono" style={{ fontSize: 12, color: 'var(--text-mid)' }}>{f.v}</span></div>))}
@@ -851,125 +1014,39 @@ function TechAssetsView() {
       </GlassPanel>
       {a.notes && <GlassPanel style={{ padding: 12 }}><div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}><Icon name="note" size={12} color="var(--text-low)" /><span className="label-sm">NOTES</span></div><p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.5, margin: 0 }}>{a.notes}</p></GlassPanel>}
       <div style={{ display: 'flex', gap: 6 }}>
-        <button onClick={() => showToast('Note added')} style={{ flex: 1, padding: '10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="note" size={12} color="var(--brand)" /> Add Note</button>
-        <button onClick={() => showToast('Flagged')} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--status-warn)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="flag" size={12} color="var(--status-warn)" /> Flag Issue</button>
+        <button onClick={() => shieldModal({ kind: 'editor', title: `Add note — ${a.name}`, placeholder: 'Note for this device…', submitLabel: 'Save Note', successMsg: 'Note saved — synced to the portal', onSubmit: (txt) => {
+          if (!txt || !txt.trim()) return;
+          assetStore.set(list => (list || []).map(x => x.id === a.id ? { ...x, notes: (x.notes ? x.notes + '\n' : '') + txt.trim() } : x));
+          setSelectedAsset(prev => prev ? { ...prev, notes: (prev.notes ? prev.notes + '\n' : '') + txt.trim() } : prev);
+        } })} style={{ flex: 1, padding: '10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="note" size={12} color="var(--brand)" /> Add Note</button>
+        <button onClick={() => {
+          assetStore.set(list => (list || []).map(x => x.id === a.id ? { ...x, status: 'flagged' } : x));
+          setSelectedAsset(prev => prev ? { ...prev, status: 'flagged' } : prev);
+          window.showToast('Flagged for the office — visible on the portal Assets screen', 'warn');
+        }} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--status-warn)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="flag" size={12} color="var(--status-warn)" /> Flag Issue</button>
       </div>
-      {/* ── Add Config Modal ── */}
-      {addConfigOpen && (<div onClick={() => setAddConfigOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-        <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 500, maxHeight: '85vh', background: 'var(--card)', border: '1px solid var(--border-strong)', borderRadius: '16px 16px 0 0', overflow: 'auto', animation: 'fade-up 0.2s ease both' }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', position: 'sticky', top: 0, background: 'var(--card)', zIndex: 1 }}>
-            <span style={{ fontSize: 15, fontWeight: 500 }}>New Configuration</span>
-            <button onClick={() => setAddConfigOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 16, cursor: 'pointer' }}>✕</button>
-          </div>
-          <div style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ padding: '8px 10px', borderRadius: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="topology" size={12} color="var(--brand)" /> Syncs to ShieldTech Portal in real-time</div>
-            {[{l:'Device Name',p:'e.g. CAM-04 (Loading Dock)'},{l:'Type',p:'IP Camera / NVR / Switch / Reader / Panel / AP'},{l:'Manufacturer',p:'e.g. Axis, Hanwha, HID'},{l:'Model',p:'e.g. P3265-V'},{l:'Serial Number',p:'Scan barcode or enter manually'},{l:'IP Address',p:'e.g. 192.168.1.104'},{l:'MAC Address',p:'e.g. AC:CC:8E:xx:xx:xx'},{l:'Site / Room',p:'e.g. Main Office / Loading Dock'},{l:'Mount Type',p:'Ceiling / Wall / Pole'},{l:'Cable Type',p:'Cat6A / Cat6 / Fiber'},{l:'Switch Port',p:'e.g. SW-01 Port 8'},{l:'Notes',p:'Any additional details'}].map((f,i) => (
-              <div key={i}><div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 3 }}>{f.l}</div>
-              {f.l === 'Type' ? <select style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }}>{['IP Camera','NVR','Network Switch','Access Reader','Alarm Panel','Access Point','Other'].map(t => <option key={t}>{t}</option>)}</select>
-              : f.l === 'Notes' ? <textarea placeholder={f.p} rows={2} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
-              : <input placeholder={f.p} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />}</div>
-            ))}
-            <div style={{ display: 'flex', gap: 6, paddingBottom: 20 }}>
-              <button onClick={() => setAddConfigOpen(false)} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-              <button onClick={() => { showToast('Configuration saved & synced to portal'); setAddConfigOpen(false); }} style={{ flex: 1, padding: '10px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save & Sync</button>
-            </div>
-          </div>
-        </div>
-      </div>)}
-
-      {/* ── Add Password Modal ── */}
-      {addPasswordOpen && (<div onClick={() => setAddPasswordOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-        <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 500, background: 'var(--card)', border: '1px solid var(--border-strong)', borderRadius: '16px 16px 0 0', overflow: 'auto', animation: 'fade-up 0.2s ease both' }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 15, fontWeight: 500 }}>Add Password</span>
-            <button onClick={() => setAddPasswordOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 16, cursor: 'pointer' }}>✕</button>
-          </div>
-          <div style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ padding: '8px 10px', borderRadius: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="access-control" size={12} color="var(--brand)" /> Encrypted & synced to portal vault</div>
-            {[{l:'Label',p:'e.g. NVR Admin'},{l:'Device / System',p:'e.g. NVR-01'},{l:'Username',p:'admin'},{l:'Password',p:'Enter password'},{l:'Type',p:'select'}].map((f,i) => (
-              <div key={i}><div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 3 }}>{f.l}</div>
-              {f.l === 'Type' ? <select style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }}>{['Device','Customer','Remote','Service'].map(t => <option key={t}>{t}</option>)}</select>
-              : f.l === 'Password' ? <div style={{ display: 'flex', gap: 6 }}><input type="password" placeholder={f.p} style={{ flex: 1, padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} /><button onClick={() => showToast('Password generated')} style={{ padding: '8px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Generate</button></div>
-              : <input placeholder={f.p} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />}</div>
-            ))}
-            <div style={{ display: 'flex', gap: 6, paddingBottom: 20 }}>
-              <button onClick={() => setAddPasswordOpen(false)} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-              <button onClick={() => { showToast('Password saved & synced to vault'); setAddPasswordOpen(false); }} style={{ flex: 1, padding: '10px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save & Sync</button>
-            </div>
-          </div>
-        </div>
-      </div>)}
-
-      {/* ── Upload Doc Modal ── */}
-      {addDocOpen && (<div onClick={() => setAddDocOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-        <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 500, background: 'var(--card)', border: '1px solid var(--border-strong)', borderRadius: '16px 16px 0 0', overflow: 'auto', animation: 'fade-up 0.2s ease both' }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 15, fontWeight: 500 }}>Upload Document</span>
-            <button onClick={() => setAddDocOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 16, cursor: 'pointer' }}>✕</button>
-          </div>
-          <div style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ padding: '8px 10px', borderRadius: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="proposals" size={12} color="var(--brand)" /> Uploads sync to portal document library</div>
-            <div style={{ padding: 28, border: '2px dashed var(--border-subtle)', borderRadius: 10, textAlign: 'center', cursor: 'pointer' }} onClick={() => showToast('File picker opened')}>
-              <Icon name="export" size={24} color="var(--text-low)" style={{ marginBottom: 6 }} />
-              <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>Tap to choose file or take photo</div>
-              <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 4 }}>PDF, JPG, PNG, DWG up to 25MB</div>
-            </div>
-            {[{l:'Document Name',p:'e.g. As-Built Drawing'},{l:'Type',p:'select'}].map((f,i) => (
-              <div key={i}><div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 3 }}>{f.l}</div>
-              {f.l === 'Type' ? <select style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }}>{['Floor Plan','Design','Programming','Network','Photo','Contract','Other'].map(t => <option key={t}>{t}</option>)}</select>
-              : <input placeholder={f.p} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />}</div>
-            ))}
-            <div style={{ display: 'flex', gap: 6, paddingBottom: 20 }}>
-              <button onClick={() => setAddDocOpen(false)} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-              <button onClick={() => { showToast('Document uploaded & synced'); setAddDocOpen(false); }} style={{ flex: 1, padding: '10px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Upload & Sync</button>
-            </div>
-          </div>
-        </div>
-      </div>)}
-
-      {/* ── Add Network Modal ── */}
-      {addNetworkOpen && (<div onClick={() => setAddNetworkOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-        <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 500, background: 'var(--card)', border: '1px solid var(--border-strong)', borderRadius: '16px 16px 0 0', overflow: 'auto', animation: 'fade-up 0.2s ease both' }}>
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 15, fontWeight: 500 }}>Add Network</span>
-            <button onClick={() => setAddNetworkOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 16, cursor: 'pointer' }}>✕</button>
-          </div>
-          <div style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ padding: '8px 10px', borderRadius: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--brand)', display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="topology" size={12} color="var(--brand)" /> Syncs to portal network documentation</div>
-            {[{l:'Network Name',p:'e.g. Security VLAN 20'},{l:'Subnet',p:'e.g. 192.168.2.0/24'},{l:'Gateway',p:'e.g. 192.168.2.1'},{l:'DNS',p:'e.g. 8.8.8.8'},{l:'VLAN ID',p:'e.g. 20'},{l:'Type',p:'select'},{l:'Notes',p:'DHCP range, purpose, etc.'}].map((f,i) => (
-              <div key={i}><div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 3 }}>{f.l}</div>
-              {f.l === 'Type' ? <select style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }}>{['Wired','Wireless','VPN','VLAN'].map(t => <option key={t}>{t}</option>)}</select>
-              : f.l === 'Notes' ? <textarea placeholder={f.p} rows={2} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
-              : <input placeholder={f.p} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />}</div>
-            ))}
-            <div style={{ display: 'flex', gap: 6, paddingBottom: 20 }}>
-              <button onClick={() => setAddNetworkOpen(false)} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-              <button onClick={() => { showToast('Network saved & synced to portal'); setAddNetworkOpen(false); }} style={{ flex: 1, padding: '10px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save & Sync</button>
-            </div>
-          </div>
-        </div>
-      </div>)}
-
-            {toast && <div style={{ position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, padding: '8px 20px', borderRadius: 8, background: 'var(--card)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 12, fontWeight: 500, boxShadow: 'var(--glow-brand-sm)' }}>{toast}</div>}
     </div>); }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <select value={selectedCustomer} onChange={e => setSelectedCustomer(e.target.value)} style={{ padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', fontWeight: 500 }}>
+        <option value="">All customers</option>
         {customers.map(c => <option key={c} value={c}>{c}</option>)}
       </select>
+      <input ref={docFileRef} type="file" style={{ display: 'none' }} onChange={uploadDoc} />
       <div style={{ display: 'flex', gap: 0, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
         {tabs.map(t => (<button key={t.id} onClick={() => setActiveTab(t.id)} style={{ flex: 1, padding: '8px 4px', fontSize: 11, fontWeight: activeTab===t.id?600:400, background: activeTab===t.id?'rgba(63,169,245,0.12)':'transparent', border: 'none', color: activeTab===t.id?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>{t.l}<span className="mono" style={{ fontSize: 9, opacity: 0.6 }}>{t.c}</span></button>))}
       </div>
       {activeTab === 'configs' && (<>
         <div style={{ display: 'flex', gap: 6 }}>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, IP, serial..." style={{ flex: 1, padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
-        <button onClick={() => setAddConfigOpen(true)} style={{ width: 38, height: 38, borderRadius: 8, background: 'var(--brand)', border: 'none', color: '#fff', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>+</button>
+        <button onClick={addConfig} style={{ width: 38, height: 38, borderRadius: 8, background: 'var(--brand)', border: 'none', color: '#fff', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>+</button>
       </div>
       
         <div style={{ display: 'flex', gap: 4, overflow: 'auto', paddingBottom: 2 }}>
           {types.map(t => (<button key={t} onClick={() => setFilter(t)} style={{ padding: '4px 10px', borderRadius: 100, fontSize: 10, whiteSpace: 'nowrap', background: filter===t?'rgba(63,169,245,0.12)':'transparent', border: '1px solid '+(filter===t?'var(--brand)':'var(--border-subtle)'), color: filter===t?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t==='all'?'All':t}</button>))}
         </div>
+        {filtered.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, border: '1px dashed var(--border-subtle)', borderRadius: 10 }}>No configurations documented yet — add devices with ＋ and they sync to the portal Assets screen.</div>}
         {filtered.map(a => (<button key={a.id} onClick={() => setSelectedAsset(a)} className="glass" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, border: '1px solid var(--border-subtle)', cursor: 'pointer', borderRadius: 10, textAlign: 'left', fontFamily: 'var(--font-body)', width: '100%' }}>
           <div style={{ width: 36, height: 36, borderRadius: 8, background: (typeColors[a.type]||'var(--brand)')+'15', border: '1px solid '+(typeColors[a.type]||'var(--brand)')+'30', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={typeIcons[a.type]||'cam-dome'} size={18} color={typeColors[a.type]||'var(--brand)'} /></div>
           <div style={{ flex: 1, overflow: 'hidden' }}><div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{a.name}</div><div style={{ fontSize: 10, color: 'var(--text-low)' }}>{a.mfg} {a.model}</div>{a.ip && <div className="mono" style={{ fontSize: 10, color: 'var(--brand)', marginTop: 1 }}>{a.ip}</div>}</div>
@@ -977,7 +1054,8 @@ function TechAssetsView() {
         </button>))}
       </>)}
       {activeTab === 'passwords' && (<div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <button onClick={() => setAddPasswordOpen(true)} style={{ padding: '10px', border: '2px dashed var(--border-subtle)', borderRadius: 8, background: 'transparent', color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="add" size={14} color="var(--brand)" /> Add Password</button>
+        <button onClick={addPassword} style={{ padding: '10px', border: '2px dashed var(--border-subtle)', borderRadius: 8, background: 'transparent', color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="add" size={14} color="var(--brand)" /> Add Password</button>
+        {passwords.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, border: '1px dashed var(--border-subtle)', borderRadius: 10 }}>Vault is empty — credentials you add sync to the portal vault.</div>}
         {passwords.map(p => (<GlassPanel key={p.id} style={{ padding: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><div><div style={{ fontSize: 13, fontWeight: 500 }}>{p.label}</div><div style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.device} · {p.type}</div></div></div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
@@ -988,8 +1066,9 @@ function TechAssetsView() {
           </div></GlassPanel>))}
       </div>)}
       {activeTab === 'docs' && (<div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <button onClick={() => setAddDocOpen(true)} style={{ padding: '10px', border: '2px dashed var(--border-subtle)', borderRadius: 8, background: 'transparent', color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="add" size={14} color="var(--brand)" /> Upload Document</button>
-        {documents.map((d,i) => (<button key={i} onClick={() => showToast('Opening '+d.name)} className="glass" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, border: '1px solid var(--border-subtle)', cursor: 'pointer', borderRadius: 10, textAlign: 'left', fontFamily: 'var(--font-body)', width: '100%' }}>
+        <button onClick={() => docFileRef.current && docFileRef.current.click()} style={{ padding: '10px', border: '2px dashed var(--border-subtle)', borderRadius: 8, background: 'transparent', color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="add" size={14} color="var(--brand)" /> Upload Document</button>
+        {documents.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, border: '1px dashed var(--border-subtle)', borderRadius: 10 }}>No documents yet.</div>}
+        {documents.map((d,i) => (<button key={i} onClick={() => { if (!d.url) { showToast('No file attached'); return; } (window.__shieldFileUrl ? window.__shieldFileUrl(d.url) : Promise.resolve(d.url)).then(u => window.open(u, '_blank')); }} className="glass" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, border: '1px solid var(--border-subtle)', cursor: 'pointer', borderRadius: 10, textAlign: 'left', fontFamily: 'var(--font-body)', width: '100%' }}>
           <Icon name="proposals" size={18} color="var(--brand)" />
           <div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)' }}>{d.name}</div><div style={{ fontSize: 10, color: 'var(--text-low)' }}>{d.type} · {d.size} · {d.date}</div></div>
           <Icon name="chevron-right" size={12} color="var(--text-low)" />
@@ -997,14 +1076,14 @@ function TechAssetsView() {
       </div>)}
       {activeTab === 'topology' && (<MobileTopologyView showToast={showToast} />)}
       {activeTab === 'networks' && (<div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <button onClick={() => setAddNetworkOpen(true)} style={{ padding: '10px', border: '2px dashed var(--border-subtle)', borderRadius: 8, background: 'transparent', color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="add" size={14} color="var(--brand)" /> Add Network</button>
+        <button onClick={addNetwork} style={{ padding: '10px', border: '2px dashed var(--border-subtle)', borderRadius: 8, background: 'transparent', color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="add" size={14} color="var(--brand)" /> Add Network</button>
+        {networks.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, border: '1px dashed var(--border-subtle)', borderRadius: 10 }}>No networks documented yet.</div>}
         {networks.map((n,i) => (<GlassPanel key={i} style={{ padding: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}><Icon name="topology" size={16} color="var(--brand)" /><div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 500 }}>{n.name}</div><div style={{ fontSize: 10, color: 'var(--text-low)' }}>{n.type} · {n.devices} devices</div></div></div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
             {[{l:'Subnet',v:n.subnet},{l:'Gateway',v:n.gw}].map((f,j) => (<div key={j} onClick={() => {navigator.clipboard?.writeText?.(f.v);showToast('Copied');}} style={{ cursor: 'pointer' }}><div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>{f.l}</div><div className="mono" style={{ fontSize: 11, color: 'var(--brand)' }}>{f.v}</div></div>))}
           </div></GlassPanel>))}
       </div>)}
-      {toast && <div style={{ position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, padding: '8px 20px', borderRadius: 8, background: 'var(--card)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 12, fontWeight: 500, boxShadow: 'var(--glow-brand-sm)' }}>{toast}</div>}
     </div>
   );
 }
