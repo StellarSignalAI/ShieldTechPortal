@@ -30,7 +30,7 @@ function NPSScreen() {
     setResponses(prev => prev.map(r => r.id === id ? { ...r, followedUp: true, reply: replyText.trim() } : r));
     setReplyText('');
     setSelected(null);
-    showToast('Reply sent to customer', 'ok');
+    showToast('Reply saved to the response — follow up by email or phone to deliver it', 'ok');
   };
 
   const createTicket = (r) => {

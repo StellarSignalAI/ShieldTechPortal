@@ -24,6 +24,7 @@ import '@shared/auth.js';
 import '@shared/passkey.js';
 import '@shared/ai.js';
 import '@shared/time.js';
+import '@shared/tickets.js';
 import '@shared/email.js';
 import '@shared/pdf.js';
 import '@shared/camera.js';
@@ -115,52 +116,65 @@ function CustomerDevicesScreen() {
   );
 }
 
-/* ── Customer Invoice Screen ── */
+/* ── Customer Invoice Screen — REAL invoice_links rows (RLS: only the rows
+   matching this account's email). "Pay Now" opens the real tokenized pay page
+   (Stripe checkout when connected) — we never collect card numbers here. ── */
 function CustomerInvoicesScreen() {
-  const invoices = [];
+  const [state, setState] = React.useState({ loading: true, error: null, invoices: [] });
+  React.useEffect(() => {
+    const sb = window.__shieldSupabase;
+    if (!sb) { setState({ loading: false, error: null, invoices: [] }); return; }
+    sb.from('invoice_links').select('id, invoice_ref, amount, due_date, status, paid_at, token')
+      .order('created_at', { ascending: false }).limit(100)
+      .then(({ data, error }) => setState({ loading: false, error: error ? error.message : null, invoices: data || [] }));
+  }, []);
+  const { loading, error, invoices } = state;
+
+  const payBase = (window.__shieldSupabaseUrl || (import.meta.env.VITE_SUPABASE_URL || '')).replace(/\/+$/, '');
+  const payUrl = (inv) => `${payBase}/functions/v1/invoice-pay?token=${inv.token}`;
+  const openInvoices = invoices.filter(i => i.status !== 'paid');
+  const outstanding = openInvoices.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+  const paidYtd = invoices.filter(i => i.status === 'paid' && i.paid_at && new Date(i.paid_at).getFullYear() === new Date().getFullYear())
+    .reduce((s, i) => s + (Number(i.amount) || 0), 0);
+  const nextDue = openInvoices.map(i => i.due_date).filter(Boolean).sort()[0];
 
   return (
     <div>
       <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-        <StatCard label="OUTSTANDING" value="$0" mono={false} delay={0} />
-        <StatCard label="PAID (YTD)" value="$0" mono={false} delay={80} />
-        <StatCard label="NEXT DUE" value="—" mono={false} delay={160} />
+        <StatCard label="OUTSTANDING" value={`$${outstanding.toLocaleString()}`} mono={false} delay={0} />
+        <StatCard label="PAID (YTD)" value={`$${paidYtd.toLocaleString()}`} mono={false} delay={80} />
+        <StatCard label="NEXT DUE" value={nextDue ? new Date(nextDue + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'} mono={false} delay={160} />
       </div>
       <GlassPanel style={{ padding: 0 }}>
-        {invoices.length === 0 && <div style={{ padding: 30, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>No invoices yet.</div>}
-        {invoices.map((inv, i) => (
-          <div key={i} style={{
+        {loading && <div style={{ padding: 30, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>Loading invoices…</div>}
+        {!loading && error && <div style={{ padding: 30, textAlign: 'center', color: 'var(--status-warn)', fontSize: 12 }}>Couldn't load invoices: {error}</div>}
+        {!loading && !error && invoices.length === 0 && <div style={{ padding: 30, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>No invoices yet — invoices we send you appear here with secure online payment.</div>}
+        {invoices.map((inv) => (
+          <div key={inv.id} style={{
             display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px',
-            borderBottom: '1px solid rgba(63,169,245,0.05)',
-            cursor: 'pointer', transition: 'background 0.15s'
+            borderBottom: '1px solid rgba(63,169,245,0.05)', transition: 'background 0.15s'
           }}
           onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.03)'}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{inv.num}</span>
-                <StatusBadge status={inv.status} />
+                <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{inv.invoice_ref}</span>
+                <StatusBadge status={inv.status === 'paid' ? 'paid' : 'pending'} label={inv.status === 'paid' ? 'Paid' : 'Due'} />
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-high)' }}>{inv.desc}</div>
               <div className="mono" style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 2 }}>
-                Due: {inv.due}{inv.paidDate ? ` · Paid: ${inv.paidDate}` : ''}
+                {inv.due_date ? `Due: ${new Date(inv.due_date + 'T00:00:00').toLocaleDateString()}` : ''}
+                {inv.paid_at ? `${inv.due_date ? ' · ' : ''}Paid: ${new Date(inv.paid_at).toLocaleDateString()}` : ''}
               </div>
             </div>
-            <div className="mono" style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-high)' }}>${inv.amount.toLocaleString()}</div>
-            {inv.status === 'pending' && (
-              <button onClick={() => shieldModal({ kind: 'form', title: 'Pay Invoice', subtitle: `${inv.num} · $${inv.amount.toLocaleString()} due`, submitLabel: `Pay $${inv.amount.toLocaleString()}`, successMsg: `Payment of $${inv.amount.toLocaleString()} submitted`, fields: [
-                { key: 'name', label: 'Cardholder Name', placeholder: 'Name on card', required: true, full: true },
-                { key: 'card', label: 'Card Number', placeholder: '4242 4242 4242 4242', required: true, full: true },
-                { key: 'exp', label: 'Expiry', placeholder: 'MM/YY', required: true },
-                { key: 'cvc', label: 'CVC', placeholder: '123', required: true },
-                { key: 'method', label: 'Method', type: 'select', options: ['Credit Card','ACH Bank Transfer'] }
-              ] })} style={{
-                padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6,
-                color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)',
-                boxShadow: '0 0 12px -4px rgba(63,169,245,0.3)'
-              }}>Pay Now</button>
-            )}
+            <div className="mono" style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-high)' }}>${(Number(inv.amount) || 0).toLocaleString()}</div>
+            <a href={payUrl(inv)} target="_blank" rel="noreferrer" style={{
+              padding: '6px 16px', background: inv.status === 'paid' ? 'rgba(63,169,245,0.06)' : 'var(--brand)',
+              border: inv.status === 'paid' ? '1px solid var(--border-subtle)' : 'none', borderRadius: 6,
+              color: inv.status === 'paid' ? 'var(--text-mid)' : '#fff', fontSize: 12, fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'var(--font-body)', textDecoration: 'none',
+              boxShadow: inv.status === 'paid' ? 'none' : '0 0 12px -4px rgba(63,169,245,0.3)'
+            }}>{inv.status === 'paid' ? 'View' : 'View & Pay'}</a>
           </div>
         ))}
       </GlassPanel>
@@ -264,7 +278,7 @@ function CustomerPortalApp() {
   const [selectedTicket, setSelectedTicket] = useState(null);
 
   const screens = {
-    dashboard: () => <CustomerDashboardView onNavigate={setTab} />,
+    dashboard: () => <CustomerDashboardView onNavigate={(v) => setTab(v === 'ai-chat' ? 'ai' : v)} />,
     score: () => <CustSecurityScoreView />,
     sites: () => <CustSitesView />,
     devices: () => <CustomerDevicesScreen />,

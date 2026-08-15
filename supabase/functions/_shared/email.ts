@@ -609,6 +609,45 @@ export function timesheetSubmittedEmail(opts: {
   return { subject: subjectFor("Time Entry Submitted"), html, text };
 }
 
+/* Support ticket — office alert when a customer opens a ticket (or replies). */
+export function supportTicketEmail(opts: {
+  ref?: string | null; company?: string | null; contactName?: string | null;
+  subject?: string | null; description?: string | null; category?: string | null;
+  priority?: string | null; reply?: boolean | null;
+}): InviteEmail {
+  const portalUrl = portalBase();
+  const who = [opts.contactName, opts.company].filter(Boolean).map((s) => esc(s)).join(" · ") || "A customer";
+  const urgent = String(opts.priority ?? "").toLowerCase() === "urgent" || String(opts.priority ?? "").toLowerCase() === "high";
+  const html = shell(
+    eyebrow(opts.reply ? "Ticket Reply" : "New Ticket", urgent ? WARN : BLUE) +
+    heading(opts.reply ? "Customer Replied to a Ticket" : "New Support Ticket") +
+    para(`${who} ${opts.reply ? "replied to" : "opened"} a support ticket. Review it in the portal helpdesk.`) +
+    infoCard(
+      (opts.ref ? kvRow("Ticket", esc(opts.ref), { mono: true }) : "") +
+      (opts.company ? kvRow("Customer", esc(opts.company)) : "") +
+      (opts.subject ? kvRow("Subject", esc(opts.subject)) : "") +
+      (opts.category ? kvRow("Category", esc(opts.category)) : "") +
+      (opts.priority ? kvRow("Priority", esc(opts.priority), { highlight: urgent }) : "") +
+      (opts.description ? kvRow(opts.reply ? "Message" : "Description", esc(String(opts.description).slice(0, 500))) : ""),
+    ) +
+    cta("Open Helpdesk →", portalUrl) +
+    supportBlock(),
+    `${opts.contactName ?? "A customer"} ${opts.reply ? "replied to" : "opened"} ticket ${opts.ref ?? ""}.`,
+  );
+  const text = [
+    opts.reply ? "Customer replied to a ticket" : "New support ticket",
+    "", `${[opts.contactName, opts.company].filter(Boolean).join(" · ") || "A customer"} ${opts.reply ? "replied to" : "opened"} a support ticket.`,
+    ...(opts.ref ? ["", `TICKET: ${opts.ref}`] : []),
+    ...(opts.subject ? [`SUBJECT: ${opts.subject}`] : []),
+    ...(opts.category ? [`CATEGORY: ${opts.category}`] : []),
+    ...(opts.priority ? [`PRIORITY: ${opts.priority}`] : []),
+    ...(opts.description ? ["", String(opts.description).slice(0, 500)] : []),
+    "", `Open the helpdesk: ${portalUrl}`,
+    textFooter(),
+  ].join("\n");
+  return { subject: subjectFor(opts.reply ? "Ticket Reply" : "New Support Ticket"), html, text };
+}
+
 /* Generic system notification — wraps ad-hoc messages (e.g. the Sales app's
    AI-drafted emails sent through send-email) in the master identity. */
 export function notificationEmail(opts: {

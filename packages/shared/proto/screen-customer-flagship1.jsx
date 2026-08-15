@@ -56,12 +56,18 @@ function CustFootageFinderView() {
   const [results, setResults] = useState(null);
   const [searching, setSearching] = useState(false);
   const samples = ['white van in parking lot Tuesday afternoon', 'person at rear exit after 10 PM', 'delivery left at front door last week'];
-  const search = (query) => {
-    setQ(query); setSearching(true); setResults(null);
-    setTimeout(() => {
-      setSearching(false);
-      setResults([]);
-    }, 1200);
+  /* No camera/AI backend is connected — never fake a scan. A search becomes a
+     real footage request the office fulfills from the NVR. */
+  const search = (query) => { setQ(query); setResults([]); };
+  const requestFootage = async () => {
+    const t = window.__shieldTickets;
+    if (!t) { showToast('Support backend not configured', 'warn'); return; }
+    setSearching(true);
+    const r = await t.create({ subject: 'Footage retrieval request', description: q, category: 'camera', priority: 'medium' });
+    setSearching(false);
+    if (!r.ok) { showToast(`Could not send: ${r.error}`, 'warn'); return; }
+    showToast(`Request ${r.data.ref} sent — our team will pull the footage and send it to you`, 'ok');
+    setResults(null); setQ('');
   };
   return (
     <div>
@@ -78,17 +84,18 @@ function CustFootageFinderView() {
           ))}
         </div>
       </GlassPanel>
-      {searching && (
-        <GlassPanel style={{ padding: 30, textAlign: 'center' }}>
-          <div style={{ fontSize: 12, color: 'var(--brand)' }}>ShieldTech AI is scanning your cameras…</div>
-          <div style={{ height: 4, borderRadius: 2, background: 'rgba(63,169,245,0.08)', overflow: 'hidden', marginTop: 12, maxWidth: 320, margin: '12px auto 0' }}>
-            <div style={{ width: '40%', height: '100%', background: 'var(--brand)', borderRadius: 2, animation: 'pulse-online 1.2s ease-in-out infinite' }}></div>
-          </div>
-        </GlassPanel>
-      )}
       {results && (
         <div>
-          {results.length === 0 && <GlassPanel style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>No matches — footage search requires connected cameras and the ShieldTech AI service.</GlassPanel>}
+          {results.length === 0 && (
+            <GlassPanel style={{ padding: 26, textAlign: 'center' }}>
+              <div style={{ color: 'var(--text-low)', fontSize: 12, marginBottom: 12 }}>
+                Automatic footage search isn't connected to your cameras yet — but our team can pull this from your recorder.
+              </div>
+              <button onClick={requestFootage} disabled={searching} style={{ padding: '9px 20px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', opacity: searching ? 0.6 : 1 }}>
+                {searching ? 'Sending…' : `Request this footage from ShieldTech →`}
+              </button>
+            </GlassPanel>
+          )}
           {results.length > 0 && <>
           <div style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 10 }}>{results.length} matches · sorted by confidence</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
@@ -171,13 +178,28 @@ function CustConciergeView() {
 function CustAccessView() {
   const [badges, setBadges] = useState([]);
   const entries = [];
-  const revoke = (id) => { setBadges(b => b.map(x => x.id === id ? { ...x, status: 'revoked' } : x)); showToast('Badge revoked — effective immediately', 'ok'); };
+  /* Badge changes go through the office as urgent tickets — a toast must never
+     claim a credential was revoked when nothing reached the panel. */
+  const accessTicket = async (subject, description, priority = 'urgent') => {
+    const t = window.__shieldTickets;
+    if (!t) { showToast('Support backend not configured', 'warn'); return null; }
+    const r = await t.create({ subject, description, category: 'access', priority });
+    if (!r.ok) { showToast(`Could not send: ${r.error}`, 'warn'); return null; }
+    return r.data;
+  };
+  const revoke = async (id) => {
+    const b = badges.find(x => x.id === id);
+    const rec = await accessTicket(`URGENT: Revoke badge — ${b ? b.name : id}`, 'Customer requested immediate badge revocation from the portal.');
+    if (!rec) return;
+    setBadges(list => list.map(x => x.id === id ? { ...x, status: 'revoke-requested' } : x));
+    showToast(`Revocation request ${rec.ref} sent — our team is on it and will confirm`, 'ok');
+  };
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 16 }}>
       <GlassPanel style={{ padding: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)' }}>Badges</span>
-          <button onClick={() => showToast('Badge request sent — programmed at next visit (or mobile credential issued now)', 'ok')} style={{ padding: '5px 13px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Issue badge</button>
+          <button onClick={async () => { const rec = await accessTicket('Issue new badge', 'Customer requested a new badge/credential from the portal.', 'medium'); if (rec) showToast(`Badge request ${rec.ref} sent — we'll program it and confirm`, 'ok'); }} style={{ padding: '5px 13px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Issue badge</button>
         </div>
         {badges.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-low)', padding: '18px 0', textAlign: 'center' }}>No badges yet — issued credentials for your team appear here.</div>}
         {badges.map(b => (
@@ -190,6 +212,8 @@ function CustAccessView() {
             {b.status === 'dormant' && <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--status-warn)', background: 'rgba(251,191,36,0.08)', borderRadius: 8, padding: '2px 8px' }}>DORMANT</span>}
             {b.status === 'revoked'
               ? <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-low)' }}>REVOKED</span>
+              : b.status === 'revoke-requested'
+              ? <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--status-warn)' }}>REVOCATION REQUESTED</span>
               : <button onClick={() => revoke(b.id)} style={{ padding: '4px 11px', background: 'transparent', border: '1px solid rgba(244,63,94,0.25)', borderRadius: 5, color: 'var(--status-critical)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Revoke</button>}
           </div>
         ))}
@@ -198,7 +222,7 @@ function CustAccessView() {
         <GlassPanel style={{ padding: 20 }}>
           <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 10 }}>Visitor pass</div>
           <div style={{ fontSize: 11, color: 'var(--text-mid)', marginBottom: 10 }}>Generate a one-day QR pass — works on the front reader, auto-expires at 6 PM.</div>
-          <button onClick={() => showToast('Visitor pass created — QR sent to their phone', 'ok')} style={{ width: '100%', padding: '9px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create visitor pass</button>
+          <button onClick={async () => { const rec = await accessTicket('Visitor pass request', 'Customer requested a one-day visitor pass from the portal.', 'medium'); if (rec) showToast(`Visitor pass request ${rec.ref} sent — we'll set it up and confirm`, 'ok'); }} style={{ width: '100%', padding: '9px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create visitor pass</button>
         </GlassPanel>
         <GlassPanel style={{ padding: 20, flex: 1 }}>
           <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 10 }}>Today's entries</div>
@@ -232,7 +256,7 @@ function CustComplianceVaultView() {
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>Auditor share link</div>
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Read-only bundle of every current document — perfect for insurance renewals and HIPAA audits</div>
         </div>
-        <button onClick={() => showToast('Share link copied — valid 14 days, watermarked', 'ok')} style={{ padding: '8px 18px', background: 'var(--brand)', border: 'none', borderRadius: 7, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy share link</button>
+        <button onClick={() => showToast(docs.length ? 'Share links are coming soon — ask us and we\'ll send the bundle' : 'No documents on file yet — nothing to share', 'warn')} style={{ padding: '8px 18px', background: 'var(--brand)', border: 'none', borderRadius: 7, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy share link</button>
       </GlassPanel>
       <GlassPanel style={{ padding: 0 }}>
         {docs.length === 0 && <div style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>No compliance documents yet — certificates, inspections and attestations filed by ShieldTech appear here.</div>}
