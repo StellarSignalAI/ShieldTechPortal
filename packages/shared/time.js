@@ -5,6 +5,31 @@ import { supabase, supabaseConfigured } from './supabase.js';
 
 const notConfigured = { ok: false, error: 'Backend not configured' };
 
+/* Office recipients alerted whenever a technician submits hours for approval. */
+const TIME_ALERT_TO = ['daniel@shieldtechsolutions.com', 'aaron@shieldtechsolutions.com'];
+
+/* Fire-and-forget office alert (send-email 'timesheet-submitted'). Never
+   blocks or fails the submission itself. */
+function notifyTimeSubmitted(user, { workDate, hours, jobRef, notes, count }) {
+  try {
+    const techName = (user?.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || user?.email || '';
+    supabase.functions.invoke('send-email', {
+      body: {
+        to: TIME_ALERT_TO,
+        template: 'timesheet-submitted',
+        data: {
+          techName,
+          workDate: workDate || '',
+          hours: hours != null ? String(hours) : '',
+          jobRef: jobRef || '',
+          notes: notes || '',
+          count: count != null ? String(count) : '',
+        },
+      },
+    }).catch(() => {});
+  } catch { /* alert is best-effort */ }
+}
+
 async function fnHeaders() {
   const { data } = await supabase.auth.getSession();
   return {
@@ -44,7 +69,9 @@ export async function submitHours({ workDate, startAt, endAt, breakMinutes = 0, 
     notes: notes || null,
     status: draft ? 'draft' : 'submitted',
   }).select().maybeSingle();
-  return error ? { ok: false, error: error.message } : { ok: true, data };
+  if (error) return { ok: false, error: error.message };
+  if (!draft) notifyTimeSubmitted(u.user, { workDate, hours: data?.hours, jobRef, notes });
+  return { ok: true, data };
 }
 
 /* Technician: delete one of my own entries (blocked by RLS once approved/paid). */
@@ -67,7 +94,14 @@ export async function submitWeek(weekStart, weekEnd) {
     .gte('work_date', weekStart)
     .lte('work_date', weekEnd)
     .select();
-  return error ? { ok: false, error: error.message } : { ok: true, count: (data || []).length };
+  if (error) return { ok: false, error: error.message };
+  const rows = data || [];
+  if (rows.length) {
+    const latest = rows.map(r => r.work_date).sort().pop();
+    const total = Math.round(rows.reduce((s, r) => s + (Number(r.hours) || 0), 0) * 100) / 100;
+    notifyTimeSubmitted(u.user, { workDate: latest, hours: total, count: rows.length });
+  }
+  return { ok: true, count: rows.length };
 }
 
 /* Portal (Admin/Staff): approval queue + full ledger */

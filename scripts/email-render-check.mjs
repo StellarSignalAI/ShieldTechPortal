@@ -25,6 +25,8 @@ const samples = {
   'proposal': E.proposalEmail({ ref: 'PROP-1042', customer: 'Harbor View Condos', amount: 38500, link: LINK }),
   'job-assigned': E.jobAssignedEmail({ name: 'Mike Reyes', title: 'Metro Bank — Camera Install', customer: 'Metro Bank', site: '1200 Market St', date: '2026-09-04', endDate: '2026-09-05', startTime: '9:00 AM', hours: 6, notes: 'Lift needed for <exterior> domes', jobRef: 'WO-2871' }),
   'timesheet-rejected': E.timesheetRejectedEmail({ name: 'Mike Reyes', workDate: '2026-09-04', hours: 4, jobRef: 'WO-2871', note: 'Hours overlap the Metro Bank job — split the <entry> into two' }),
+  'timesheet-submitted': E.timesheetSubmittedEmail({ techName: 'Mike <Reyes>', workDate: '2026-09-04', hours: 6.5, jobRef: 'PRJ-1101 — Metro Bank', notes: 'Pulled cable for the east wing drops' }),
+  'timesheet-submitted-week': E.timesheetSubmittedEmail({ techName: 'Mike Reyes', workDate: '2026-09-05', hours: 38.5, count: 5 }),
   'notification': E.notificationEmail({ subject: 'Job Assigned | ShieldTech Security', headline: 'New job assignment', label: 'Job Assigned', message: 'Metro Bank — Camera Install\n\nScheduled Sep 4, 9:00 AM at 1200 Market St.\nCrew: Mike Reyes.', ctaLabel: 'View Job →', ctaUrl: LINK }),
 };
 

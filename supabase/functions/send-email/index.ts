@@ -7,7 +7,7 @@
 // same identity as every other automated email. Callers that pass html are
 // trusted to have built it from the same system.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { jobAssignedEmail, notificationEmail, timesheetRejectedEmail } from "../_shared/email.ts";
+import { jobAssignedEmail, notificationEmail, timesheetRejectedEmail, timesheetSubmittedEmail } from "../_shared/email.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
   if (!authed) return json(401, { ok: false, error: "sign in required" });
 
   let body: {
-    to?: string; subject?: string; html?: string; text?: string;
+    to?: string | string[]; subject?: string; html?: string; text?: string;
     template?: string; data?: Record<string, unknown>;
   };
   try { body = await req.json(); } catch { return json(400, { ok: false, error: "Invalid JSON" }); }
@@ -58,10 +58,18 @@ Deno.serve(async (req) => {
       name: d.name, workDate: d.workDate, hours: d.hours, jobRef: d.jobRef, note: d.note,
     });
     html = mail.html; text = mail.text; subject = subject || mail.subject;
+  } else if (body.template === "timesheet-submitted") {
+    const d = (body.data ?? {}) as Record<string, string>;
+    const mail = timesheetSubmittedEmail({
+      techName: d.techName, workDate: d.workDate, hours: d.hours,
+      jobRef: d.jobRef, notes: d.notes, count: d.count ? Number(d.count) : null,
+    });
+    html = mail.html; text = mail.text; subject = subject || mail.subject;
   } else if (body.template) {
     return json(400, { ok: false, error: `Unknown template: ${body.template}` });
   }
-  if (!body.to || !subject || !(html || text)) return json(400, { ok: false, error: "to, subject, html|text required" });
+  const to = (Array.isArray(body.to) ? body.to : [body.to]).filter(Boolean) as string[];
+  if (!to.length || !subject || !(html || text)) return json(400, { ok: false, error: "to, subject, html|text required" });
 
   // Wrap bare text in the ShieldTech master template (keeps the raw text as
   // the plain-text fallback). html callers pass through unchanged.
@@ -76,7 +84,7 @@ Deno.serve(async (req) => {
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       from: Deno.env.get("INVITE_FROM_EMAIL") ?? "ShieldTech Security <no-reply@shieldtechsolutions.com>",
-      to: [body.to], subject,
+      to, subject,
       html: html ?? undefined, text: text ?? undefined,
     }),
   });
