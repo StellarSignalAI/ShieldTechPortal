@@ -93,16 +93,34 @@ function TodayView({ setTab, setSelectedJob }) {
   const todayIdx = ((new Date().getDay() + 6) % 7) + 1;
   const fmtTime = (h) => { const hr = Math.floor(h || 8); const m = Math.round(((h || 8) - hr) * 60); const ap = hr >= 12 ? 'PM' : 'AM'; const h12 = ((hr + 11) % 12) + 1; return `${h12}:${String(m).padStart(2, '0')} ${ap}`; };
 
+  const mapWo = (w, time) => ({ id: w.id, sort: 0, time, customer: w.customer, desc: w.scope || w.type || 'Work order',
+    site: w.site || '', details: w.notes || '', status: (w.status === 'done' || w.status === 'completed') ? 'completed' : w.status === 'active' ? 'active' : 'upcoming',
+    mine: (me.id && w.assignedTo === me.id) || (myInitials && w.techId === myInitials), _wo: w });
+  const mapCal = (j) => ({ id: 'cal-' + j.id, sort: j.start || 8, time: fmtTime(j.start), customer: j.customer || j.title || 'Scheduled job', desc: j.title || j.type || '',
+    site: j.addr || j.site || '', details: j.details || '', scope: j.scope || '', status: 'upcoming',
+    mine: (me.id && (j.techIds || []).includes(me.id)) || (myInitials && (j.techs || []).includes(myInitials)), _cal: j });
+
   const woToday = (wos || []).filter(w => w.scheduled === todayIso || w.status === 'active')
-    .map(w => ({ id: w.id, sort: 0, time: w.status === 'active' ? 'Now' : 'Today', customer: w.customer, desc: w.scope || w.type || 'Work order',
-      site: w.site || '', status: (w.status === 'done' || w.status === 'completed') ? 'completed' : w.status === 'active' ? 'active' : 'upcoming',
-      mine: (me.id && w.assignedTo === me.id) || (myInitials && w.techId === myInitials), _wo: w }));
-  const calToday = (calJobs || []).filter(j => jobOnISO(j, todayIso))
-    .map(j => ({ id: 'cal-' + j.id, sort: j.start || 8, time: fmtTime(j.start), customer: j.customer || j.title || 'Scheduled job', desc: j.title || j.type || '',
-      site: j.site || '', status: 'upcoming', mine: (me.id && (j.techIds || []).includes(me.id)) || (myInitials && (j.techs || []).includes(myInitials)), _cal: j }));
+    .map(w => mapWo(w, w.status === 'active' ? 'Now' : 'Today'));
+  const calToday = (calJobs || []).filter(j => jobOnISO(j, todayIso)).map(mapCal);
   const all = [...woToday, ...calToday].sort((a, b) => a.sort - b.sort);
   const mineOnly = all.filter(j => j.mine);
   const jobs = mineOnly.length ? mineOnly : all;
+
+  /* Upcoming days — the tech sees scheduled days ahead of time, right on the
+     home screen. Each row opens the full job overview. */
+  const upcomingDays = [];
+  for (let d = 1; d <= 14; d++) {
+    const iso = addDaysISO(todayIso, d);
+    const dayRows = [
+      ...(wos || []).filter(w => w.scheduled === iso).map(w => mapWo(w, 'Scheduled')),
+      ...(calJobs || []).filter(j => jobOnISO(j, iso)).map(mapCal),
+    ].sort((a, b) => a.sort - b.sort);
+    const dayMine = dayRows.filter(j => j.mine);
+    const show = (mineOnly.length || dayMine.length) ? dayMine : dayRows;
+    if (show.length) upcomingDays.push({ iso, rows: show });
+  }
+  const fmtDay = (iso) => { const dt = new Date(iso + 'T12:00:00'); return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); };
 
   const statusColors = { completed: 'var(--status-ok)', active: 'var(--brand)', upcoming: 'var(--text-low)' };
 
@@ -185,6 +203,45 @@ function TodayView({ setTab, setSelectedJob }) {
                 )}
               </div>
             </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Upcoming days — scheduled work ahead of time, tap any job for the overview */}
+      <div>
+        <div className="label-sm" style={{ marginBottom: 10 }}>UPCOMING · NEXT 14 DAYS</div>
+        {upcomingDays.length === 0 && (
+          <div className="glass" style={{ padding: 20, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>
+            Nothing scheduled ahead yet — future jobs from the office appear here.
+          </div>
+        )}
+        {upcomingDays.map(day => (
+          <div key={day.iso} style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--brand)' }}>{fmtDay(day.iso)}</span>
+              <span style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }}></span>
+              <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{day.rows.length} job{day.rows.length === 1 ? '' : 's'}</span>
+            </div>
+            {day.rows.map((job, i) => (
+              <div key={i} onClick={() => { setSelectedJob(job); setTab('job-detail'); }}
+                className="glass" style={{ padding: '10px 12px', borderRadius: 10, marginBottom: 6, cursor: 'pointer' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{job.customer}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.desc}</div>
+                    {(job.site || job.details) && (
+                      <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {job.site ? `⌖ ${job.site}` : ''}{job.site && job.details ? ' · ' : ''}{job.details}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{job.time}</div>
+                    <div style={{ fontSize: 12, color: 'var(--brand)', marginTop: 4 }}>Overview →</div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ))}
       </div>
@@ -293,7 +350,13 @@ function JobDetailView({ job, setTab }) {
         </div>
         <h2 style={{ fontSize: 16, fontWeight: 500, marginBottom: 4 }}>{job.customer}</h2>
         <p style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 4 }}>{job.desc}</p>
-        <p style={{ fontSize: 11, color: 'var(--text-low)' }}>⌖ {job.site} · {job.time}</p>
+        <p style={{ fontSize: 11, color: 'var(--text-low)' }}>
+          ⌖ {job.site || 'No address on file'} · {job._cal && job._cal.date ? `${new Date(job._cal.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · ` : ''}{job.time}
+        </p>
+        {job.site && (
+          <button onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(job.site), '_blank')}
+            style={{ marginTop: 8, padding: '6px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Navigate →</button>
+        )}
 
         {/* Status workflow */}
         <div style={{ display: 'flex', gap: 4, marginTop: 12 }}>
@@ -312,6 +375,17 @@ function JobDetailView({ job, setTab }) {
           })}
         </div>
       </GlassPanel>
+
+      {/* Job details — access instructions, parking, contacts from dispatch */}
+      {(() => {
+        const details = (job._cal && job._cal.details) || (job._wo && job._wo.notes) || job.details || '';
+        return details ? (
+          <GlassPanel>
+            <div className="label-sm" style={{ marginBottom: 8 }}>JOB DETAILS</div>
+            <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-high)', whiteSpace: 'pre-wrap' }}>{details}</div>
+          </GlassPanel>
+        ) : null;
+      })()}
 
       {/* Scope of work — carried from the accepted proposal via the project */}
       {scope && (

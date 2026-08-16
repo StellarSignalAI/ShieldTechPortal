@@ -138,7 +138,7 @@ function NewJobModal({ techs, typeColors, initialSlot, onClose, onCreate, calFmt
   const [form, setForm] = React.useState({
     title: '', customer: customers[0] || '', techs: initialSlot?.techs || (initialSlot?.tech ? [initialSlot.tech] : []),
     type: 'install', date: initialSlot?.date || todayISO(), days: 1, start: initialSlot?.start ?? 9, dur: initialSlot?.dur || 2, value: '',
-    projectId: '', scope: '',
+    projectId: '', scope: '', addr: '', details: '',
   });
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
   const toggleTech = (id) => setForm(p => ({ ...p, techs: p.techs.includes(id) ? p.techs.filter(t => t !== id) : [...p.techs, id] }));
@@ -152,6 +152,7 @@ function NewJobModal({ techs, typeColors, initialSlot, onClose, onCreate, calFmt
       title: p.name || f.title, customer: p.customer || f.customer,
       value: String(Number(p.contractTotal) || Number(p.estimatedValue) || '') || f.value,
       scope: projectScope(p),
+      addr: p.siteAddr || f.addr,
     }));
   };
 
@@ -164,6 +165,7 @@ function NewJobModal({ techs, typeColors, initialSlot, onClose, onCreate, calFmt
       type: form.type, date: form.date, endDate: addDaysISO(form.date, days - 1),
       start: parseFloat(form.start), dur: parseFloat(form.dur), value: parseFloat(form.value) || 0,
       projectId: form.projectId || undefined, scope: form.scope || undefined,
+      addr: form.addr.trim() || undefined, details: form.details.trim() || undefined,
     }));
   };
 
@@ -207,6 +209,14 @@ function NewJobModal({ techs, typeColors, initialSlot, onClose, onCreate, calFmt
               {Object.keys(typeColors).map(t => <option key={t} value={t}>{typeColors[t].label}</option>)}
             </select>
           </div>
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <div style={calLabelStyle}>Location / Address</div>
+          <input value={form.addr} onChange={e => set('addr', e.target.value)} placeholder="Job site address — techs get one-tap navigation" style={calInputStyle} />
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <div style={calLabelStyle}>Job Details</div>
+          <textarea value={form.details} onChange={e => set('details', e.target.value)} rows={2} placeholder="Access instructions, parking, site contact, gotchas…" style={{ ...calInputStyle, resize: 'vertical', fontFamily: 'var(--font-body)' }} />
         </div>
         <div style={{ marginBottom: 12 }}>
           <div style={calLabelStyle}>Technicians {form.techs.length === 0 && <span style={{ color: 'var(--status-warn)', textTransform: 'none', letterSpacing: 0 }}>— none selected (job will be unassigned)</span>}</div>
