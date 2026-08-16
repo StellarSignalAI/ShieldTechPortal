@@ -45,6 +45,7 @@ function CalendarScreen() {
       type: CAL_TYPES[String(p.type || '').toLowerCase()] ? String(p.type).toLowerCase() : 'install',
       dur: 8, days: 1, value: p.contractTotal || p.estimatedValue || 0,
       scope: projectScope(p),
+      addr: p.siteAddr || '',
     }));
   const trayItems = [...projectTray, ...backlog];
   const [view, setView] = React.useState('week');
@@ -323,7 +324,7 @@ function CalendarScreen() {
       const p = spec.project, days = p.days || 1;
       const startISO = target.area === 'grid' ? gridISO(target.day) : target.iso;
       const start = target.area === 'grid' ? calClamp(calSnap(target.hourRaw), DAY_START, DAY_END - p.dur) : 9;
-      const newJob = normalizeJobDates({ id: Date.now(), title: p.title, customer: p.customer, techs: [], type: p.type, date: startISO, endDate: addDaysISO(startISO, days - 1), start, dur: p.dur, value: p.value, projectId: p.projectId || undefined, scope: p.scope || undefined });
+      const newJob = normalizeJobDates({ id: Date.now(), title: p.title, customer: p.customer, techs: [], type: p.type, date: startISO, endDate: addDaysISO(startISO, days - 1), start, dur: p.dur, value: p.value, projectId: p.projectId || undefined, scope: p.scope || undefined, addr: p.addr || undefined });
       setJobs(prev => [...prev, newJob]);
       // Real projects are virtual tray items (hidden via projectId once scheduled);
       // ad-hoc backlog entries are removed from the store.
@@ -636,6 +637,21 @@ function CalendarScreen() {
             ].map(r => (
               <div key={r.label}><div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 2 }}>{r.label}</div><div style={{ fontSize: 12, color: 'var(--text-high)' }}>{r.val}</div></div>
             ))}
+
+            {/* Location + details — editable any time; the tech app shows both
+               and gets one-tap navigation from the address. */}
+            <div>
+              <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 4 }}>Location / Address</div>
+              <input value={selectedJob.addr || ''} onChange={e => setJobs(prev => prev.map(j => j.id === selectedJob.id ? { ...j, addr: e.target.value } : j))}
+                placeholder="Job site address"
+                style={{ width: '100%', padding: '7px 9px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 4 }}>Job Details</div>
+              <textarea value={selectedJob.details || ''} onChange={e => setJobs(prev => prev.map(j => j.id === selectedJob.id ? { ...j, details: e.target.value } : j))}
+                rows={3} placeholder="Access instructions, parking, site contact, gotchas…"
+                style={{ width: '100%', padding: '7px 9px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
+            </div>
             {conflicts.includes(selectedJob.id) && (
               <div style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 6, padding: '8px 10px' }}>
                 <div style={{ fontSize: 11, color: 'var(--status-warn)', fontWeight: 600 }}>⚠ Scheduling Conflict</div>
