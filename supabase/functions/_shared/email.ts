@@ -670,3 +670,34 @@ export function notificationEmail(opts: {
   ].join("\n");
   return { subject: opts.subject, html, text };
 }
+
+/* Timesheet reminder — nudges a tech who hasn't submitted hours for the week. */
+export function timesheetReminderEmail(opts: {
+  name?: string | null; weekLabel?: string | null; draftCount?: number | null;
+}): InviteEmail {
+  const hi = opts.name ? `${esc(String(opts.name).split(/\s+/)[0])}, we` : "We";
+  const techUrl = (Deno.env.get("TECH_URL") ?? "https://tech.shieldtechsolutions.com").replace(/\/+$/, "");
+  const drafts = Number(opts.draftCount) || 0;
+  const week = opts.weekLabel ? esc(opts.weekLabel) : "this week";
+  const html = shell(
+    eyebrow("Action Needed", "#F0B429") +
+    heading("Submit Your Time for the Week") +
+    para(`${hi} haven't received your submitted time entries for ${week}. Please open the Technician Portal and submit your hours before end of day today so payroll and job costing stay on schedule.`) +
+    (drafts > 0
+      ? para(`You have <strong style="color:#FFFFFF;">${drafts} saved draft${drafts === 1 ? "" : "s"}</strong> waiting — they don't count until you hit Submit.`)
+      : "") +
+    cta("Submit Your Hours →", techUrl) +
+    supportBlock("Already submitted or out this week? Reply to this email or"),
+    `Reminder: submit your time entries for ${opts.weekLabel ?? "this week"}.`,
+  );
+  const text = [
+    "Submit your time for the week",
+    "", `We haven't received your submitted time entries for ${opts.weekLabel ?? "this week"}.`,
+    "Please submit your hours in the Technician Portal before end of day today.",
+    ...(drafts > 0 ? ["", `You have ${drafts} saved draft${drafts === 1 ? "" : "s"} — they don't count until you hit Submit.`] : []),
+    "", `Submit here: ${techUrl}`,
+    "", `Already submitted or out this week? Contact ${EMAIL_BRAND.support}`,
+    textFooter(),
+  ].join("\n");
+  return { subject: subjectFor("Timesheet Reminder"), html, text };
+}
