@@ -235,9 +235,9 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
               <button onClick={() => removeDrawing(d)} style={{ padding: '6px 8px', borderRadius: 6, border: 'none', background: 'transparent', color: 'var(--text-low)', fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>✕</button>
             </>
           )} />
-          {drawings.length > 0 && <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 8 }}>Open = tech markup (live) · Original = clean drawing.</div>}
+          {drawings.length > 0 && <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 8 }}>Open = live Plan Room (markup, comment pins, session chat) · Original = clean drawing.</div>}
         </div>
-        {viewer && <BlueprintEditor drawing={viewer.drawing} readOnly showAnnotations={viewer.markup} onClose={() => setViewer(null)} />}
+        {viewer && <BlueprintEditor drawing={viewer.drawing} projectRef={p.number} readOnly={!viewer.markup} showAnnotations={viewer.markup} onClose={() => setViewer(null)} />}
 
         {/* Field photos — shots the techs tagged to this project */}
         <ProjectPhotosSection projectNumber={p.number} />
