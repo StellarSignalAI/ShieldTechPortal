@@ -403,7 +403,7 @@ function JobDetailView({ job, setTab }) {
           <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 8 }}>Tap a drawing to open it — draw wire paths, drop device icons, highlight, add notes, and check items off as you install. The office sees your markup live.</div>
         </GlassPanel>
       )}
-      {openDrawing && <BlueprintEditor drawing={openDrawing} onClose={() => setOpenDrawing(null)} />}
+      {openDrawing && <BlueprintEditor drawing={openDrawing} projectRef={project ? project.number : null} onClose={() => setOpenDrawing(null)} />}
 
       {/* Contact + access */}
       <GlassPanel>
