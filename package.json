@@ -27,6 +27,7 @@
     "@tensorflow/tfjs": "^3.21.0",
     "leaflet": "^1.9.4",
     "mermaid": "^11.16.0",
+    "pdfjs-dist": "^6.2.108",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
