@@ -145,8 +145,17 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
 
   const scope = projectScope(p);
   const drawings = p.drawings || [];
-  // Shared attach path (blueprint.jsx): images direct, PDFs split into sheets.
-  const uploadDrawing = (file) => planAttachFile(p.number, file, (s) => setUploading(!!s));
+  const uploadDrawing = async (file) => {
+    if (!file) return;
+    const st = window.__shieldStorage;
+    if (!st) { shieldToast('Storage not configured', 'warn'); return; }
+    setUploading(true);
+    const r = await st.uploadFile(file, { folder: 'blueprints', entity: 'project', entityId: p.number, shared: true });
+    setUploading(false);
+    if (!r || !r.ok) { shieldToast('Upload failed: ' + ((r && r.error) || 'unknown'), 'warn'); return; }
+    updateProject(p.number, prev => ({ drawings: [...(prev.drawings || []), { id: genId('dwg'), name: file.name, url: r.url, path: r.path, bucket: r.bucket }] }));
+    shieldToast(`${file.name} attached — techs see it on the scheduled job`, 'ok');
+  };
   const removeDrawing = (d) => {
     updateProject(p.number, prev => ({ drawings: (prev.drawings || []).filter(x => x.id !== d.id) }));
     shieldToast('Drawing removed', 'ok');
@@ -217,7 +226,7 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
           <div className="label-sm" style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>BLUEPRINTS / DRAWINGS ({drawings.length})</span>
             <button onClick={() => fileRef.current && fileRef.current.click()} disabled={uploading} style={{ padding: '5px 10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{uploading ? 'Uploading…' : '+ Upload'}</button>
-            <input ref={fileRef} type="file" accept="image/*,application/pdf,.pdf" style={{ display: 'none' }} onChange={e => { uploadDrawing(e.target.files && e.target.files[0]); e.target.value = ''; }} />
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { uploadDrawing(e.target.files && e.target.files[0]); e.target.value = ''; }} />
           </div>
           {drawings.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)' }}>No drawings yet — upload the blueprint from the proposal so techs get the digital version on their scheduled job.</div>}
           <BlueprintRows drawings={drawings} onOpen={d => setViewer({ drawing: d, markup: true })} extra={d => (
@@ -226,9 +235,9 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
               <button onClick={() => removeDrawing(d)} style={{ padding: '6px 8px', borderRadius: 6, border: 'none', background: 'transparent', color: 'var(--text-low)', fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>✕</button>
             </>
           )} />
-          {drawings.length > 0 && <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 8 }}>Open = live Plan Room (markup, comment pins, session chat) · Original = clean drawing.</div>}
+          {drawings.length > 0 && <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 8 }}>Open = tech markup (live) · Original = clean drawing.</div>}
         </div>
-        {viewer && <BlueprintEditor drawing={viewer.drawing} projectRef={p.number} readOnly={!viewer.markup} showAnnotations={viewer.markup} onClose={() => setViewer(null)} />}
+        {viewer && <BlueprintEditor drawing={viewer.drawing} readOnly showAnnotations={viewer.markup} onClose={() => setViewer(null)} />}
 
         {/* Field photos — shots the techs tagged to this project */}
         <ProjectPhotosSection projectNumber={p.number} />

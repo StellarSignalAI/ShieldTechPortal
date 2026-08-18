@@ -8,6 +8,7 @@ import './proto/shared-components.jsx';
 import './proto/shared-state.jsx';
 import './proto/shared-context.jsx';
 import './proto/blueprint.jsx';
+import './proto/blueshield.jsx';
 import './proto/shell.jsx';
 import './proto/photos-shared.jsx';
 
