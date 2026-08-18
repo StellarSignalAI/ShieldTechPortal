@@ -15,6 +15,7 @@ import '@shared/camera.js';
 import '@shared/storage.js';
 import '@shared/messaging.js';
 import '@shared/plan-collab.js';
+import '@shared/plan-pdf.js';
 import '@shared/vision.js';
 import '@shared/webxr-scan.js';
 import '@shared/lidar-import.js';
