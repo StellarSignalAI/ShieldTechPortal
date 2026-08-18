@@ -119,6 +119,7 @@ const M_SCREEN_MAP = {
   expenses: () => <ExpenseApprovalScreen />,
   timesheets: () => <TimesheetApprovalScreen />,
   projects: () => <ProjectsScreen />,
+  'plan-room': () => <PlanRoomScreen />,
   inventory: () => <InventoryScreen />,
   reports: () => <ReportsScreen />,
   proposals: () => <ProposalScreen />,
