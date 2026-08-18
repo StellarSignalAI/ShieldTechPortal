@@ -24,7 +24,8 @@ const NAV_GROUPS = [
   { id: 'workorder', icon: 'clipboard', label: 'Work Orders', useSvg: true },
   { id: 'photos', icon: 'cameras', label: 'Site Photos', useSvg: true, mobileOnly: true },
   { id: 'punchlist', icon: 'approvals', label: 'Punch Lists', useSvg: true, mobileOnly: true },
-  { id: 'projects', icon: 'projects', label: 'Projects', useSvg: true }]
+  { id: 'projects', icon: 'projects', label: 'Projects', useSvg: true },
+  { id: 'plan-room', icon: 'floorplan', label: 'Plan Room', useSvg: true }]
 },
 { id: 'collect', label: 'COLLECT', collapsible: false, items: [
   { id: 'finance', icon: 'finance', label: 'Finance Suite', useSvg: true },
@@ -554,7 +555,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     costing: 'Job Costing', audit: 'Audit Trail',
     warroom: 'Monitoring Console', floorplan: 'Monitoring Console', anomaly: 'Monitoring Console',
     expenses: 'Expense Approval', timesheets: 'Timesheet Approval',
-    projects: 'Projects', inventory: 'Inventory',
+    projects: 'Projects', 'plan-room': 'Plan Room', inventory: 'Inventory',
     reports: 'Reports & BI', proposals: 'Proposal Builder',
     employees: 'Team Management', contracts: 'Contracts', sla: 'SLA Dashboard',
     integrations: 'Integrations', marketing: 'Marketing',
