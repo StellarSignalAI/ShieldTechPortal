@@ -1031,7 +1031,7 @@ const Cloud={
   if(!c||!c.SUPABASE_URL||!window.supabase)return false;      // local/offline mode
   this.enabled=true;
   this.sb=window.supabase.createClient(c.SUPABASE_URL,c.SUPABASE_KEY,
-   {auth:{persistSession:true,autoRefreshToken:true,storageKey:"bs_auth"}});
+   {auth:{persistSession:true,autoRefreshToken:true,storageKey:"sb-dzfkgvyndodearolypvn-auth-token"}});
   const{data}=await this.sb.auth.getSession();
   this.user=data?.session?.user||null;
   this.sb.auth.onAuthStateChange((_e,sess)=>{this.user=sess?.user||null});
