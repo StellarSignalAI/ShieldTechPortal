@@ -502,4 +502,102 @@ function BlueprintRows({ drawings, onOpen, extra }) {
   });
 }
 
-Object.assign(window, { BlueprintEditor, BlueprintRows, BP_ICONS });
+/* ── Plan Room screen — the portal's home for every sheet across projects ──
+   One place to see all blueprints/drawings, who's discussing what, and jump
+   into a live session. Upload lands on the project just like the Projects
+   drawer's upload does. */
+function PlanRoomScreen() {
+  const [projects] = useShieldStore(projectStore);
+  const [pinMap, setPinMap] = React.useState({});
+  const [viewer, setViewer] = React.useState(null);        // {drawing, projectRef, markup}
+  const [uploadTo, setUploadTo] = React.useState(null);    // project number the picker targets
+  const [uploading, setUploading] = React.useState(false);
+  const fileRef = React.useRef(null);
+
+  const withDrawings = (projects || []).filter(p => (p.drawings || []).length > 0);
+  const allIds = withDrawings.flatMap(p => p.drawings.map(d => d.id));
+
+  React.useEffect(() => {
+    if (allIds.length && window.__shieldPlanCollab) window.__shieldPlanCollab.counts(allIds).then(setPinMap);
+  }, [allIds.join(',')]);
+
+  const uploadDrawing = async (file) => {
+    const num = uploadTo;
+    if (!file || !num) return;
+    const st = window.__shieldStorage;
+    if (!st) { shieldToast('Storage not configured', 'warn'); return; }
+    setUploading(true);
+    const r = await st.uploadFile(file, { folder: 'blueprints', entity: 'project', entityId: num, shared: true });
+    setUploading(false);
+    if (!r || !r.ok) { shieldToast('Upload failed: ' + ((r && r.error) || 'unknown'), 'warn'); return; }
+    updateProject(num, prev => ({ drawings: [...(prev.drawings || []), { id: genId('dwg'), name: file.name, url: r.url, path: r.path, bucket: r.bucket }] }));
+    shieldToast(`${file.name} added to ${num}`, 'ok');
+  };
+
+  const totalOpen = Object.values(pinMap).reduce((s, c) => s + (c.open || 0), 0);
+
+  return (
+    <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 4 }}>
+        <div style={{ font: '700 20px/1.2 var(--font-display)', color: 'var(--text-high)' }}>Plan Room</div>
+        <div style={{ fontSize: 11.5, color: 'var(--text-low)' }}>
+          {allIds.length} sheet{allIds.length === 1 ? '' : 's'} across {withDrawings.length} project{withDrawings.length === 1 ? '' : 's'}
+          {totalOpen > 0 && <span style={{ color: '#FBBF24' }}> · {totalOpen} open pin{totalOpen === 1 ? '' : 's'}</span>}
+        </div>
+      </div>
+      <div style={{ fontSize: 11.5, color: 'var(--text-low)', marginBottom: 18, lineHeight: 1.5 }}>
+        Live plan review — open a sheet to zoom/pan, mark up, drop numbered comment pins, and chat with everyone who has it open. Techs see the same session in the field app.
+      </div>
+
+      {withDrawings.length === 0 && (
+        <div className="glass" style={{ padding: 28, textAlign: 'center' }}>
+          <div style={{ fontSize: 26, marginBottom: 8 }}>📐</div>
+          <div style={{ fontSize: 13, color: 'var(--text-high)', marginBottom: 6 }}>No plans uploaded yet</div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-low)', lineHeight: 1.6, maxWidth: 420, margin: '0 auto' }}>
+            Attach a blueprint to any project below (or from Projects → project → Blueprints) and it appears here as a live session.
+          </div>
+        </div>
+      )}
+
+      {withDrawings.map(p => (
+        <div key={p.number} className="glass" style={{ padding: 16, marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.number}{p.customer ? ` · ${p.customer}` : ''}</div>
+            </div>
+            <button onClick={() => { setUploadTo(p.number); fileRef.current && fileRef.current.click(); }} disabled={uploading}
+              style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border-strong)', background: 'rgba(63,169,245,0.08)', color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+              {uploading && uploadTo === p.number ? 'Uploading…' : '+ Add sheet'}
+            </button>
+          </div>
+          <BlueprintRows drawings={p.drawings} onOpen={d => setViewer({ drawing: d, projectRef: p.number, markup: true })} extra={d => (
+            <button onClick={() => setViewer({ drawing: d, projectRef: p.number, markup: false })}
+              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Original</button>
+          )} />
+        </div>
+      ))}
+
+      {/* Projects without drawings — quick targets for a first upload */}
+      {(projects || []).filter(p => !(p.drawings || []).length).length > 0 && (
+        <div className="glass" style={{ padding: 16 }}>
+          <div className="label-sm" style={{ marginBottom: 8 }}>PROJECTS WITHOUT PLANS</div>
+          {(projects || []).filter(p => !(p.drawings || []).length).map(p => (
+            <div key={p.number} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+              <div style={{ flex: 1, minWidth: 0, fontSize: 12, color: 'var(--text-mid)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name} <span style={{ color: 'var(--text-low)', fontSize: 10 }}>{p.number}</span></div>
+              <button onClick={() => { setUploadTo(p.number); fileRef.current && fileRef.current.click(); }} disabled={uploading}
+                style={{ padding: '5px 11px', borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Upload plan</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
+        onChange={e => { uploadDrawing(e.target.files && e.target.files[0]); e.target.value = ''; }} />
+
+      {viewer && <BlueprintEditor drawing={viewer.drawing} projectRef={viewer.projectRef} readOnly={!viewer.markup} showAnnotations={viewer.markup} onClose={() => setViewer(null)} />}
+    </div>
+  );
+}
+
+Object.assign(window, { BlueprintEditor, BlueprintRows, PlanRoomScreen, BP_ICONS });
