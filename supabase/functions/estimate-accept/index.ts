@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
   const { data: userData } = await admin.auth.getUser(jwt);
   if (!userData?.user) return json(401, { ok: false, error: "sign in required" });
   const { data: prof } = await admin.from("profiles").select("role").eq("id", userData.user.id).maybeSingle();
-  if (!(prof?.role === "Admin" || prof?.role === "Staff")) return json(403, { ok: false, error: "Admin/Staff only" });
+  if (!["Admin", "Staff", "Manager", "Sales"].includes(prof?.role ?? "")) return json(403, { ok: false, error: "Admin/Staff/Manager/Sales only" });
 
   const estimateRef = String(body.estimateRef ?? "").trim();
   const customerEmail = String(body.customerEmail ?? "").trim();
