@@ -110,7 +110,7 @@ function CustFootageFinderView() {
                     <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-high)' }}>{r.cam}</div>
                     <div className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{r.t}</div>
                   </div>
-                  <button onClick={() => showToast('Clip exported — link valid 30 days', 'ok')} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export</button>
+                  <button onClick={() => showToast("Clip export isn't wired up yet — request the footage and we'll send it", 'warn')} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export</button>
                 </div>
               </GlassPanel>
             ))}
@@ -154,7 +154,7 @@ function CustConciergeView() {
               <div className="glass" style={{ marginTop: 6, padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border-strong)' }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{m.card.title}</div>
                 <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 2 }}>{m.card.sub}</div>
-                <button onClick={() => showToast(`${m.card.cta} ✓ — confirmation sent to your email`, 'ok')} style={{ marginTop: 8, padding: '7px 16px', background: 'var(--brand)', border: 'none', borderRadius: 7, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{m.card.cta}</button>
+                <button onClick={() => showToast("This action isn't wired up yet — open a ticket and our team will handle it", 'warn')} style={{ marginTop: 8, padding: '7px 16px', background: 'var(--brand)', border: 'none', borderRadius: 7, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{m.card.cta}</button>
               </div>
             )}
           </div>
@@ -267,7 +267,10 @@ function CustComplianceVaultView() {
               <div style={{ fontSize: 13, color: 'var(--text-high)' }}>{d.name}</div>
               <div className="mono" style={{ fontSize: 10, color: d.status === 'expiring' ? 'var(--status-warn)' : 'var(--text-low)' }}>{d.status === 'expiring' ? `⚠ Expires ${d.exp} — renewal already scheduled` : `Valid through ${d.exp}`}</div>
             </div>
-            <button onClick={() => showToast('Opening PDF…', 'ok')} style={{ padding: '4px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View</button>
+            <button onClick={() => {
+              if (d.url && window.__shieldStorage) window.__shieldStorage.openFile(d.url);
+              else showToast('No file attached to this document yet', 'warn');
+            }} style={{ padding: '4px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View</button>
           </div>
         ))}
       </GlassPanel>

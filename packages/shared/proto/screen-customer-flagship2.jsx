@@ -82,7 +82,7 @@ function CustSitesView() {
             <div style={{ height: 5, borderRadius: 3, background: 'rgba(63,169,245,0.08)', overflow: 'hidden', marginBottom: 10 }}>
               <div style={{ width: `${s.score}%`, height: '100%', borderRadius: 3, background: s.score >= 85 ? 'var(--status-ok)' : s.score >= 75 ? 'var(--brand)' : 'var(--status-warn)' }}></div>
             </div>
-            <button onClick={() => showToast(`Switched to ${s.name}`, 'ok')} style={{ width: '100%', padding: '7px 0', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open site →</button>
+            <button onClick={() => showToast("Per-site view isn't wired up yet", 'warn')} style={{ width: '100%', padding: '7px 0', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open site →</button>
           </GlassPanel>
         ))}
       </div>
@@ -219,8 +219,19 @@ function CustClaimPackView() {
             </div>
             {ready.includes(inc.id) ? (
               <div style={{ display: 'flex', gap: 6 }}>
-                <button onClick={() => showToast('Downloading claim pack…', 'ok')} style={{ padding: '7px 16px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 7, color: 'var(--status-ok)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>↓ Download pack</button>
-                <button onClick={() => showToast('Sent to your insurance contact', 'ok')} style={{ padding: '7px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Email insurer</button>
+                <button onClick={() => {
+                  if (!window.__shieldPdf) { showToast('PDF export unavailable in this app', 'warn'); return; }
+                  window.__shieldPdf.exportDoc({
+                    kind: 'report', number: inc.id, date: inc.date, customer: (window.__shieldUser || {}).company || '',
+                    sections: [
+                      { title: 'Incident', body: `${inc.title} (${inc.id}) — ${inc.date}` },
+                      { title: 'Evidence on file', body: inc.evidence || 'See attached records.' },
+                      { title: 'Note', body: 'Cover sheet generated from the ShieldTech customer portal. The full evidence pack (footage stills, device logs, service records) is compiled and emailed by the ShieldTech office.' },
+                    ],
+                  });
+                }} style={{ padding: '7px 16px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 7, color: 'var(--status-ok)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>↓ Download pack</button>
+                <a href={`mailto:?subject=${encodeURIComponent(`Insurance claim — ${inc.title} (${inc.id})`)}&body=${encodeURIComponent(`Please find details for insurance claim ${inc.id}.\n\nIncident: ${inc.title}\nDate: ${inc.date}\nEvidence on file: ${inc.evidence || 'compiled by ShieldTech Security'}\n\nThe evidence pack from ShieldTech Security is attached / to follow.`)}`}
+                  style={{ padding: '7px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', textDecoration: 'none' }}>Email insurer</a>
               </div>
             ) : building === inc.id ? (
               <span style={{ fontSize: 11, color: 'var(--brand)' }}>Compiling evidence…</span>

@@ -4,36 +4,40 @@
 /* ─────────── MRR / Recurring Revenue ─────────── */
 function WMRR({ size }) {
   const [mrr] = useShieldStore(mrrStore);
-  const total = mrr.filter(m => !m.churned).reduce((s, m) => s + m.mrr, 0);
-  const atRisk = mrr.filter(m => m.risk === 'high' && !m.churned);
-  const spark = [38, 41, 40, 44, 47, 49, 52, total / 1000].map(v => Math.round(v));
-  const top = [...mrr].filter(m => !m.churned).sort((a, b) => b.mrr - a.mrr);
+  const active = (mrr || []).filter(m => !m.churned && m.status !== 'cancelled');
+  if (!active.length) return <WNoData size={size} title="MRR" glyph="dollar" accent="#34D399" />;
+  const total = active.reduce((s, m) => s + (Number(m.mrr) || 0), 0);
+  const atRisk = active.filter(m => m.risk === 'high');
+  const top = [...active].sort((a, b) => b.mrr - a.mrr);
+  /* No MRR history is recorded yet, so there's no spark line or MoM delta —
+     only the real current total from the contracts store. */
   return (
     <WCard size={size} accent="#34D399" title="MRR" glyph="dollar"
-      sub={size !== 'small' ? `${mrr.filter(m => !m.churned).length} active plans` : null}>
+      sub={size !== 'small' ? `${active.length} active plans` : null}>
       {size === 'small' && (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <WHero size={size} value={`$${(total / 1000).toFixed(1)}k`} color="#34D399" />
-          <div style={{ marginTop: 'auto' }}><WSpark data={spark} color="#34D399" w={150} h={28} /></div>
+          <div style={{ marginTop: 'auto', fontSize: 11, color: 'var(--text-mid)' }}>{active.length} plans</div>
         </div>
       )}
       {size === 'medium' && (
         <div style={{ display: 'flex', gap: 12, height: '100%' }}>
           <div style={{ flex: 1 }}>
-            <WHero size={size} value={`$${(total / 1000).toFixed(1)}k`} color="#34D399" sub={`▲ 6.2% MoM`} />
+            <WHero size={size} value={`$${(total / 1000).toFixed(1)}k`} color="#34D399" sub="per-month recurring" />
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}><WSpark data={spark} color="#34D399" w={140} h={70} /></div>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', fontSize: 11, color: atRisk.length ? '#F43F5E' : 'var(--text-mid)' }}>
+            {atRisk.length ? `${atRisk.length} at risk` : 'no high-risk plans'}
+          </div>
         </div>
       )}
       {size === 'large' && <>
-        <WHero size="medium" value={`$${(total / 1000).toFixed(1)}k`} color="#34D399" sub="▲ 6.2% MoM · per-month recurring" />
-        <div style={{ marginTop: 8 }}><WSpark data={spark} color="#34D399" w={336} h={48} /></div>
+        <WHero size="medium" value={`$${(total / 1000).toFixed(1)}k`} color="#34D399" sub="per-month recurring" />
         <WDivide />
         <div>
           {top.slice(0, 4).map((m, i) => (
-            <WRow key={m.customer} last={i === 3} label={m.customer} glyph="contracts"
+            <WRow key={m.customer} last={i === Math.min(top.length, 4) - 1} label={m.customer} glyph="contracts"
               glyphColor={m.risk === 'high' ? '#F43F5E' : '#34D399'}
-              a={`$${(m.mrr / 1000).toFixed(1)}k`} b={m.renewal.split(' ')[0]} accent="#34D399" />
+              a={`$${(m.mrr / 1000).toFixed(1)}k`} b={(m.renewal || '').split(' ')[0]} accent="#34D399" />
           ))}
         </div>
       </>}
