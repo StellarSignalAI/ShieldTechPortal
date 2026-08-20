@@ -84,11 +84,12 @@ function MFinAIQueue() {
 
 /* ── More menu (mobile) — every remaining QBO destination, grouped ── */
 function MFinMore({ onNav }) {
+  /* Only destinations with a real mobile screen — each row navigates to its
+     portal screen id. Books & controls (bank feed, ledger, chart of accounts,
+     planning) live in the desktop Finance Suite and have no mobile screen yet. */
   const groups = [
-    { g: 'Money in', items: [['Credits & Receipts', 'Payments, credit memos, refunds'], ['Statements', 'Customer balance statements'], ['Products & Services', 'Catalog, pricing, tax categories']] },
-    { g: 'Money out', items: [['Checks & Mileage', 'Expense subtypes — approve trips'], ['1099 Contractors', 'W-9 status, YTD reportable']] },
-    { g: 'Accounting controls', items: [['Bank Feed & Rules', 'Match, categorize, reconcile'], ['Chart of Accounts', 'Account tree & balances'], ['General Ledger', 'Journal entries']] },
-    { g: 'Reports & planning', items: [['Cash Flow Planner', '6-week projection'], ['Budgets', 'Budget vs actual'], ['Tax Prep', 'Filing checklist']] },
+    { g: 'Money in', items: [['Products & Services', 'Catalog, pricing, tax categories', 'product-library']] },
+    { g: 'Money out', items: [['Expenses & Receipts', 'Approve tech expenses & mileage', 'expenses'], ['1099 Contractors', 'Sub-contractor roster, certs & payouts', 'subcontractors']] },
   ];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -97,7 +98,7 @@ function MFinMore({ onNav }) {
           <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--brand)', fontFamily: 'var(--font-mono)', margin: '0 2px 6px' }}>{g.g}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {g.items.map((it) => (
-              <MFinCard key={it[0]} onClick={() => onNav('finance')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
+              <MFinCard key={it[0]} onClick={() => onNav(it[2])} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 600 }}>{it[0]}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>{it[1]}</div>
@@ -108,7 +109,7 @@ function MFinMore({ onNav }) {
           </div>
         </div>
       ))}
-      <div style={{ fontSize: 10.5, color: 'var(--text-mid)', padding: '0 2px' }}>These open the full Finance Suite — every QuickBooks screen maps to exactly one destination there (see QBO Map).</div>
+      <div style={{ fontSize: 10.5, color: 'var(--text-mid)', padding: '0 2px' }}>Bank feed, ledger, chart of accounts and planning live in the desktop Finance Suite (see QBO Map).</div>
     </div>
   );
 }

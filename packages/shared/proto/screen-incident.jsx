@@ -141,7 +141,7 @@ function IncidentScreen() {
             <div style={{ padding: '10px 16px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, animation: 'fade-up 0.2s ease' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--status-critical)', boxShadow: '0 0 8px var(--status-critical)', animation: 'pulse-critical 1s infinite', flexShrink: 0 }} />
               <span style={{ fontSize: 12, color: 'var(--status-critical)', fontWeight: 600 }}>P1 Incident exceeds 1-hour threshold — escalation to on-call manager required</span>
-              <button onClick={() => shieldToast('Paging on-call manager…', 'warn')} style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--status-critical)', background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Page Manager</button>
+              <button onClick={() => shieldToast("On-call paging isn't wired up yet — call the on-call manager directly", 'warn')} style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--status-critical)', background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Page Manager</button>
             </div>
           )}
 

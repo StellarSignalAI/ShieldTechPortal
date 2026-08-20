@@ -256,7 +256,10 @@ function MTabEditor({ onClose }) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
     return { ...prev, tabs: arr };
   });
-  const remove = (i) => setCfg(prev => ({ ...prev, tabs: prev.tabs.filter((_, k) => k !== i) }));
+  const remove = (i) => {
+    if (tabs.length <= 1) { showToast('Keep at least one tab in the bar', 'warn'); return; }
+    setCfg(prev => prev.tabs.length <= 1 ? prev : ({ ...prev, tabs: prev.tabs.filter((_, k) => k !== i) }));
+  };
   const rename = (i, label) => setCfg(prev => ({ ...prev, tabs: prev.tabs.map((t, k) => k === i ? { ...t, label } : t) }));
   const add = (item) => { setCfg(prev => ({ ...prev, tabs: [...prev.tabs, { id: item.id, icon: item.icon, label: item.label }] })); setPickerOpen(false); setQ(''); };
 

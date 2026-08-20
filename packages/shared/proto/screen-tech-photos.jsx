@@ -11,6 +11,13 @@ function nowTime() {
   return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 const techMe = () => (window.__shieldUser || {});
+/* Profile initials can be missing — derive them from the name/email (same rule
+   as the shared roster) so ownership at capture matches every filter reading it. */
+const techSelfInit = () => {
+  const me = techMe();
+  if (me.initials) return me.initials;
+  return (me.name || me.email) && typeof techInitialsOf === 'function' ? techInitialsOf(me.name, me.email) : '—';
+};
 
 /* ── Photo Roll + Checklist ── */
 function TechPhotosView({ setTab }) {
@@ -33,8 +40,9 @@ function TechPhotosView({ setTab }) {
   const activeWo = cam.wo === '__unassigned' ? null : (allWos.find(w => w.id === cam.wo) || wos[0] || null);
   const comp = activeWo ? photoCompliance(activeWo, photos) : null;
   const woPhotos = activeWo ? photos.filter(p => p.wo === activeWo.id) : [];
-  const unassignedPhotos = photos.filter(p => p.tech === techMe().initials && !p.wo && !p.projectId);
-  const otherPhotos = photos.filter(p => p.tech === techMe().initials && p.wo && (!activeWo || p.wo !== activeWo.id));
+  const myTag = techSelfInit();
+  const unassignedPhotos = photos.filter(p => p.tech === myTag && !p.wo && !p.projectId);
+  const otherPhotos = photos.filter(p => p.tech === myTag && p.wo && (!activeWo || p.wo !== activeWo.id));
 
   const shootSlot = (slot) => { setCam({ ...cam, wo: activeWo.id, slot }); setTab('capture'); };
   const [projListRoll] = useShieldStore(projectStore);
@@ -112,8 +120,14 @@ function TechPhotosView({ setTab }) {
         </div>
       )}
 
-      {/* Required shots */}
-      {activeWo && (
+      {/* Required shots — only job types with a defined checklist get one;
+          no checklist must never render as "documentation complete". */}
+      {activeWo && comp.required.length === 0 && (
+        <div className="glass" style={{ padding: 14, borderRadius: 'var(--radius-md)', fontSize: 11, color: 'var(--text-low)' }}>
+          No photo checklist for this job type ({activeWo.type || 'untyped'}) — shoot whatever documents the work.
+        </div>
+      )}
+      {activeWo && comp.required.length > 0 && (
       <div className="glass" style={{ padding: 14, borderRadius: 'var(--radius-md)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)' }}>Required Shots — {activeWo.type}</span>
@@ -192,11 +206,12 @@ function TechCaptureView({ setTab }) {
   const [camErr, setCamErr] = React.useState('');
   const [facing, setFacing] = React.useState('environment');
   const enableCam = React.useCallback(async () => {
-    const cam = window.__shieldCamera;
-    if (!cam) { setCamErr('Camera not supported in this browser'); return; }
+    // camApi, NOT cam — the store state `cam` above must never be shadowed here.
+    const camApi = window.__shieldCamera;
+    if (!camApi) { setCamErr('Camera not supported in this browser'); return; }
     if (!videoRef.current) return;
     setCamErr('');
-    const r = await cam.startStream(videoRef.current, facing);
+    const r = await camApi.startStream(videoRef.current, facing);
     setLive(!!r.ok);
     if (!r.ok) setCamErr(r.error || 'Could not start camera');
   }, [facing]);
@@ -207,7 +222,7 @@ function TechCaptureView({ setTab }) {
     // and surfaces the exact reason.
     enableCam();
     const v = videoRef.current;
-    return () => { const cam = window.__shieldCamera; if (cam && v) cam.stopStream(v); };
+    return () => { const camApi = window.__shieldCamera; if (camApi && v) camApi.stopStream(v); };
   }, [enableCam]);
 
   // Capture works with or without a job. Unassigned shots (cam.wo === '__unassigned'
@@ -224,24 +239,26 @@ function TechCaptureView({ setTab }) {
   const activeProject = projects.find(p => p.number === cam.project) || null;
 
   const capture = async () => {
-    const cam = window.__shieldCamera;
+    // camApi, NOT cam — shadowing the store state here once clobbered the
+    // techcam store with the camera module's methods, losing wo/project.
+    const camApi = window.__shieldCamera;
     // Real capture only — never fabricate a photo. If the camera isn't live,
     // tell the tech to grant access instead of silently saving a mock image.
-    if (!live || !cam || !videoRef.current) {
+    if (!live || !camApi || !videoRef.current) {
       showToast('Camera not available — allow camera access in your browser, then try again', 'warn');
       return;
     }
-    const frame = cam.captureFrame(videoRef.current);
+    const frame = camApi.captureFrame(videoRef.current);
     if (!frame) { showToast('Capture failed — hold steady and try again', 'warn'); return; }
     const id = genId('PH');
     const me = techMe();
-    const shot = await cam.savePhoto(frame, { id, wo: activeWo ? activeWo.id : 'unassigned' });
+    const shot = await camApi.savePhoto(frame, { id, wo: activeWo ? activeWo.id : 'unassigned' });
     const photo = {
       id, wo: activeWo ? activeWo.id : null,
       projectId: activeProject ? activeProject.number : null,
       customer: activeWo ? activeWo.customer : activeProject ? activeProject.customer : 'Unassigned',
       site: activeWo ? activeWo.site : activeProject ? (activeProject.siteAddr || '—') : '—',
-      tech: me.initials || '—', techName: me.name || 'Technician',
+      tech: techSelfInit(), techName: me.name || 'Technician',
       phase: slot ? (slot.toLowerCase().includes('before') || slot === 'Issue found' || slot === 'Site — before' ? 'before' : slot.toLowerCase().includes('after') || slot.toLowerCase().includes('complete') || slot.toLowerCase().includes('final') ? 'after' : 'progress') : phase,
       slot, label: slot || (activeWo ? `Field photo — ${activeWo.customer}` : activeProject ? `${activeProject.number} — ${activeProject.customer}` : `Field photo — Unassigned`),
       day: 'Today', time: nowTime(), look: null, pair: null, annotations: [],
@@ -348,7 +365,7 @@ function TechCaptureView({ setTab }) {
           </button>
           <button onClick={() => setTab('photos')} title="Done" style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)', color: 'var(--status-ok)', fontSize: 14, cursor: 'pointer' }}>✓</button>
         </div>
-        <div style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-low)' }}>Offline-safe — photos queue and sync automatically</div>
+        <div style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-low)' }}>Photos upload immediately when online — uploads can fail offline</div>
       </div>
     </div>
   );

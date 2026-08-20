@@ -127,7 +127,7 @@ function SitePhotosScreen() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
                 <span className="mono" style={{ fontSize: 9, color: 'var(--brand)' }}>{pair.before.wo}</span>
                 <span style={{ fontSize: 9, color: 'var(--text-low)' }}>{pair.before.techName} · {pair.after.day}</span>
-                <button onClick={() => showToast('Pair shared to customer portal', 'ok')} style={{ marginLeft: 'auto', padding: '3px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 9, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Share</button>
+                <button onClick={() => showToast("Sharing to the customer portal isn't wired up yet", 'warn')} style={{ marginLeft: 'auto', padding: '3px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 9, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Share</button>
               </div>
             </div>
           ))}

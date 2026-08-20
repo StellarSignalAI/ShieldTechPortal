@@ -1,14 +1,24 @@
 /* Screen — MRR Tracker (v2: churn simulation toggle) */
 
 function MRRScreen() {
-  const [contracts, setContracts] = useShieldStore(mrrStore);
+  const [storeContracts] = useShieldStore(mrrStore);
   const [hoveredMonth, setHoveredMonth] = React.useState(null);
   const [showChurnSim, setShowChurnSim] = React.useState(false);
+  /* Churn simulation is PURELY LOCAL — an overlay Set of customer names used
+     for the what-if math. It never writes to the synced mrrStore, so playing
+     with the sim can't cancel anyone's real contract company-wide. */
+  const [churnSim, setChurnSim] = React.useState(() => new Set());
+
+  const contracts = (storeContracts || []).map(c => ({ ...c, churned: churnSim.has(c.customer) }));
 
   const toggleChurn = (customer) => {
-    setContracts(prev => prev.map(c => c.customer === customer ? { ...c, churned: !c.churned, status: !c.churned ? 'cancelled' : 'active' } : c));
-    const c = contracts.find(x => x.customer === customer);
-    showToast((c.churned ? 'Restored: ' : 'Simulated churn: ') + customer, c.churned ? 'ok' : 'warn');
+    const wasChurned = churnSim.has(customer);
+    setChurnSim(prev => {
+      const next = new Set(prev);
+      if (next.has(customer)) next.delete(customer); else next.add(customer);
+      return next;
+    });
+    showToast((wasChurned ? 'Restored (simulation only): ' : 'Simulated churn (view-only): ') + customer, wasChurned ? 'ok' : 'warn');
   };
 
   const activeContracts = contracts.filter(c => !c.churned);
@@ -58,7 +68,7 @@ function MRRScreen() {
           <div style={{ width:8, height:8, borderRadius:'50%', background:'var(--status-critical)', flexShrink:0 }} />
           <span style={{ fontSize:12, color:'var(--status-critical)', fontWeight:600 }}>Churn Simulation Active</span>
           <span style={{ fontSize:12, color:'var(--text-mid)' }}>Simulated MRR loss: <strong style={{color:'var(--status-critical)'}}>-${churnedMRR.toLocaleString()}/mo</strong> · ARR impact: <strong style={{color:'var(--status-critical)'}}>-${(churnedMRR*12).toLocaleString()}</strong></span>
-          <button onClick={() => setContracts(prev => prev.map(c => ({...c,churned:false,status:c.status==='cancelled'?'active':c.status})))} style={{ marginLeft:'auto', fontSize:11, color:'var(--status-ok)', background:'rgba(52,211,153,0.08)', border:'1px solid rgba(52,211,153,0.2)', borderRadius:5, padding:'4px 10px', cursor:'pointer', fontFamily:'var(--font-body)' }}>Reset All</button>
+          <button onClick={() => setChurnSim(new Set())} style={{ marginLeft:'auto', fontSize:11, color:'var(--status-ok)', background:'rgba(52,211,153,0.08)', border:'1px solid rgba(52,211,153,0.2)', borderRadius:5, padding:'4px 10px', cursor:'pointer', fontFamily:'var(--font-body)' }}>Reset All</button>
         </div>
       )}
 

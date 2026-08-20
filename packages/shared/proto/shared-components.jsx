@@ -622,13 +622,22 @@ function ShieldModalHost() {
             finish(cfg.downloadMsg || 'Document exported');
           }} label={cfg.downloadLabel || 'Download PDF'} />}
           {kind === 'confirm' && <ModalPrimary busy={busy} danger={cfg.danger} onClick={confirmAction} label={cfg.confirmLabel || 'Confirm'} />}
-          {kind === 'signature' && <ModalPrimary busy={busy} onClick={() => {
+          {kind === 'signature' && <ModalPrimary busy={busy} onClick={async () => {
             if (!hasInk.current) { shieldToast('Please capture a signature first', 'warn'); return; }
             // Hand the actual ink to the caller — a signature that's captured
             // on screen and then discarded is legally worthless.
             let dataUrl = null;
             try { dataUrl = sigRef.current ? sigRef.current.toDataURL('image/png') : null; } catch { /* canvas gone */ }
-            if (cfg.onSave) cfg.onSave(dataUrl);
+            if (cfg.onSave) {
+              // The save must succeed BEFORE the success toast + close — a
+              // failed upload keeps the modal (and the ink) on screen.
+              setBusy(true);
+              let r;
+              try { r = await Promise.resolve(cfg.onSave(dataUrl)); }
+              catch (e) { setBusy(false); shieldToast('Could not save signature — ' + ((e && e.message) || 'try again'), 'warn'); return; }
+              setBusy(false);
+              if (r && r.ok === false) { shieldToast(r.error || 'Could not save signature — try again', 'warn'); return; }
+            }
             finish(cfg.successMsg || 'Signature captured');
           }} label={cfg.submitLabel || 'Save & Complete'} />}
           {kind === 'detail' && (cfg.actions || []).map((a, ai) => (

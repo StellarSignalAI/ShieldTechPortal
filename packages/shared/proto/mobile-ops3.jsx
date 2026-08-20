@@ -81,7 +81,7 @@ function MPhotoDetail({ id, onClose, onNav }) {
           <MSection title="Before / After pair">
             <div style={{ display: 'flex', gap: 8 }}>
               {pair.map(x => (
-                <div key={x.id} onClick={() => onClose() || setTimeout(() => onNav, 0)} style={{ flex: 1, height: 70, borderRadius: 9, background: phLook(x.look), position: 'relative', border: '1px solid var(--border-subtle)' }}>
+                <div key={x.id} onClick={() => { onClose(); if (onNav) onNav('photos'); }} style={{ flex: 1, height: 70, borderRadius: 9, background: phLook(x.look), position: 'relative', border: '1px solid var(--border-subtle)', cursor: 'pointer' }}>
                   <span style={{ position: 'absolute', bottom: 5, left: 6 }}><MBadge color={PH_PHASE[x.phase]}>{x.phase}</MBadge></span>
                 </div>
               ))}
@@ -219,8 +219,8 @@ function MSubDetail({ id, onClose }) {
           <div className="mono" style={{ fontSize: 16, fontWeight: 700, color: 'var(--status-warn)' }}>★ {s.rating}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => showToast('Calling…', 'ok')} style={{ flex: 1, padding: '10px 0', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Call</button>
-          <button onClick={() => showToast('Composing email…', 'ok')} style={{ flex: 1, padding: '10px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Email</button>
+          <button onClick={() => { if (s.phone) window.location.href = `tel:${s.phone}`; else showToast('No phone number on file for this subcontractor', 'warn'); }} style={{ flex: 1, padding: '10px 0', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Call</button>
+          <button onClick={() => { if (s.email) window.location.href = `mailto:${s.email}`; else showToast('No email address on file for this subcontractor', 'warn'); }} style={{ flex: 1, padding: '10px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Email</button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
           {[['JOBS', s.jobs], ['REVENUE', `$${(s.revenue / 1000).toFixed(0)}K`], ['YTD PAID', `$${(s.ytdPaid / 1000).toFixed(0)}K`]].map(([k, v]) => (

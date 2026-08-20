@@ -133,6 +133,35 @@ function TechAvatarMenu() {
   );
 }
 
+/* Header presence pill — "On Clock" only while the persisted timer from the
+   Time tab is actually running; otherwise a neutral online dot (no fabricated
+   "On Duty" claim — there is no clock-in backend beyond the timer). */
+function TechPresencePill() {
+  const readClock = () => {
+    try { const t = JSON.parse(localStorage.getItem('st2:timer') || 'null'); return !!(t && t.start); }
+    catch { return false; }
+  };
+  const [onClock, setOnClock] = useState(readClock);
+  React.useEffect(() => {
+    const sync = () => setOnClock(readClock());
+    const iv = setInterval(sync, 15000);
+    window.addEventListener('storage', sync);
+    return () => { clearInterval(iv); window.removeEventListener('storage', sync); };
+  }, []);
+  const c = onClock ? 'var(--status-ok)' : 'var(--text-low)';
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 5,
+      padding: '3px 10px', borderRadius: 100,
+      background: onClock ? 'rgba(52,211,153,0.08)' : 'rgba(63,169,245,0.04)',
+      border: `1px solid ${onClock ? 'rgba(52,211,153,0.2)' : 'var(--border-subtle)'}`
+    }}>
+      <div style={{ width: 6, height: 6, borderRadius: '50%', background: c, animation: onClock ? 'pulse-online 3s ease-in-out infinite' : 'none' }} />
+      {onClock && <span style={{ fontSize: 10, color: c, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>On Clock</span>}
+    </div>
+  );
+}
+
 /* Extended shell with 7 tabs */
 function TechShellV2({ tab, setTab, children }) {
   const tabs = [
@@ -160,14 +189,7 @@ function TechShellV2({ tab, setTab, children }) {
               <span style={{ fontSize: 10, color: 'var(--text-low)', marginLeft: 4 }}>Tech</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-            display: 'flex', alignItems: 'center', gap: 5,
-            padding: '3px 10px', borderRadius: 100,
-            background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)'
-          }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--status-ok)', animation: 'pulse-online 3s ease-in-out infinite' }} />
-                <span style={{ fontSize: 10, color: 'var(--status-ok)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>On Duty</span>
-              </div>
+              <TechPresencePill />
               <TechAvatarMenu />
             </div>
           </header>

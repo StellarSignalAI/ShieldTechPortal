@@ -5,14 +5,13 @@ function SkillsMatrixScreen() {
   const [filter, setFilter] = React.useState('all');
   const [highlight, setHighlight] = React.useState(null);
 
-  const techs = [
-    { id: 'MR', name: 'Mike Reyes',   role: 'Lead Installer',    color: '#3FA9F5' },
-    { id: 'JL', name: 'Jessica Liu',  role: 'Senior Tech',       color: '#34D399' },
-    { id: 'KW', name: 'Kevin White',  role: 'Field Technician',  color: '#FBBF24' },
-    { id: 'DP', name: 'Diana Patel',  role: 'Field Technician',  color: '#c084fc' },
-    { id: 'TG', name: 'Tony Garcia',  role: 'Lead Installer',    color: '#F43F5E' },
-    { id: 'AL', name: 'Alex Lee',     role: 'Junior Tech',       color: '#94A3B8' },
-  ];
+  // Real roster from Supabase profiles (same source as Team hub / calendars).
+  const [techs, setTechs] = React.useState(() => window.__shieldTechRoster || []);
+  React.useEffect(() => {
+    let alive = true;
+    if (typeof refreshTechRoster === 'function') refreshTechRoster().then(r => { if (alive && r && r.length) setTechs(r); });
+    return () => { alive = false; };
+  }, []);
 
   const skillGroups = [
     { group: 'Camera Systems', color: 'var(--brand)', skills: [
@@ -72,6 +71,15 @@ function SkillsMatrixScreen() {
     const total = vals.reduce((a,b) => a+b, 0);
     return { ...t, score: Math.round((total / (allSkills.length * 3)) * 100) };
   });
+
+  if (!techs.length) {
+    return (
+      <div className="glass" style={{ padding: 36, textAlign: 'center' }}>
+        <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>No team members yet</div>
+        <div style={{ fontSize: 12, color: 'var(--text-low)' }}>The skills matrix builds from your real team roster — invite technicians from the Team hub and they'll appear here.</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'calc(100vh - 76px)', gap:12, overflow:'hidden' }}>

@@ -24,13 +24,7 @@ function PartsReqScreen() {
     }));
   };
 
-  const truckStock = [
-    { tech: 'MR', name: 'Mike Reyes',  truck: 'V-12', stock: 94 },
-    { tech: 'JL', name: 'Jessica Liu', truck: 'V-08', stock: 78 },
-    { tech: 'KW', name: 'Kevin White', truck: 'V-15', stock: 85 },
-    { tech: 'DP', name: 'Diana Patel', truck: 'V-03', stock: 62 },
-    { tech: 'TG', name: 'Tony Garcia', truck: 'V-21', stock: 91 },
-  ];
+  const truckStock = [];   // No truck-stock tracking connected yet.
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'calc(100vh - 76px)', gap:12, overflow:'hidden' }}>
@@ -93,6 +87,11 @@ function PartsReqScreen() {
         {/* Truck stock sidebar */}
         <div style={{ width:200, flexShrink:0, display:'flex', flexDirection:'column', gap:8 }}>
           <div style={{ fontSize:10, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--text-low)' }}>Truck Stock</div>
+          {truckStock.length === 0 && (
+            <div className="glass" style={{ padding:'12px', fontSize:10.5, color:'var(--text-low)', lineHeight:1.5 }}>
+              No truck-stock tracking connected yet — stock levels will appear here once trucks are inventoried.
+            </div>
+          )}
           {truckStock.map(t => (
             <div key={t.tech} className="glass" style={{ padding:'10px 12px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:6 }}>

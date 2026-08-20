@@ -14,8 +14,8 @@ function NPSScreen() {
 
   const promoters  = responses.filter(r => r.category === 'promoter').length;
   const detractors = responses.filter(r => r.category === 'detractor').length;
-  const nps = Math.round(((promoters - detractors) / responses.length) * 100);
-  const avgScore = (responses.reduce((s,r) => s + r.score, 0) / responses.length).toFixed(1);
+  const nps = responses.length ? Math.round(((promoters - detractors) / responses.length) * 100) : 0;
+  const avgScore = responses.length ? (responses.reduce((s,r) => s + r.score, 0) / responses.length).toFixed(1) : '—';
   const needsFollowUp = responses.filter(r => r.category === 'detractor' && !r.followedUp).length;
 
   const filtered = responses.filter(r => filter === 'all' || r.category === filter);
@@ -56,8 +56,6 @@ function NPSScreen() {
   };
 
   const distribution = Array.from({length:11},(_,i) => ({ score: i, count: responses.filter(r => r.score === i).length }));
-  const monthlyNPS = [42,48,55,51,58,nps];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', gap: 12, overflow: 'hidden' }}>
@@ -66,7 +64,7 @@ function NPSScreen() {
         <div className="glass" style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 16, minWidth: 180 }}>
           <div>
             <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 2 }}>NPS SCORE</div>
-            <div className="mono" style={{ fontSize: 36, fontWeight: 700, color: nps >= 50 ? 'var(--status-ok)' : nps >= 30 ? 'var(--status-warn)' : 'var(--status-critical)', lineHeight: 1 }}>{nps}</div>
+            <div className="mono" style={{ fontSize: 36, fontWeight: 700, color: nps >= 50 ? 'var(--status-ok)' : nps >= 30 ? 'var(--status-warn)' : 'var(--status-critical)', lineHeight: 1 }}>{responses.length ? nps : '—'}</div>
           </div>
           <div style={{ fontSize: 10, color: 'var(--text-low)', lineHeight: 1.6 }}>
             <div style={{color:'var(--status-ok)'}}>{promoters} promoters</div>
@@ -97,21 +95,13 @@ function NPSScreen() {
             })}
           </div>
         </div>
-        {/* NPS Trend */}
+        {/* NPS Trend — needs multiple survey periods of history before it can render */}
         <div className="glass" style={{ flex:2, padding:'12px 16px' }}>
           <div style={{ fontSize:10, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--text-low)', marginBottom:8 }}>NPS Trend</div>
-          <div style={{ display:'flex', gap:4, alignItems:'flex-end', height:40 }}>
-            {monthlyNPS.map((v,i) => {
-              const h = Math.max(4,(v/80)*32);
-              const isLast = i === monthlyNPS.length-1;
-              return (
-                <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
-                  {isLast && <span className="mono" style={{ fontSize:8, color:'var(--brand)', fontWeight:700 }}>{v}</span>}
-                  <div style={{ width:'100%', height:h, background:isLast?'var(--brand)':'rgba(63,169,245,0.3)', borderRadius:'2px 2px 0 0' }} />
-                  <span style={{ fontSize:8, color:'var(--text-low)' }}>{months[i]}</span>
-                </div>
-              );
-            })}
+          <div style={{ fontSize:11, color:'var(--text-low)', lineHeight:1.5 }}>
+            {responses.length
+              ? <>Current NPS: <span className="mono" style={{ color:'var(--brand)', fontWeight:700 }}>{nps}</span> — trend appears once multiple survey periods are recorded.</>
+              : 'No survey responses yet.'}
           </div>
         </div>
       </div>

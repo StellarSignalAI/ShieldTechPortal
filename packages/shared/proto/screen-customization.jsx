@@ -1406,39 +1406,33 @@ function ShieldAIChatWidget({ label, base }) {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, typing]);
 
-  const aiResponses = {
-    'cash': 'Your cash position is $482,600 — up $38K this month. You have 4.2 months runway at current burn rate. Looking strong.',
-    'overdue': 'You have 3 overdue invoices totaling $18,400. The oldest is Acme Dental at 38 days. Want me to draft reminder emails?',
-    'revenue': 'MTD revenue is $284,600 (↑8.2% vs last month). RMR is $171,200. Gross margin sitting at 28.4%, above your 25% target.',
-    'dispatch': 'You have 4 techs active today. Diana Patel is unassigned this afternoon — Bayshore Medical has a critical SLA. Want me to assign her?',
-    'pipeline': 'Your pipeline has $548K across 14 deals. 2 proposals are pending signature worth $128K. Pinnacle Financial viewed theirs 4 times yesterday.',
-    'profitability': 'Managed services (RMR) has the best margin at 68%. CCTV installs run 32%, Access Control at 29%. Fire is underperforming at 23% — might be worth reviewing pricing.',
-    'techs': 'Mike Reyes leads with 28 jobs this month (4.9★). Kevin White: 24 jobs. Jessica Liu: 22 jobs. Tony Garcia had a speeding event today — 42 in a 25 zone.',
-    default: 'I can help with cash position, revenue, overdue invoices, dispatch status, pipeline, profitability by service, and tech performance. What would you like to know?'
+  /* Real assistant: routes through the shared ShieldTech AI service layer
+     (same backend as the full assistant screen). No canned answers. */
+  const ask = async (q, history) => {
+    if (!window.__shieldAI) {
+      return { text: "ShieldTech AI isn't configured yet — connect Supabase and set OPENAI_API_KEY to enable chat." };
+    }
+    try {
+      const thread = history
+        .filter((m, i) => !(i === 0 && m.role === 'ai'))
+        .map((m) => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text }));
+      const reply = await window.__shieldAI.shieldAIChat('assistant', [...thread, { role: 'user', content: q }]);
+      return { text: (reply && reply.text) || 'No response received — try again.' };
+    } catch (e) {
+      return { text: 'ShieldTech AI request failed: ' + (e && e.message ? e.message : String(e)) };
+    }
   };
 
-  const getResponse = (q) => {
-    const lower = q.toLowerCase();
-    if (lower.includes('cash') || lower.includes('money') || lower.includes('bank')) return aiResponses.cash;
-    if (lower.includes('overdue') || lower.includes('late') || lower.includes('unpaid')) return aiResponses.overdue;
-    if (lower.includes('revenue') || lower.includes('sales') || lower.includes('income') || lower.includes('mrr')) return aiResponses.revenue;
-    if (lower.includes('dispatch') || lower.includes('tech') && lower.includes('where')) return aiResponses.dispatch;
-    if (lower.includes('pipeline') || lower.includes('deal') || lower.includes('proposal')) return aiResponses.pipeline;
-    if (lower.includes('profit') || lower.includes('margin')) return aiResponses.profitability;
-    if (lower.includes('tech') || lower.includes('leaderboard') || lower.includes('performance')) return aiResponses.techs;
-    return aiResponses.default;
-  };
-
-  const send = () => {
-    if (!input.trim()) return;
-    const q = input.trim();
+  const send = async (preset) => {
+    const q = (preset != null ? preset : input).trim();
+    if (!q || typing) return;
+    const history = messages;
     setMessages((prev) => [...prev, { role: 'user', text: q }]);
     setInput('');
     setTyping(true);
-    setTimeout(() => {
-      setMessages((prev) => [...prev, { role: 'ai', text: getResponse(q) }]);
-      setTyping(false);
-    }, 800 + Math.random() * 600);
+    const r = await ask(q, history);
+    setMessages((prev) => [...prev, { role: 'ai', text: r.text }]);
+    setTyping(false);
   };
 
   const quickPrompts = ['Cash position?', 'Who\'s overdue?', 'Pipeline status', 'Profitability'];
@@ -1477,7 +1471,7 @@ function ShieldAIChatWidget({ label, base }) {
       {messages.length <= 1 &&
       <div style={{ display: 'flex', gap: 4, padding: '0 12px 6px', flexWrap: 'wrap' }}>
           {quickPrompts.map((p, i) =>
-        <button key={i} onClick={() => {setInput(p);setTimeout(() => {setMessages((prev) => [...prev, { role: 'user', text: p }]);setTyping(true);setTimeout(() => {setMessages((prev) => [...prev, { role: 'ai', text: getResponse(p) }]);setTyping(false);}, 800);}, 50);}}
+        <button key={i} onClick={() => send(p)}
         style={{ padding: '3px 8px', borderRadius: 100, fontSize: 9, background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{p}</button>
         )}
         </div>

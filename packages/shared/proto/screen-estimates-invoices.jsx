@@ -92,78 +92,136 @@ function NIFinanceScreen({ initialTab }) {
 
 /* ── Finance Overview Dashboard ── */
 function NIFinanceOverview({ onNav }) {
-  const arBuckets = [
-    { label: 'Current', amount: 134400, color: 'var(--status-ok)' },
-    { label: '1–30', amount: 22100, color: 'var(--status-warn)' },
-    { label: '31–60', amount: 14250, color: 'var(--status-critical)' },
-    { label: '60+', amount: 5200, color: '#c084fc' },
-  ];
-  const arTotal = arBuckets.reduce((s, b) => s + b.amount, 0);
+  // Real data only: AR/revenue from imported QuickBooks invoices, AP from
+  // bills, MRR from the shared contracts store. Missing sources show '—'.
+  const [inv, setInv] = React.useState(null);
+  const [bills, setBills] = React.useState(null);
+  React.useEffect(() => {
+    const q = window.__shieldQBO; if (!q) return;
+    q.invoices({ limit: 2000 }).then(r => { if (r && r.ok && r.data && r.data.length) setInv(r.data); });
+    q.bills(500).then(r => { if (r && r.ok && r.data) setBills(r.data); });
+  }, []);
+  const [mrrRows] = useShieldStore(mrrStore);
+  const mrrTotal = (mrrRows || []).filter(m => m.status !== 'cancelled').reduce((s, m) => s + (Number(m.mrr) || 0), 0);
+  const money = (n) => '$' + Math.round(n).toLocaleString();
+  const live = React.useMemo(() => {
+    if (!inv) return null;
+    const now = Date.now(), yr = new Date().getFullYear(), mo = new Date().getMonth();
+    const b = { cur: 0, d30: 0, d60: 0, d60p: 0 };
+    let revYTD = 0, revMTD = 0;
+    inv.forEach(v => {
+      const bal = Number(v.balance) || 0;
+      if (bal > 0) {
+        const due = v.due_date ? new Date(v.due_date).getTime() : now;
+        const days = Math.floor((now - due) / 86400000);
+        if (days <= 0) b.cur += bal; else if (days <= 30) b.d30 += bal; else if (days <= 60) b.d60 += bal; else b.d60p += bal;
+      }
+      const td = v.txn_date ? new Date(v.txn_date + 'T00:00:00') : null;
+      const tot = Number(v.total) || 0;
+      if (td && td.getFullYear() === yr) { revYTD += tot; if (td.getMonth() === mo) revMTD += tot; }
+    });
+    return { b, revYTD, revMTD };
+  }, [inv]);
+  const ap = React.useMemo(() => {
+    if (!bills || !bills.length) return null;
+    const now = Date.now(), week = now + 7 * 86400000, month = now + 31 * 86400000;
+    const out = { week: 0, month: 0, overdue: 0, total: 0 };
+    bills.forEach(bl => {
+      const bal = bl.balance != null ? Number(bl.balance) : (bl.status === 'paid' ? 0 : Number(bl.total) || 0);
+      if (!(bal > 0)) return;
+      out.total += bal;
+      const due = bl.due_date ? new Date(bl.due_date).getTime() : null;
+      if (due != null && due < now) out.overdue += bal;
+      else if (due != null && due <= week) out.week += bal;
+      else if (due != null && due <= month) out.month += bal;
+    });
+    return out;
+  }, [bills]);
+  const arBuckets = live ? [
+    { label: 'Current', amount: live.b.cur, color: 'var(--status-ok)' },
+    { label: '1–30', amount: live.b.d30, color: 'var(--status-warn)' },
+    { label: '31–60', amount: live.b.d60, color: 'var(--status-critical)' },
+    { label: '60+', amount: live.b.d60p, color: '#c084fc' },
+  ] : [];
+  const arTotal = arBuckets.reduce((s, b) => s + b.amount, 0) || 1;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 1400 }}>
-      {/* Top KPIs */}
+      {/* Top KPIs — only real numbers; unavailable sources show an honest dash */}
       <div style={{ display: 'flex', gap: 10 }}>
-        <StatCard label="CASH POSITION" value="$482,600" mono={false} trend="+$38K this week" trendDir="up" delay={0} />
-        <StatCard label="REVENUE (MTD)" value="$284,600" mono={false} trend="+8.2% vs prior" trendDir="up" delay={80} />
-        <StatCard label="REVENUE (YTD)" value="$1.25M" mono={false} delay={160} />
-        <StatCard label="GROSS MARGIN" value="28.4%" mono={false} trend="Target: 25%" trendDir="up" delay={240} />
-        <StatCard label="MRR" value="$171,200" mono={false} trend="+3.8% MoM" trendDir="up" delay={320} />
+        <StatCard label="CASH POSITION" value="—" mono={false} trend="Bank feed not connected" delay={0} />
+        <StatCard label="REVENUE (MTD)" value={live ? money(live.revMTD) : '—'} mono={false} trend={live ? 'from QuickBooks' : 'Connect QuickBooks'} trendDir={live ? 'up' : undefined} delay={80} />
+        <StatCard label="REVENUE (YTD)" value={live ? money(live.revYTD) : '—'} mono={false} trend={live ? undefined : 'Connect QuickBooks'} delay={160} />
+        <StatCard label="GROSS MARGIN" value="—" mono={false} trend="Needs cost data (QBO P&L)" delay={240} />
+        <StatCard label="MRR" value={mrrTotal > 0 ? money(mrrTotal) : '—'} mono={false} trend={mrrTotal > 0 ? 'from MRR contracts' : 'No contracts in MRR tracker'} delay={320} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
         {/* AR Aging */}
         <GlassPanel style={{ cursor: 'pointer' }} onClick={() => onNav('invoices')}>
           <SectionHeader title="Accounts Receivable" icon="reports" />
-          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginBottom: 12 }}>
-            {arBuckets.map((b, i) => (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <span className="mono" style={{ fontSize: 11, fontWeight: 600 }}>${(b.amount/1000).toFixed(1)}K</span>
-                <div style={{ width: '100%', height: Math.max((b.amount/arTotal)*80, 12), background: `${b.color}25`, border: `1px solid ${b.color}40`, borderRadius: '3px 3px 0 0' }} />
-                <span style={{ fontSize: 8, color: 'var(--text-low)' }}>{b.label}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid var(--border-subtle)' }}>
-            <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>Total Outstanding</span>
-            <span className="mono" style={{ fontSize: 14, fontWeight: 600 }}>${arTotal.toLocaleString()}</span>
-          </div>
+          {live ? <>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginBottom: 12 }}>
+              {arBuckets.map((b, i) => (
+                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <span className="mono" style={{ fontSize: 11, fontWeight: 600 }}>${(b.amount/1000).toFixed(1)}K</span>
+                  <div style={{ width: '100%', height: Math.max((b.amount/arTotal)*80, 12), background: `${b.color}25`, border: `1px solid ${b.color}40`, borderRadius: '3px 3px 0 0' }} />
+                  <span style={{ fontSize: 8, color: 'var(--text-low)' }}>{b.label}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid var(--border-subtle)' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>Total Outstanding</span>
+              <span className="mono" style={{ fontSize: 14, fontWeight: 600 }}>${arBuckets.reduce((s, b) => s + b.amount, 0).toLocaleString()}</span>
+            </div>
+          </> : (
+            <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: 'var(--text-low)', lineHeight: 1.6 }}>
+              No invoices imported yet.<br />AR aging appears after the first QuickBooks sync.
+            </div>
+          )}
         </GlassPanel>
 
-        {/* AP Summary */}
+        {/* AP Summary — from imported QuickBooks bills */}
         <GlassPanel style={{ cursor: 'pointer' }} onClick={() => onNav('ap')}>
           <SectionHeader title="Accounts Payable" icon="finance" />
-          {[
-            { label: 'Due This Week', amount: '$8,420', color: 'var(--status-critical)' },
-            { label: 'Due This Month', amount: '$24,600', color: 'var(--status-warn)' },
-            { label: 'Overdue', amount: '$3,200', color: 'var(--status-critical)' },
-          ].map((r, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
-              <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{r.label}</span>
-              <span className="mono" style={{ fontSize: 13, fontWeight: 500, color: r.color }}>{r.amount}</span>
+          {ap ? <>
+            {[
+              { label: 'Due This Week', amount: money(ap.week), color: 'var(--status-critical)' },
+              { label: 'Due This Month', amount: money(ap.month), color: 'var(--status-warn)' },
+              { label: 'Overdue', amount: money(ap.overdue), color: 'var(--status-critical)' },
+            ].map((r, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{r.label}</span>
+                <span className="mono" style={{ fontSize: 13, fontWeight: 500, color: r.color }}>{r.amount}</span>
+              </div>
+            ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid var(--border-subtle)', marginTop: 4 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>Total AP</span>
+              <span className="mono" style={{ fontSize: 14, fontWeight: 600 }}>{money(ap.total)}</span>
             </div>
-          ))}
-          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid var(--border-subtle)', marginTop: 4 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>Total AP</span>
-            <span className="mono" style={{ fontSize: 14, fontWeight: 600 }}>$36,220</span>
-          </div>
+          </> : (
+            <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: 'var(--text-low)', lineHeight: 1.6 }}>
+              No bills imported yet.<br />AP totals appear after the first QuickBooks sync.
+            </div>
+          )}
         </GlassPanel>
 
-        {/* Profit & Loss Quick */}
+        {/* Profit & Loss Quick — revenue is real; cost data needs the QBO P&L */}
         <GlassPanel style={{ cursor: 'pointer' }} onClick={() => onNav('statements')}>
           <SectionHeader title="P&L Summary (MTD)" icon="forecast" />
           {[
-            { label: 'Revenue', value: '$284,600', indent: 0 },
-            { label: 'Cost of Goods', value: '−$142,800', indent: 1, color: 'var(--text-mid)' },
-            { label: 'Gross Profit', value: '$141,800', indent: 0, bold: true },
-            { label: 'Operating Expenses', value: '−$61,100', indent: 1, color: 'var(--text-mid)' },
-            { label: 'Net Income', value: '$80,700', indent: 0, bold: true, color: 'var(--status-ok)' },
+            { label: 'Revenue', value: live ? money(live.revMTD) : '—', indent: 0 },
+            { label: 'Cost of Goods', value: '—', indent: 1, color: 'var(--text-mid)' },
+            { label: 'Gross Profit', value: '—', indent: 0, bold: true },
+            { label: 'Operating Expenses', value: '—', indent: 1, color: 'var(--text-mid)' },
+            { label: 'Net Income', value: '—', indent: 0, bold: true },
           ].map((r, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', paddingLeft: r.indent * 12, borderBottom: r.bold ? '1px solid var(--border-subtle)' : '1px solid rgba(63,169,245,0.03)' }}>
               <span style={{ fontSize: 12, color: r.color || 'var(--text-high)', fontWeight: r.bold ? 600 : 400 }}>{r.label}</span>
               <span className="mono" style={{ fontSize: 12, fontWeight: r.bold ? 600 : 400, color: r.color || 'var(--text-high)' }}>{r.value}</span>
             </div>
           ))}
+          <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 8 }}>Cost lines fill in from the QuickBooks P&L report once it syncs.</div>
         </GlassPanel>
       </div>
 
@@ -479,7 +537,7 @@ function NIFinanceRecurring({ showToast }) {
                 <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: s.stripe ? 'var(--brand)' : 'var(--text-low)' }}>{s.stripe && '⊛ '}{s.method}</td>
                 <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={s.status === 'active' ? 'online' : 'critical'} label={s.status === 'active' ? 'Active' : 'Past Due'} /></td>
                 <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
-                  <button onClick={() => showToast(s.stripe ? 'Stripe subscription updated' : 'Enroll in AutoPay?')} style={{ padding: '3px 8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s.stripe ? 'Manage' : 'Enroll AutoPay'}</button>
+                  <button onClick={() => showToast(s.stripe ? "Stripe subscription management isn't wired up yet" : "AutoPay enrollment isn't wired up yet")} style={{ padding: '3px 8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s.stripe ? 'Manage' : 'Enroll AutoPay'}</button>
                 </td>
               </tr>
             ))}

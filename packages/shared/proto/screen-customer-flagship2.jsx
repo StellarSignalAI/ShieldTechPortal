@@ -45,7 +45,12 @@ function CustBudgetPlannerView() {
             <span style={{ fontSize: 12, color: 'var(--text-high)', flex: 1 }}>{item}</span>
           </div>
         )))}
-        <button onClick={() => showToast('Plan sent — your account manager will walk you through it', 'ok')} style={{ marginTop: 12, padding: '8px 18px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Email me this plan</button>
+        <button onClick={async () => {
+          const t = window.__shieldTickets;
+          if (!t) { showToast('Support backend not configured', 'warn'); return; }
+          const r = await t.create({ subject: 'Refresh budget plan requested', description: 'Customer asked for their device refresh budget plan by email (with a walkthrough from their account manager).', category: 'billing', priority: 'medium' });
+          showToast(r.ok ? `Request ${r.data.ref} sent — your account manager will email the plan and walk you through it` : `Could not send: ${r.error}`, r.ok ? 'ok' : 'warn');
+        }} style={{ marginTop: 12, padding: '8px 18px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Email me this plan</button>
       </GlassPanel>
     </div>
   );
@@ -132,9 +137,21 @@ function CustDrillView() {
 /* ── 9. Approvals Inbox ── */
 function CustApprovalsInboxView() {
   const [items, setItems] = useState([]);
-  const act = (id, approve) => {
+  /* Approve/Decline is a REAL support-ticket write, so the office actually
+     receives the decision — never a local-only status flip. */
+  const act = async (id, approve) => {
+    const t = window.__shieldTickets;
+    if (!t) { showToast('Support backend not configured', 'warn'); return; }
+    const item = items.find(x => x.id === id);
+    const word = approve ? 'APPROVED' : 'DECLINED';
+    const r = await t.create({
+      subject: `${word}: ${item ? `${item.kind} ${item.id}` : id}`,
+      description: `Customer ${word.toLowerCase()} ${item ? `"${item.title}"${item.amount ? ` ($${item.amount.toLocaleString()})` : ''}` : id} from the portal Approvals tab.`,
+      category: 'billing', priority: 'high',
+    });
+    if (!r.ok) { showToast(`Could not send your response: ${r.error}`, 'warn'); return; }
     setItems(prev => prev.map(x => x.id === id ? { ...x, status: approve ? 'approved' : 'declined' } : x));
-    showToast(approve ? 'Response recorded — your account manager will confirm' : 'Declined — your account manager will follow up', approve ? 'ok' : 'warn');
+    showToast(approve ? `Approval ${r.data.ref} sent — your account manager will confirm next steps` : `Response ${r.data.ref} sent — your account manager will follow up`, approve ? 'ok' : 'warn');
   };
   const askQuestion = async (item) => {
     const t = window.__shieldTickets;
@@ -144,8 +161,8 @@ function CustApprovalsInboxView() {
   };
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 14 }}>Everything waiting on your signature, in one place. Approvals are e-signed and land in the audit trail instantly.</div>
-      {items.length === 0 && <GlassPanel style={{ padding: 30, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>Nothing waiting on you — quotes, change orders and punch sign-offs land here.</GlassPanel>}
+      <div style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 14 }}>Everything waiting on your response, in one place.</div>
+      {items.length === 0 && <GlassPanel style={{ padding: 30, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>Approval requests your ShieldTech team sends — quotes, change orders, punch sign-offs — will appear here.</GlassPanel>}
       {items.map(item => (
         <GlassPanel key={item.id} style={{ padding: 18, marginBottom: 12, opacity: item.status === 'pending' ? 1 : 0.6 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
@@ -157,12 +174,12 @@ function CustApprovalsInboxView() {
           <div style={{ fontSize: 11, color: 'var(--text-low)', marginBottom: 12 }}>{item.detail}</div>
           {item.status === 'pending' ? (
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => act(item.id, true)} style={{ padding: '8px 22px', background: 'linear-gradient(135deg, var(--status-ok), #1f9e6e)', border: 'none', borderRadius: 7, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve & sign</button>
+              <button onClick={() => act(item.id, true)} style={{ padding: '8px 22px', background: 'linear-gradient(135deg, var(--status-ok), #1f9e6e)', border: 'none', borderRadius: 7, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>
               <button onClick={() => act(item.id, false)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-low)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Decline</button>
               <button onClick={() => askQuestion(item)} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Ask a question</button>
             </div>
           ) : (
-            <span style={{ fontSize: 11, fontWeight: 700, color: item.status === 'approved' ? 'var(--status-ok)' : 'var(--status-warn)' }}>{item.status === 'approved' ? '✓ Approved — signed electronically' : 'Declined'}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: item.status === 'approved' ? 'var(--status-ok)' : 'var(--status-warn)' }}>{item.status === 'approved' ? '✓ Approved — sent to your ShieldTech team' : 'Declined — sent to your ShieldTech team'}</span>
           )}
         </GlassPanel>
       ))}

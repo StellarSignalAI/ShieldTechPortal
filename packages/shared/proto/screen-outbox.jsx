@@ -71,7 +71,7 @@ function PayPageScreen({ onBack }) {
           <div className="glass" style={{ padding: 26, textAlign: 'center' }}>
             <div style={{ width: 46, height: 46, margin: '0 auto 10px', borderRadius: '50%', background: 'rgba(52,211,153,0.12)', border: '2px solid var(--status-ok)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--status-ok)' }}>✓</div>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-high)' }}>Payment received</div>
-            <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 4 }}>{inv.num} · ${inv.amount.toLocaleString()} · a receipt was emailed to {inv.customer}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 4 }}>{inv.num} · ${inv.amount.toLocaleString()} · marked paid on {inv.customer}'s account (no receipt email is sent from this demo checkout)</div>
             <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 10 }}>Thank you for your business — {brand.company}</div>
           </div>
         ) : (

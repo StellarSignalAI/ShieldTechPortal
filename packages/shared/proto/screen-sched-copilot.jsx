@@ -42,10 +42,18 @@ function SchedCopilotScreen() {
         .map(t => ({ t, load: util[t], skill: (skills[t] || {})['low-voltage'] || 0, cert: (skills[t] || {})['c7-license'] || 0 }))
         .sort((a, b) => (a.load - b.load) || (b.skill - a.skill));
       const best = ranked[0];
+      // Real conflict check against the job board for this tech + this job's window.
+      const hasConflict = jobs.some(x => x.id !== j.id && (x.techs || []).includes(best.t) &&
+        jobStartISO(x) <= jobEndISO(j) && jobStartISO(j) <= jobEndISO(x) &&
+        x.start < j.start + j.dur && j.start < x.start + x.dur);
       props.push({
         id: 'pr-' + j.id, jobId: j.id, title: j.title,
         from: 'Unassigned', to: best.t,
-        reasons: [`Lightest load (${best.load}h this week)`, `Low-voltage L${best.skill} · C-7 licensed`, 'No schedule conflicts that day'],
+        reasons: [
+          `Lightest load (${best.load}h this week)`,
+          ...(best.skill ? [`Low-voltage L${best.skill}${best.cert ? ' · C-7 licensed' : ''}`] : best.cert ? ['C-7 licensed'] : []),
+          hasConflict ? '⚠ Has another job in this window — double-check before applying' : 'No schedule conflicts in this window',
+        ],
         apply: () => { setJobs(prev => prev.map(x => x.id === j.id ? { ...x, techs: [best.t], techIds: [(COPILOT_TECH_META[best.t] || {}).uid].filter(Boolean) } : x)); notifyJobAssigned(j, [best.t]); },
       });
     });

@@ -7,91 +7,14 @@ const TWEAK_DEFAULTS = {
   "mscreen": "custom-dashboard"
 };
 
-/* ── Mobile-native Schedule (agenda view — replaces desktop calendar grid) ── */
-const M_AGENDA_TYPES = {
-  install:     { c: '#3FA9F5', label: 'Install' },
-  maintenance: { c: '#FBBF24', label: 'Maintenance' },
-  repair:      { c: '#F43F5E', label: 'Repair' },
-  survey:      { c: '#c084fc', label: 'Survey' },
-  meeting:     { c: '#34D399', label: 'Meeting' },
-};
 const M_TECH_COLORS = { MR: '#3FA9F5', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
 const mFmtH = h => `${Math.floor(h)}:${h % 1 ? '30' : '00'}`;
-
-function MobileAgendaView({ onNav }) {
-  const [jobs] = useShieldStore(jobStore);
-  const todayIdx = ((new Date().getDay() + 6) % 7) + 1;   // Mon=1 … Sun=7, real today
-  const [day, setDay] = useState(todayIdx);
-  const [addJob, setAddJob] = useState(false);
-  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const monday = new Date(); monday.setDate(monday.getDate() - (todayIdx - 1));
-  const dates = Array.from({ length: 7 }, (_, i) => { const d = new Date(monday); d.setDate(monday.getDate() + i); return d.getDate(); });
-  const weekISO = Array.from({ length: 7 }, (_, i) => addDaysISO(isoOfDate(mondayOf(new Date())), i));
-  const dayJobs = jobs.filter(j => jobOnISO(j, weekISO[day - 1])).sort((a, b) => a.start - b.start);
-  const weekRevenue = jobs.filter(j => j.value && j.type !== 'meeting' && jobStartISO(j) <= weekISO[6] && jobEndISO(j) >= weekISO[0]).reduce((s, j) => s + (j.value || 0), 0);
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span className="display" style={{ fontSize: 15, color: 'var(--text-high)' }}>This week</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span className="mono" style={{ fontSize: 11, color: 'var(--status-ok)' }}>${weekRevenue.toLocaleString()} wk</span>
-          <button onClick={() => setAddJob(true)} style={{ padding: '6px 13px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Job</button>
-        </div>
-      </div>
-      {/* Day pills */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
-        {dayLabels.map((d, i) => {
-          const n = jobs.filter(j => jobOnISO(j, weekISO[i])).length;
-          const on = day === i + 1, today = i + 1 === todayIdx;
-          return (
-            <button key={d} onClick={() => setDay(i + 1)} style={{ padding: '8px 0 6px', borderRadius: 9, border: '1px solid', borderColor: on ? 'var(--border-strong)' : 'var(--border-subtle)', background: on ? 'rgba(63,169,245,0.12)' : 'transparent', cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-              <span style={{ fontSize: 8, letterSpacing: '0.06em', color: on ? 'var(--brand)' : 'var(--text-low)' }}>{d.toUpperCase()}</span>
-              <span className="mono" style={{ fontSize: 13, fontWeight: today ? 700 : 400, color: today ? 'var(--brand)' : on ? 'var(--text-high)' : 'var(--text-mid)' }}>{dates[i]}</span>
-              <span style={{ width: 4, height: 4, borderRadius: '50%', background: n ? 'var(--brand)' : 'transparent' }}></span>
-            </button>
-          );
-        })}
-      </div>
-      {/* Jobs for the day */}
-      {dayJobs.length === 0 && <div className="glass" style={{ padding: 28, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>Nothing scheduled — enjoy it</div>}
-      {dayJobs.map(j => {
-        const tc = M_AGENDA_TYPES[j.type] || M_AGENDA_TYPES.install;
-        const span = jobSpanDays(j);
-        const unassigned = !j.techs || j.techs.length === 0;
-        return (
-          <div key={j.id} onClick={() => onNav('workorder')} className="glass" style={{ padding: '12px 14px', borderRadius: 12, borderLeft: `3px solid ${tc.c}`, cursor: 'pointer', border: unassigned ? '1px dashed #94A3B8' : undefined, borderLeftColor: tc.c, borderLeftStyle: 'solid', borderLeftWidth: 3 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="mono" style={{ fontSize: 12, fontWeight: 700, color: tc.c, flexShrink: 0 }}>{mFmtH(j.start)}</span>
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{j.title}</span>
-              <div style={{ display: 'flex', flexShrink: 0 }}>
-                {(j.techs || []).slice(0, 3).map((tid, ti) => (
-                  <span key={tid} style={{ width: 20, height: 20, borderRadius: '50%', background: `${M_TECH_COLORS[tid] || '#3FA9F5'}28`, border: `1px solid ${M_TECH_COLORS[tid] || '#3FA9F5'}60`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 700, color: M_TECH_COLORS[tid] || '#3FA9F5', marginLeft: ti > 0 ? -6 : 0 }}>{tid}</span>
-                ))}
-                {unassigned && <span style={{ fontSize: 9, fontWeight: 600, color: '#94A3B8' }}>◌ unassigned</span>}
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 4, paddingLeft: 0, alignItems: 'center' }}>
-              <span style={{ fontSize: 10, color: 'var(--text-low)' }}>{mFmtH(j.start)} – {mFmtH(j.start + j.dur)}{span > 1 ? ` · ${span} days` : ''}</span>
-              <span style={{ fontSize: 10, color: tc.c }}>{tc.label}</span>
-              {j.value > 0 && <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', marginLeft: 'auto' }}>${(j.value / 1000).toFixed(1)}k</span>}
-            </div>
-          </div>
-        );
-      })}
-      <div style={{ fontSize: 9, color: 'var(--text-low)', textAlign: 'center' }}>Drag-and-drop scheduling lives on the desktop calendar — this is your day view.</div>
-      {addJob && <MNewJobSheet defaultDate={weekISO[day - 1]} onClose={() => setAddJob(false)} />}
-    </div>
-  );
-}
 
 /* Same screen map as the desktop portal — 100% parity */
 const M_NATIVE = {
   'custom-dashboard': MHomeView,
-  dashboard: MMissionView,
   dispatch: MDispatchView,
-  finance: MFinanceView,
   'customers-list': MCustomersView,
-  crm: MPipelineView,
   inventory: MInventoryView,
   approvals: MApprovalsView,
   workorder: MWorkOrdersView,
@@ -174,15 +97,7 @@ const M_SCREEN_MAP = {
 };
 
 /* Ids resolved by purpose-built touch-native views (branches below). */
-const M_NATIVE_IDS = ['m-more','calendar','cameras','topology','warroom','floorplan','anomaly','login','helpdesk','incidents','quote-cash','purchase-orders','parts-req','mrr','nps','skills','knowledge','warranty','photos','punchlist','subcontractors','projects','proposals','finance','certs','tools','costing','audit','reports','contracts','sla','commissions','compliance','survey-ai','sitescan','fleet'];
-
-const M_TABS = [
-  { id: 'custom-dashboard', icon: 'dashboard', label: 'Home' },
-  { id: 'calendar', icon: 'calendar', label: 'Schedule' },
-  { id: 'dispatch', icon: 'dispatch', label: 'Field' },
-  { id: 'finance', icon: 'finance', label: 'Money' },
-  { id: 'm-more', icon: 'grid-2', label: 'All' },
-];
+const M_NATIVE_IDS = ['m-more','calendar','login','helpdesk','incidents','quote-cash','purchase-orders','parts-req','mrr','nps','skills','knowledge','warranty','photos','punchlist','subcontractors','projects','proposals','finance','certs','tools','costing','audit','reports','contracts','sla','commissions','compliance','survey-ai','sitescan','fleet'];
 
 function screenLabel(id) {
   if (id === 'sitescan') return 'Survey Scan';
@@ -200,11 +115,13 @@ function MobileDirectory({ onNav }) {
     items: g.items.filter(i => !i.hidden && i.label.toLowerCase().includes(q.toLowerCase())),
   })).filter(g => g.items.length > 0);
   const appUrls = window.__shieldAppUrls || {};
+  const qn = q.trim().toLowerCase();
+  const promoMatch = (keywords) => qn.length > 0 && keywords.some(k => k.includes(qn));
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search all screens…"
         style={{ background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
-      {'auto bid autobid auto-bid bids proposals leads secret weapon'.includes(q.toLowerCase()) && (
+      {promoMatch(['auto bid', 'autobid', 'auto-bid', 'bids', 'proposals', 'leads', 'secret weapon']) && (
         <button onClick={() => onNav('autobid')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(63,169,245,0.10), rgba(52,211,153,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
           <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>⟡</span>
           <span style={{ flex: 1 }}>
@@ -214,7 +131,7 @@ function MobileDirectory({ onNav }) {
           <span style={{ color: 'var(--text-low)', fontSize: 14 }}>›</span>
         </button>
       )}
-      {'survey scan surveyscan site scan 3d lidar'.includes(q.toLowerCase()) && (
+      {promoMatch(['survey scan', 'surveyscan', 'site scan', '3d', 'lidar']) && (
         <button onClick={() => onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(63,169,245,0.10), rgba(192,132,252,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
           <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
           <span style={{ flex: 1 }}>
@@ -330,7 +247,6 @@ function MobilePortalApp() {
   let screen = t.mscreen || 'custom-dashboard';
   if (screen === 'hermes') screen = 'shieldtech-ai';
   const handleNav = (id) => { const v = id === 'hermes' ? 'shieldtech-ai' : id; setTweak('mscreen', v); saveScreen('portal-m', v); };
-  window.__shieldNav = handleNav;
   const [histBack, setHistBack] = useState([]);
   const [tabCfg] = useShieldStore(mobileTabsStore);
   const [ssPrefs] = useShieldStore(ssPrefsStore);
@@ -338,9 +254,13 @@ function MobilePortalApp() {
   const [tabEditor, setTabEditor] = useState(false);
   const [newJob, setNewJob] = useState(false);
   const [drawer, setDrawer] = useState(false);
-  window.__shieldNewJob = () => setNewJob(true);
-  window.__shieldEditTabs = () => setTabEditor(true);
-  window.__shieldOpenMenu = () => setDrawer(true);
+  // Refresh the window hooks every render so they never capture stale closures.
+  React.useEffect(() => {
+    window.__shieldNav = handleNav;
+    window.__shieldNewJob = () => setNewJob(true);
+    window.__shieldEditTabs = () => setTabEditor(true);
+    window.__shieldOpenMenu = () => setDrawer(true);
+  });
   const liveTabs = tabCfg.tabs.slice(0, tabCfg.maxTabs);
 
   const nav = (id) => { setHistBack(h => [...h.slice(-12), screen]); handleNav(id); };
@@ -353,7 +273,6 @@ function MobilePortalApp() {
 
   const isTab = liveTabs.some(x => x.id === screen);
   const activeId = isTab ? screen : null;
-  const topLevel = isTab || screen === 'm-more';
 
   // Long-press anywhere on the tab bar opens the editor (tap still navigates).
   const lpTimer = React.useRef(null);
@@ -364,7 +283,7 @@ function MobilePortalApp() {
   let content;
   if (screen === 'm-more') content = <MobileDirectory onNav={nav} />;
   else if (screen === 'calendar') content = <MobileCalendar onNav={nav} />;
-  else if (screen === 'cameras' || screen === 'topology' || screen === 'warroom' || screen === 'floorplan' || screen === 'anomaly') content = <MobileMonitoring onNav={nav} />;
+  else if (screen === 'cameras' || screen === 'topology' || screen === 'warroom' || screen === 'floorplan' || screen === 'anomaly') content = <MonitoringConsole />;
   else if (screen === 'helpdesk') content = <MHelpdesk onNav={nav} />;
   else if (screen === 'incidents') content = <MIncidents onNav={nav} />;
   else if (screen === 'quote-cash') content = <MQuoteToCash onNav={nav} />;
@@ -412,6 +331,9 @@ function MobilePortalApp() {
         borderBottom: '1px solid var(--border-subtle)',
         background: 'rgba(10,14,20,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0
       }}>
+        {histBack.length > 0 && (
+          <button onClick={goBack} aria-label="Back" title="Back" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, width: 26, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-high)', fontSize: 22, lineHeight: 1, fontFamily: 'var(--font-body)' }}>‹</button>
+        )}
         <button onClick={() => setDrawer(true)} aria-label="Menu" title="Menu" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4, width: 30, height: 30 }}>
           <span style={{ height: 2, width: 19, borderRadius: 2, background: 'var(--text-high)' }} />
           <span style={{ height: 2, width: 19, borderRadius: 2, background: 'var(--text-high)' }} />
@@ -509,4 +431,4 @@ function MobilePortalApp() {
   );
 }
 
-Object.assign(window, { MobilePortalApp, MobileAgendaView, MobileDirectory, M_NATIVE, M_SCREEN_MAP, M_TABS, screenLabel, M_AGENDA_TYPES, M_TECH_COLORS, mFmtH });
+Object.assign(window, { MobilePortalApp, MobileDirectory, M_NATIVE, M_SCREEN_MAP, screenLabel, M_TECH_COLORS, mFmtH });

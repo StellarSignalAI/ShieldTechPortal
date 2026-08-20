@@ -200,7 +200,7 @@ function MIncidentDetail({ id, onClose }) {
         {inc.severity === 'P1' && inc.status === 'active' && (
           <div style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', borderRadius: 11, padding: '11px 13px', display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 12, color: 'var(--status-critical)', fontWeight: 600, flex: 1 }}>P1 incident — on-call manager paging enabled</span>
-            <button onClick={() => showToast('On-call manager paged', 'warn')} style={{ padding: '7px 13px', background: 'var(--status-critical)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Page</button>
+            <button onClick={() => showToast('On-call paging isn\'t wired up yet — call the on-call manager directly', 'warn')} style={{ padding: '7px 13px', background: 'var(--status-critical)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Page</button>
           </div>
         )}
 

@@ -250,7 +250,9 @@ function photoCompliance(wo, photos) {
   const required = PHOTO_CHECKLISTS[wo.type] || [];
   const woPhotos = photos.filter(p => p.wo === wo.id);
   const done = required.filter(slot => woPhotos.some(p => p.slot === slot));
-  return { required, done, missing: required.filter(s => !done.includes(s)), pct: required.length ? Math.round((done.length / required.length) * 100) : 100 };
+  // No checklist for this job type → pct null, never a fake 100% "complete".
+  // (Kept as an object, not null: callers spread it / read .required directly.)
+  return { required, done, missing: required.filter(s => !done.includes(s)), pct: required.length ? Math.round((done.length / required.length) * 100) : null };
 }
 
 /* Toast host for apps without their own (Tech App, Customer Portal) */

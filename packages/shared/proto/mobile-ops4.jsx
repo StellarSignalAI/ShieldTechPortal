@@ -99,7 +99,17 @@ function MPoECalc({ onNav }) {
         </div>
       ))}
       <button onClick={() => setPicker(true)} style={{ padding: '11px 0', background: 'rgba(63,169,245,0.06)', border: '1px dashed var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add device</button>
-      <button onClick={() => showToast('PoE plan exported to Design Studio', 'ok')} style={{ padding: '12px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export Plan</button>
+      <button onClick={() => {
+        if (devices.length === 0) { showToast('Add devices before exporting a plan', 'warn'); return; }
+        // Real export — lands in the Design Studio inbox (same store SiteScan pushes to).
+        studioInboxStore.set(list => [{
+          id: 'poe-' + Date.now().toString(36),
+          name: `PoE plan — ${sw.model} (${ports} device${ports === 1 ? '' : 's'} · ${load.toFixed(1)}W)`,
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          devices: ports, source: 'poe-calc',
+        }, ...list]);
+        showToast('PoE plan exported to the Design Studio inbox', 'ok');
+      }} style={{ padding: '12px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export Plan</button>
 
       {picker && (
         <MSheet title="Add Device" onClose={() => setPicker(false)}>

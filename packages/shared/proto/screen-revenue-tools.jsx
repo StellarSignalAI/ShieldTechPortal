@@ -87,12 +87,9 @@ function RRBuilderScreen() {
   const [pitched, setPitched] = React.useState([]);
   const currentMRR = mrr.filter(m => m.status === 'active').reduce((s, m) => s + m.mrr, 0);
 
-  const candidates = [
-    { name: 'Marina District Dental', tmSpend: 4800,  incidents: 3, visits: 5, plan: 'Standard Monitoring', proposedMrr: 980,  hook: '3 after-hours incidents this year — each took 4+ hrs to resolve without monitoring' },
-    { name: 'Sutter Health — Annex',  tmSpend: 11200, incidents: 5, visits: 8, plan: 'Pro Monitoring',      proposedMrr: 2400, hook: 'HIPAA exposure: no audit trail on access events between visits' },
-    { name: 'Redwood College',        tmSpend: 7400,  incidents: 2, visits: 6, plan: 'Pro + Response SLA',  proposedMrr: 1800, hook: 'Campus expansion doubles device count next semester' },
-    { name: 'Embarcadero Partners',   tmSpend: 3100,  incidents: 1, visits: 3, plan: 'Standard Monitoring', proposedMrr: 850,  hook: 'Tenant turnover = recurring reader reprogramming anyway' },
-  ];
+  // Conversion candidates require T&M spend + incident history analysis,
+  // which isn't wired up yet — never show invented customers here.
+  const candidates = [];
   const uplift = candidates.reduce((s, c) => s + c.proposedMrr, 0);
 
   return (
@@ -112,7 +109,11 @@ function RRBuilderScreen() {
 
       <div className="glass" style={{ padding: 16 }}>
         <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 4 }}>T&M Customers Who Should Be On Plans</div>
-        <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: 12 }}>Ranked by conversion likelihood — each pitch is generated from the customer's own incident history</div>
+        {candidates.length === 0 && (
+          <div style={{ fontSize: 11, color: 'var(--text-low)', padding: '14px 0', lineHeight: 1.6 }}>
+            No conversion candidates yet — this analysis needs T&M billing and incident history, which isn't connected. Candidates will appear here once that data exists.
+          </div>
+        )}
         {candidates.map(c => (
           <div key={c.name} style={{ padding: '12px 14px', borderRadius: 9, background: 'rgba(5,7,10,0.4)', border: '1px solid var(--border-subtle)', marginBottom: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -126,7 +127,12 @@ function RRBuilderScreen() {
               </div>
               {pitched.includes(c.name)
                 ? <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--status-ok)', width: 110, textAlign: 'center' }}>✓ Pitch sent</span>
-                : <button onClick={() => { setPitched(x => [...x, c.name]); showToast(`Pitch generated for ${c.name} — in your outbox`, 'ok'); }} style={{ padding: '7px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', width: 110 }}>Generate pitch</button>}
+                : <button onClick={() => {
+                    // Real outbox write — the pitch lands in the Outbox screen queue.
+                    queueEmail({ to: '', customer: c.name, subject: `Monitoring plan proposal — ${c.plan} ($${c.proposedMrr}/mo)`,
+                      body: `Hi ${c.name},\n\nBased on your recent service history (${c.incidents} incidents, ${c.visits} visits, $${c.tmSpend.toLocaleString()} T&M), we recommend moving to our ${c.plan} plan at $${c.proposedMrr}/mo.\n\n${c.hook}\n\n— ShieldTech Solutions`, kind: 'pitch' });
+                    setPitched(x => [...x, c.name]); showToast(`Pitch for ${c.name} queued in your outbox`, 'ok');
+                  }} style={{ padding: '7px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', width: 110 }}>Generate pitch</button>}
             </div>
             <div style={{ marginTop: 8, padding: '7px 11px', borderRadius: 7, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-mid)' }}>
               <span style={{ color: 'var(--brand)', fontWeight: 600 }}>ShieldTech AI angle:</span> {c.hook}

@@ -27,8 +27,8 @@ function SiteSurveyTool() {
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Room-by-room walkthrough → auto-generate scope of work</div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          <ShieldAIEstimateBtn label="AI: Complete Survey" onClick={() => showToast('⟡ ShieldTech AI analyzing floor plan and suggesting camera placement, cable runs, and mounting types...')} />
-          <button onClick={() => showToast('Scope of work generated from survey')} style={{ padding: '6px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Generate Scope of Work</button>
+          <ShieldAIEstimateBtn label="AI: Complete Survey" onClick={() => showToast("This tool isn't wired to AI yet")} />
+          <button onClick={() => showToast("Scope-of-work generation isn't wired up yet")} style={{ padding: '6px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Generate Scope of Work</button>
         </div>
       </div>
 
@@ -105,8 +105,8 @@ function CableCalculator() {
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Cable runs, quantities, conduit, and cost estimates</div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          <ShieldAIEstimateBtn label="AI: Estimate Runs" onClick={() => showToast('⟡ ShieldTech AI estimating cable runs from floor plan and device placement...')} />
-          <button onClick={() => showToast('BOM exported')} style={{ padding: '6px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export BOM</button>
+          <ShieldAIEstimateBtn label="AI: Estimate Runs" onClick={() => showToast("This tool isn't wired to AI yet")} />
+          <button onClick={() => showToast("BOM export isn't wired up yet")} style={{ padding: '6px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export BOM</button>
         </div>
       </div>
 
@@ -187,7 +187,7 @@ function BandwidthCalculator() {
           <div style={{ fontSize: 16, fontWeight: 500 }}>Bandwidth & Storage Calculator</div>
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Camera bandwidth, NVR storage, and network requirements</div>
         </div>
-        <ShieldAIEstimateBtn label="AI: Optimize Settings" onClick={() => showToast('⟡ ShieldTech AI recommending optimal resolution/FPS/codec per camera based on use case...')} />
+        <ShieldAIEstimateBtn label="AI: Optimize Settings" onClick={() => showToast("This tool isn't wired to AI yet")} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
@@ -301,7 +301,7 @@ function LaborEstimator() {
           <div style={{ fontSize: 16, fontWeight: 500 }}>Labor Estimator</div>
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Device counts → install hours, crew days, labor cost</div>
         </div>
-        <ShieldAIEstimateBtn label="AI: Estimate Labor" onClick={() => showToast('⟡ ShieldTech AI analyzing project scope and generating labor estimate based on similar past jobs...')} />
+        <ShieldAIEstimateBtn label="AI: Estimate Labor" onClick={() => showToast("This tool isn't wired to AI yet")} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
@@ -369,20 +369,9 @@ function CompetitiveComparison() {
 
   const competitors = ['ADT Commercial', 'Securitas', 'Johnson Controls', 'Stanley Security', 'Alarm.com', 'Verkada (Direct)', 'Local Competitor'];
 
-  const features = [
-    { feature: 'Custom System Design', us: true, them: false, advantage: 'Tailored to your exact needs' },
-    { feature: 'On-Site Service Team', us: true, them: true, advantage: null },
-    { feature: '24/7 Monitoring', us: true, them: true, advantage: null },
-    { feature: 'Open Architecture', us: true, them: false, advantage: 'No vendor lock-in' },
-    { feature: 'AI-Powered Analytics', us: true, them: false, advantage: 'ShieldTech AI anomaly detection' },
-    { feature: 'Single Pane of Glass', us: true, them: false, advantage: 'Unified portal for all systems' },
-    { feature: 'Remote System Access', us: true, them: true, advantage: null },
-    { feature: 'Customer Portal', us: true, them: false, advantage: 'Self-service portal for customers' },
-    { feature: 'Same-Day Emergency Service', us: true, them: false, advantage: 'Local team, fast response' },
-    { feature: 'Transparent Pricing', us: true, them: false, advantage: 'No hidden fees or markups' },
-    { feature: 'Multi-Brand Support', us: true, them: false, advantage: 'Axis, Verkada, HID, DSC, etc.' },
-    { feature: 'Cloud + On-Prem Options', us: true, them: false, advantage: 'Hybrid flexibility' },
-  ];
+  // A capability matrix must be researched and maintained per competitor —
+  // never assert invented feature gaps about real vendors.
+  const features = [];
 
   return (
     <div>
@@ -392,8 +381,8 @@ function CompetitiveComparison() {
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Side-by-side feature matrix vs competitors</div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          <ShieldAIEstimateBtn label="AI: Research Competitor" onClick={() => showToast(`⟡ ShieldTech AI researching ${competitor} pricing, features, and weaknesses...`)} />
-          <button onClick={() => showToast('Comparison exported to proposal')} style={{ padding: '6px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Add to Proposal</button>
+          <ShieldAIEstimateBtn label="AI: Research Competitor" onClick={() => showToast("This tool isn't wired to AI yet")} />
+          <button onClick={() => showToast("Adding to a proposal isn't wired up yet")} style={{ padding: '6px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Add to Proposal</button>
         </div>
       </div>
 
@@ -406,25 +395,11 @@ function CompetitiveComparison() {
         </div>
       </div>
 
-      <GlassPanel style={{ padding: 0 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr>
-            <th style={{ textAlign: 'left', padding: '10px 14px', fontSize: 10, fontWeight: 600, color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>Feature</th>
-            <th style={{ textAlign: 'center', padding: '10px 14px', fontSize: 10, fontWeight: 600, color: 'var(--brand)', borderBottom: '1px solid var(--border-subtle)', width: 100 }}>ShieldTech</th>
-            <th style={{ textAlign: 'center', padding: '10px 14px', fontSize: 10, fontWeight: 600, color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)', width: 100 }}>{competitor}</th>
-            <th style={{ textAlign: 'left', padding: '10px 14px', fontSize: 10, fontWeight: 600, color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>Our Advantage</th>
-          </tr></thead>
-          <tbody>
-            {features.map((f, i) => (
-              <tr key={i} style={{ background: f.us && !f.them ? 'rgba(52,211,153,0.02)' : 'transparent' }}>
-                <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{f.feature}</td>
-                <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'center', fontSize: 14, color: f.us ? 'var(--status-ok)' : 'var(--status-critical)' }}>{f.us ? '✓' : '✕'}</td>
-                <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'center', fontSize: 14, color: f.them ? 'var(--status-ok)' : 'var(--status-critical)' }}>{f.them ? '✓' : '✕'}</td>
-                <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: f.advantage ? 'var(--status-ok)' : 'var(--text-low)' }}>{f.advantage || '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <GlassPanel style={{ textAlign: 'center', padding: 32 }}>
+        <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Capability comparison not configured</div>
+        <div style={{ fontSize: 11, color: 'var(--text-low)', lineHeight: 1.6, maxWidth: 480, margin: '0 auto' }}>
+          There's no verified feature data for {competitor} yet. A comparison matrix needs researched, up-to-date competitor information before it can be shown or shared with customers.
+        </div>
       </GlassPanel>
       {toast && <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, padding: '10px 24px', borderRadius: 8, background: 'var(--card)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 13, fontWeight: 500, boxShadow: 'var(--glow-brand-sm)', animation: 'fade-up 0.3s ease both' }}>{toast}</div>}
     </div>
@@ -461,7 +436,7 @@ function RMRCalculator() {
           <div style={{ fontSize: 16, fontWeight: 500 }}>RMR / Recurring Revenue Calculator</div>
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Model recurring revenue, TCO, and contract value</div>
         </div>
-        <ShieldAIEstimateBtn label="AI: Optimize RMR Mix" onClick={() => showToast('⟡ ShieldTech AI analyzing customer profile and recommending optimal service mix for maximum RMR...')} />
+        <ShieldAIEstimateBtn label="AI: Optimize RMR Mix" onClick={() => showToast("This tool isn't wired to AI yet")} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
