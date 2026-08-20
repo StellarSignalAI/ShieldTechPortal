@@ -84,39 +84,68 @@ function WPipeline({ size }) {
 
 /* ─────────── Revenue & Cash ─────────── */
 function WRevenue({ size }) {
-  const cash = 284500, ar = 159050, target = 350000;
-  const monthly = [{ l: 'Jan', v: 210 }, { l: 'Feb', v: 245 }, { l: 'Mar', v: 232 }, { l: 'Apr', v: 278 }, { l: 'May', v: 305 }, { l: 'Jun', v: 284, color: '#34D399' }];
-  const pct = Math.round((cash / target) * 100);
+  /* Real numbers from the merged invoice source (portal + QuickBooks):
+     AR = unpaid invoice total · revenue MTD = invoices paid this month.
+     No fabricated goal ring or invented history. */
+  const invoices = useMergedInvoices();
+  if (!invoices.length) return <WNoData size={size} title="Revenue" glyph="finance" accent="#34D399" />;
+  const now = new Date();
+  const monthLabel = now.toLocaleDateString([], { month: 'long', year: 'numeric' });
+  const ar = invoices.filter(i => i.status === 'pending' || i.status === 'overdue').reduce((s, i) => s + (Number(i.amount) || 0), 0);
+  const paidDate = (i) => {
+    const r = i._raw || {};
+    if (r.paidAt) return new Date(r.paidAt);
+    if (r.txn_date) return new Date(r.txn_date + 'T00:00:00');
+    return null;
+  };
+  const paid = invoices.filter(i => i.status === 'paid');
+  const mtd = paid.reduce((s, i) => {
+    const d = paidDate(i);
+    return s + ((d && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) ? (Number(i.amount) || 0) : 0);
+  }, 0);
+  /* 6-month history from real paid-invoice dates (skipped when undated) */
+  const monthly = [];
+  for (let k = 5; k >= 0; k--) {
+    const m = new Date(now.getFullYear(), now.getMonth() - k, 1);
+    const v = paid.reduce((s, i) => {
+      const d = paidDate(i);
+      return s + ((d && d.getFullYear() === m.getFullYear() && d.getMonth() === m.getMonth()) ? (Number(i.amount) || 0) : 0);
+    }, 0);
+    monthly.push({ l: m.toLocaleDateString([], { month: 'short' }), v: Math.round(v / 1000), color: k === 0 ? '#34D399' : undefined });
+  }
+  const hasHistory = monthly.some(m => m.v > 0);
   return (
     <WCard size={size} accent="#34D399" title="Revenue" glyph="finance"
-      sub={size !== 'small' ? 'June 2026 · MTD' : null}>
+      sub={size !== 'small' ? `${monthLabel} · MTD` : null}>
       {size === 'small' && (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <WHero size={size} value={`$${(cash / 1000).toFixed(0)}k`} color="#34D399" />
-          <div style={{ marginTop: 'auto', fontSize: 11.5, color: 'var(--text-mid)' }}>{pct}% to goal</div>
+          <WHero size={size} value={`$${(mtd / 1000).toFixed(0)}k`} color="#34D399" />
+          <div style={{ marginTop: 'auto', fontSize: 11.5, color: 'var(--text-mid)' }}>AR ${(ar / 1000).toFixed(1)}k</div>
         </div>
       )}
       {size === 'medium' && (
         <div style={{ display: 'flex', gap: 12, height: '100%', alignItems: 'center' }}>
-          <WRing pct={pct} value={pct + '%'} label="of goal" color="#34D399" size={80} />
           <div style={{ flex: 1 }}>
-            <div className="display" style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-high)' }}>${(cash / 1000).toFixed(0)}k</div>
-            <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 2 }}>AR: ${(ar / 1000).toFixed(0)}k · Goal ${(target / 1000).toFixed(0)}k</div>
-            <div style={{ marginTop: 8 }}><WSpark data={monthly.map(m => m.v)} color="#34D399" w={150} h={30} /></div>
+            <div className="display" style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-high)' }}>${(mtd / 1000).toFixed(0)}k</div>
+            <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 2 }}>collected this month · AR ${(ar / 1000).toFixed(1)}k</div>
+            {hasHistory && <div style={{ marginTop: 8 }}><WSpark data={monthly.map(m => m.v)} color="#34D399" w={150} h={30} /></div>}
           </div>
         </div>
       )}
       {size === 'large' && <>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <WRing pct={pct} value={pct + '%'} label="of goal" color="#34D399" size={92} stroke={9} />
           <div>
-            <div className="display" style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-high)' }}>${(cash / 1000).toFixed(0)}k</div>
+            <div className="display" style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-high)' }}>${(mtd / 1000).toFixed(0)}k</div>
             <div style={{ fontSize: 12, color: 'var(--text-mid)', marginTop: 2 }}>collected this month</div>
           </div>
         </div>
         <WDivide />
-        <div style={{ fontSize: 10, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>6-month revenue</div>
-        <WBars data={monthly} color="#3FA9F5" h={64} />
+        {hasHistory ? <>
+          <div style={{ fontSize: 10, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>6-month revenue ($k, paid invoices)</div>
+          <WBars data={monthly} color="#3FA9F5" h={64} />
+        </> : (
+          <div style={{ fontSize: 11, color: 'var(--text-low)' }}>No dated payment history yet — the 6-month chart appears as paid invoices accumulate.</div>
+        )}
         <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
           <span style={{ color: 'var(--text-mid)' }}>AR outstanding</span>
           <span className="mono" style={{ color: '#FBBF24', fontWeight: 600 }}>${(ar / 1000).toFixed(1)}k</span>

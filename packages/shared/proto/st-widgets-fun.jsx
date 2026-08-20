@@ -17,74 +17,26 @@ function Sun({ size = 16, color = '#FCD34D' }) {
 
 /* ─────────── Field Weather (Apple Weather baseline, dark-glass) ─────────── */
 function WWeather({ size }) {
-  const city = 'Porto', temp = 29, cond = 'Sunny', hi = 30, lo = 13;
-  const hours = [['1PM', 29], ['2PM', 28], ['3PM', 27], ['4PM', 23], ['5PM', 19], ['6PM', 17]];
-  const days = [['Tuesday', 24, 14], ['Wednesday', 22, 12], ['Thursday', 22, 14], ['Friday', 29, 13], ['Saturday', 27, 14]];
-  const accent = '#4AA3E0';
+  /* No weather provider is connected — an honest state instead of an
+     invented forecast for an invented city. */
   return (
-    <div className="st-wcard" style={{
-      width: WSIZE[size].w, height: WSIZE[size].h, borderRadius: 22, padding: 16, position: 'relative', overflow: 'hidden',
-      display: 'flex', flexDirection: 'column', color: '#fff',
-      background: 'linear-gradient(165deg, #3E8FCC 0%, #4AA3E0 45%, #5FB8EC 100%)',
-      border: '1px solid rgba(255,255,255,0.18)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 10px 30px -12px rgba(0,0,0,0.7)',
-    }}>
-      {/* header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <div className="display" style={{ fontSize: size === 'small' ? 16 : 19, fontWeight: 500 }}>{city}</div>
-          <div className="display" style={{ fontSize: size === 'small' ? 40 : 46, fontWeight: 200, lineHeight: 1 }}>{temp}°</div>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <Sun size={size === 'small' ? 26 : 30} color="#FCD34D" />
-          {size !== 'small' && <>
-            <div style={{ fontSize: 14, marginTop: 6 }}>{cond}</div>
-            <div style={{ fontSize: 13, opacity: 0.95 }}>H:{hi}° L:{lo}°</div>
-          </>}
-        </div>
+    <WCard size={size} accent="#4AA3E0" title="Field Weather" glyph="cameras"
+      sub={size !== 'small' ? 'crew dispatch conditions' : null}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 8, textAlign: 'center', padding: 6 }}>
+        <Sun size={size === 'small' ? 22 : 28} color="#5C6F86" />
+        <div style={{ fontSize: 12, color: 'var(--text-mid)', fontWeight: 500 }}>Weather feed isn't connected</div>
+        {size !== 'small' && <div style={{ fontSize: 10.5, color: 'var(--text-low)', lineHeight: 1.5 }}>Connect a weather provider to see forecasts and dispatch impact here.</div>}
       </div>
-      {size === 'small' && (
-        <div style={{ marginTop: 'auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13 }}><Sun size={14} /> {cond}</div>
-          <div style={{ fontSize: 13, opacity: 0.95 }}>H:{hi}° L:{lo}°</div>
-        </div>
-      )}
-      {size !== 'small' && <>
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.25)', margin: '12px 0 10px' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 2 }}>
-          {hours.map(([h, t]) => (
-            <div key={h} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 11, opacity: 0.95 }}>{h}</span>
-              <Sun size={15} />
-              <span style={{ fontSize: 13, fontWeight: 500 }}>{t}°</span>
-            </div>
-          ))}
-        </div>
-      </>}
-      {size === 'large' && (
-        <div style={{ marginTop: 14 }}>
-          {days.map(([d, h, l], i) => (
-            <div key={d} style={{ display: 'flex', alignItems: 'center', padding: '8px 0', borderBottom: i < days.length - 1 ? '1px solid rgba(255,255,255,0.18)' : 'none' }}>
-              <span style={{ flex: 1, fontSize: 15 }}>{d}</span>
-              <Sun size={17} />
-              <span className="mono" style={{ width: 44, textAlign: 'right', fontSize: 15, fontWeight: 500 }}>{h}</span>
-              <span className="mono" style={{ width: 40, textAlign: 'right', fontSize: 15, opacity: 0.7 }}>{l}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    </WCard>
   );
 }
 
 /* ─────────── Tech Leaderboard (gamified) ─────────── */
 function WLeaderboard({ size }) {
-  const techs = [
-    { id: 'TG', name: 'Tony Garcia', jobs: 14, xp: 2840, color: '#F43F5E' },
-    { id: 'MR', name: 'Mike Reyes', jobs: 12, xp: 2610, color: '#3FA9F5' },
-    { id: 'JL', name: 'Jessica Liu', jobs: 11, xp: 2390, color: '#34D399' },
-    { id: 'KW', name: 'Kevin White', jobs: 9, xp: 1980, color: '#FBBF24' },
-    { id: 'DP', name: 'Diana Patel', jobs: 8, xp: 1720, color: '#c084fc' },
-  ];
+  /* Per-tech closed-job counts aren't tracked client-side yet — no invented
+     techs or XP. The widget lights up once real job attribution exists. */
+  const techs = [];
+  if (!techs.length) return <WNoData size={size} title="Leaderboard" glyph="star" accent="#FCD34D" />;
   const top = techs[0];
   const medals = ['#FCD34D', '#CBD5E1', '#D69E2E'];
   return (
@@ -173,8 +125,11 @@ function WNPS({ size }) {
 
 /* ─────────── Safety Streak (motivational) ─────────── */
 function WSafety({ size }) {
-  const days = 47, record = 63, target = 90;
-  const milestones = [['30d', true], ['45d', true], ['60d', false], ['90d', false]];
+  /* Incident-free streaks, toolbox talks and inspections aren't recorded in
+     any store yet — honest empty state instead of invented numbers. */
+  const safety = null;
+  if (!safety) return <WNoData size={size} title="Safety Streak" glyph="check" accent="#34D399" />;
+  const { days, record, target, milestones } = safety;
   return (
     <WCard size={size} accent="#34D399" title="Safety Streak" glyph="check" sub={size !== 'small' ? 'days incident-free' : null}>
       {size === 'small' && (
@@ -207,34 +162,15 @@ function WSafety({ size }) {
 
 /* ─────────── ShieldTech AI Briefing (AI digest) ─────────── */
 function WShieldAI({ size }) {
-  const insights = [
-    { icon: 'warning-tri', color: '#F43F5E', t: 'Riverside NVR SLA breaches in 1.8h', s: 'Dispatch ETA 10am — on track' },
-    { icon: 'roi', color: '#34D399', t: 'MRR up 6.2% MoM', s: 'Pinnacle Enterprise plan activated' },
-    { icon: 'pipeline', color: '#3FA9F5', t: 'Pacific Rim deal ready to schedule', s: '$215k · 3 properties approved' },
-    { icon: 'warning-tri', color: '#FBBF24', t: 'Bayshore Medical at churn risk', s: 'NPS 4 · renewal Jul · no follow-up' },
-  ];
+  /* No scheduled AI briefing exists yet, so no invented findings — the widget
+     is an honest gateway to the real assistant. */
   return (
-    <WCard size={size} accent="#3FA9F5" title="ShieldTech AI Briefing" glyph="hermes" sub={size !== 'small' ? 'AI · updated 8:00 AM' : null}>
-      {size === 'small' && (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Icon name={insights[0].icon} size={18} color={insights[0].color} />
-          <div style={{ fontSize: 12, color: 'var(--text-high)', fontWeight: 500, marginTop: 8, lineHeight: 1.3 }}>{insights[0].t}</div>
-          <div style={{ marginTop: 'auto', fontSize: 10, color: 'var(--text-low)' }}>+{insights.length - 1} more insights</div>
-        </div>
-      )}
-      {size !== 'small' && (
-        <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: size === 'large' ? 11 : 9 }}>
-          {insights.slice(0, size === 'large' ? 4 : 2).map((it, i) => (
-            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <div style={{ width: 26, height: 26, borderRadius: 7, background: hexToRgba(it.color, 0.14), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={it.icon} size={14} color={it.color} /></div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 12.5, color: 'var(--text-high)', fontWeight: 500, lineHeight: 1.25 }}>{it.t}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 1 }}>{it.s}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+    <WCard size={size} accent="#3FA9F5" title="ShieldTech AI" glyph="hermes" sub={size !== 'small' ? 'your AI assistant' : null}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 8, textAlign: 'center', padding: 6 }}>
+        <span style={{ fontSize: size === 'small' ? 18 : 22 }}>⟡</span>
+        {size !== 'small' && <div style={{ fontSize: 11, color: 'var(--text-mid)', lineHeight: 1.5 }}>Ask about finances, dispatch, customers or reports — answers come from your live data.</div>}
+        <button onClick={() => { if (window.__shieldNav) window.__shieldNav('shieldtech-ai'); }} style={{ padding: '5px 14px', borderRadius: 100, fontSize: 11, fontWeight: 600, background: 'rgba(63,169,245,0.1)', border: '1px solid rgba(63,169,245,0.4)', color: '#3FA9F5', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Ask ShieldTech AI</button>
+      </div>
     </WCard>
   );
 }
@@ -245,29 +181,20 @@ function WClock({ size }) {
   React.useEffect(() => { const t = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(t); }, []);
   const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: size !== 'small' ? '2-digit' : undefined });
   const date = now.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
-  const systems = [['Monitoring', '#34D399'], ['Dispatch', '#34D399'], ['Payments', '#34D399'], ['ShieldTech AI', '#34D399']];
+  /* Just the (real) clock — no invented on-call rotation or always-green
+     service status board; there's no status feed to back either. */
   return (
-    <WCard size={size} accent="#3FA9F5" title="Ops Center" glyph="statuspage" sub={size !== 'small' ? 'on-call: Mike Reyes' : null}>
+    <WCard size={size} accent="#3FA9F5" title="Ops Center" glyph="statuspage">
       {size === 'small' && (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <div className="mono" style={{ fontSize: 30, fontWeight: 600, color: 'var(--text-high)', letterSpacing: '0.02em' }}>{time}</div>
           <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 2 }}>{date}</div>
-          <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34D399', boxShadow: '0 0 6px #34D399' }} /><span style={{ fontSize: 11, color: '#34D399' }}>All systems go</span></div>
         </div>
       )}
       {size !== 'small' && <>
         <div className="mono" style={{ fontSize: size === 'large' ? 48 : 40, fontWeight: 600, color: 'var(--text-high)', marginTop: 4, lineHeight: 1 }}>{time}</div>
         <div style={{ fontSize: 12, color: 'var(--text-mid)', marginTop: 4 }}>{date}</div>
-        <WDivide />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: size === 'large' ? 9 : 6 }}>
-          {systems.slice(0, size === 'large' ? 4 : 2).map(([s, c]) => (
-            <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: c, boxShadow: `0 0 6px ${c}` }} />
-              <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{s}</span>
-            </div>
-          ))}
-        </div>
-        {size === 'large' && <div style={{ marginTop: 'auto', paddingTop: 10, fontSize: 11, color: 'var(--text-low)' }}>On-call rotation · Mike Reyes until 6:00 PM → Tony Garcia</div>}
+        {size === 'large' && <div style={{ marginTop: 'auto', paddingTop: 10, fontSize: 11, color: 'var(--text-low)' }}>On-call rotation and service status appear here once those feeds are set up.</div>}
       </>}
     </WCard>
   );

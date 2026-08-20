@@ -110,7 +110,7 @@ function FinanceCredits({ showToast }) {
           <button key={t.id} onClick={() => setCreditTab(t.id)} style={{ padding: '5px 14px', borderRadius: 6, fontSize: 11, background: creditTab===t.id?'rgba(63,169,245,0.12)':'transparent', border: `1px solid ${creditTab===t.id?'var(--brand)':'var(--border-subtle)'}`, color: creditTab===t.id?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.label}</button>
         ))}
         <div style={{ flex: 1 }} />
-        <button onClick={() => showToast('New receipt created')} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New</button>
+        <button onClick={() => showToast("Creating receipts/credits here isn't wired up yet — use Invoices for billable work")} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New</button>
       </div>
 
       {creditTab === 'receipts' && (
@@ -171,7 +171,7 @@ function FinanceCredits({ showToast }) {
                 <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{r.date}</td>
                 <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', display: 'flex', gap: 4 }}>
                   <button onClick={() => showToast('Apply to invoice...')} style={{ padding: '3px 8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Apply to Invoice</button>
-                  <button onClick={() => showToast('Refund processed')} style={{ padding: '3px 8px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 4, color: 'var(--status-critical)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Refund</button>
+                  <button onClick={() => showToast("Refunds aren't wired up yet — no money was moved")} style={{ padding: '3px 8px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 4, color: 'var(--status-critical)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Refund</button>
                 </td>
               </tr>
             ))}</tbody>
@@ -217,7 +217,7 @@ function FinanceBankFeed({ showToast }) {
           <button key={t.id} onClick={() => setFeedTab(t.id)} style={{ padding: '5px 14px', borderRadius: 6, fontSize: 11, background: feedTab===t.id?'rgba(63,169,245,0.12)':'transparent', border: `1px solid ${feedTab===t.id?'var(--brand)':'var(--border-subtle)'}`, color: feedTab===t.id?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.label}</button>
         ))}
         <div style={{ flex: 1 }} />
-        <button onClick={() => showToast('Bank feed refreshed')} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⟲ Refresh Feed</button>
+        <button onClick={() => showToast("Bank feed isn't connected yet — nothing to refresh")} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⟲ Refresh Feed</button>
       </div>
 
       {feedTab === 'review' && (
@@ -280,7 +280,7 @@ function FinanceBankFeed({ showToast }) {
                   <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{r.class}</td>
                   <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', display: 'flex', gap: 4 }}>
                     <button onClick={() => showToast('Rule edited')} style={{ padding: '3px 8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit</button>
-                    <button onClick={() => showToast('Rule deleted')} style={{ padding: '3px 8px', background: 'transparent', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 4, color: 'var(--status-critical)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Delete</button>
+                    <button onClick={() => showToast("Bank rules aren't wired up yet — nothing was deleted")} style={{ padding: '3px 8px', background: 'transparent', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 4, color: 'var(--status-critical)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Delete</button>
                   </td>
                 </tr>
               ))}</tbody>
@@ -462,7 +462,7 @@ function FinanceSettings({ showToast }) {
           </div>
           <div style={{ fontSize: 11, color: 'var(--text-low)', marginBottom: 10 }}>Transactions before this date are locked. Password required to edit.</div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <button onClick={() => showToast('Lock date updated')} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Update Lock Date</button>
+            <button onClick={() => showToast("Lock dates aren't wired up yet — nothing was changed")} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Update Lock Date</button>
             <button onClick={() => showToast('Year-end close checklist opened')} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Year-End Close Checklist</button>
           </div>
         </GlassPanel>
@@ -478,7 +478,7 @@ function FinanceSettings({ showToast }) {
           ))}
           <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
             <button onClick={() => showToast('Tax liability report')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Tax Liability Report</button>
-            <button onClick={() => showToast('Record tax payment')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Record Tax Payment</button>
+            <button onClick={() => showToast("Recording tax payments isn't wired up yet")} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Record Tax Payment</button>
           </div>
         </GlassPanel>
 
@@ -487,7 +487,7 @@ function FinanceSettings({ showToast }) {
           <div style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 10 }}>4 vendors flagged for 1099. YTD payments tracked automatically from bills.</div>
           <div style={{ display: 'flex', gap: 6 }}>
             <button onClick={() => showToast('1099 detail report')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>1099 Detail Report</button>
-            <button onClick={() => showToast('1099 e-file workflow')} style={{ padding: '5px 12px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Prep & E-File</button>
+            <button onClick={() => showToast("1099 e-filing isn't wired up yet")} style={{ padding: '5px 12px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Prep & E-File</button>
           </div>
         </GlassPanel>
 

@@ -575,8 +575,8 @@ function NIFinanceReconcile({ showToast }) {
           </div>
         ))}
         <div style={{ padding: '12px 16px', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={() => showToast('Progress saved — finish later')} style={{ padding: '7px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Finish Later</button>
-          <button onClick={() => showToast('Reconciliation complete ✓')} style={{ padding: '7px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Reconcile</button>
+          <button onClick={() => showToast("Progress isn't saved in this view — checked items reset when you leave (use the Finance Suite reconciliation to keep them)")} style={{ padding: '7px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Finish Later</button>
+          <button onClick={() => showToast("Reconciliation isn't wired to your books here — nothing was recorded")} style={{ padding: '7px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Reconcile</button>
         </div>
       </GlassPanel>
     </div>

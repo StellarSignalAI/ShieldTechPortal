@@ -169,16 +169,7 @@ function FinanceCopilot() {
                   ))}
                 </div>
               )}
-              {msg.chart === 'cash' && (
-                <div style={{ marginTop: 10, display: 'flex', gap: 12 }}>
-                  {[{ label: 'Checking', val: '$482.6K', color: 'var(--brand)' },{ label: 'Savings', val: '$125K', color: 'var(--status-ok)' },{ label: 'AR', val: '$175.9K', color: 'var(--status-warn)' },{ label: 'AP', val: '$36.2K', color: 'var(--status-critical)' }].map((b,j) => (
-                    <div key={j} className="glass" style={{ flex: 1, padding: 8, textAlign: 'center', borderRadius: 6 }}>
-                      <div className="mono" style={{ fontSize: 13, fontWeight: 600, color: b.color }}>{b.val}</div>
-                      <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase' }}>{b.label}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* (fake bank-balance chart removed — no bank feed is connected) */}
             </div>
           </div>
         ))}

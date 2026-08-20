@@ -454,7 +454,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                 <div style={{ padding: '4px 0' }}>
                   {[
                     { icon: 'hermes', label: 'ShieldTech AI Settings', desc: 'Tone, auto-actions, context', act: () => (window.__shieldOpenAI ? window.__shieldOpenAI() : (onNav && onNav('shieldtech-ai'))) },
-                    { icon: 'poe', label: 'Integrations', desc: 'Stripe, QuickBooks, Samsara', act: () => onNav && onNav('integrations') },
+                    { icon: 'poe', label: 'Integrations', desc: 'Stripe, QuickBooks, Samsara', act: () => onNav && onNav('portal-settings') },
                   ].map((item, i) => (
                     <button key={i} onClick={() => { setProfileOpen(false); item.act && item.act(); }} style={{
                       display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',

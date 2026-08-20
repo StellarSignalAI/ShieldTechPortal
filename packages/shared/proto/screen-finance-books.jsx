@@ -125,15 +125,9 @@ function FinanceAP({ setDrawer, setModal, showToast }) {
 /* ── Expenses with AI Receipt OCR ── */
 function FinanceExpenses({ setModal, showToast }) {
   const [ocrDemo, setOcrDemo] = React.useState(false);
-  const DEMO_EXPENSES = [
-    { id: 'EXP-201', employee: 'Mike Reyes', date: 'Jun 5', vendor: 'Shell Gas Station', amount: 127.50, cat: 'Vehicle / Fuel', status: 'pending', receipt: true },
-    { id: 'EXP-200', employee: 'Jessica Liu', date: 'Jun 4', vendor: 'Home Depot', amount: 342.80, cat: 'Materials', status: 'approved', receipt: true },
-    { id: 'EXP-199', employee: 'Kevin White', date: 'Jun 3', vendor: 'Lowes', amount: 89.40, cat: 'Materials', status: 'approved', receipt: true },
-    { id: 'EXP-198', employee: 'Tony Garcia', date: 'Jun 2', vendor: 'Costco Gas', amount: 94.20, cat: 'Vehicle / Fuel', status: 'approved', receipt: true },
-    { id: 'EXP-197', employee: 'Diana Patel', date: 'Jun 1', vendor: 'Amazon Business', amount: 248.00, cat: 'Tools', status: 'pending', receipt: false },
-  ];
-  // Live QuickBooks expenses (Purchase txns) when synced; demo set is the fallback.
-  const [expenses, setExpenses] = React.useState(DEMO_EXPENSES);
+  // Live QuickBooks expenses (Purchase txns) when synced; starts honestly
+  // empty — no fabricated expense reports.
+  const [expenses, setExpenses] = React.useState([]);
   React.useEffect(() => {
     const q = window.__shieldQBO; if (!q) return;
     q.purchases(500).then(r => { if (r && r.ok && r.data && r.data.length) setExpenses(r.data.map(p => ({
@@ -193,7 +187,10 @@ function FinanceExpenses({ setModal, showToast }) {
           <thead><tr>{['ID','Employee','Date','Vendor','Category','Amount','Receipt','Status',''].map((h,i) => (
             <th key={i} style={{ textAlign: i===5?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
           ))}</tr></thead>
-          <tbody>{expenses.map((e,i) => (
+          <tbody>{expenses.length === 0 && (
+            <tr><td colSpan={9} style={{ padding: '24px 14px', fontSize: 12, color: 'var(--text-low)', textAlign: 'center' }}>No expenses yet — they appear here after the first QuickBooks sync or when you add one.</td></tr>
+          )}
+          {expenses.map((e,i) => (
             <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={ev=>ev.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
               <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--brand)' }}>{e.id}</td>
               <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{e.employee}</td>

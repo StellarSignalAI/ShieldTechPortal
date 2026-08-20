@@ -132,6 +132,7 @@ const M2_KUDOS = [];
 function WKudos({ size }) {
   const [idx, setIdx] = React.useState(0);
   React.useEffect(() => {
+    if (M2_KUDOS.length < 2) return; // nothing to rotate — avoid i % 0 = NaN churn
     const t = setInterval(() => setIdx(i => (i + 1) % M2_KUDOS.length), 4500);
     return () => clearInterval(t);
   }, []);

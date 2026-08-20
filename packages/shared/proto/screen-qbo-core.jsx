@@ -84,7 +84,7 @@ function StateGate({ state = 'live', label = 'records', onRetry, children }) {
         <div style={{ fontSize: 10.5, color: 'var(--text-mid)', fontFamily: 'var(--font-mono)', marginBottom: 16 }}>Last successful sync: Jul 5, 2026 06:12</div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
           <button onClick={() => (onRetry ? onRetry() : shieldToast('Retrying sync…', 'info'))} style={{ padding: '6px 18px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Retry sync</button>
-          <button onClick={() => qboGo('integrations')} style={{ padding: '6px 18px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11.5, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Open Integrations</button>
+          <button onClick={() => qboGo('portal-settings')} style={{ padding: '6px 18px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11.5, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Open Settings</button>
         </div>
       </GlassPanel>
     );

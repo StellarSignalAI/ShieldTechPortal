@@ -86,7 +86,7 @@ function FinanceSalesTax({ showToast }) {
       {sub === 'overview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', gap: 12 }}>
-            <StatCard label="TAX COLLECTED · QTD" value="$27,013" delay={0} />
+            <StatCard label="TAX COLLECTED · QTD" value="—" mono={false} delay={0} />
             <StatCard label="NEXT FILING DUE" value="Jul 31" mono={false} delay={60} />
             <StatCard label="JURISDICTIONS" value={4} delay={120} />
             <StatCard label="EXCEPTIONS TO REVIEW" value={3} delay={180} />
@@ -174,15 +174,10 @@ function FinanceSalesTax({ showToast }) {
 /* ════ Lending / Capital ════ */
 function FinanceLending({ showToast }) {
   const [sub, setSub] = React.useState('accounts');
-  const accounts = [
-    { name: 'Term loan — vehicle fleet', lender: 'QBO Capital', limit: 120000, balance: 68400, rate: '7.9% APR', payment: '$2,840/mo · next Jul 15', status: 'active' },
-    { name: 'Line of credit — working capital', lender: 'ShieldTech Bank LOC', limit: 150000, balance: 32000, rate: 'Prime + 1.5%', payment: 'Interest-only · $214 accrued', status: 'active' },
-    { name: 'Business credit card — ops', lender: 'Chase Ink ····4471', limit: 50000, balance: 12385, rate: '19.9% APR', payment: 'Autopay in full · Jul 12', status: 'active' },
-  ];
-  const applications = [
-    { name: 'Equipment financing — thermal camera stock', amount: 85000, submitted: 'Jun 22, 2026', status: 'review', note: 'Underwriting — docs complete' },
-    { name: 'Term loan refi quote', amount: 68400, submitted: 'Jun 30, 2026', status: 'offer', note: 'Offer: 6.4% APR, 48 mo — expires Jul 20' },
-  ];
+  /* No lending data source is connected — credit accounts and applications
+     start honestly empty instead of showing invented loans. */
+  const accounts = [];
+  const applications = [];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <QboSubTabs tabs={[{ id: 'accounts', label: 'Credit Accounts', count: accounts.length }, { id: 'applications', label: 'Applications & Offers', count: applications.length }]} val={sub} set={setSub} />
@@ -190,42 +185,26 @@ function FinanceLending({ showToast }) {
       {sub === 'accounts' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', gap: 12 }}>
-            <StatCard label="TOTAL CREDIT AVAILABLE" value="$207,215" delay={0} />
-            <StatCard label="TOTAL DRAWN" value="$112,785" delay={60} />
-            <StatCard label="NEXT PAYMENT" value="Jul 12" mono={false} delay={120} />
-            <StatCard label="BLENDED RATE" value="9.1%" delay={180} />
+            <StatCard label="TOTAL CREDIT AVAILABLE" value="—" mono={false} delay={0} />
+            <StatCard label="TOTAL DRAWN" value="—" mono={false} delay={60} />
+            <StatCard label="NEXT PAYMENT" value="—" mono={false} delay={120} />
+            <StatCard label="BLENDED RATE" value="—" mono={false} delay={180} />
           </div>
-          <QboTable cols={['Account', 'Lender', 'Limit', 'Balance', 'Rate', 'Payment', 'Status']}
-            rows={accounts.map((a) => ({ cells: [a.name, a.lender, qboMoney(a.limit), qboMoney(a.balance), a.rate, a.payment, <QboStatus s={a.status} />] }))}
-            onRow={(row, i) => {
-              const a = accounts[i];
-              shieldModal({ kind: 'detail', title: a.name, subtitle: a.lender,
-                sections: [
-                  { label: 'Account', rows: [{ k: 'Credit limit', v: qboMoney(a.limit) }, { k: 'Balance', v: qboMoney(a.balance) }, { k: 'Rate', v: a.rate, mono: false }, { k: 'Payment', v: a.payment, mono: false }] },
-                  { label: 'Utilization', meters: [{ label: 'Drawn', value: a.balance, max: a.limit }] },
-                ],
-                actions: [
-                  { label: 'View in Bank Feed', onClick: () => qboGo('finance', { financeTab: 'bankfeed' }), close: true },
-                  { label: 'Make a payment', primary: true, successMsg: 'Payment scheduled — posting to GL on settle', onClick: () => {}, close: true },
-                ] });
-            }} />
-          <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Payments and draws post to the ledger via the Bank Feed — offers below are never posted until accepted.</div>
+          <GlassPanel style={{ textAlign: 'center', padding: '36px 24px' }}>
+            <div style={{ fontSize: 26, opacity: 0.3, marginBottom: 8 }}>⊜</div>
+            <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 4 }}>No credit accounts on file</div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.6 }}>Loans, lines of credit and business cards appear here once a lending/bank connection is set up. Nothing is tracked yet.</div>
+          </GlassPanel>
         </div>
       )}
 
       {sub === 'applications' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <QboTable cols={['Application', 'Amount', 'Submitted', 'Status', 'Note']}
-            rows={applications.map((a) => ({ cells: [a.name, qboMoney(a.amount), a.submitted, <QboStatus s={a.status} />, a.note] }))}
-            onRow={(row, i) => {
-              const a = applications[i];
-              shieldModal({ kind: 'detail', title: a.name, subtitle: `Submitted ${a.submitted}`,
-                sections: [{ label: 'Application', rows: [{ k: 'Amount', v: qboMoney(a.amount) }, { k: 'Status', v: a.note, mono: false, full: true }] }],
-                actions: a.status === 'offer'
-                  ? [{ label: 'Decline offer', onClick: () => shieldToast('Offer declined', 'info'), close: true }, { label: 'Accept offer…', primary: true, onClick: () => shieldModal({ kind: 'confirm', title: 'Accept refi offer?', message: 'Accepting creates a new liability account in the Chart of Accounts and schedules payoff of the existing term loan. This action is review-gated and logged.', confirmLabel: 'Accept & create accounts', onConfirm: () => showToast('Offer accepted — new liability account created') }), close: true }]
-                  : [{ label: 'Upload documents', primary: true, successMsg: 'Document request opened', onClick: () => {}, close: true }] });
-            }} />
-          <button onClick={() => shieldModal({ kind: 'confirm', title: 'Apply for capital?', message: 'We will share your revenue and A/R history from the Finance Suite with the lender. Nothing is shared until you confirm.', confirmLabel: 'Start application', onConfirm: () => showToast('Capital application started') })} style={{ alignSelf: 'flex-start', padding: '7px 18px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>+ Apply for capital</button>
+          <GlassPanel style={{ textAlign: 'center', padding: '36px 24px' }}>
+            <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 4 }}>No applications or offers</div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.6 }}>Capital applications aren't wired to a lender yet.</div>
+          </GlassPanel>
+          <button onClick={() => showToast("Capital applications aren't wired up yet")} style={{ alignSelf: 'flex-start', padding: '7px 18px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>+ Apply for capital</button>
         </div>
       )}
     </div>
@@ -308,12 +287,8 @@ function FinanceExpensesPlus(props) {
     { num: '#4101', payee: 'City of San Rafael — permits', account: '1000 Checking', memo: 'Fire alarm permit — Sunrise Charter', amount: 640, date: 'Jun 30', status: 'cleared' },
     { num: '#4100', payee: 'Golden Gate Fleet Service', account: '1000 Checking', memo: 'V-08 brake service', amount: 1120, date: 'Jun 27', status: 'printed' },
   ];
-  const mileage = [
-    { tech: 'Mike Reyes', vehicle: 'V-12', period: 'Jun 22–28', miles: 284, job: 'Bayview Medical (3 visits)', deduction: 198.8 },
-    { tech: 'Jessica Liu', vehicle: 'V-08', period: 'Jun 22–28', miles: 312, job: 'Harbor Logistics rollout', deduction: 218.4 },
-    { tech: 'Tony Garcia', vehicle: 'V-21', period: 'Jun 22–28', miles: 146, job: 'Service calls (5)', deduction: 102.2 },
-    { tech: 'Diana Patel', vehicle: 'V-03', period: 'Jun 22–28', miles: 201, job: 'Sunrise Charter punch list', deduction: 140.7 },
-  ];
+  /* Mileage tracking isn't wired to fleet telematics or manual logs yet. */
+  const mileage = [];
   const cardPays = [
     { card: 'Chase Ink ····4471', amount: 12385, date: 'Jul 12 (scheduled)', from: '1000 Checking', status: 'pending' },
     { card: 'Chase Ink ····4471', amount: 9840, date: 'Jun 12', from: '1000 Checking', status: 'cleared' },
@@ -331,14 +306,15 @@ function FinanceExpensesPlus(props) {
       {sub === 'mileage' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ display: 'flex', gap: 12 }}>
-            <StatCard label="MILES · LAST WEEK" value={mileage.reduce((s, m) => s + m.miles, 0).toLocaleString()} delay={0} />
-            <StatCard label="DEDUCTION @ $0.70/MI" value={'$' + mileage.reduce((s, m) => s + m.deduction, 0).toFixed(2)} delay={60} />
-            <StatCard label="UNREVIEWED TRIPS" value={4} delay={120} />
+            <StatCard label="MILES · LAST WEEK" value="—" mono={false} delay={0} />
+            <StatCard label="DEDUCTION @ $0.70/MI" value="—" mono={false} delay={60} />
+            <StatCard label="UNREVIEWED TRIPS" value="—" mono={false} delay={120} />
           </div>
-          <QboTable cols={['Technician', 'Vehicle', 'Period', 'Miles', 'Job attribution', 'Deduction']}
-            rows={mileage.map((m) => ({ cells: [m.tech, <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5 }}>{m.vehicle}</span>, m.period, m.miles, m.job, '$' + m.deduction.toFixed(2)] }))}
-            onRow={(r, i) => shieldModal({ kind: 'confirm', title: `Approve mileage — ${mileage[i].tech}?`, message: `${mileage[i].miles} miles → $${mileage[i].deduction.toFixed(2)} expense, job-costed to ${mileage[i].job}.`, confirmLabel: 'Approve as expense', onConfirm: () => props.showToast('Mileage approved & job-costed') })} />
-          <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Approved mileage posts as an expense subtype and flows into <LinkChip screen="costing" label="Job Costing" />.</div>
+          <GlassPanel style={{ textAlign: 'center', padding: '36px 24px' }}>
+            <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 4 }}>No mileage recorded</div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.6 }}>Mileage isn't connected to fleet telematics or technician logs yet — trips appear here once a source is wired up.</div>
+          </GlassPanel>
+          <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Approved mileage posts as an expense subtype and flows into <LinkChip screen="finance" label="Finance" />.</div>
         </div>
       )}
       {sub === 'cards' && (
@@ -381,7 +357,7 @@ function FinanceAPPlus(props) {
               if (c.w9 === 'Missing') shieldModal({ kind: 'confirm', title: 'Request W-9?', message: `Sends a secure W-9 request to ${c.name}. 1099 e-file stays blocked until received.`, confirmLabel: 'Send request', onConfirm: () => props.showToast('W-9 request sent') });
               else props.showToast(c.name + ' — payment history opened');
             }} />
-          <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Contractor identities are shared with <LinkChip screen="employees" params={{ teamTab: 'contractors' }} label="Team / Contractors" /> and <LinkChip screen="subcontractors" label="Sub-Contractors" /> — one record, no duplicates.</div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Contractor identities are shared with <LinkChip screen="employees" params={{ teamTab: 'contractors' }} label="Team / Contractors" /> — one record, no duplicates.</div>
         </div>
       )}
     </div>
