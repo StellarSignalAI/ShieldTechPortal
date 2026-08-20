@@ -22,10 +22,16 @@ function AssetsScreen() {
     { id: 'types', label: 'Asset Types', icon: '⊡' },
   ];
 
-  const [configs] = useShieldStore(assetStore);;
+  const [configs] = useShieldStore(assetStore);
+  const [allCusts] = useShieldStore(customerStore);
+  const [search, setSearch] = React.useState('');
+  const scopedCustomer = (allCusts || []).find(c => c.name === customerScope) || null;
 
   const filteredConfigs = customerScope ? configs.filter(c => c.customer === customerScope) : configs;
-  const siteScopedConfigs = siteScope ? filteredConfigs.filter(c => c.site === siteScope) : filteredConfigs;
+  const searched = search.trim()
+    ? filteredConfigs.filter(c => ['name','tag','type','mfg','model','serial','ip','customer','site','room'].some(k => String(c[k] || '').toLowerCase().includes(search.trim().toLowerCase())))
+    : filteredConfigs;
+  const siteScopedConfigs = siteScope ? searched.filter(c => c.site === siteScope) : searched;
   const sites = [...new Set(filteredConfigs.map(c => c.site))];
 
   if (selectedConfig) {
@@ -54,7 +60,7 @@ function AssetsScreen() {
           </div>
         )}
         <div style={{ flex: 1 }} />
-        <input placeholder="Search configs, passwords, docs..." style={{ padding: '6px 14px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 240 }} />
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search configurations..." style={{ padding: '6px 14px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 240 }} />
       </div>
 
       {/* Tab bar */}
@@ -138,10 +144,16 @@ function AssetsScreen() {
         {tab === 'rotation' && <PasswordRotationPanel showToast={showToast} />}
         {tab === 'bitlocker' && <BitLockerView showToast={showToast} />}
         {tab === 'microsoft' && <MicrosoftDocsView showToast={showToast} />}
-        {tab === 'flexible' && <CustomerFlexAssets customer={{ name: customerScope || 'All Customers' }} showToast={showToast} />}
-        {tab === 'passwords' && <CustomerPasswords showToast={showToast} />}
-        {tab === 'documents' && <CustomerDocs showToast={showToast} />}
-        {tab === 'networks' && <CustomerNetworks showToast={showToast} />}
+        {['flexible','passwords','documents','networks'].includes(tab) && !scopedCustomer && (
+          <GlassPanel style={{ textAlign: 'center', padding: 36 }}>
+            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Pick a customer</div>
+            <div style={{ fontSize: 12, color: 'var(--text-low)' }}>These records are stored per customer — choose one in the selector above to view or add entries.</div>
+          </GlassPanel>
+        )}
+        {tab === 'flexible' && scopedCustomer && <CustomerFlexAssets customer={scopedCustomer} showToast={showToast} />}
+        {tab === 'passwords' && scopedCustomer && <CustomerPasswords customer={scopedCustomer} showToast={showToast} />}
+        {tab === 'documents' && scopedCustomer && <CustomerDocs customer={scopedCustomer} showToast={showToast} />}
+        {tab === 'networks' && scopedCustomer && <CustomerNetworks customer={scopedCustomer} showToast={showToast} />}
         {tab === 'types' && <AssetTypesManager showToast={showToast} />}
       </div>
 
@@ -155,6 +167,14 @@ function AssetsScreen() {
 /* ── Configuration Detail (exhaustive IT Glue-class) ── */
 function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
   const [detailTab, setDetailTab] = React.useState('info');
+  const [notes, setNotes] = React.useState(cfg.notes || '');
+  const editNotes = () => {
+    const next = window.prompt(`Notes for ${cfg.name}:`, notes);
+    if (next === null) return;
+    assetStore.set(list => (list || []).map(a => a.id === cfg.id ? { ...a, notes: next } : a));
+    setNotes(next);
+    showToast('Notes saved');
+  };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0, height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
       {/* Header */}
@@ -166,9 +186,9 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{cfg.customer} ▸ {cfg.site} ▸ {cfg.room} · {cfg.tag}</div>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
-          <button onClick={() => showToast('Edit configuration')} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit</button>
-          <button onClick={() => showToast('Revision history')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>History</button>
-          <button onClick={() => showToast('Related items')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Related</button>
+          <button onClick={() => showToast("Configuration editing isn't wired up yet")} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit</button>
+          <button onClick={() => showToast("Revision history isn't wired up yet")} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>History</button>
+          <button onClick={() => setDetailTab('related')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Related</button>
         </div>
       </div>
 
@@ -202,11 +222,15 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
               {cfg.rtsp && (
                 <div style={{ marginTop: 8 }}>
                   <div style={{ fontSize: 9, color: 'var(--text-low)' }}>RTSP URL</div>
-                  <div className="mono" style={{ fontSize: 10, color: 'var(--brand)', padding: '4px 8px', borderRadius: 4, background: 'rgba(63,169,245,0.04)', wordBreak: 'break-all', cursor: 'pointer' }} onClick={() => showToast('Copied RTSP URL')}>{cfg.rtsp}</div>
+                  <div className="mono" style={{ fontSize: 10, color: 'var(--brand)', padding: '4px 8px', borderRadius: 4, background: 'rgba(63,169,245,0.04)', wordBreak: 'break-all', cursor: 'pointer' }} onClick={() => { if (navigator.clipboard) { navigator.clipboard.writeText(cfg.rtsp); showToast('Copied RTSP URL'); } else showToast('Clipboard unavailable'); }}>{cfg.rtsp}</div>
                 </div>
               )}
               {cfg.ip && (
-                <button onClick={() => showToast('Opening web UI...')} style={{ marginTop: 8, width: '100%', padding: '6px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open Web UI →</button>
+                <button onClick={() => {
+                  const p = cfg.ports || {};
+                  const url = p.https ? `https://${cfg.ip}:${p.https}` : `http://${cfg.ip}${p.http ? `:${p.http}` : ''}`;
+                  window.open(url, '_blank', 'noopener');
+                }} style={{ marginTop: 8, width: '100%', padding: '6px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open Web UI →</button>
               )}
             </GlassPanel>
 
@@ -221,7 +245,7 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
               {cfg.fwUpdate && (
                 <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 5, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)', fontSize: 11, color: 'var(--status-warn)', display: 'flex', alignItems: 'center', gap: 6 }}>
                   ⚠ Firmware update available
-                  <button onClick={() => showToast('Firmware update scheduled')} style={{ marginLeft: 'auto', padding: '3px 8px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 4, color: 'var(--status-warn)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Schedule Update</button>
+                  <button onClick={() => showToast("Firmware scheduling isn't wired up yet — update the device directly")} style={{ marginLeft: 'auto', padding: '3px 8px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 4, color: 'var(--status-warn)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Schedule Update</button>
                 </div>
               )}
             </GlassPanel>
@@ -251,42 +275,25 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
             {/* Notes */}
             <GlassPanel>
               <div className="label-sm" style={{ marginBottom: 6 }}>NOTES</div>
-              <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6 }}>{cfg.notes || 'No notes.'}</p>
-              <button onClick={() => showToast('Edit notes')} style={{ marginTop: 8, padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit Notes</button>
+              <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6 }}>{notes || 'No notes.'}</p>
+              <button onClick={editNotes} style={{ marginTop: 8, padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit Notes</button>
             </GlassPanel>
           </div>
         )}
 
         {detailTab === 'monitoring' && (
-          <GlassPanel>
-            <div className="label-sm" style={{ marginBottom: 10 }}>LIVE MONITORING</div>
-            <div style={{ display: 'flex', gap: 14, marginBottom: 14 }}>
-              <div style={{ textAlign: 'center' }}><div className="mono" style={{ fontSize: 28, fontWeight: 600, color: 'var(--status-ok)' }}>{cfg.uptime}%</div><div style={{ fontSize: 10, color: 'var(--text-low)' }}>90-Day Uptime</div></div>
-              <div style={{ flex: 1 }}><div className="label-sm" style={{ marginBottom: 6 }}>UPTIME STRIP (90 DAYS)</div><UptimeStrip data={Array.from({length:90},()=>97+Math.random()*3)} /></div>
-            </div>
-            <div className="label-sm" style={{ marginBottom: 8 }}>RECENT EVENTS</div>
-            {[{t:'Jun 5, 2:14 PM',e:'Ping OK — 2ms latency',s:'online'},{t:'Jun 4, 11:30 PM',e:'Brief packet loss (0.5%)',s:'warning'},{t:'Jun 1, 9:00 AM',e:'Firmware check — update available',s:'info'}].map((ev,i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
-                <StatusDot status={ev.s} size={5} /><span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', width: 100 }}>{ev.t}</span><span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{ev.e}</span>
-              </div>
-            ))}
+          <GlassPanel style={{ textAlign: 'center', padding: 28 }}>
+            <div className="label-sm" style={{ marginBottom: 8 }}>MONITORING</div>
+            <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>No uptime feed connected</div>
+            <div style={{ fontSize: 12, color: 'var(--text-low)' }}>Connect a monitoring collector to see live uptime and ping events for this device.</div>
           </GlassPanel>
         )}
 
         {detailTab === 'related' && (
           <GlassPanel>
             <div className="label-sm" style={{ marginBottom: 10 }}>RELATED ITEMS</div>
-            {[{type:'Password',name:'NVR Admin',icon:'⊠'},{type:'Document',name:'Camera Schedule & Locations',icon:'▤'},{type:'Device (Parent)',name:'NVR-01 (Server Room)',icon:'⬡'},{type:'Contact',name:'Linda Park — Security Manager',icon:'◎'}].map((r,i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(63,169,245,0.04)', cursor: 'pointer' }}>
-                <span style={{ fontSize: 14 }}>{r.icon}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 500 }}>{r.name}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{r.type}</div>
-                </div>
-                <span style={{ color: 'var(--text-low)', fontSize: 10 }}>›</span>
-              </div>
-            ))}
-            <button onClick={() => showToast('Add related item')} style={{ marginTop: 8, padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Link Related Item</button>
+            <div style={{ fontSize: 12, color: 'var(--text-low)', padding: '8px 0' }}>No related items linked to this configuration.</div>
+            <button onClick={() => showToast("Related-item linking isn't wired up yet")} style={{ marginTop: 8, padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Link Related Item</button>
           </GlassPanel>
         )}
 
@@ -326,7 +333,7 @@ function AssetTypesManager({ showToast }) {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
         {types.map((t,i) => (
-          <GlassPanel key={i} style={{ cursor: 'pointer', padding: 14 }} onClick={() => showToast(`Edit type: ${t.name}`)}>
+          <GlassPanel key={i} style={{ cursor: 'pointer', padding: 14 }} onClick={() => showToast("Type editing isn't wired up yet")}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ fontSize: 18 }}>{t.icon}</span>
               <span style={{ fontSize: 13, fontWeight: 500 }}>{t.name}</span>
@@ -811,7 +818,7 @@ function CreateAssetTypeModal({ onClose, showToast }) {
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{ padding: '8px 20px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-          <button onClick={() => { onClose(); showToast('Custom asset types are coming soon — use Flexible Assets meanwhile'); }} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Type</button>
+          <button disabled title="Custom asset types aren't available yet — use Flexible Assets meanwhile" style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'not-allowed', opacity: 0.5, fontFamily: 'var(--font-body)' }}>Custom types coming soon</button>
         </div>
       </div>
     </div>

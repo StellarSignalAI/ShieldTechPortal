@@ -128,24 +128,24 @@ function TechScannerView() {
   const [result, setResult] = React.useState(null);
 
   const enableCam = React.useCallback(async () => {
-    const cam = window.__shieldCamera;
-    if (!cam) { setCamErr('Camera not supported in this browser'); return; }
+    const camApi = window.__shieldCamera;
+    if (!camApi) { setCamErr('Camera not supported in this browser'); return; }
     if (!videoRef.current) return;
     setCamErr('');
-    const r = await cam.startStream(videoRef.current, 'environment');
+    const r = await camApi.startStream(videoRef.current, 'environment');
     setLive(!!r.ok);
     if (!r.ok) setCamErr(r.error || 'Could not start camera');
   }, []);
   React.useEffect(() => {
     enableCam();
     const v = videoRef.current;
-    return () => { const cam = window.__shieldCamera; if (cam && v) cam.stopStream(v); };
+    return () => { const camApi = window.__shieldCamera; if (camApi && v) camApi.stopStream(v); };
   }, [enableCam]);
 
   const scan = async () => {
-    const cam = window.__shieldCamera;
-    if (!live || !cam || !videoRef.current) { showToast('Camera not available — allow camera access, then try again', 'warn'); return; }
-    const frame = cam.captureFrame(videoRef.current);
+    const camApi = window.__shieldCamera;
+    if (!live || !camApi || !videoRef.current) { showToast('Camera not available — allow camera access, then try again', 'warn'); return; }
+    const frame = camApi.captureFrame(videoRef.current);
     if (!frame) { showToast('Hold steady and try again', 'warn'); return; }
     if (!window.__shieldAI) { showToast('ShieldTech AI not configured yet', 'warn'); return; }
     setBusy(true); setResult(null);
@@ -244,21 +244,15 @@ function TechARView() {
   };
   const save = () => {
     if (!tags.length) { showToast('Tag at least one port first', 'warn'); return; }
-    const me = window.__shieldUser || {};
-    photoStore.set(prev => [{
-      id: genId('PH'), wo: '', customer: '', site: '', tech: me.initials || '—', techName: me.name || 'Technician',
-      phase: 'progress', slot: null, label: `AR wire-map — head-end rack (${tags.length} ports tagged)`,
-      day: 'Today', time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
-      look: { h: 195, p: 'rack', s: 88 }, pair: null,
-      annotations: tags.map(t => ({ x: t.x, y: t.y, label: t.label })),
-    }, ...prev]);
-    showToast(`Wire-map saved to Site Photos — ${tags.length} ports documented`, 'ok');
+    // Concept preview only — no camera behind this yet, so writing an
+    // image-less "photo" into the shared roll would fabricate documentation.
+    showToast('AR Wire-Mapper is a concept preview — nothing is saved yet', 'warn');
   };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ fontSize: 16, fontWeight: 500 }}>AR Wire-Mapper</div>
-        <span style={{ fontSize: 9, color: 'var(--text-low)' }}>tap a port to tag it</span>
+        <span style={{ fontSize: 9, color: 'var(--text-low)' }}>concept preview — nothing is saved</span>
       </div>
       <div onClick={addTag} style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)', aspectRatio: '3/4', background: photoBg({ h: 195, p: 'rack', s: 88 }), cursor: 'crosshair' }}>
         <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', background: 'rgba(63,169,245,0.15)', border: '1px solid var(--border-strong)', borderRadius: 12, padding: '3px 12px', fontSize: 9, fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.08em' }}>AR OVERLAY</div>
@@ -270,7 +264,7 @@ function TechARView() {
         ))}
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={save} style={{ flex: 2, padding: '10px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save to Site Photos ({tags.length} tags)</button>
+        <button onClick={save} style={{ flex: 2, padding: '10px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Preview only ({tags.length} tags)</button>
         <button onClick={() => setTags([])} style={{ flex: 1, padding: '10px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-low)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Clear</button>
       </div>
     </div>

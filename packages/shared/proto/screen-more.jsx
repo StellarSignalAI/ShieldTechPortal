@@ -17,15 +17,6 @@ function ProjectsScreen() {
   React.useEffect(() => {
     if (typeof applyEstimateAcceptances === 'function') applyEstimateAcceptances();
   }, []);
-  const DEMO_PROJECTS = [
-    { id: 'PRJ-101', name: 'Pacific Rim Hotels — Full Upgrade', customer: 'Pacific Rim Hotels', value: '$215,000', stage: 'in-progress', progress: 35, pm: 'John Mitchell', techs: ['JL','KW'], start: 'May 15', end: 'Aug 30', milestones: [{ label: 'Site survey', done: true }, { label: 'Equipment ordered', done: true }, { label: 'Property 1 install', done: false }, { label: 'Property 2 install', done: false }, { label: 'Property 3 install', done: false }, { label: 'Final commissioning', done: false }] },
-    { id: 'PRJ-098', name: 'City Hall — Access Control Upgrade', customer: 'City Hall', value: '$45,000', stage: 'in-progress', progress: 72, pm: 'Sarah Chen', techs: ['KW'], start: 'Apr 20', end: 'Jun 20', milestones: [{ label: 'Demo old system', done: true }, { label: 'Run new cables', done: true }, { label: 'Install readers', done: true }, { label: 'Program controllers', done: false }, { label: 'Testing & handoff', done: false }] },
-    { id: 'PRJ-104', name: 'Westfield Mall — Camera Expansion', customer: 'Westfield Mall', value: '$31,800', stage: 'planning', progress: 10, pm: 'John Mitchell', techs: ['MR','TG'], start: 'Jun 15', end: 'Jul 30', milestones: [{ label: 'Design approval', done: true }, { label: 'Equipment PO', done: false }, { label: 'Installation', done: false }, { label: 'Commissioning', done: false }] },
-    { id: 'PRJ-095', name: 'Riverside Medical — Fire Panel', customer: 'Riverside Medical', value: '$28,400', stage: 'review', progress: 90, pm: 'Sarah Chen', techs: ['TG'], start: 'Apr 1', end: 'Jun 10', milestones: [{ label: 'Panel swap', done: true }, { label: 'Zone programming', done: true }, { label: 'UL inspection', done: false }, { label: 'Certificate filed', done: false }] },
-    { id: 'PRJ-092', name: 'Marina District Dental — 8-Camera', customer: 'Marina Dental', value: '$24,800', stage: 'complete', progress: 100, pm: 'John Mitchell', techs: ['MR'], start: 'May 1', end: 'Jun 2', milestones: [{ label: 'Install', done: true }, { label: 'Configure', done: true }, { label: 'Customer sign-off', done: true }] },
-    { id: 'PRJ-105', name: 'Golden Gate Logistics — Perimeter', customer: 'Golden Gate', value: '$52,000', stage: 'planning', progress: 5, pm: 'Sarah Chen', techs: [], start: 'Jul 1', end: 'Aug 15', milestones: [{ label: 'Site survey', done: false }, { label: 'Design', done: false }, { label: 'Install', done: false }] },
-  ];
-  // Real projects created in the portal/mobile show here; demo board until then.
   const mapProj = (p) => ({
     id: p.number, name: p.name, customer: p.customer || '—',
     value: p.estimatedValue ? '$' + Number(p.estimatedValue).toLocaleString() : '—',
@@ -34,8 +25,12 @@ function ProjectsScreen() {
     pm: p.contact || '', techs: [], start: '', end: '', milestones: [], _rec: p,
   });
   const [query, setQuery] = React.useState('');
-  const allProjects = (storeProjects && storeProjects.length) ? storeProjects.map(mapProj) : DEMO_PROJECTS;
+  const allProjects = (storeProjects || []).map(mapProj);
   const projects = allProjects.filter(p => docSearchMatch(query, p.id, p.name, p.customer, p.pm, p.value, p.stage));
+  const activeCount = allProjects.filter(p => p.stage === 'in-progress').length;
+  const planningCount = allProjects.filter(p => p.stage === 'planning').length;
+  const completeCount = allProjects.filter(p => p.stage === 'complete').length;
+  const totalVal = (storeProjects || []).reduce((s, p) => s + (Number(p.contractTotal) || Number(p.estimatedValue) || 0), 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: 'calc(100vh - 100px)' }}>
@@ -50,11 +45,10 @@ function ProjectsScreen() {
       {/* Stats */}
       <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
         {[
-          { label: 'Active Projects', value: '4', color: 'var(--brand)' },
-          { label: 'Total Value', value: '$396K', color: 'var(--text-high)' },
-          { label: 'On Schedule', value: '3', color: 'var(--status-ok)' },
-          { label: 'At Risk', value: '1', color: 'var(--status-warn)' },
-          { label: 'Avg Margin', value: '31%', color: 'var(--status-ok)' },
+          { label: 'Active Projects', value: String(activeCount), color: 'var(--brand)' },
+          { label: 'Planning', value: String(planningCount), color: 'var(--text-mid)' },
+          { label: 'Complete', value: String(completeCount), color: 'var(--status-ok)' },
+          { label: 'Total Value', value: totalVal >= 1000 ? `$${(totalVal/1000).toFixed(0)}K` : `$${totalVal.toLocaleString()}`, color: 'var(--text-high)' },
         ].map((s, i) => (
           <div key={i} className="glass" style={{ flex: 1, padding: '10px 14px', textAlign: 'center' }}>
             <div className="mono" style={{ fontSize: 18, fontWeight: 600, color: s.color }}>{s.value}</div>

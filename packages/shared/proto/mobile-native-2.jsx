@@ -1,52 +1,4 @@
-/* ShieldTech Mobile — native screens II: Pipeline, Inventory, Approvals, Work Orders, ShieldTech AI */
-
-function MPipelineView({ onNav }) {
-  const stages = [
-    { name: 'Lead', total: '$0', deals: [] },
-    { name: 'Proposal', total: '$0', deals: [] },
-    { name: 'Negotiate', total: '$0', deals: [] },
-    { name: 'Closed', total: '$0', deals: [] },
-  ];
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-        {stages.map(s => (
-          <div key={s.name} className="glass" style={{ padding: '9px 8px', borderRadius: 10, textAlign: 'center' }}>
-            <div style={{ fontSize: 8.5, letterSpacing: '0.07em', color: 'var(--text-low)', textTransform: 'uppercase' }}>{s.name}</div>
-            <div className="mono" style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-high)' }}>{s.deals.length}</div>
-            <div className="mono" style={{ fontSize: 9, color: 'var(--brand)' }}>{s.total}</div>
-          </div>
-        ))}
-      </div>
-      {stages.every(x => x.deals.length === 0) && (
-        <div className="glass" style={{ padding: '22px 16px', borderRadius: 14, textAlign: 'center' }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Pipeline is empty</div>
-          <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 4 }}>Accepted leads from the Bid Board land here.</div>
-        </div>
-      )}
-      {stages.some(s => s.deals.length > 0) && <><div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollSnapType: 'x mandatory', margin: '0 -14px', padding: '0 14px 6px' }}>
-        {stages.map(s => (
-          <div key={s.name} style={{ flexShrink: 0, width: 264, scrollSnapAlign: 'start' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7, padding: '0 2px' }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-high)' }}>{s.name}</span>
-              <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{s.total}</span>
-            </div>
-            {s.deals.map(d => (
-              <div key={d.t} className="glass" style={{ padding: '11px 12px', borderRadius: 11, marginBottom: 7, cursor: 'pointer' }} onClick={() => showToast('Deal opened — full CRM on desktop', 'ok')}>
-                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', lineHeight: 1.3 }}>{d.t}</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-                  <span className="mono" style={{ fontSize: 11, color: 'var(--status-ok)' }}>${(d.v / 1000).toFixed(0)}K</span>
-                  <span style={{ fontSize: 9, color: 'var(--text-low)' }}>tap for detail</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-      <div style={{ fontSize: 9, color: 'var(--text-low)', textAlign: 'center' }}>Swipe stages horizontally · drag-to-stage lives on desktop</div></>}
-    </div>
-  );
-}
+/* ShieldTech Mobile — native screens II: Inventory, Approvals, Work Orders, ShieldTech AI */
 
 function MInventoryView() {
   const [q, setQ] = React.useState('');
@@ -70,7 +22,7 @@ function MInventoryView() {
                 <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{i.sku} · min {i.min}</div>
               </div>
               <span className="mono" style={{ fontSize: 16, fontWeight: 700, color: low ? 'var(--status-critical)' : 'var(--text-high)' }}>{i.stock}</span>
-              {low && <button onClick={() => showToast(`PO drafted — restock ${i.name}`, 'ok')} style={{ padding: '6px 11px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', borderRadius: 7, color: 'var(--status-critical)', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Restock</button>}
+              {low && <button onClick={() => showToast('Restock POs aren\'t wired up yet — draft one in Inventory & Purchasing', 'warn')} style={{ padding: '6px 11px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', borderRadius: 7, color: 'var(--status-critical)', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Restock</button>}
             </div>
             <div style={{ marginTop: 7 }}><MBar pct={(i.stock / (i.min * 3)) * 100} color={low ? 'var(--status-critical)' : 'var(--brand)'} /></div>
           </div>
@@ -199,22 +151,27 @@ function MHermesView() {
     { from: 'ai', text: `Hi ${greetName}. Ask me anything about your customers, jobs, monitoring, or bids — I'll answer from your live workspace.` },
   ]);
   const [input, setInput] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
   const ref = React.useRef(null);
-  React.useEffect(() => { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight; }, [thread]);
-  const send = (text) => {
-    const msg = text || input;
-    if (!msg.trim()) return;
-    setThread(t => [...t, { from: 'me', text: msg }]);
+  React.useEffect(() => { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight; }, [thread, busy]);
+  /* Real assistant — same backend as the desktop ShieldTech AI screen. */
+  const send = async (text) => {
+    const msg = (text || input).trim();
+    if (!msg || busy) return;
+    const next = [...thread, { from: 'me', text: msg }];
+    setThread(next);
     setInput('');
-    setTimeout(() => {
-      const q = msg.toLowerCase();
-      let reply;
-      if (q.includes('revenue') || q.includes('money') || q.includes('cash')) reply = 'MTD revenue $284.6K (+8.2%). Cash $482.6K. Biggest risk: $19.4K overdue AR — Harbor View is 12 days late. Want collection reminders drafted?';
-      else if (q.includes('week') || q.includes('schedule')) reply = 'This week: 15 jobs, $51.9K booked. Friday is overbooked for Jessica (conflict flagged) and Diana has 6 idle hours Thursday — the Copilot suggests moving the Westfield recal to her.';
-      else if (q.includes('churn') || q.includes('risk')) reply = 'Churn radar: Harbor View (58) and Westfield (64) are at risk. Harbor View: late payments + unanswered complaint. Suggested save-play: waive the camera-add trip fee and book a free health check.';
-      else reply = 'Pulled that across all three apps — summary: nothing urgent beyond the Acme incident. I’ve flagged the detail to your Daily Digest.';
-      setThread(t => [...t, { from: 'ai', text: reply }]);
-    }, 700);
+    setBusy(true);
+    let reply;
+    try {
+      reply = window.__shieldAI
+        ? await window.__shieldAI.shieldAIChat('assistant', next.slice(1).map(m => ({ role: m.from === 'me' ? 'user' : 'assistant', content: m.text })))
+        : { text: 'ShieldTech AI is not configured yet — connect Supabase and set OPENAI_API_KEY.', live: false };
+    } catch (e) {
+      reply = { text: 'ShieldTech AI request failed — check your connection and try again.' };
+    }
+    setThread(t => [...t, { from: 'ai', text: (reply && reply.text) || 'ShieldTech AI did not return a reply — try again.' }]);
+    setBusy(false);
   };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 160px)' }}>
@@ -224,6 +181,11 @@ function MHermesView() {
             <div style={{ padding: '10px 13px', borderRadius: m.from === 'me' ? '13px 13px 4px 13px' : '13px 13px 13px 4px', background: m.from === 'me' ? 'rgba(63,169,245,0.14)' : 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)', fontSize: 13, color: 'var(--text-high)', lineHeight: 1.5 }}>{m.text}</div>
           </div>
         ))}
+        {busy && (
+          <div style={{ alignSelf: 'flex-start', maxWidth: '86%' }}>
+            <div style={{ padding: '10px 13px', borderRadius: '13px 13px 13px 4px', background: 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)', fontSize: 13, color: 'var(--text-low)' }}>Thinking…</div>
+          </div>
+        )}
       </div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 8, overflowX: 'auto', paddingBottom: 2 }}>
         {['How’s revenue?', 'What’s my week look like?', 'Who’s at churn risk?'].map(s => (
@@ -233,10 +195,10 @@ function MHermesView() {
       <div style={{ display: 'flex', gap: 8 }}>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Ask ShieldTech AI anything…"
           style={{ flex: 1, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 11, padding: '11px 14px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
-        <button onClick={() => send()} style={{ padding: '0 18px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>↑</button>
+        <button onClick={() => send()} disabled={busy} style={{ padding: '0 18px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 15, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1, fontFamily: 'var(--font-body)' }}>↑</button>
       </div>
     </div>
   );
 }
 
-Object.assign(window, { MPipelineView, MInventoryView, MApprovalsView, MWorkOrdersView, MHermesView });
+Object.assign(window, { MInventoryView, MApprovalsView, MWorkOrdersView, MHermesView });

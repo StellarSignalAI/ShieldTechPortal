@@ -25,10 +25,13 @@ function genRef() {
 
 function officeAlert(data) {
   try {
+    // No `to`: the server defaults office alerts to the TIME_ALERT_EMAILS list.
     supabase.functions.invoke('send-email', {
-      body: { to: 'office', template: 'support-ticket', data },
-    }).catch(() => {});
-  } catch { /* best-effort */ }
+      body: { template: 'support-ticket', data },
+    }).then((r) => {
+      if (r && r.error) console.warn('[tickets] office alert email failed:', r.error.message || r.error);
+    }).catch((e) => console.warn('[tickets] office alert email failed:', e));
+  } catch (e) { console.warn('[tickets] office alert email failed:', e); }
 }
 
 async function create({ subject, description, category, priority }) {

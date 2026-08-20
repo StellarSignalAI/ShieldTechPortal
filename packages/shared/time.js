@@ -38,14 +38,21 @@ async function fnHeaders() {
   };
 }
 
-/* Technician: list my entries (newest first) */
-export async function myEntries(limit = 50) {
+/* Technician: list my entries (newest first). Date-bound to the last 60 days
+   with a limit high enough that 14-day views can't silently truncate. */
+export async function myEntries(limit = 500) {
   if (!supabaseConfigured) return notConfigured;
-  const { data, error } = await supabase
+  const since = new Date(Date.now() - 60 * 86400000).toISOString().slice(0, 10);
+  let q = supabase
     .from('time_entries')
     .select('*')
+    .gte('work_date', since)
     .order('work_date', { ascending: false })
     .limit(limit);
+  // Explicit tech filter when identity is known; RLS remains the backstop.
+  const uid = window.__shieldUser?.id;
+  if (uid) q = q.eq('tech_id', uid);
+  const { data, error } = await q;
   return error ? { ok: false, error: error.message } : { ok: true, data };
 }
 

@@ -211,16 +211,12 @@ function MMAlerts({ onOpenNode }) {
 /* ── Mobile Network Discovery (collector inbox) ── */
 function MMDiscovery({ onNav }) {
   const [filter, setFilter] = React.useState('all');
-  const [scanning, setScanning] = React.useState(false);
-  const [progress, setProgress] = React.useState(0);
   const [states, setStates] = React.useState(() => Object.fromEntries((window.NG_DISCOVERED || []).map(d => [d.id, d.state])));
   const data = window.NG_DISCOVERED || [];
   const CLS = window.NG_CLASS || {};
 
   const runScan = () => {
-    if (scanning) return;
-    setScanning(true); setProgress(0);
-    const iv = setInterval(() => setProgress(p => { if (p >= 100) { clearInterval(iv); setScanning(false); if (window.showToast) showToast('Discovery complete — 4 new', 'ok'); return 100; } return p + 5; }), 70);
+    if (window.showToast) showToast("On-demand discovery isn't wired up yet — run it from the desktop Monitoring Console", 'warn');
   };
   const setState = (id, s) => setStates(prev => ({ ...prev, [id]: s }));
   const counts = {
@@ -239,12 +235,11 @@ function MMDiscovery({ onNav }) {
           <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>⟲</span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>ShieldTech Collector</div>
-            <div style={{ fontSize: 10, color: 'var(--text-low)' }}>Online · last scan 2 min ago</div>
+            <div style={{ fontSize: 10, color: 'var(--text-low)' }}>Not connected — pair a collector from the desktop console</div>
           </div>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--status-ok)', boxShadow: '0 0 7px var(--status-ok)', flexShrink: 0 }} />
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--text-low)', flexShrink: 0 }} />
         </div>
-        <button onClick={runScan} disabled={scanning} style={{ marginTop: 10, width: '100%', padding: '11px 0', background: scanning ? 'rgba(63,169,245,0.1)' : 'var(--brand)', border: 'none', borderRadius: 10, color: scanning ? 'var(--brand)' : '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{scanning ? `Scanning… ${progress}%` : '⟲ Run Discovery'}</button>
-        {scanning && <div style={{ marginTop: 8, height: 4, borderRadius: 2, background: 'rgba(63,169,245,0.1)', overflow: 'hidden' }}><div style={{ height: '100%', width: `${progress}%`, background: 'var(--brand)', borderRadius: 2, boxShadow: '0 0 8px var(--brand)' }} /></div>}
+        <button onClick={runScan} style={{ marginTop: 10, width: '100%', padding: '11px 0', background: 'var(--brand)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⟲ Run Discovery</button>
       </div>
 
       {/* Stats */}

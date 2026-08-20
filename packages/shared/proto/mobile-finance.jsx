@@ -83,9 +83,20 @@ function FinOverview({ go }) {
   const ar = [['Current', bucket(0, 0), 'var(--status-ok)'], ['1–30', bucket(1, 30), 'var(--status-warn)'], ['31–60', bucket(31, 60), 'var(--status-critical)'], ['60+', bucket(61, null), '#c084fc']];
   const arTotal = ar.reduce((s, b) => s + b[1], 0);
   const lines = [];
+  /* Revenue MTD = payments recorded this month on the same merged rows. */
+  const monthKey = new Date().toISOString().slice(0, 7);
+  const paidThisMonth = (i) => {
+    const raw = i._raw || {};
+    if (raw.paidAt) return new Date(raw.paidAt).toISOString().slice(0, 7) === monthKey;
+    return String(raw.txn_date || '').slice(0, 7) === monthKey;
+  };
+  const revMTD = invoices.filter(i => i.status === 'paid' && paidThisMonth(i)).reduce((s, i) => s + i.amount, 0);
+  /* MRR from the live recurring-revenue store (same source as desktop). */
+  const [mrrSubs] = useShieldStore(mrrStore);
+  const mrr = (mrrSubs || []).filter(x => !x.churned && x.status === 'active').reduce((s, x) => s + (Number(x.mrr) || 0), 0);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <FinKpis items={[['CASH POSITION', '$0', null, 'var(--status-ok)'], ['REVENUE MTD', '$0', null, null], ['GROSS MARGIN', '—', 'target 25%', null], ['MRR', '$0', null, 'var(--brand)']]} />
+      <FinKpis items={[['CASH POSITION', '—', 'no bank feed yet', null], ['REVENUE MTD', `$${revMTD.toLocaleString()}`, null, null], ['GROSS MARGIN', '—', 'target 25%', null], ['MRR', `$${mrr.toLocaleString()}`, null, 'var(--brand)']]} />
       <MSection title="Accounts Receivable" action="Invoices" onAction={() => go('Invoices')}>
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginBottom: 10 }}>
           {ar.map(([l, v, c]) => (
@@ -404,7 +415,7 @@ function FinRecurring() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <FinKpis items={[['TOTAL MRR', `$${(mrr / 1000).toFixed(1)}K`, null, 'var(--brand)'], ['AUTOPAY RATE', `${autopay}%`, null, 'var(--status-ok)']]} />
-      <button onClick={() => showToast('New subscription', 'ok')} style={{ padding: '11px 0', background: 'rgba(63,169,245,0.06)', border: '1px dashed var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Subscription</button>
+      <button onClick={() => showToast('New subscriptions aren\'t wired up yet — create one in the desktop Finance Suite', 'warn')} style={{ padding: '11px 0', background: 'rgba(63,169,245,0.06)', border: '1px dashed var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Subscription</button>
       {FIN_RECURRING.map(r => (
         <div key={r.customer} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${r.status === 'active' ? 'var(--status-ok)' : 'var(--status-critical)'}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -416,7 +427,7 @@ function FinRecurring() {
             <span style={{ fontSize: 10, color: 'var(--text-low)' }}>· next {r.next}</span>
             {r.status === 'past_due'
               ? <span style={{ marginLeft: 'auto' }}><MBadge color="var(--status-critical)">past due</MBadge></span>
-              : <button onClick={() => showToast(r.stripe ? 'Stripe subscription managed' : 'Enroll in AutoPay?', 'ok')} style={{ marginLeft: 'auto', padding: '4px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{r.stripe ? 'Manage' : 'Enroll AutoPay'}</button>}
+              : <button onClick={() => showToast(r.stripe ? 'Subscription management isn\'t wired up yet — use the desktop Finance Suite' : 'AutoPay enrollment isn\'t wired up yet — use the desktop Finance Suite', 'warn')} style={{ marginLeft: 'auto', padding: '4px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{r.stripe ? 'Manage' : 'Enroll AutoPay'}</button>}
           </div>
         </div>
       ))}
@@ -540,7 +551,7 @@ function FinBills() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', flex: 1 }}>{b.vendor}</span>
             <span style={{ fontSize: 10, color: b.status === 'overdue' ? 'var(--status-critical)' : 'var(--text-low)' }}>due {b.due}</span>
-            {b.status !== 'paid' && <button onClick={() => showToast(`${b.num} scheduled for payment`, 'ok')} style={{ padding: '4px 10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Pay</button>}
+            {b.status !== 'paid' && <button onClick={() => showToast('Bill payments aren\'t wired up yet — pay from the desktop Finance Suite', 'warn')} style={{ padding: '4px 10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Pay</button>}
           </div>
         </div>
       ))}
@@ -554,7 +565,13 @@ function FinExpenses() {
   const [items, setItems] = React.useState(FIN_EXPENSES);
   const pending = items.filter(e => e.status === 'pending').length;
   const total = items.reduce((s, e) => s + e.amount, 0);
-  const approve = (id) => { setItems(prev => prev.map(e => e.id === id ? { ...e, status: 'approved' } : e)); showToast('Expense approved', 'ok'); };
+  const approve = (id) => {
+    setItems(prev => prev.map(e => e.id === id ? { ...e, status: 'approved' } : e));
+    const e = items.find(x => x.id === id);
+    /* Persist the decision to the shared approvals store (same pattern as the invoice AR reminder). */
+    if (e) approvalStore.set(prev => [{ id: (prev || []).reduce((m, a) => Math.max(m, a.id), 0) + 1, kind: 'EXPENSE', title: `${e.desc} — ${e.who}`, amt: `$${e.amount.toFixed(2)}`, sub: `${e.category} · ${e.date} · approved on mobile`, status: 'approved' }, ...(prev || [])]);
+    showToast('Expense approved — synced to Approvals', 'ok');
+  };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <FinKpis items={[['PENDING', pending, null, pending ? 'var(--status-warn)' : 'var(--status-ok)'], ['MTD TOTAL', `$${total.toFixed(0)}`, null, 'var(--text-high)']]} />
@@ -593,7 +610,7 @@ function FinReports() {
       <MSection title="Run a report">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           {reports.map(([t, d]) => (
-            <button key={t} onClick={() => showToast(`${t} generated`, 'ok')} className="glass" style={{ padding: '11px 12px', borderRadius: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left', border: '1px solid var(--border-subtle)', background: 'var(--glass-bg)' }}>
+            <button key={t} onClick={() => showToast('The report builder isn\'t wired up yet — run reports from the desktop Finance Suite', 'warn')} className="glass" style={{ padding: '11px 12px', borderRadius: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left', border: '1px solid var(--border-subtle)', background: 'var(--glass-bg)' }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{t}</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 2 }}>{d}</div>
             </button>

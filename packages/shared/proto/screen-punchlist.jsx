@@ -63,10 +63,17 @@ function PunchListScreen() {
     punchStore.set(prev => prev.map(p => p.id === it.id ? { ...p, status: next } : p));
     showToast(`${it.id} → ${PUNCH_STATUS[next].label}`, next === 'open' ? 'warn' : 'ok');
   };
+  // Walkthrough context comes from the punch items themselves (no separate
+  // project selector on this screen) — never invent a customer/site/due date.
+  const ctxCustomer = [...new Set(items.map(i => i.customer).filter(Boolean))];
+  const ctxSite = [...new Set(items.map(i => i.site).filter(Boolean))];
+  const headerTitle = ctxCustomer.length === 1 ? `${ctxCustomer[0]} — Walkthrough` : 'Walkthrough';
+  const headerSub = ctxSite.length === 1 ? ctxSite[0] : `${items.length} item${items.length === 1 ? '' : 's'} on the board`;
+
   const createItem = () => {
     if (!draftTitle || !draft) return;
     const id = 'PL-' + String(items.length + 1).padStart(2, '0');
-    punchStore.set(prev => [...prev, { id, customer: 'Metro Bank Corp', site: '425 Market St', title: draftTitle, detail: '', pin: draft, status: 'open', assignee: draftTech, due: 'Jun 16', photoId: null, priority: 'medium' }]);
+    punchStore.set(prev => [...prev, { id, customer: ctxCustomer.length === 1 ? ctxCustomer[0] : '', site: ctxSite.length === 1 ? ctxSite[0] : '', title: draftTitle, detail: '', pin: draft, status: 'open', assignee: draftTech, due: '', photoId: null, priority: 'medium' }]);
     setDraft(null); setDraftTitle(''); setAddMode(false); setSelected(id);
     showToast(`${id} created — assigned to ${PUNCH_TECHS[draftTech].name}`, 'ok');
   };
@@ -98,8 +105,8 @@ function PunchListScreen() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-high)' }}>Metro Bank Corp — Install Walkthrough</div>
-          <div style={{ fontSize: 11, color: 'var(--text-low)' }}>425 Market St · WO-2847 · punch created Jun 11</div>
+          <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-high)' }}>{headerTitle}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{headerSub}</div>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ textAlign: 'right' }}>

@@ -46,19 +46,25 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { return json(400, { ok: false, error: "Invalid JSON" }); }
 
   // ── Authorization matrix ──
-  // Cron + office roles (Admin/Staff/Manager): any send.
-  // Everyone else (Technician/Sales/Client): ONLY the fixed office-alert
+  // Cron + office roles (Admin/Staff/Manager/Sales): any send.
+  // Everyone else (Technician/Client): ONLY the fixed office-alert
   // templates (timesheet-submitted, support-ticket), and the recipients are
   // forced server-side — a field or customer login must never become an open
   // relay from the company's no-reply address.
-  const officeSender = isCron || ["Admin", "Staff", "Manager"].includes(callerRole ?? "");
+  const officeList = () =>
+    (Deno.env.get("TIME_ALERT_EMAILS") ?? "daniel@shieldtechsolutions.com,aaron@shieldtechsolutions.com")
+      .split(",").map((s) => s.trim()).filter(Boolean);
+  const officeSender = isCron || ["Admin", "Staff", "Manager", "Sales"].includes(callerRole ?? "");
   if (!officeSender) {
     if (body.template !== "timesheet-submitted" && body.template !== "support-ticket") {
       return json(403, { ok: false, error: "This account can only send office notifications" });
     }
-    body.to = (Deno.env.get("TIME_ALERT_EMAILS") ?? "daniel@shieldtechsolutions.com,aaron@shieldtechsolutions.com")
-      .split(",").map((s) => s.trim()).filter(Boolean);
+    body.to = officeList();
     body.html = undefined; body.text = undefined; body.subject = undefined;
+  } else if (!body.to || body.to === "office") {
+    // 'office' (or a missing `to`) means the internal alert list — never
+    // forward the literal string to Resend, which fails the whole send.
+    body.to = officeList();
   }
 
   // Named design-system templates render server-side so clients never build

@@ -4,6 +4,13 @@
 function PortalSettingsScreen() {
   const [section, setSection] = React.useState((window.__qboParams && window.__qboParams.section) || 'users');
   const [toast, setToast] = React.useState(null);
+  const me = window.__shieldUser || {};
+  /* Real QuickBooks connection light (qbo-sync status endpoint) */
+  const [qboConn, setQboConn] = React.useState(null);
+  React.useEffect(() => {
+    const q = window.__shieldQBO;
+    if (q && q.qboStatus) q.qboStatus().then(r => setQboConn(!!(r && r.connected))); else setQboConn(false);
+  }, []);
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 3000); };
   React.useEffect(() => {
     const h = (e) => { if (e.detail.screen === 'portal-settings' && e.detail.params.section) setSection(e.detail.params.section); };
@@ -22,18 +29,16 @@ function PortalSettingsScreen() {
     { name: 'Contract ID', on: 'Invoices, Statements', type: 'Text', visible: 'Print only' },
     { name: 'Tech crew', on: 'Expenses, Time', type: 'Dropdown', visible: 'Internal' },
   ];
-  const issues = [
-    { id: 'RES-114', title: 'Duplicate customer records after QBO import (Bayview / Bayview Medical)', sev: 'warn', status: 'Open — merge suggested', date: 'Jul 3' },
-    { id: 'RES-113', title: 'Stripe payout variance $12.40 vs bank feed (fee rounding)', sev: 'warn', status: 'Investigating', date: 'Jul 1' },
-    { id: 'RES-110', title: 'Google Workspace token revoked', sev: 'critical', status: 'Action required', date: 'Jul 4' },
-    { id: 'RES-108', title: 'COA duplicate: "Vehicle Fuel" vs "Fuel — Vehicles"', sev: 'ok', status: 'Resolved — merged Jun 28', date: 'Jun 28' },
-  ];
+  // No automated issue detection runs yet — the Resolution Center starts empty.
+  const issues = [];
   const updates = [
     { d: 'Jul 5, 2026', t: 'QuickBooks Finance Suite merge complete', b: 'All 153 scanned QBO screens now route to canonical ShieldTech destinations. See the QBO Map in the Finance Suite.' },
     { d: 'Jun 28, 2026', t: 'AI review gates', b: 'Co-pilot suggestions (reminders, bank matches) now require explicit approval with cited source rows before anything sends or posts.' },
     { d: 'Jun 20, 2026', t: 'Sales tax & lending', b: 'New Sales Tax workspace (returns, nexus, categories) and Lending surface (loans, LOC, capital offers).' },
   ];
-  const confirmSensitive = (title, body, ok) => shieldModal({ kind: 'confirm', title, message: body + ' This change is logged to the audit trail and takes effect immediately.', confirmLabel: 'Apply change', onConfirm: () => showToast(ok) });
+  /* Honest: these settings controls aren't backed by a settings service yet,
+     so the modal says so and confirming changes nothing. */
+  const confirmSensitive = (title, body, ok) => shieldModal({ kind: 'confirm', title, message: body + " Note: this control isn't wired to a backend yet — confirming won't change anything.", confirmLabel: 'OK', onConfirm: () => showToast("This setting isn't wired up yet — nothing was changed") });
   const row = (k, v, i, n) => (
     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, padding: '9px 0', borderBottom: i < n - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
       <span style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{k}</span><span style={{ fontSize: 11.5, textAlign: 'right' }}>{v}</span>
@@ -43,7 +48,7 @@ function PortalSettingsScreen() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <h2 className="display" style={{ fontSize: 20, fontWeight: 300, marginRight: 'auto' }}>Portal Settings</h2>
-        <span style={{ fontSize: 10.5, color: 'var(--text-mid)', fontFamily: 'var(--font-mono)' }}>Signed in as John Mitchell · Owner</span>
+        <span style={{ fontSize: 10.5, color: 'var(--text-mid)', fontFamily: 'var(--font-mono)' }}>{me.name ? `Signed in as ${me.name}${me.role ? ' · ' + me.role : ''}` : 'Not signed in'}</span>
       </div>
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
         <GlassPanel style={{ width: 190, flexShrink: 0, padding: 8 }}>
@@ -69,7 +74,12 @@ function PortalSettingsScreen() {
           {section === 'account' && (
             <GlassPanel style={{ maxWidth: 620 }}>
               <SectionHeader title="Company Account" icon="settings" />
-              {[['Company', 'ShieldTech Solutions, Inc.'], ['Primary admin', 'John Mitchell — jmitchell@shieldtech.com'], ['Company ID', 'ST-2020-0114'], ['Linked QuickBooks realm', 'QBO ····8812 (connected)'], ['Time zone', 'America/Los_Angeles'], ['Fiscal year start', 'January']].map((r, i, a) => row(r[0], r[1], i, a.length))}
+              {[
+                ['Company', 'ShieldTech Solutions, Inc.'],
+                ['Primary admin', me.name ? `${me.name}${me.email ? ' — ' + me.email : ''}` : '—'],
+                ['Linked QuickBooks', qboConn === null ? 'Checking…' : qboConn ? 'Connected' : 'Not connected — add Intuit credentials to sync'],
+                ['Time zone', Intl.DateTimeFormat().resolvedOptions().timeZone || '—'],
+              ].map((r, i, a) => row(r[0], r[1], i, a.length))}
               <button onClick={() => confirmSensitive('Edit company account?', 'Company identity fields flow onto invoices, statements, and tax filings.', 'Account editor opened')} style={{ marginTop: 12, padding: '6px 16px', background: 'transparent', border: '1px solid var(--brand)', borderRadius: 6, color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Edit account</button>
             </GlassPanel>
           )}
@@ -77,15 +87,12 @@ function PortalSettingsScreen() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 620 }}>
               <GlassPanel>
                 <SectionHeader title="Subscription" icon="dollar" />
-                {[['Plan', 'ShieldTech Platform — Pro (12 seats)'], ['Price', '$489/mo · billed annually'], ['Renewal', 'Mar 1, 2027'], ['Payment method', 'Visa ····8841']].map((r, i, a) => row(r[0], r[1], i, a.length))}
-                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                  <button onClick={() => showToast('Plan comparison opened')} style={{ padding: '6px 16px', background: 'transparent', border: '1px solid var(--brand)', borderRadius: 6, color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Change plan</button>
-                  <button onClick={() => confirmSensitive('Update payment method?', 'The card on file is charged at the next renewal.', 'Payment method editor opened')} style={{ padding: '6px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11.5, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Update card</button>
-                </div>
+                {[['Plan', '—'], ['Price', '—'], ['Renewal', '—'], ['Payment method', '—']].map((r, i, a) => row(r[0], r[1], i, a.length))}
+                <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 12, lineHeight: 1.6 }}>Platform billing isn't connected yet — plan, payment method and invoices will appear here once a billing provider is set up.</div>
               </GlassPanel>
-              <QboTable cols={['Platform invoice', 'Date', 'Amount', 'Status']}
-                rows={[['ST-SUB-2026-03', 'Mar 1, 2026', '$5,868.00', 'Paid'], ['ST-SUB-2025-03', 'Mar 1, 2025', '$5,388.00', 'Paid']].map((r) => ({ cells: [r[0], r[1], r[2], <span style={{ color: 'var(--status-ok)', fontSize: 11, fontWeight: 600 }}>{r[3]}</span>] }))}
-                onRow={() => showToast('Invoice PDF downloaded')} />
+              <GlassPanel style={{ textAlign: 'center', padding: '28px 24px' }}>
+                <div style={{ fontSize: 12.5, color: 'var(--text-mid)' }}>No platform invoices yet.</div>
+              </GlassPanel>
             </div>
           )}
           {section === 'privacy' && (
@@ -114,6 +121,13 @@ function PortalSettingsScreen() {
           )}
           {section === 'resolution' && (
             <GlassPanel style={{ padding: 0 }}>
+              {issues.length === 0 && (
+                <div style={{ padding: '36px 24px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 24, opacity: 0.3, marginBottom: 8 }}>✓</div>
+                  <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>No open data issues</div>
+                  <div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>Sync conflicts and duplicate-record suggestions will surface here once automated checks run.</div>
+                </div>
+              )}
               {issues.map((it, i) => (
                 <div key={it.id} onClick={() => showToast(it.id + ' opened')} className="st-rowcard" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 16px', borderBottom: i < issues.length - 1 ? '1px solid var(--border-subtle)' : 'none', cursor: 'pointer' }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: it.sev === 'critical' ? 'var(--status-critical)' : it.sev === 'warn' ? 'var(--status-warn)' : 'var(--status-ok)' }}></span>
@@ -129,10 +143,9 @@ function PortalSettingsScreen() {
               <SectionHeader title="Desktop App" icon="grid-2" />
               <div style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 14, lineHeight: 1.6 }}>The ShieldTech desktop app keeps the portal one keystroke away, adds global search (⌘K), and stays signed in with your hardware key.</div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => showToast('Download started — ShieldTech-2.4.1.dmg')} style={{ padding: '7px 18px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Download for macOS</button>
-                <button onClick={() => showToast('Download started — ShieldTech-2.4.1.exe')} style={{ padding: '7px 18px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Download for Windows</button>
+                <button onClick={() => window.open('/get-apps.html', '_blank')} style={{ padding: '7px 18px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Open the app install page</button>
               </div>
-              <div style={{ fontSize: 10.5, color: 'var(--text-mid)', marginTop: 12, fontFamily: 'var(--font-mono)' }}>Current version 2.4.1 · your workstation: 2.4.1 (up to date)</div>
+              <div style={{ fontSize: 10.5, color: 'var(--text-mid)', marginTop: 12 }}>The install page covers adding ShieldTech to your desktop and phone (PWA install). Native .dmg/.exe builds aren't published yet.</div>
             </GlassPanel>
           )}
           {section === 'updates' && (
@@ -149,7 +162,7 @@ function PortalSettingsScreen() {
           {section === 'help' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, maxWidth: 680 }}>
               {[
-                { t: 'Knowledge Base', d: 'Guides for every module, including the QuickBooks migration.', act: () => qboGo('knowledge') },
+                { t: 'Knowledge Base', d: 'Guides for every module, including the QuickBooks migration.', act: () => qboGo('documents') },
                 { t: 'QBO Map', d: 'Where did each QuickBooks screen go? Full traceability.', act: () => qboGo('finance', { financeTab: 'qbo-map' }) },
                 { t: 'Contact support', d: 'Live chat 6am–6pm PT · support@shieldtech.com', act: () => showToast('Support chat opened') },
                 { t: 'Resolution Center', d: 'Open data issues and sync conflicts.', act: () => setSection('resolution') },
@@ -247,7 +260,7 @@ function TeamScreenPlus() {
           <div style={{ display: 'flex', gap: 12 }}>
             <StatCard label="NEXT PAY RUN" value={nextPayRun} mono={false} delay={0} />
             <StatCard label="EST. GROSS" value={qboMoney(Math.round(estGross))} delay={60} />
-            <StatCard label="PAYROLL TAX DUE" value={qboMoney(Math.round(estGross * 0.245))} delay={120} />
+            <StatCard label="EST. PAYROLL TAX (ROUGH ~24.5%)" value={estGross > 0 ? qboMoney(Math.round(estGross * 0.245)) : '—'} mono={false} delay={120} />
             <StatCard label="PENDING TIME APPROVALS" value={pendingCount} delay={180} />
           </div>
           <GlassPanel style={{ borderColor: 'rgba(63,169,245,0.3)' }}>
@@ -261,7 +274,7 @@ function TeamScreenPlus() {
           <QboTable cols={['Pay period', 'Type', 'Gross', 'Taxes & withholding', 'Net pay', 'Status']}
             rows={payHistory.map((p) => ({ cells: [p.run, p.type, qboMoney(p.gross), qboMoney(p.taxes), qboMoney(p.net), <QboStatus s={p.status} />] }))}
             onRow={() => showToast('Pay run detail opened')} />
-          <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Wages post to <LinkChip screen="finance" params={{ financeTab: 'ledger' }} label="General Ledger" /> and labor burden flows to <LinkChip screen="costing" label="Job Costing" />. Payroll tax filings tracked under <LinkChip screen="finance" params={{ financeTab: 'reports-center' }} label="Tax Prep" />.</div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Wages post to <LinkChip screen="finance" params={{ financeTab: 'ledger' }} label="General Ledger" /> and labor burden flows to <LinkChip screen="finance" label="Finance" />. Payroll tax filings tracked under <LinkChip screen="finance" params={{ financeTab: 'reports-center' }} label="Tax Prep" />.</div>
         </div>
       )}
       {sub === 'time' && (
@@ -270,7 +283,7 @@ function TeamScreenPlus() {
             rows={timeRows.map((t, i) => ({ cells: [t.tech, t.week, t.reg + 'h', t.ot ? <span style={{ color: 'var(--status-warn)' }}>{t.ot}h</span> : '—', t.jobs, <QboStatus s={t.status} />,
               t.status === 'pending' ? <button onClick={(e) => { e.stopPropagation(); approveWeek(t); }} style={{ padding: '3px 12px', background: 'var(--brand)', border: 'none', borderRadius: 5, color: '#fff', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Approve</button> : ''] }))}
             onRow={(r, i) => showToast(timeRows[i].tech + ' — weekly timesheet opened')} />
-          <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Single time entries and weekly timesheets share this workspace. Approved hours feed <LinkChip screen="employees" params={{ teamTab: 'payroll' }} label="Payroll" /> and <LinkChip screen="costing" label="Job Costing" />. Field entry lives in <LinkChip screen="timesheets" label="Timesheet Approval" />.</div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Single time entries and weekly timesheets share this workspace. Approved hours feed <LinkChip screen="employees" params={{ teamTab: 'payroll' }} label="Payroll" /> and <LinkChip screen="finance" label="Finance" />. Field entry lives in <LinkChip screen="timesheets" label="Timesheet Approval" />.</div>
         </div>
       )}
       {sub === 'contractors' && (
@@ -282,9 +295,9 @@ function TeamScreenPlus() {
               sections: [{ label: 'Compliance', rows: [{ k: 'W-9', v: contractors[i].w9, mono: false }, { k: 'Insurance', v: contractors[i].ins, mono: false }, { k: 'YTD paid', v: qboMoney(contractors[i].ytd) }] }],
               actions: [
                 { label: 'Open vendor / 1099', onClick: () => qboGo('finance', { financeTab: 'ap' }), close: true },
-                { label: 'View in Sub-Contractors', primary: true, onClick: () => qboGo('subcontractors'), close: true },
+                { label: 'View in Team', primary: true, onClick: () => qboGo('employees'), close: true },
               ] })} />
-          <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>One identity per contractor — payments live in <LinkChip screen="finance" params={{ financeTab: 'ap' }} label="Bills & AP / 1099s" />, field assignments in <LinkChip screen="subcontractors" label="Sub-Contractors" />.</div>
+          <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>One identity per contractor — payments live in <LinkChip screen="finance" params={{ financeTab: 'ap' }} label="Bills & AP / 1099s" />, field assignments in <LinkChip screen="employees" label="Team" />.</div>
         </div>
       )}
       {toast && <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, padding: '10px 24px', borderRadius: 8, background: 'var(--card)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 13, fontWeight: 500 }}>{toast}</div>}

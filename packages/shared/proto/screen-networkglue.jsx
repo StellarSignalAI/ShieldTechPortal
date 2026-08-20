@@ -63,7 +63,7 @@ function NetworkDiscoveryView({ showToast }) {
     setScanning(true); setProgress(0);
     const iv = setInterval(() => {
       setProgress(p => {
-        if (p >= 100) { clearInterval(iv); setScanning(false); showToast && showToast('Discovery complete — 12 devices, 4 new'); return 100; }
+        if (p >= 100) { clearInterval(iv); setScanning(false); showToast && showToast('No collector connected — install a network collector to discover devices'); return 100; }
         return p + 4;
       });
     }, 60);
@@ -364,7 +364,7 @@ function BitLockerView({ showToast }) {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
       <div style={{ display:'flex', gap:10 }}>
-        {[['ESCROWED KEYS',esc,'var(--status-ok)'],['PENDING / MISSING',miss, miss?'var(--status-warn)':'var(--text-low)'],['AUTO-LINKED','100%','var(--brand)']].map(([l,v,c]) => (
+        {[['ESCROWED KEYS',esc,'var(--status-ok)'],['PENDING / MISSING',miss, miss?'var(--status-warn)':'var(--text-low)']].map(([l,v,c]) => (
           <GlassPanel key={l} style={{ flex:1, padding:'12px 14px' }}>
             <div className="mono" style={{ fontSize:22, fontWeight:600, color:c, lineHeight:1.1 }}>{v}</div>
             <div style={{ fontSize:9, color:'var(--text-low)', textTransform:'uppercase', letterSpacing:'0.06em', marginTop:2 }}>{l}</div>
@@ -419,7 +419,7 @@ function PasswordRotationPanel({ showToast }) {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
       <div style={{ display:'flex', gap:10 }}>
-        {[['AUTO-ROTATED', NG_ROTATION.filter(r=>r.status==='scheduled').length,'var(--status-ok)'],['DUE / OVERDUE', due, due?'var(--status-warn)':'var(--text-low)'],['ON DEMAND', NG_ROTATION.filter(r=>r.status==='manual').length,'var(--text-mid)'],['HOURS SAVED / YR','160','var(--brand)']].map(([l,v,c]) => (
+        {[['AUTO-ROTATED', NG_ROTATION.filter(r=>r.status==='scheduled').length,'var(--status-ok)'],['DUE / OVERDUE', due, due?'var(--status-warn)':'var(--text-low)'],['ON DEMAND', NG_ROTATION.filter(r=>r.status==='manual').length,'var(--text-mid)']].map(([l,v,c]) => (
           <GlassPanel key={l} style={{ flex:1, padding:'12px 14px' }}>
             <div className="mono" style={{ fontSize:22, fontWeight:600, color:c, lineHeight:1.1 }}>{v}</div>
             <div style={{ fontSize:9, color:'var(--text-low)', textTransform:'uppercase', letterSpacing:'0.06em', marginTop:2 }}>{l}</div>

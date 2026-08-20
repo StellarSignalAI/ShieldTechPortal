@@ -543,13 +543,15 @@ function SalesNewQuoteSheet({ onClose }) {
       customer_email: f.email || null, status: 'pending',
     });
     if (doc && f.title) estimateStore.set(list => (list || []).map(d => d.qbo_id === doc.qbo_id ? { ...d, title: f.title, owner: salesMe() } : d));
-    let sentMsg = '';
+    let sentMsg = '', sendErr = null;
     if (f.send && f.email && f.email.includes('@') && window.__shieldAcceptance) {
       const r = await window.__shieldAcceptance.send({ estimateRef: doc.doc_number, estimateQboId: null, customerName: f.customer.trim(), customerEmail: f.email.trim(), amount: total });
-      sentMsg = r && r.ok && r.data.emailed ? ` and emailed to ${f.email.trim()} with a live accept link` : '';
+      if (r && r.ok && r.data.emailed) sentMsg = ` and emailed to ${f.email.trim()} with a live accept link`;
+      else sendErr = (r && (r.error || (r.data && r.data.emailError))) || 'unknown error';
     }
     addActivity({ type: 'email', note: `Quote ${doc.doc_number} created for ${f.customer.trim()} ($${total.toLocaleString()})${sentMsg}`, customer: f.customer.trim(), status: 'done' });
-    showToast(`Quote ${doc.doc_number} created${sentMsg}`, 'ok');
+    if (sendErr) showToast(`Quote ${doc.doc_number} created, but the accept link email failed: ${sendErr}`, 'warn');
+    else showToast(`Quote ${doc.doc_number} created${sentMsg}`, 'ok');
     onClose();
   };
   return (

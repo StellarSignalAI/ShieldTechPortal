@@ -4,7 +4,10 @@ function TechPunchView({ setTab }) {
   const [items] = useShieldStore(punchStore);
   const [photos] = useShieldStore(photoStore);
   const [lightbox, setLightbox] = React.useState(null);
-  const meId = (window.__shieldUser && window.__shieldUser.initials) || null;
+  // Same initials rule as photo capture (profile initials, else derived from
+  // name/email) so assignment filters and photo ownership agree.
+  const meU = window.__shieldUser || {};
+  const meId = meU.initials || ((meU.name || meU.email) && typeof techInitialsOf === 'function' ? techInitialsOf(meU.name, meU.email) : null);
   const mine = items.filter(i => i.assignee === meId);
   const open = mine.filter(i => i.status === 'open');
 

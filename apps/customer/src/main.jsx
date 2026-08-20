@@ -130,7 +130,7 @@ function CustomerInvoicesScreen() {
   }, []);
   const { loading, error, invoices } = state;
 
-  const payBase = (window.__shieldSupabaseUrl || (import.meta.env.VITE_SUPABASE_URL || '')).replace(/\/+$/, '');
+  const payBase = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
   const payUrl = (inv) => `${payBase}/functions/v1/invoice-pay?token=${inv.token}`;
   const openInvoices = invoices.filter(i => i.status !== 'paid');
   const outstanding = openInvoices.reduce((s, i) => s + (Number(i.amount) || 0), 0);

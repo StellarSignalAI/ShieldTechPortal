@@ -79,12 +79,10 @@ function FinanceBankFeedPlus(props) {
 /* ════ Reports Plus — cash flow planner, budgets, tax prep ════ */
 function FinanceReportsPlus(props) {
   const [sub, setSub] = React.useState('center');
-  const weeks = [
-    { w: 'Jul 6–12', inflow: 48200, outflow: 39400 }, { w: 'Jul 13–19', inflow: 31800, outflow: 44100 },
-    { w: 'Jul 20–26', inflow: 55600, outflow: 38200 }, { w: 'Jul 27–Aug 2', inflow: 29400, outflow: 51800 },
-    { w: 'Aug 3–9', inflow: 46100, outflow: 37900 }, { w: 'Aug 10–16', inflow: 38800, outflow: 40600 },
-  ];
-  let running = 482600;
+  /* No projected-cash data source yet — the planner needs bank balances plus
+     AP/AR schedules. Nothing is fabricated. */
+  const weeks = [];
+  let running = 0;
   const budget = [
     { line: 'Revenue — installations', budget: 220000, actual: 238400 }, { line: 'Revenue — recurring/monitoring', budget: 96000, actual: 94200 },
     { line: 'COGS — materials', budget: 88000, actual: 96800 }, { line: 'COGS — subcontractors', budget: 24000, actual: 19400 },
@@ -103,16 +101,16 @@ function FinanceReportsPlus(props) {
       {sub === 'cashflow' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', gap: 12 }}>
-            <StatCard label="CASH TODAY" value="$482,600" delay={0} />
-            <StatCard label="6-WK NET CHANGE" value="-$2,100" delay={60} />
-            <StatCard label="LOWEST PROJECTED" value="$441,100" delay={120} />
-            <StatCard label="RISK WEEK" value="Jul 27" mono={false} delay={180} />
+            <StatCard label="CASH TODAY" value="—" mono={false} delay={0} />
+            <StatCard label="6-WK NET CHANGE" value="—" mono={false} delay={60} />
+            <StatCard label="LOWEST PROJECTED" value="—" mono={false} delay={120} />
+            <StatCard label="RISK WEEK" value="—" mono={false} delay={180} />
           </div>
-          <QboTable cols={['Week', 'Projected in', 'Projected out', 'Net', 'Running balance']}
-            rows={weeks.map((w) => {
-              const net = w.inflow - w.outflow; running += net;
-              return { cells: [w.w, qboMoney(w.inflow), qboMoney(w.outflow), <span style={{ color: net >= 0 ? 'var(--status-ok)' : 'var(--status-critical)', fontWeight: 600 }}>{(net >= 0 ? '+' : '−') + qboMoney(Math.abs(net))}</span>, qboMoney(running)] };
-            })} />
+          <GlassPanel style={{ textAlign: 'center', padding: '36px 24px' }}>
+            <div style={{ fontSize: 26, opacity: 0.3, marginBottom: 8 }}>◔</div>
+            <div style={{ fontSize: 13.5, fontWeight: 500, marginBottom: 4 }}>Cash flow planner isn't connected yet</div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.6 }}>Projections need a bank balance plus open invoices, recurring revenue and bills. Connect the bank feed and QuickBooks and this table fills in with real weekly projections.</div>
+          </GlassPanel>
           <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Inflows from open <LinkChip screen="finance" params={{ financeTab: 'invoices' }} label="Invoices" /> + <LinkChip screen="finance" params={{ financeTab: 'recurring' }} label="Recurring" />; outflows from <LinkChip screen="finance" params={{ financeTab: 'ap' }} label="Bills & AP" /> + payroll schedule.</div>
         </div>
       )}
@@ -285,37 +283,51 @@ function MarketingScreen() {
   );
 }
 
-/* ════ Documents / Attachments ════ */
+/* ════ Documents / Attachments — REAL (window.__shieldStorage) ════
+   Lists the shared attachments registry; Upload puts the file in Supabase
+   Storage and Download opens the real signed URL. No invented files. */
 function DocumentsScreen() {
-  const [filter, setFilter] = React.useState('all');
+  const [docs, setDocs] = React.useState(null);
   const [toast, setToast] = React.useState(null);
+  const fileRef = React.useRef(null);
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 3000); };
-  const docs = [
-    { name: 'INV-2054-signed.pdf', type: 'PDF', size: '184 KB', owner: 'S. Chen', date: 'Jul 2', scan: 'Clean', link: { screen: 'finance', params: { financeTab: 'invoices' }, label: 'INV-2054' }, cat: 'invoice' },
-    { name: 'receipt-adi-318.40.jpg', type: 'Image', size: '2.1 MB', owner: 'M. Reyes', date: 'Jun 29', scan: 'Clean', link: { screen: 'finance', params: { financeTab: 'expenses' }, label: 'Expense' }, cat: 'receipt' },
-    { name: 'W9-voltbros-2026.pdf', type: 'PDF', size: '96 KB', owner: 'J. Mitchell', date: 'Jun 24', scan: 'Clean', link: { screen: 'finance', params: { financeTab: 'ap' }, label: 'Vendor' }, cat: 'vendor' },
-    { name: 'EST-301-scope-photos.zip', type: 'Archive', size: '18 MB', owner: 'J. Liu', date: 'Jun 20', scan: 'Scanning…', link: { screen: 'finance', params: { financeTab: 'estimates' }, label: 'EST-301' }, cat: 'estimate' },
-    { name: 'sunrise-contract-exec.pdf', type: 'PDF', size: '412 KB', owner: 'S. Chen', date: 'Jun 18', scan: 'Clean', link: { screen: 'contracts', label: 'Contract' }, cat: 'customer' },
-    { name: 'qbo-desktop-migration.qbb', type: 'Backup', size: '212 MB', owner: 'System', date: 'Jun 12', scan: 'Clean', link: { screen: 'integrations', label: 'Import' }, cat: 'import' },
-    { name: 'bayview-coi-2026.pdf', type: 'PDF', size: '128 KB', owner: 'J. Mitchell', date: 'Jun 8', scan: 'Clean', link: { screen: 'customers-list', label: 'Customer' }, cat: 'customer' },
-  ];
-  const cats = [{ id: 'all', label: 'All' }, { id: 'invoice', label: 'Invoices' }, { id: 'receipt', label: 'Receipts' }, { id: 'estimate', label: 'Estimates' }, { id: 'vendor', label: 'Vendors' }, { id: 'customer', label: 'Customers' }, { id: 'import', label: 'Imports' }];
-  const shown = docs.filter((d) => filter === 'all' || d.cat === filter);
+  const load = React.useCallback(() => {
+    const s = window.__shieldStorage;
+    if (!s) { setDocs([]); return; }
+    s.listAttachments().then(setDocs).catch(() => setDocs([]));
+  }, []);
+  React.useEffect(() => { load(); }, [load]);
+  const upload = async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    if (!window.__shieldStorage) { showToast('Storage backend not configured — uploads unavailable'); return; }
+    showToast('Uploading ' + f.name + '…');
+    const r = await window.__shieldStorage.uploadFile(f, { folder: 'documents' });
+    if (r.ok) { showToast('Uploaded ' + f.name); load(); } else showToast(r.error || 'Upload failed');
+    e.target.value = '';
+  };
+  const fmtSize = (b) => b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round((b || 0) / 1024)) + ' KB';
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <h2 className="display" style={{ fontSize: 20, fontWeight: 300, marginRight: 'auto' }}>Documents & Attachments</h2>
-        <QboSyncBadge state="synced" time="8 min ago" />
-        <button onClick={() => showToast('Upload dialog opened — files link to a source record')} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>↑ Upload</button>
+        <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>↑ Upload</button>
+        <input ref={fileRef} type="file" onChange={upload} style={{ display: 'none' }} />
       </div>
-      <QboSubTabs tabs={cats} val={filter} set={setFilter} />
-      <QboTable cols={['File', 'Type', 'Size', 'Owner', 'Added', 'Scan', 'Linked record']}
-        rows={shown.map((d) => ({ cells: [d.name, d.type, d.size, d.owner, d.date,
-          <span style={{ fontSize: 10.5, color: d.scan === 'Clean' ? 'var(--status-ok)' : 'var(--status-warn)', fontWeight: 600 }}>{d.scan}</span>,
-          <LinkChip screen={d.link.screen} params={d.link.params} label={d.link.label} />] }))}
-        onRow={(r, i) => shieldModal({ kind: 'detail', title: shown[i].name, subtitle: `${shown[i].type} · ${shown[i].size} · uploaded by ${shown[i].owner}`,
-          sections: [{ label: 'File', rows: [{ k: 'Added', v: shown[i].date, mono: false }, { k: 'Virus scan', v: shown[i].scan, mono: false }, { k: 'Permissions', v: 'Finance · Admin roles', mono: false }] }],
-          actions: [{ label: 'Download', onClick: () => showToast('Downloading ' + shown[i].name), close: true }, { label: 'Open linked record', primary: true, onClick: () => qboGo(shown[i].link.screen, shown[i].link.params), close: true }] })} />
+      {docs === null && <GlassPanel style={{ padding: '28px 24px', textAlign: 'center', fontSize: 12, color: 'var(--text-mid)' }}>Loading documents…</GlassPanel>}
+      {docs !== null && docs.length === 0 && (
+        <GlassPanel style={{ textAlign: 'center', padding: '48px 24px' }}>
+          <div style={{ fontSize: 28, opacity: 0.3, marginBottom: 10 }}>⊟</div>
+          <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>No documents yet</div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{window.__shieldStorage ? 'Files you upload land in shared storage and appear here for the whole team.' : 'Connect the storage backend (Supabase) to upload and share files.'}</div>
+        </GlassPanel>
+      )}
+      {docs !== null && docs.length > 0 && (
+        <QboTable cols={['File', 'Type', 'Size', 'Added', '']}
+          rows={docs.map((d) => ({ cells: [d.name, d.mime || '—', fmtSize(d.size), d.created_at ? new Date(d.created_at).toLocaleDateString() : '—',
+            d.url ? <button onClick={(e) => { e.stopPropagation(); window.__shieldStorage.openFile(d.url); }} style={{ padding: '3px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 10.5, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Open</button> : '—'] }))}
+          onRow={(r, i) => { const d = docs[i]; if (d.url) window.__shieldStorage.openFile(d.url); }} />
+      )}
       {toast && <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, padding: '10px 24px', borderRadius: 8, background: 'var(--card)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 13, fontWeight: 500 }}>{toast}</div>}
     </div>
   );

@@ -1,4 +1,4 @@
-/* ShieldTech Mobile — native screens I: Home, Mission Control, Dispatch, Finance, Customers */
+/* ShieldTech Mobile — native screens I: Home, Dispatch, Customers */
 const MN_TECH = { MR: '#3FA9F5', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
 const firstName = () => {
   const n = (window.__shieldUser && window.__shieldUser.name) || '';
@@ -110,59 +110,6 @@ function MHomeView({ onNav }) {
   );
 }
 
-function MMissionView({ onNav }) {
-  const kpis = [
-    { label: 'REVENUE TODAY', value: '$16,955', spark: [4, 6, 5, 8, 7, 9, 11], c: 'var(--brand)' },
-    { label: 'OPEN TICKETS', value: '13', spark: [9, 11, 8, 12, 10, 8, 7], c: 'var(--status-warn)' },
-    { label: 'TECHS ACTIVE', value: '11 / 15', spark: [6, 8, 9, 10, 9, 11, 11], c: 'var(--status-ok)' },
-    { label: 'JOBS TODAY', value: '15', spark: [10, 12, 11, 13, 12, 14, 15], c: 'var(--brand)' },
-  ];
-  const R = 30, C = 2 * Math.PI * R;
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
-        {kpis.map((k, i) => (
-          <div key={k.label} className="glass" style={{ padding: '12px 14px', borderRadius: 12, animation: `fade-up 0.3s ease ${i * 60}ms both` }}>
-            <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.09em', color: 'var(--text-low)', marginBottom: 3 }}>{k.label}</div>
-            <div className="mono" style={{ fontSize: 19, fontWeight: 600, color: 'var(--text-high)', marginBottom: 6 }}>{k.value}</div>
-            <MSpark data={k.spark} color={k.c} w={110} h={20} />
-          </div>
-        ))}
-      </div>
-      <div className="glass" style={{ padding: 16, borderRadius: 12, display: 'flex', gap: 16, alignItems: 'center' }}>
-        <div style={{ position: 'relative', width: 72, height: 72, flexShrink: 0 }}>
-          <svg width="72" height="72" style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx="36" cy="36" r={R} fill="none" stroke="rgba(63,169,245,0.1)" strokeWidth="6" />
-            <circle cx="36" cy="36" r={R} fill="none" stroke="var(--status-ok)" strokeWidth="6" strokeLinecap="round" strokeDasharray={C} strokeDashoffset={C * (1 - 0.81)} />
-          </svg>
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span className="mono" style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-high)' }}>81</span>
-          </div>
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)', marginBottom: 2 }}>SLA Compliance</div>
-          <div style={{ fontSize: 10, color: 'var(--text-low)' }}>48 on time · 2 breached this month</div>
-          <button onClick={() => onNav('sla')} style={{ marginTop: 7, padding: '5px 12px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>SLA board ›</button>
-        </div>
-      </div>
-      <MSection title="Monthly performance">
-        {[['Revenue vs last month', '$284,600', '↑ 8.2%', 'var(--status-ok)'], ['Gross margin', '28.4%', 'target 25%', 'var(--status-ok)'], ['Win rate', '62%', 'target 55%', 'var(--status-ok)'], ['AR aging >30d', '$42,800', 'target <$30K', 'var(--status-warn)'], ['Avg ticket close', '4.2h', 'target <6h', 'var(--status-ok)']].map(([k, v, note, c]) => (
-          <div key={k} style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '8px 2px', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
-            <span style={{ fontSize: 12, color: 'var(--text-mid)', flex: 1 }}>{k}</span>
-            <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{v}</span>
-            <span style={{ fontSize: 9, color: c, width: 64, textAlign: 'right' }}>{note}</span>
-          </div>
-        ))}
-      </MSection>
-      <MSection title="Live alerts" action="Incidents" onAction={() => onNav('incidents')}>
-        <MRow icon="warning-tri" iconColor="var(--status-critical)" title="Acme Dental — NVR offline" sub="23 min · Mike en route" onClick={() => onNav('incidents')} />
-        <MRow icon="anomaly" iconColor="var(--status-warn)" title="Metro Bank — Cam 7 signal degraded" sub="Intermittent since 9:40 AM" onClick={() => onNav('cameras')} />
-        <MRow icon="poe" iconColor="var(--status-warn)" title="Westfield — UPS on battery" sub="Utility event · 64 min runtime left" onClick={() => onNav('cameras')} />
-      </MSection>
-    </div>
-  );
-}
-
 function MDispatchView({ onNav }) {
   /* Blank canvas: the SAME live technicians as the Fleet map and the desktop
      dispatch board. Techs appear the moment they sign in and share GPS. */
@@ -232,88 +179,6 @@ function MDispatchView({ onNav }) {
 }
 const mDispBtn = { padding: '6px 13px', background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-mid)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
 
-function MFinanceView({ onNav }) {
-  const [seg, setSeg] = React.useState('Overview');
-  const invoices = [
-    { num: 'INV-2871', cust: 'Metro Bank Corp', amt: 22100, status: 'paid', due: 'Paid Jun 10' },
-    { num: 'INV-2868', cust: 'Westfield Mall', amt: 9200, status: 'pending', due: 'Due Jun 18' },
-    { num: 'INV-2865', cust: 'Marina District Dental', amt: 2400, status: 'pending', due: 'Due Jun 15' },
-    { num: 'INV-2860', cust: 'Harbor View Condos', amt: 1850, status: 'overdue', due: '12 days late' },
-    { num: 'INV-2858', cust: 'Golden Gate Logistics', amt: 14600, status: 'pending', due: 'Due Jun 22' },
-  ];
-  const stC = { paid: 'var(--status-ok)', pending: 'var(--status-warn)', overdue: 'var(--status-critical)' };
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <MSegment options={['Overview', 'Invoices', 'AR Aging']} value={seg} onChange={setSeg} />
-      {seg === 'Overview' && (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
-            <MStat label="CASH POSITION" value="$482.6K" sub="↑ +$38K this week" accent="var(--status-ok)" />
-            <MStat label="REVENUE (MTD)" value="$284.6K" sub="↑ +8.2% vs prior" delay={60} />
-            <MStat label="MRR" value="$171.2K" sub="↑ +3.8% MoM" delay={120} />
-            <MStat label="GROSS MARGIN" value="28.4%" sub="target 25%" delay={180} />
-          </div>
-          <MSection title="90-day cash forecast">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-              {[['30 DAYS', '+$62K'], ['60 DAYS', '+$94K'], ['90 DAYS', '+$125K']].map(([k, v], i) => (
-                <MStat key={k} label={k} value={v} accent="var(--status-ok)" delay={i * 60} />
-              ))}
-            </div>
-            <div className="glass" style={{ marginTop: 8, padding: '10px 13px', borderRadius: 11, display: 'flex', gap: 10, alignItems: 'center' }}>
-              <Icon name="hermes" size={14} color="var(--brand)" />
-              <span style={{ fontSize: 11, color: 'var(--text-mid)', flex: 1 }}>Cash position strong. $19,450 overdue AR is the main risk — draft reminders?</span>
-              <button onClick={() => showToast('Collection reminders drafted for 2 accounts', 'ok')} style={{ ...mDispBtn, color: 'var(--brand)', flexShrink: 0 }}>Draft</button>
-            </div>
-          </MSection>
-          <MSection title="Payables">
-            {[['Due this week', '$8,420', 'var(--status-warn)'], ['Due this month', '$24,600', 'var(--text-high)'], ['Overdue', '$3,200', 'var(--status-critical)']].map(([k, v, c]) => (
-              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 2px', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
-                <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{k}</span>
-                <span className="mono" style={{ fontSize: 13, fontWeight: 600, color: c }}>{v}</span>
-              </div>
-            ))}
-          </MSection>
-        </>
-      )}
-      {seg === 'Invoices' && (
-        <>
-          {invoices.map(inv => (
-            <div key={inv.num} className="glass" style={{ padding: '12px 13px', borderRadius: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
-                    <span className="mono" style={{ fontSize: 11, color: 'var(--brand)' }}>{inv.num}</span>
-                    <MBadge color={stC[inv.status]}>{inv.status}</MBadge>
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-high)', marginTop: 3 }}>{inv.cust}</div>
-                  <div style={{ fontSize: 9, color: inv.status === 'overdue' ? 'var(--status-critical)' : 'var(--text-low)' }}>{inv.due}</div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div className="mono" style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-high)' }}>${inv.amt.toLocaleString()}</div>
-                  {inv.status !== 'paid' && <button onClick={() => showToast(`Reminder sent for ${inv.num}`, 'ok')} style={{ ...mDispBtn, marginTop: 5, color: 'var(--brand)' }}>Remind</button>}
-                </div>
-              </div>
-            </div>
-          ))}
-        </>
-      )}
-      {seg === 'AR Aging' && (
-        <MSection title="Receivables by age — $175,950 total">
-          {[['Current', 134400, 'var(--status-ok)'], ['1–30 days', 22100, '#FBBF24'], ['31–60 days', 14300, '#F43F5E'], ['60+ days', 5150, '#c084fc']].map(([k, v, c]) => (
-            <div key={k} style={{ marginBottom: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{k}</span>
-                <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>${(v / 1000).toFixed(1)}K</span>
-              </div>
-              <MBar pct={(v / 134400) * 100} color={c} />
-            </div>
-          ))}
-        </MSection>
-      )}
-    </div>
-  );
-}
-
 function MCustomersView({ onNav }) {
   const [q, setQ] = React.useState('');
   const [allCusts] = useShieldStore(customerStore);
@@ -351,4 +216,4 @@ function MCustomersView({ onNav }) {
   );
 }
 
-Object.assign(window, { MHomeView, MMissionView, MDispatchView, MFinanceView, MCustomersView });
+Object.assign(window, { MHomeView, MDispatchView, MCustomersView });

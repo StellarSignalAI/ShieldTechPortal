@@ -1035,6 +1035,11 @@ const assetNetStore = createShieldStore('assetnets', []); // networks [{id, cust
    tech markups made in the field appear in the portal project drawer live. */
 const drawingAnnoStore = createShieldStore('drawanno', {});
 
+/* ── Install-checklist ticks ──
+   Keyed by job/WO id → { [item label]: true }. Synced store so ticks survive
+   navigation on the phone and the office sees progress. */
+const woCheckStore = createShieldStore('wocheck', {});
+
 /* Scope of work for a project: the dedicated field, falling back to the
    "Scope: …" line older estimate-created projects embedded in notes. */
 function projectScope(p) {
@@ -1069,6 +1074,6 @@ Object.assign(window, {
   surveyStore, surveyTotals, SURVEY_RATE, SURVEY_BOM_SEED, studioInboxStore,
   showToast, navTo, genId, fmtDuration, fmtSeconds, savedScreen, saveScreen,
   techExpenseStore, rejectTimesheetEntry,
-  drawingAnnoStore, projectScope,
+  drawingAnnoStore, woCheckStore, projectScope,
   assetPwStore, assetDocStore, assetNetStore
 });

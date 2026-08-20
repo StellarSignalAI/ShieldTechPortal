@@ -1,8 +1,8 @@
 /* Design Studio V2 — D-Tools Killer: Drawing Builder, Brand Catalog, Customer Select, BOM */
 
 function StudioScreen({ onExportToProposal }) {
-  const [customer, setCustomer] = React.useState('Metro Bank Corp');
-  const [projectName, setProjectName] = React.useState('Lobby Camera Expansion');
+  const [customer, setCustomer] = React.useState('');
+  const [projectName, setProjectName] = React.useState('');
   const [activeTab, setActiveTab] = React.useState('plan');
   const [connections, setConnections] = React.useState([
   { id: 'c1', from: 0, to: 7, cable: 'Cat6A', color: 'var(--brand)', length: 60 },
@@ -18,10 +18,7 @@ function StudioScreen({ onExportToProposal }) {
   const [selectedDevice, setSelectedDevice] = React.useState(null);
   const [deviceDetailOpen, setDeviceDetailOpen] = React.useState(null);
   const [drawingBuilderOpen, setDrawingBuilderOpen] = React.useState(false);
-  const [savedDrawings, setSavedDrawings] = React.useState([
-  { id: 'd1', name: 'Metro Bank — 1st Floor', date: 'Jun 3, 2026', customer: 'Metro Bank Corp' },
-  { id: 'd2', name: 'City Hall — Main Lobby', date: 'May 28, 2026', customer: 'City Hall' }]
-  );
+  const [savedDrawings, setSavedDrawings] = React.useState([]);
   const [ssInbox] = useShieldStore(studioInboxStore);
   const allDrawings = [...ssInbox.map((b) => ({ id: b.id, name: b.name, date: b.date, customer: b.customer, sitescan: true })), ...savedDrawings];
   const [toast, setToast] = React.useState(null);
@@ -263,7 +260,7 @@ function StudioScreen({ onExportToProposal }) {
         {/* Bottom: ShieldTech AI + Draw */}
         <div style={{ padding: '8px 12px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 4 }}>
           <button onClick={() => setDrawingBuilderOpen(true)} style={{ width: '100%', padding: '7px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✏ Open Drawing Builder</button>
-          <button onClick={() => showToast('ShieldTech AI analyzing floor plan...')} style={{ width: '100%', padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          <button onClick={() => showToast("AI floor-plan analysis isn't wired up yet")} style={{ width: '100%', padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
             <span>⟡</span> ShieldTech AI: Auto-Design Layout
           </button>
         </div>
@@ -565,7 +562,19 @@ function StudioScreen({ onExportToProposal }) {
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
             <button onClick={() => exportToProposal()} style={{ flex: 1, padding: '8px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>↗ Export to Proposal</button>
-            <button onClick={() => showToast('BOM exported to PDF')} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>PDF</button>
+            <button onClick={() => {
+              if (!bomList.length) { showToast('Place devices on the plan first — nothing to export'); return; }
+              if (!window.__shieldPdf) { showToast('PDF export unavailable'); return; }
+              window.__shieldPdf.exportDoc({
+                kind: 'proposal', number: projectName || 'Bill of Materials', date: new Date().toLocaleDateString(), customer: customer || '',
+                lineItems: [
+                  ...bomList.map(item => ({ desc: `${item.device.name} (${item.device.sku})`, qty: item.qty, rate: item.device.msrp })),
+                  { desc: `Install + Commission (${placedDevices.length} devices)`, qty: 1, rate: laborEstimate },
+                  { desc: `Cable — ${cableFt} ft interconnect`, qty: 1, rate: cableCost },
+                ],
+                total: grandTotal,
+              });
+            }} style={{ padding: '8px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>PDF</button>
           </div>
         </div>
       </div>
@@ -699,7 +708,7 @@ function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClos
   };
 
   const saveDrawing = () => {
-    const name = drawName || `${customer} — Drawing ${savedDrawings.length + 1}`;
+    const name = drawName || `${customer ? customer + ' — ' : ''}Drawing ${savedDrawings.length + 1}`;
     const id = 'd' + Date.now();
     setSavedDrawings((prev) => [...prev, { id, name, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), customer }]);
     showToast(`"${name}" saved to Design Studio`);

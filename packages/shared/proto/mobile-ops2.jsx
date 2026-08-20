@@ -126,7 +126,7 @@ function MNPSDetail({ id, onClose }) {
           ? <div style={{ padding: '12px 0', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'var(--status-ok)', background: 'rgba(52,211,153,0.08)', borderRadius: 11 }}>✓ Followed up</div>
           : <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={followUp} style={{ flex: 2, padding: '12px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Mark Followed-Up</button>
-              <button onClick={() => showToast('Opening call…', 'ok')} style={{ flex: 1, padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Call</button>
+              <button onClick={() => { if (r.phone) window.location.href = `tel:${r.phone}`; else showToast('No phone number on this response — add one to the customer record to call from here', 'warn'); }} style={{ flex: 1, padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Call</button>
             </div>}
       </div>
     </MSheet>
@@ -258,7 +258,7 @@ function MKBDetail({ id, onClose }) {
             return <div key={i} style={{ color: 'var(--text-mid)' }}>{line}</div>;
           })}
         </div>
-        <button onClick={() => showToast('Sent to your saved articles', 'ok')} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>☆ Save for offline</button>
+        <button onClick={() => showToast('Offline saving isn\'t wired up yet — articles stay available while you\'re online', 'warn')} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>☆ Save for offline</button>
       </div>
     </MSheet>
   );
@@ -318,7 +318,7 @@ function MWarrantyDetail({ id, onClose }) {
             </div>
           ))}
         </div>
-        {a.status !== 'active' && <button onClick={() => { showToast('Renewal quote drafted — synced', 'ok'); onClose(); }} style={{ padding: '13px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Renewal Quote</button>}
+        {a.status !== 'active' && <button onClick={() => showToast('Renewal quotes aren\'t wired up yet — draft one from Proposals', 'warn')} style={{ padding: '13px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Renewal Quote</button>}
       </div>
     </MSheet>
   );

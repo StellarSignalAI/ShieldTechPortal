@@ -83,6 +83,7 @@ function TimeViewV2() {
     .filter(e => e.work_date === todayKey || e.status === 'rejected')   // rejected stays visible until fixed
     .map(e => ({
       id: e.id,
+      workDate: e.work_date,
       project: e.job_ref || 'General',
       task: e.notes || '—',
       start: fmtClock(e.start_at),
@@ -96,12 +97,14 @@ function TimeViewV2() {
     }));
   const delEntry = (id) => {
     if (!id || !window.__shieldTime) return;
+    if (!window.confirm('Delete this time entry? This cannot be undone.')) return;
     window.__shieldTime.deleteEntry(id).then(r => { showToast(r.ok ? 'Entry deleted' : (r.error || 'Could not delete')); refreshEntries(); });
   };
 
   const monday = (() => { const d = new Date(); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return d; })();
   const dayLabel = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const weekData = ['Mon','Tue','Wed','Thu','Fri'].map((day, i) => {
+  // Mon–Sun to match submitWeek's range — weekend hours count in the total.
+  const weekData = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((day, i) => {
     const d = new Date(monday); d.setDate(monday.getDate() + i);
     const key = d.toISOString().slice(0, 10);
     const dayEntries = liveEntries.filter(e => e.work_date === key);
@@ -110,7 +113,7 @@ function TimeViewV2() {
     const break_ = dayEntries.reduce((s2, e) => s2 + (e.break_minutes || 0), 0) / 60;
     return { day, date: dayLabel(d), work: +work.toFixed(1), drive: +drive.toFixed(1), break_: +break_.toFixed(1), total: +(work + drive).toFixed(1) };
   });
-  const weekLabel = `Week of ${dayLabel(monday)} \u2014 ${dayLabel(new Date(monday.getTime() + 4 * 86400000))}`;
+  const weekLabel = `Week of ${dayLabel(monday)} \u2014 ${dayLabel(new Date(monday.getTime() + 6 * 86400000))}`;
 
   /* Real, pickable work: open projects and work orders from the shared stores —
      mine first, but ALL open work stays selectable so an assignment to any user
@@ -217,7 +220,7 @@ function TimeViewV2() {
               // Pause and require a work note before the entry saves.
               setRunning(false);
               if (elapsed / 3600 > 0.01) setStopNote('');
-              else setElapsed(0);
+              else { setElapsed(0); clearTimer(); showToast('Timer under a minute — entry not saved'); }
             }} style={{
               width: 44, height: 44, borderRadius: '50%', alignSelf: 'center',
               background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)',
@@ -257,7 +260,8 @@ function TimeViewV2() {
         <div>
           <div className="label-sm" style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
             <span>TODAY'S ENTRIES</span>
-            <span>{(todayEntries.reduce((s, e) => s + e.dur, 0) / 3600).toFixed(1)}h total</span>
+            {/* Old-date rejected entries stay visible for fixing but never count in today's total. */}
+            <span>{(todayEntries.filter(e => e.workDate === todayKey).reduce((s, e) => s + e.dur, 0) / 3600).toFixed(1)}h total</span>
           </div>
           {loadError && (
             <div style={{ padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', fontSize: 11, color: 'var(--status-warn)' }}>
@@ -535,6 +539,9 @@ function TimeViewV2() {
                 const t = window.__shieldTime;
                 if (!t) { showToast('Backend not configured'); return; }
                 if (!manualEntry.notes.trim()) { showToast('⚠ Add a note describing the work before saving this entry'); return; }
+                const [msh, msm] = manualEntry.startTime.split(':').map(Number);
+                const [meh, mem] = manualEntry.endTime.split(':').map(Number);
+                if ((meh * 60 + mem) - (msh * 60 + msm) <= 0) { showToast('⚠ End time must be after start — for overnight shifts enter two entries'); return; }
                 const startAt = `${manualEntry.date}T${manualEntry.startTime}:00`;
                 const endAt = `${manualEntry.date}T${manualEntry.endTime}:00`;
                 t.submitHours({ workDate: manualEntry.date, startAt, endAt, jobRef: manualEntry.project, notes: `${manualEntry.task} — ${manualEntry.notes.trim()}${manualEntry.billable ? '' : ' [non-billable]'}`, draft: true })
@@ -567,8 +574,9 @@ function ExpenseView() {
   }, []);
   React.useEffect(() => { refreshReceipts(); }, [refreshReceipts]);
 
-  /* My expenses from the shared store (approved/rejected by the office). */
-  const expenses = (allRows || []).filter(e => !meName || (e.by || '').toLowerCase() === meName);
+  /* My expenses from the shared store (approved/rejected by the office).
+     When identity is unknown, show only unattributed rows — never the whole crew's. */
+  const expenses = (allRows || []).filter(e => meName ? (e.by || '').toLowerCase() === meName : !e.by);
 
   const [snapCat, setSnapCat] = React.useState('Materials');
   const snap = async (e) => {
@@ -594,8 +602,13 @@ function ExpenseView() {
   };
 
   const statusColors = { pending: 'var(--status-warn)', approved: 'var(--status-ok)', rejected: 'var(--status-critical)', inbox: 'var(--status-warn)', converted: 'var(--status-ok)', dismissed: 'var(--text-low)' };
-  const monthTotal = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
-  const pendingTotal = expenses.filter(e => e.status === 'pending').reduce((s, e) => s + Number(e.amount || 0), 0);
+  /* Snapped receipts with amounts count too — converted ones already live in
+     the expense store, so skip them to avoid double counting. */
+  const receiptRows = (myReceipts || []).filter(r => r.amount != null && r.status !== 'converted' && r.status !== 'dismissed');
+  const receiptSum = receiptRows.reduce((s, r) => s + Number(r.amount || 0), 0);
+  const monthTotal = expenses.reduce((s, e) => s + Number(e.amount || 0), 0) + receiptSum;
+  const pendingTotal = expenses.filter(e => e.status === 'pending').reduce((s, e) => s + Number(e.amount || 0), 0)
+    + receiptRows.filter(r => r.status === 'inbox').reduce((s, r) => s + Number(r.amount || 0), 0);
   const approvedTotal = expenses.filter(e => e.status === 'approved').reduce((s, e) => s + Number(e.amount || 0), 0);
 
   return (
@@ -734,8 +747,12 @@ function VehicleInspectionView() {
     setInspections(list => [{
       id: genId('INSP'), tech: me.initials || me.name || 'Tech', techName: me.name || 'Technician',
       date: todayIso, at: Date.now(), items: totalItems,
+      // Full checklist state persists — not just counts — so the record shows
+      // exactly what was verified.
+      checklist: checks.map(c => ({ cat: c.cat, items: c.items.map(i => ({ label: i.label, done: i.done })) })),
+      failed: checks.flatMap(c => c.items.filter(i => !i.done).map(i => i.label)),
     }, ...(list || [])]);
-    shieldToast('Inspection recorded — synced to the portal', 'ok');
+    shieldToast('Inspection recorded', 'ok');
   };
   const submitIssue = () => {
     if (!issueText.trim()) { shieldToast('Describe the issue first', 'warn'); return; }
@@ -1003,7 +1020,14 @@ function TechAssetsView() {
         {a.fwUpdate && <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)', fontSize: 11, color: 'var(--status-warn)', display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="warning-tri" size={12} color="var(--status-warn)" /> Firmware update available</div>}
       </GlassPanel>}
       <GlassPanel style={{ padding: 12, borderLeft: '3px solid var(--status-warn)' }}><div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}><Icon name="access-control" size={12} color="var(--status-warn)" /><span className="label-sm" style={{ color: 'var(--status-warn)' }}>CREDENTIALS</span></div>
-        {passwords.filter(p => a.name.includes(p.device.split(' ')[0]) || (p.device.includes('Axis') && a.mfg==='Axis') || p.device === a.name).map((p,i) => (<div key={i} style={{ padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+        {passwords.filter(p => {
+          // Only credentials with a real device match — an empty device string
+          // must never match every asset and leak the whole vault.
+          const dev = String(p.device || '').trim();
+          if (!dev) return false;
+          const tok = dev.split(' ')[0];
+          return dev === a.name || (tok && a.name.includes(tok)) || (a.mfg && dev.includes(a.mfg));
+        }).map((p,i) => (<div key={i} style={{ padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}><span style={{ fontSize: 11, color: 'var(--text-mid)' }}>{p.label}</span><span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.username}</span></div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span className="mono" style={{ fontSize: 12, flex: 1, color: revealed[p.id]?'var(--text-high)':'var(--text-low)', letterSpacing: revealed[p.id]?0:'0.1em' }}>{revealed[p.id]?p.password:'••••••••'}</span>
             <button onClick={() => setRevealed(r => ({...r,[p.id]:!r[p.id]}))} style={{ padding: '2px 8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{revealed[p.id]?'Hide':'Show'}</button>
@@ -1074,7 +1098,7 @@ function TechAssetsView() {
           <Icon name="chevron-right" size={12} color="var(--text-low)" />
         </button>))}
       </div>)}
-      {activeTab === 'topology' && (<MobileTopologyView showToast={showToast} />)}
+      {activeTab === 'topology' && (<MobileTopologyView configs={configs} networks={networks} showToast={showToast} />)}
       {activeTab === 'networks' && (<div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <button onClick={addNetwork} style={{ padding: '10px', border: '2px dashed var(--border-subtle)', borderRadius: 8, background: 'transparent', color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="add" size={14} color="var(--brand)" /> Add Network</button>
         {networks.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, border: '1px dashed var(--border-subtle)', borderRadius: 10 }}>No networks documented yet.</div>}
@@ -1089,151 +1113,29 @@ function TechAssetsView() {
 }
 
 
-/* ── Mobile Topology V2 — Matches Portal's Monitoring Console ── */
-function MobileTopologyView({ showToast }) {
-  const [viewMode, setViewMode] = React.useState('topology'); // topology | infra
-  const [expandedNodes, setExpandedNodes] = React.useState({ isp: true, gw: true, sw1: true, ap1: true });
-  const [selectedNode, setSelectedNode] = React.useState(null);
-  const [trafficAnim, setTrafficAnim] = React.useState(true);
-  const [filterType, setFilterType] = React.useState('all');
+/* ── Mobile Topology — honest view built from the documented assets ──
+   Rows come from the same shared stores the portal Assets screen writes
+   (assetStore / assetNetStore). No fabricated devices, IPs, or actions. */
+function MobileTopologyView({ configs = [], networks = [], showToast }) {
+  const typeIcons = { 'IP Camera': 'cam-dome', 'NVR': 'nvr-box', 'Access Reader': 'reader', 'Network Switch': 'switch-ports', 'Alarm Panel': 'alarm-panel', 'Access Point': 'ap-ceiling' };
+  const typeColors = { 'IP Camera': 'var(--brand)', 'NVR': 'var(--status-ok)', 'Access Reader': '#c084fc', 'Network Switch': 'var(--status-ok)', 'Alarm Panel': 'var(--status-warn)', 'Access Point': '#a78bfa' };
+  const netDevices = (configs || []).filter(d => d.ip);
+  const onlineCount = netDevices.filter(d => d.status === 'online').length;
 
-  const toggleExpand = (id) => setExpandedNodes(prev => ({ ...prev, [id]: !prev[id] }));
-
-  const nodes = [
-    { id: 'isp', label: 'Comcast Business', sub: '500/50 Mbps · 24.16.88.x', type: 'isp', status: 'online', parent: null, ip: '24.16.88.102', model: 'Business Gateway', mfg: 'Comcast', firmware: '—', poe: 0, mac: '' },
-    { id: 'gw', label: 'USG-Pro-4', sub: '192.168.1.1 · Gateway', type: 'gateway', status: 'online', parent: 'isp', ip: '192.168.1.1', model: 'USG-Pro-4', mfg: 'Ubiquiti', firmware: '7.0.25', cpu: 12, mem: 34, poe: 0, mac: 'F0:9F:C2:12:34:56', uptime: '42d 6h' },
-    { id: 'sw1', label: 'CBS350-24P (IDF)', sub: '192.168.1.2 · 186/370W PoE', type: 'switch', status: 'online', parent: 'gw', ip: '192.168.1.2', model: 'CBS350-24P', mfg: 'Cisco', firmware: '3.2.0.84', poeUsed: 186, poeTotal: 370, poe: 0, mac: '00:1A:2B:3C:4D:5E', uptime: '42d 6h' },
-    { id: 'cam1', label: 'CAM-01 Lobby', sub: '192.168.1.101 · Axis P3265-V', type: 'camera', status: 'online', parent: 'sw1', ip: '192.168.1.101', model: 'P3265-V', mfg: 'Axis', firmware: '11.8.64', poe: 12.5, fwUpdate: true, mac: 'AC:CC:8E:F0:12:34', port: 'Port 3', uptime: '14d 8h' },
-    { id: 'cam2', label: 'CAM-02 Parking', sub: '192.168.1.102 · Axis P3265-V', type: 'camera', status: 'online', parent: 'sw1', ip: '192.168.1.102', model: 'P3265-V', mfg: 'Axis', firmware: '11.8.64', poe: 12.5, mac: 'AC:CC:8E:F0:12:35', port: 'Port 4', uptime: '14d 8h' },
-    { id: 'cam3', label: 'CAM-03 Back Door', sub: '192.168.1.103 · Axis Q6135-LE', type: 'camera', status: 'offline', parent: 'sw1', ip: '192.168.1.103', model: 'Q6135-LE', mfg: 'Axis', firmware: '11.6.12', poe: 25, mac: 'AC:CC:8E:F0:12:36', port: 'Port 5', uptime: '—' },
-    { id: 'nvr1', label: 'NVR-01', sub: '192.168.1.100 · Hanwha XNR-6410', type: 'nvr', status: 'online', parent: 'sw1', ip: '192.168.1.100', model: 'XNR-6410', mfg: 'Hanwha', firmware: '2.01.04', fwUpdate: true, poe: 0, mac: '00:09:18:A0:12:34', port: 'Port 1', uptime: '42d 6h' },
-    { id: 'rdr1', label: 'RDR-01 Front', sub: 'HID iCLASS SE RK40', type: 'reader', status: 'online', parent: 'sw1', ip: '', model: 'iCLASS SE RK40', mfg: 'HID', firmware: 'R3.4', poe: 3, mac: '', port: '18/4 Wiegand', uptime: '42d' },
-    { id: 'ap1', label: 'AP-01 Lobby', sub: '192.168.1.50 · U6-Pro', type: 'ap', status: 'online', parent: 'sw1', ip: '192.168.1.50', model: 'U6-Pro', mfg: 'Ubiquiti', firmware: '6.6.55', poe: 13, mac: 'FC:EC:DA:12:56:78', port: 'Port 20', uptime: '38d 2h', clients: 12 },
-    { id: 'panel1', label: 'Panel-01 Alarm', sub: 'DSC PowerSeries Neo · 52 zones', type: 'alarm', status: 'online', parent: 'sw1', ip: '', model: 'PowerSeries Neo', mfg: 'DSC', firmware: '1.40', poe: 0, mac: '', port: '22/4 + 18/4', uptime: '30d' },
-    { id: 'wc1', label: 'iPhone (Martinez)', sub: '-42 dBm · 5GHz', type: 'wifi', status: 'online', parent: 'ap1', ip: '192.168.1.201', model: 'iPhone 15', mfg: 'Apple', firmware: '—', poe: 0, mac: 'A4:83:E7:xx:xx:01' },
-    { id: 'wc2', label: 'iPad (Teller 2)', sub: '-55 dBm · 5GHz', type: 'wifi', status: 'online', parent: 'ap1', ip: '192.168.1.202', model: 'iPad Air', mfg: 'Apple', firmware: '—', poe: 0, mac: 'A4:83:E7:xx:xx:02' },
-    { id: 'wc3', label: 'Samsung (Guard)', sub: '-68 dBm · 2.4GHz', type: 'wifi', status: 'online', parent: 'ap1', ip: '192.168.1.203', model: 'Galaxy S24', mfg: 'Samsung', firmware: '—', poe: 0, mac: '4C:DD:31:xx:xx:03' },
-  ];
-
-  const nodeMap = {}; nodes.forEach(n => { nodeMap[n.id] = n; });
-  const getChildren = (id) => nodes.filter(n => n.parent === id);
-
-  const iconMap = { isp: 'topology', gateway: 'server', switch: 'switch-ports', camera: 'cam-dome', nvr: 'nvr-box', reader: 'reader', ap: 'ap-ceiling', alarm: 'alarm-panel', wifi: 'wifi' };
-  const colorMap = { isp: 'var(--text-mid)', gateway: '#34d399', switch: '#34d399', camera: 'var(--brand)', nvr: '#34d399', reader: '#c084fc', ap: '#a78bfa', alarm: '#fbbf24', wifi: 'rgba(63,169,245,0.5)' };
-
-  const deviceTypes = ['all','camera','nvr','reader','ap','alarm','switch','gateway','wifi'];
-  const onlineCount = nodes.filter(n => n.status === 'online').length;
-  const offlineCount = nodes.filter(n => n.status === 'offline').length;
-  const totalPoe = nodes.reduce((s,n) => s + (n.poe||0), 0);
-
-  const visibleNodes = filterType === 'all' ? nodes : nodes.filter(n => n.type === filterType || n.id === 'isp' || n.id === 'gw' || n.id === 'sw1');
-
-  /* ── Topology Map View (SVG) ── */
-  function renderTopologyMap() {
-    const positions = {
-      isp: {x:180,y:28}, gw: {x:180,y:88}, sw1: {x:180,y:168},
-      cam1: {x:40,y:258}, cam2: {x:100,y:258}, cam3: {x:160,y:258},
-      nvr1: {x:220,y:258}, rdr1: {x:280,y:258}, ap1: {x:340,y:258}, panel1: {x:100,y:338},
-      wc1: {x:280,y:338}, wc2: {x:340,y:338}, wc3: {x:400,y:338},
-    };
-    const connections = nodes.filter(n => n.parent).map(n => ({ from: n.parent, to: n.id }));
-
+  if (!networks.length && !netDevices.length) {
     return (
-      <div style={{ position: 'relative', background: '#080c12', borderRadius: 8, overflow: 'auto', border: '1px solid var(--border-subtle)' }}>
-        <svg width="440" height="380" viewBox="0 0 440 380" style={{ display: 'block' }}>
-          <defs>
-            <filter id="glow-m"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-          </defs>
-          {/* Grid */}
-          {Array.from({length:22}).map((_,i) => (<React.Fragment key={'g'+i}><line x1={i*20} y1="0" x2={i*20} y2="380" stroke="rgba(63,169,245,0.03)" strokeWidth="0.5" /><line x1="0" y1={i*20} x2="440" y2={i*20} stroke="rgba(63,169,245,0.03)" strokeWidth="0.5" /></React.Fragment>))}
-
-          {/* Connections */}
-          {connections.map((c,i) => {
-            const from = positions[c.from]; const to = positions[c.to];
-            if (!from || !to) return null;
-            const isDown = nodeMap[c.to]?.status === 'offline';
-            const isWifi = nodeMap[c.to]?.type === 'wifi';
-            return (<g key={'c'+i}>
-              <line x1={from.x} y1={from.y+16} x2={to.x} y2={to.y-16} stroke={isDown?'var(--status-critical)':isWifi?'rgba(63,169,245,0.08)':'rgba(63,169,245,0.12)'} strokeWidth={isWifi?0.5:1} strokeDasharray={isWifi?'3 3':isDown?'4 2':'none'} />
-              {trafficAnim && !isDown && !isWifi && (<circle r="2" fill="var(--brand)" opacity="0.6"><animateMotion dur={1.5+Math.random()}s repeatCount="indefinite" path={'M'+from.x+','+(from.y+16)+' L'+to.x+','+(to.y-16)} /></circle>)}
-            </g>);
-          })}
-
-          {/* Nodes */}
-          {visibleNodes.map(n => {
-            const pos = positions[n.id]; if (!pos) return null;
-            const color = colorMap[n.type]||'var(--brand)';
-            const icon = iconMap[n.type]||'topology';
-            const isSel = selectedNode === n.id;
-            const isWifi = n.type === 'wifi';
-            const sz = isWifi ? 10 : 16;
-            return (
-              <g key={n.id} transform={'translate('+pos.x+','+pos.y+')'} onClick={() => setSelectedNode(isSel?null:n.id)} style={{cursor:'pointer'}}>
-                {isSel && <rect x={-(sz+6)} y={-(sz+6)} width={(sz+6)*2} height={(sz+6)*2} rx={isWifi?'50%':8} fill="none" stroke={color} strokeWidth="1" strokeDasharray="3 2" opacity="0.5"><animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite" /></rect>}
-                {n.status==='online' && !isWifi && (<circle r={sz+8} fill="none" stroke={color} strokeWidth="0.5" opacity="0.15"><animate attributeName="r" values={(sz+6)+';'+(sz+12)} dur="3s" repeatCount="indefinite" /><animate attributeName="opacity" values="0.15;0" dur="3s" repeatCount="indefinite" /></circle>)}
-                {isWifi ? (
-                  <><circle r={sz} fill="rgba(63,169,245,0.05)" stroke="rgba(63,169,245,0.2)" strokeWidth="0.5" /><circle r="2" fill={color} /></>
-                ) : (
-                  <rect x={-sz} y={-sz} width={sz*2} height={sz*2} rx="7" fill="rgba(10,14,20,0.92)" stroke={n.status==='offline'?'var(--status-critical)':color} strokeWidth={isSel?2:1.2} filter={isSel?'url(#glow-m)':'none'} />
-                )}
-                {!isWifi && <foreignObject x="-8" y="-8" width="16" height="16"><div xmlns="http://www.w3.org/1999/xhtml" style={{width:16,height:16,display:'flex',alignItems:'center',justifyContent:'center'}}>{typeof Icon!=='undefined' && <Icon name={icon} size={14} color={n.status==='offline'?'var(--status-critical)':color} />}</div></foreignObject>}
-                <text y={isWifi?18:sz+10} textAnchor="middle" fill={n.status==='offline'?'var(--status-critical)':'var(--text-mid)'} fontSize="7" fontFamily="var(--font-mono)">{n.label.length>14?n.label.substring(0,14)+'…':n.label}</text>
-                {n.poe>0 && <text y={sz+18} textAnchor="middle" fill="var(--brand)" fontSize="6" fontFamily="var(--font-mono)">{n.poe}W</text>}
-                {/* Status dot */}
-                {!isWifi && <circle cx={sz-2} cy={-(sz-2)} r="3" fill={n.status==='online'?'var(--status-ok)':'var(--status-critical)'} stroke="rgba(10,14,20,0.9)" strokeWidth="1.5" />}
-                {/* PoE bar for switch */}
-                {n.poeUsed && (<><rect x="-20" y={sz+2} width="40" height="3" rx="1.5" fill="rgba(63,169,245,0.08)" /><rect x="-20" y={sz+2} width={40*(n.poeUsed/n.poeTotal)} height="3" rx="1.5" fill="var(--brand)" /></>)}
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-    );
-  }
-
-  /* ── Infrastructure Table View ── */
-  function renderInfraTable() {
-    const devs = visibleNodes.filter(n => n.type !== 'wifi');
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {devs.map(n => {
-          const color = colorMap[n.type]||'var(--brand)';
-          const isSel = selectedNode === n.id;
-          return (
-            <button key={n.id} onClick={() => setSelectedNode(isSel?null:n.id)} style={{
-              display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
-              background: isSel?'rgba(63,169,245,0.06)':'var(--glass-bg)',
-              border: '1px solid '+(isSel?'var(--brand)':'var(--border-subtle)'),
-              borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-body)',
-              textAlign: 'left', width: '100%', transition: 'all 0.15s'
-            }}>
-              <div style={{ width: 32, height: 32, borderRadius: 7, background: color+'15', border: '1px solid '+color+'30', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Icon name={iconMap[n.type]||'topology'} size={16} color={color} />
-              </div>
-              <div style={{ flex: 1, overflow: 'hidden' }}>
-                <div style={{ fontSize: 12, fontWeight: 500, color: n.status==='offline'?'var(--status-critical)':'var(--text-high)' }}>{n.label}</div>
-                <div style={{ fontSize: 9, color: 'var(--text-low)', display: 'flex', gap: 6 }}>
-                  <span>{n.mfg} {n.model}</span>
-                  {n.ip && <span className="mono" style={{ color: 'var(--brand)' }}>{n.ip}</span>}
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
-                <StatusDot status={n.status==='online'?'online':'critical'} size={6} />
-                {n.poe>0 && <span className="mono" style={{ fontSize: 8, color: 'var(--brand)' }}>{n.poe}W</span>}
-                {n.fwUpdate && <Icon name="warning-tri" size={9} color="var(--status-warn)" />}
-              </div>
-            </button>
-          );
-        })}
+      <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, border: '1px dashed var(--border-subtle)', borderRadius: 10, lineHeight: 1.6 }}>
+        No network data recorded for this site yet.<br />
+        Networks and devices documented under the Networks and Configs tabs appear here.
       </div>
     );
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {/* Summary strip */}
+      {/* Summary strip — counts from the real documented records */}
       <div style={{ display: 'flex', gap: 4 }}>
-        {[{l:'Devices',v:nodes.filter(n=>n.type!=='wifi').length,c:'var(--brand)'},{l:'Online',v:onlineCount,c:'var(--status-ok)'},{l:'Offline',v:offlineCount,c:'var(--status-critical)'},{l:'PoE',v:totalPoe.toFixed(0)+'W',c:'var(--brand)'}].map((s,i) => (
+        {[{l:'Networks',v:networks.length,c:'var(--brand)'},{l:'Devices',v:netDevices.length,c:'var(--brand)'},{l:'Online',v:onlineCount,c:'var(--status-ok)'}].map((s,i) => (
           <div key={i} className="glass" style={{ flex: 1, padding: '5px 6px', textAlign: 'center', borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
             <div className="mono" style={{ fontSize: 13, fontWeight: 600, color: s.c }}>{s.v}</div>
             <div style={{ fontSize: 7, color: 'var(--text-low)', textTransform: 'uppercase' }}>{s.l}</div>
@@ -1241,98 +1143,50 @@ function MobileTopologyView({ showToast }) {
         ))}
       </div>
 
-      {/* Controls */}
-      <div style={{ display: 'flex', gap: 6 }}>
-        <div style={{ flex: 1, display: 'flex', gap: 0, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
-          {[{id:'topology',l:'Map'},{id:'infra',l:'List'}].map(v => (
-            <button key={v.id} onClick={() => setViewMode(v.id)} style={{ flex: 1, padding: '6px', fontSize: 10, fontWeight: viewMode===v.id?600:400, background: viewMode===v.id?'rgba(63,169,245,0.12)':'transparent', border: 'none', color: viewMode===v.id?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{v.l}</button>
-          ))}
-        </div>
-        <button onClick={() => setTrafficAnim(!trafficAnim)} style={{ padding: '6px 10px', borderRadius: 6, fontSize: 9, background: trafficAnim?'rgba(63,169,245,0.12)':'transparent', border: '1px solid '+(trafficAnim?'var(--brand)':'var(--border-subtle)'), color: trafficAnim?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>{trafficAnim?'Traffic On':'Traffic Off'}</button>
-      </div>
-
-      {/* Type filter pills */}
-      <div style={{ display: 'flex', gap: 3, overflow: 'auto', paddingBottom: 2 }}>
-        {deviceTypes.map(t => (
-          <button key={t} onClick={() => setFilterType(t)} style={{ padding: '3px 8px', borderRadius: 100, fontSize: 9, whiteSpace: 'nowrap', background: filterType===t?'rgba(63,169,245,0.12)':'transparent', border: '1px solid '+(filterType===t?'var(--brand)':'var(--border-subtle)'), color: filterType===t?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{t==='all'?'All':t}</button>
-        ))}
-      </div>
-
-      {/* Views */}
-      {viewMode === 'topology' && renderTopologyMap()}
-      {viewMode === 'infra' && renderInfraTable()}
-
-      {/* Selected Node Detail Panel */}
-      {selectedNode && nodeMap[selectedNode] && (() => {
-        const n = nodeMap[selectedNode];
-        const color = colorMap[n.type]||'var(--brand)';
-        return (
-          <GlassPanel style={{ padding: 12, borderLeft: '3px solid '+color, animation: 'fade-up 0.15s ease both' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <div style={{ width: 34, height: 34, borderRadius: 8, background: color+'15', border: '1px solid '+color+'30', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon name={iconMap[n.type]||'topology'} size={18} color={color} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: n.status==='offline'?'var(--status-critical)':'var(--text-high)' }}>{n.label}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{n.mfg} {n.model}</div>
-              </div>
-              <StatusDot status={n.status==='online'?'online':'critical'} size={8} pulse={n.status==='online'} />
+      {networks.map((n,i) => (
+        <GlassPanel key={n.id || i} style={{ padding: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <Icon name="topology" size={16} color="var(--brand)" />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 500 }}>{n.name}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{n.type}{n.vlan ? ` · VLAN ${n.vlan}` : ''}{n.customer ? ` · ${n.customer}` : ''}</div>
             </div>
-
-            {/* Info grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 10 }}>
-              {n.ip && <div onClick={() => {navigator.clipboard?.writeText?.(n.ip);showToast('IP copied');}} style={{cursor:'pointer'}}><div style={{fontSize:8,color:'var(--text-low)',textTransform:'uppercase'}}>IP</div><div className="mono" style={{fontSize:11,color:'var(--brand)'}}>{n.ip}</div></div>}
-              {n.mac && <div onClick={() => {navigator.clipboard?.writeText?.(n.mac);showToast('MAC copied');}} style={{cursor:'pointer'}}><div style={{fontSize:8,color:'var(--text-low)',textTransform:'uppercase'}}>MAC</div><div className="mono" style={{fontSize:10,color:'var(--text-mid)'}}>{n.mac}</div></div>}
-              {n.firmware && n.firmware!=='—' && <div><div style={{fontSize:8,color:'var(--text-low)',textTransform:'uppercase'}}>Firmware</div><div className="mono" style={{fontSize:11,color:'var(--text-mid)'}}>{n.firmware}{n.fwUpdate?' ⚠':''}</div></div>}
-              {n.uptime && <div><div style={{fontSize:8,color:'var(--text-low)',textTransform:'uppercase'}}>Uptime</div><div className="mono" style={{fontSize:11,color:'var(--text-mid)'}}>{n.uptime}</div></div>}
-              {n.port && <div><div style={{fontSize:8,color:'var(--text-low)',textTransform:'uppercase'}}>Port</div><div className="mono" style={{fontSize:11,color:'var(--text-mid)'}}>{n.port}</div></div>}
-              {n.poe>0 && <div><div style={{fontSize:8,color:'var(--text-low)',textTransform:'uppercase'}}>PoE Draw</div><div className="mono" style={{fontSize:11,color:'var(--brand)'}}>{n.poe}W</div></div>}
-              {n.clients && <div><div style={{fontSize:8,color:'var(--text-low)',textTransform:'uppercase'}}>Clients</div><div className="mono" style={{fontSize:11,color:'var(--brand)'}}>{n.clients}</div></div>}
-            </div>
-
-            {/* PoE budget for switch */}
-            {n.poeUsed && (
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-low)', marginBottom: 3 }}><span>PoE Budget</span><span className="mono">{n.poeUsed}/{n.poeTotal}W ({Math.round(n.poeUsed/n.poeTotal*100)}%)</span></div>
-                <div style={{ height: 5, borderRadius: 3, background: 'rgba(63,169,245,0.08)', overflow: 'hidden' }}><div style={{ width: (n.poeUsed/n.poeTotal*100)+'%', height: '100%', borderRadius: 3, background: n.poeUsed/n.poeTotal>0.8?'var(--status-warn)':'var(--brand)', transition: 'width 0.3s' }} /></div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+            {[{l:'Subnet',v:n.subnet},{l:'Gateway',v:n.gw}].filter(f => f.v).map((f,j) => (
+              <div key={j} onClick={() => {navigator.clipboard?.writeText?.(f.v);showToast('Copied');}} style={{ cursor: 'pointer' }}>
+                <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>{f.l}</div>
+                <div className="mono" style={{ fontSize: 11, color: 'var(--brand)' }}>{f.v}</div>
               </div>
-            )}
+            ))}
+          </div>
+        </GlassPanel>
+      ))}
 
-            {/* CPU/MEM for gateway */}
-            {n.cpu !== undefined && (
-              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                {[{l:'CPU',v:n.cpu},{l:'MEM',v:n.mem}].map((g,i) => (
-                  <div key={i} style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-low)', marginBottom: 2 }}><span>{g.l}</span><span className="mono">{g.v}%</span></div>
-                    <div style={{ height: 4, borderRadius: 2, background: 'rgba(63,169,245,0.08)' }}><div style={{ width: g.v+'%', height: '100%', borderRadius: 2, background: g.v>70?'var(--status-warn)':'var(--brand)' }} /></div>
+      {netDevices.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div className="label-sm" style={{ margin: '4px 0 2px' }}>DEVICES ON THE NETWORK</div>
+          {netDevices.map(d => {
+            const color = typeColors[d.type] || 'var(--brand)';
+            return (
+              <div key={d.id} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', border: '1px solid var(--border-subtle)', borderRadius: 8 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 7, background: color+'15', border: '1px solid '+color+'30', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon name={typeIcons[d.type]||'topology'} size={16} color={color} />
+                </div>
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)' }}>{d.name}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-low)', display: 'flex', gap: 6 }}>
+                    <span>{[d.mfg, d.model].filter(Boolean).join(' ') || d.type}</span>
+                    <span className="mono" style={{ color: 'var(--brand)' }}>{d.ip}</span>
                   </div>
-                ))}
+                </div>
+                <button onClick={() => {navigator.clipboard?.writeText?.(d.ip);showToast('IP copied');}} style={{ padding: '4px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Copy IP</button>
               </div>
-            )}
-
-            {/* Actions */}
-            <div style={{ display: 'flex', gap: 4 }}>
-              {n.ip && <button onClick={() => showToast('Opening '+n.label+'...')} style={{ flex: 1, padding: '7px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}><Icon name="link" size={10} color="var(--brand)" /> Open</button>}
-              <button onClick={() => showToast('Ping: 2ms')} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}><Icon name="topology" size={10} color="var(--text-mid)" /> Ping</button>
-              <button onClick={() => showToast('Restarting...')} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}><Icon name="bolt" size={10} color="var(--text-mid)" /> Restart</button>
-            </div>
-
-            {/* Child devices */}
-            {getChildren(n.id).length > 0 && (
-              <div style={{ marginTop: 8, borderTop: '1px solid rgba(63,169,245,0.06)', paddingTop: 6 }}>
-                <div style={{ fontSize: 9, color: 'var(--text-low)', marginBottom: 4 }}>CONNECTED ({getChildren(n.id).length})</div>
-                {getChildren(n.id).map(child => (
-                  <button key={child.id} onClick={() => setSelectedNode(child.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', width: '100%', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left', borderBottom: '1px solid rgba(63,169,245,0.03)' }}>
-                    <Icon name={iconMap[child.type]||'topology'} size={12} color={colorMap[child.type]||'var(--brand)'} />
-                    <span style={{ fontSize: 11, color: child.status==='offline'?'var(--status-critical)':'var(--text-mid)', flex: 1 }}>{child.label}</span>
-                    <StatusDot status={child.status==='online'?'online':'critical'} size={5} />
-                  </button>
-                ))}
-              </div>
-            )}
-          </GlassPanel>
-        );
-      })()}
+            );
+          })}
+        </div>
+      )}
+      <div style={{ fontSize: 9, color: 'var(--text-low)' }}>Built from documented configs and networks — live ping/status isn't wired up yet.</div>
     </div>
   );
 }

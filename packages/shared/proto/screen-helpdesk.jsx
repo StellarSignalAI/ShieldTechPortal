@@ -293,7 +293,7 @@ function NewTicketModal({ techs, onClose, onCreate }) {
   const submit = () => {
     if (!form.customer || !form.subject) return;
     onCreate({
-      id: 'TK-' + (1050 + Math.floor(Math.random() * 100)),
+      id: genId('TK'),
       priority: form.priority, status: 'open',
       customer: form.customer, contact: form.contact,
       subject: form.subject, created: Date.now(),
