@@ -30,7 +30,7 @@ const SCREEN_LIST = [
   /* Deliver */ 'calendar', 'copilot', 'dispatch', 'workorder', 'photos', 'punchlist', 'projects', 'plan-room',
   /* Collect */ 'finance', 'invoices', 'estimates', 'outbox', 'purchase-orders', 'parts-req', 'mrr', 'rr-builder', 'pay',
   /* Care */    'customers-list', 'cameras', 'assets', 'helpdesk', 'incidents', 'nps', 'messages',
-  /* Admin */   'employees', 'skills', 'users', 'approvals', 'timesheets', 'expenses', 'documents', 'portal-settings',
+  /* Admin */   'employees', 'skills', 'users', 'approvals', 'timesheets', 'payroll', 'expenses', 'documents', 'portal-settings',
 ];
 
 /* screen id → window component name. Merged ids point at their workspace hub
@@ -77,6 +77,7 @@ const SCREEN_COMPONENTS = {
   users: 'UsersScreen',
   approvals: 'ApprovalsHubScreen',
   timesheets: 'ApprovalsHubScreen',
+  payroll: 'ApprovalsHubScreen',
   expenses: 'ApprovalsHubScreen',
   documents: 'DocumentsScreen',
   'portal-settings': 'PortalSettingsScreen',

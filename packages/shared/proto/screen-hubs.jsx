@@ -96,9 +96,10 @@ function RevenueHubScreen() {
 
 /* ADMIN — one approval queue: general approvals, timesheets, expenses+receipts. */
 function ApprovalsHubScreen() {
-  return <HubTabs initial={{ timesheets: 'time', expenses: 'exp' }[hubInitial()] || 'appr'} tabs={[
+  return <HubTabs initial={{ timesheets: 'time', expenses: 'exp', payroll: 'pay' }[hubInitial()] || 'appr'} tabs={[
     { id: 'appr', label: 'Approvals', C: window.ApprovalsScreen },
     { id: 'time', label: 'Timesheets', C: window.TimesheetApprovalScreen },
+    { id: 'pay', label: 'Payroll', C: window.PayrollScreen },
     { id: 'exp', label: 'Expenses & Receipts', C: window.ExpenseApprovalScreen },
   ]} />;
 }

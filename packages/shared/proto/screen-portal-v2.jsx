@@ -185,6 +185,7 @@ function TimesheetApprovalScreen() {
   // decision flows back to them.
   const [timesheets, setTimesheets] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [openKeys, setOpenKeys] = React.useState({});   // group key -> per-day detail expanded
 
   const initialsOf = (n) => (n || 'Technician').split(/[\s@.]+/).filter(Boolean)
     .slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'T';
@@ -335,16 +336,38 @@ function TimesheetApprovalScreen() {
             {ts.overtime > 0 && <div style={{ width: `${(ts.overtime/(ts.total||1))*100}%`, background: 'var(--status-critical)' }} />}
           </div>
 
+          {/* Per-day detail — the week's total up top, every day expandable below */}
+          {openKeys[ts.key] && (
+            <div style={{ marginBottom: 10, borderTop: '1px solid var(--border-subtle)', paddingTop: 6 }}>
+              {Object.entries(ts.entries.reduce((m, e) => { (m[e.work_date] = m[e.work_date] || []).push(e); return m; }, {}))
+                .sort((a, b) => a[0] < b[0] ? -1 : 1)
+                .map(([date, dayEntries]) => (
+                  <div key={date} style={{ padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-high)', minWidth: 110 }}>
+                        {new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                      </span>
+                      <span className="mono" style={{ fontSize: 12, fontWeight: 700, color: 'var(--brand)' }}>
+                        {dayEntries.reduce((s, e) => s + Number(e.hours || 0), 0).toFixed(2)}h
+                      </span>
+                    </div>
+                    {dayEntries.map(e => (
+                      <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '2px 0 0 14px' }}>
+                        <span className="mono" style={{ fontSize: 10.5, color: 'var(--text-mid)', minWidth: 44 }}>{Number(e.hours).toFixed(2)}h</span>
+                        <span style={{ fontSize: 10.5, color: 'var(--text-mid)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {e.job_ref || 'No job'}{e.notes ? ` — ${e.notes}` : ''}
+                        </span>
+                        <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: e.status === 'submitted' ? 'var(--status-warn)' : e.status === 'rejected' ? 'var(--status-critical)' : 'var(--status-ok)' }}>{e.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+            </div>
+          )}
+
           {/* Actions */}
           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-            <button onClick={() => shieldModal({ kind: 'doc', title: 'Timesheet Detail', docTitle: `${ts.tech} — Week of ${ts.period}`, meta: `${ts.jobs} jobs · ${ts.total}h total`, downloadLabel: 'Export Timesheet', downloadMsg: 'Timesheet exported', paragraphs: [
-              { k: 'Billable hours', v: ts.billable + 'h' },
-              { k: 'Drive time', v: ts.drive + 'h' },
-              { k: 'Admin', v: ts.admin + 'h' },
-              { k: 'Overtime', v: ts.overtime + 'h' },
-              { k: 'Total', v: ts.total + 'h' },
-              { k: 'Status', v: ts.status }
-            ] })} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View Details</button>
+            <button onClick={() => setOpenKeys(o => ({ ...o, [ts.key]: !o[ts.key] }))} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{openKeys[ts.key] ? '▾ Hide days' : '▸ Every day'}</button>
             {ts.status === 'submitted' && <>
               <button onClick={() => decideGroup(ts, true)} style={{ padding: '5px 16px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>
               <button onClick={() => decideGroup(ts, false)} style={{ padding: '5px 12px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Return</button>
