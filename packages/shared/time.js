@@ -159,4 +159,67 @@ export async function ripplingSync(direction = 'both') {
   }
 }
 
-window.__shieldTime = { myEntries, submitHours, deleteEntry, submitWeek, pendingEntries, laborLedger, setEntryStatus, ripplingSync };
+/* ── Payroll: weekly hours × rate → owed / paid ─────────────────────────────
+   Rate precedence: profiles.hourly_rate (set on the Payroll screen), falling
+   back to Rippling's mirrored pay_rate. Marking a week paid snapshots the
+   hours/rate/amount into payroll_payments and stamps the week's approved
+   entries status='paid'. */
+export async function payrollData(sinceISO) {
+  if (!supabaseConfigured) return notConfigured;
+  const since = sinceISO || (() => { const d = new Date(); d.setDate(d.getDate() - 70); return d.toISOString().slice(0, 10); })();
+  const [entriesRes, profilesRes, workersRes, paymentsRes] = await Promise.all([
+    supabase.from('time_entries')
+      .select('id,tech_id,work_date,hours,job_ref,notes,status')
+      .gte('work_date', since).order('work_date', { ascending: true }).limit(3000),
+    supabase.from('profiles').select('id,name,email,role,hourly_rate'),
+    supabase.from('rippling_workers').select('profile_id,pay_rate'),
+    supabase.from('payroll_payments').select('*').gte('week_start', since),
+  ]);
+  if (entriesRes.error) return { ok: false, error: entriesRes.error.message };
+  return {
+    ok: true,
+    data: {
+      entries: entriesRes.data || [],
+      profiles: profilesRes.data || [],
+      workers: workersRes.data || [],
+      payments: paymentsRes.data || [],
+    },
+  };
+}
+
+export async function setHourlyRate(techId, rate) {
+  if (!supabaseConfigured) return notConfigured;
+  const { error } = await supabase.from('profiles')
+    .update({ hourly_rate: rate == null ? null : Number(rate) }).eq('id', techId);
+  return error ? { ok: false, error: error.message } : { ok: true };
+}
+
+export async function markWeekPaid({ techId, weekStart, weekEnd, hours, rate, amount, note }) {
+  if (!supabaseConfigured) return notConfigured;
+  const { data: u } = await supabase.auth.getUser();
+  const { error } = await supabase.from('payroll_payments').upsert({
+    tech_id: techId, week_start: weekStart,
+    hours: Number(hours) || 0, rate: rate == null ? null : Number(rate),
+    amount: Number(amount) || 0, note: note || null,
+    paid_by: u?.user?.id || null, paid_at: new Date().toISOString(),
+  }, { onConflict: 'tech_id,week_start' });
+  if (error) return { ok: false, error: error.message };
+  // Approved hours in the paid week advance to 'paid' (best-effort).
+  await supabase.from('time_entries').update({ status: 'paid' })
+    .eq('tech_id', techId).gte('work_date', weekStart).lte('work_date', weekEnd)
+    .in('status', ['approved', 'synced']);
+  return { ok: true };
+}
+
+export async function unmarkWeekPaid(techId, weekStart, weekEnd) {
+  if (!supabaseConfigured) return notConfigured;
+  const { error } = await supabase.from('payroll_payments').delete()
+    .eq('tech_id', techId).eq('week_start', weekStart);
+  if (error) return { ok: false, error: error.message };
+  await supabase.from('time_entries').update({ status: 'approved' })
+    .eq('tech_id', techId).gte('work_date', weekStart).lte('work_date', weekEnd)
+    .eq('status', 'paid');
+  return { ok: true };
+}
+
+window.__shieldTime = { myEntries, submitHours, deleteEntry, submitWeek, pendingEntries, laborLedger, setEntryStatus, ripplingSync, payrollData, setHourlyRate, markWeekPaid, unmarkWeekPaid };

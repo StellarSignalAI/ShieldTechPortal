@@ -53,6 +53,7 @@ const NAV_GROUPS = [
   { id: 'users', icon: 'credential', label: 'Users & Invites', useSvg: true },
   { id: 'approvals', icon: 'check', label: 'Approvals & Expenses', useSvg: true },
   { id: 'timesheets', icon: 'timesheets', label: 'Timesheets', useSvg: true, mobileOnly: true },
+  { id: 'payroll', icon: 'finance', label: 'Payroll', useSvg: true, mobileOnly: true },
   { id: 'documents', icon: 'note', label: 'Documents', useSvg: true },
   { id: 'portal-settings', icon: 'compliance', label: 'Portal Settings', useSvg: true }]
 }];
@@ -554,7 +555,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     certs: 'Certifications', tools: 'Engineering Tools',
     costing: 'Job Costing', audit: 'Audit Trail',
     warroom: 'Monitoring Console', floorplan: 'Monitoring Console', anomaly: 'Monitoring Console',
-    expenses: 'Expense Approval', timesheets: 'Timesheet Approval',
+    expenses: 'Expense Approval', timesheets: 'Timesheet Approval', payroll: 'Payroll',
     projects: 'Projects', 'plan-room': 'BlueShield Studio', inventory: 'Inventory',
     reports: 'Reports & BI', proposals: 'Proposal Builder',
     employees: 'Team Management', contracts: 'Contracts', sla: 'SLA Dashboard',

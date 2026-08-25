@@ -41,6 +41,7 @@ const M_SCREEN_MAP = {
   audit: () => <AuditTrailView />,
   expenses: () => <ExpenseApprovalScreen />,
   timesheets: () => <TimesheetApprovalScreen />,
+  payroll: () => <PayrollScreen />,
   projects: () => <ProjectsScreen />,
   'plan-room': () => <PlanRoomScreen />,
   inventory: () => <InventoryScreen />,
