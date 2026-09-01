@@ -11,6 +11,7 @@ import '@shared/passkey.js';
 import '@shared/ai.js';
 import '@shared/time.js';
 import '@shared/qbo.js';
+import '@shared/hr.js';
 import '@shared/camera.js';
 import '@shared/storage.js';
 import '@shared/messaging.js';

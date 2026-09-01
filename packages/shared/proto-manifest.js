@@ -9,6 +9,7 @@ import './proto/shared-state.jsx';
 import './proto/shared-context.jsx';
 import './proto/blueprint.jsx';
 import './proto/screen-payroll.jsx';
+import './proto/screen-hr.jsx';
 import './proto/blueshield.jsx';
 import './proto/shell.jsx';
 import './proto/photos-shared.jsx';
