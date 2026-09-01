@@ -91,3 +91,23 @@ test('weeklyBuckets groups payable statuses by tech and Monday', () => {
   assert.equal(buckets.get('b|2026-08-31'), 5);
   assert.equal(buckets.size, 2);
 });
+
+test('billingRateForMargin inverts the margin formula', async () => {
+  const { billingRateForMargin } = await import('../packages/shared/labor-calc.js');
+  assert.equal(billingRateForMargin(60, 40), 100); // $60 cost at 40% margin → $100
+  assert.equal(billingRateForMargin(60, 100), null);
+  assert.equal(billingRateForMargin(null, 40), null);
+});
+
+test('compChange computes direct, loaded, and required-billing deltas', async () => {
+  const { compChange } = await import('../packages/shared/labor-calc.js');
+  const components = [{ key: 'burden', type: 'percent', value: 25 }];
+  const out = compChange({ currentRate: 38, proposedRate: 40, hoursPerWeek: 40, components, targetMarginPct: 40 });
+  assert.equal(out.directAnnualIncrease, 2 * 40 * 52);       // $4,160
+  assert.equal(out.loadedWeeklyBefore, 38 * 40 * 1.25);      // 1900
+  assert.equal(out.loadedWeeklyAfter, 40 * 40 * 1.25);       // 2000
+  assert.equal(out.loadedAnnualIncrease, 100 * 52);          // $5,200
+  assert.equal(out.loadedHourlyAfter, 50);
+  assert.equal(out.requiredBillingRateAfter, 83.33); // 50 / 0.6, rounded to cents
+  assert.equal(compChange({ currentRate: null, proposedRate: 40 }), null);
+});

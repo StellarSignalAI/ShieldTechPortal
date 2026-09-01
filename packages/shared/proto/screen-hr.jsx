@@ -36,6 +36,7 @@ function HRPeopleScreen() {
   const [profiles, setProfiles] = React.useState([]);
   const [syncing, setSyncing] = React.useState(false);
   const [open, setOpen] = React.useState({});
+  const [search, setSearch] = React.useState('');
 
   const load = React.useCallback(() => {
     hr.workers().then(r => setRows(r.data || []));
@@ -71,8 +72,10 @@ function HRPeopleScreen() {
   return (
     <div style={{ maxWidth: 980, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, fontSize: 11.5, color: 'var(--text-low)' }}>
-          {rows ? `${rows.length} Rippling worker${rows.length === 1 ? '' : 's'} · ${rows.filter(w => w.profile_id).length} linked to portal profiles` : 'Loading…'}
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, title, department…"
+          style={{ ...hrInput, flex: 1, minWidth: 180 }} />
+        <div style={{ fontSize: 11.5, color: 'var(--text-low)' }}>
+          {rows ? `${rows.length} worker${rows.length === 1 ? '' : 's'} · ${rows.filter(w => w.profile_id).length} linked` : 'Loading…'}
         </div>
         <button onClick={syncNow} disabled={syncing} style={hrBtnPrimary()}>{syncing ? 'Syncing…' : '⟳ Sync from Rippling'}</button>
       </div>
@@ -80,7 +83,11 @@ function HRPeopleScreen() {
         <HREmpty icon="👥" title="No Rippling workers synced yet"
           sub="Configure the Rippling API token (Setup tab), then Sync from Rippling to pull the roster." />
       )}
-      {(rows || []).map(w => {
+      {(rows || []).filter(w => {
+        const q = search.trim().toLowerCase();
+        if (!q) return true;
+        return [w.name, w.email, w.title, w.department, w.status].some(v => v && String(v).toLowerCase().includes(q));
+      }).map(w => {
         const expanded = !!open[w.rippling_worker_id];
         return (
           <div key={w.rippling_worker_id} className="glass" style={{ padding: 14, marginBottom: 10 }}>
@@ -418,7 +425,11 @@ function HRInsightsScreen() {
       .then(r => setChat([...history, { role: 'assistant', content: r.text }]));
   };
 
-  const metricLabel = { labor_cost_week: 'Loaded labor cost (this week)', invoiced_month: 'Invoiced (this month)', ar_open: 'Open A/R' };
+  const metricLabel = {
+    labor_cost_week: 'Loaded labor cost (this week)', invoiced_month: 'Invoiced (MTD)', invoiced_ytd: 'Invoiced (YTD)',
+    ar_open: 'Open A/R', ap_open: 'Open A/P', payroll_next_14d: 'Payroll next 14 days (projected)',
+    payroll_pct_revenue: 'Payroll % of revenue',
+  };
   const metrics = briefData?.metrics || {};
 
   return (
@@ -438,7 +449,9 @@ function HRInsightsScreen() {
         {Object.entries(metrics).map(([k, m]) => (
           <div key={k} className="glass" style={{ flex: 1, minWidth: 190, padding: '12px 14px', borderRadius: 10 }}>
             <div style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-low)' }}>{(metricLabel[k] || k).toUpperCase()}</div>
-            <div className="mono" style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-high)', marginTop: 4 }}>{hrMoney(m.value)}</div>
+            <div className="mono" style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-high)', marginTop: 4 }}>
+              {k === 'payroll_pct_revenue' ? (m.value != null ? `${m.value}%` : '—') : hrMoney(m.value)}
+            </div>
             <div style={{ fontSize: 9, color: m.meta?.completeness === 'complete' ? 'var(--text-low)' : 'var(--status-warn)', marginTop: 3 }}>
               {m.meta?.source} · {m.meta?.completeness} · {hrWhen(m.meta?.calculated_at)}
             </div>
@@ -466,6 +479,9 @@ function HRInsightsScreen() {
           </div>
         ))}
       </>)}
+
+      {/* Compensation analyzer */}
+      <div style={{ marginTop: 10 }}><HRCompAnalyzer cfg={cfg} /></div>
 
       {/* Staffing forecast */}
       <div className="glass" style={{ padding: 14, marginTop: 10, marginBottom: 12 }}>
@@ -523,6 +539,128 @@ function HRInsightsScreen() {
           <button onClick={ask} style={hrBtnPrimary()}>Ask</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ── Project Labor — hours + loaded cost per job, allocation of orphans ─── */
+function HRProjectsScreen() {
+  const hr = window.__shieldHR;
+  const calc = window.__shieldLaborCalc;
+  const [raw, setRaw] = React.useState(null);
+  const [cfg, setCfg] = React.useState([]);
+  const load = React.useCallback(() => {
+    window.__shieldTime.payrollData().then(r => { if (r.ok) setRaw(r.data); });
+    hr.laborConfig().then(r => { if (r.ok) setCfg(r.data.components || []); });
+  }, []);
+  React.useEffect(() => { load(); }, [load]);
+
+  const { jobs, orphans } = React.useMemo(() => {
+    if (!raw) return { jobs: [], orphans: [] };
+    const rateOf = new Map();
+    (raw.workers || []).forEach(w => { if (w.profile_id && w.pay_rate != null) rateOf.set(w.profile_id, Number(w.pay_rate)); });
+    (raw.profiles || []).forEach(p => { if (p.hourly_rate != null) rateOf.set(p.id, Number(p.hourly_rate)); });
+    const nameOf = new Map((raw.profiles || []).map(p => [p.id, p.name || p.email || '']));
+    const counted = (raw.entries || []).filter(e => ['submitted', 'approved', 'synced', 'paid'].includes(e.status));
+    const byJob = new Map();
+    const orphans = [];
+    counted.forEach(e => {
+      if (!e.job_ref) { orphans.push({ ...e, techName: nameOf.get(e.tech_id) }); return; }
+      const j = byJob.get(e.job_ref) || { hours: 0, gross: 0, complete: true, techs: new Set() };
+      j.hours += Number(e.hours) || 0;
+      j.techs.add(e.tech_id);
+      const rate = rateOf.get(e.tech_id);
+      if (rate == null) j.complete = false; else j.gross += (Number(e.hours) || 0) * rate;
+      byJob.set(e.job_ref, j);
+    });
+    const jobs = [...byJob.entries()].map(([ref, j]) => ({
+      ref, hours: +j.hours.toFixed(2), techs: j.techs.size, complete: j.complete,
+      loaded: j.complete ? calc.loadedCost(j.gross, j.hours, cfg, 1).loaded : null,
+    })).sort((a, b) => b.hours - a.hours);
+    return { jobs, orphans: orphans.sort((a, b) => a.work_date < b.work_date ? 1 : -1) };
+  }, [raw, cfg]);
+
+  const allocate = (e) => {
+    const ref = window.prompt(`Assign a job/project reference to ${e.techName || 'this'} entry (${e.work_date}, ${e.hours}h):`, '');
+    if (!ref || !ref.trim()) return;
+    window.__shieldSupabase.from('time_entries').update({ job_ref: ref.trim() }).eq('id', e.id)
+      .then(({ error }) => {
+        if (error) shieldToast('Could not allocate: ' + error.message, 'warn');
+        else { shieldToast(`Allocated to ${ref.trim()}`, 'ok'); load(); }
+      });
+  };
+
+  return (
+    <div style={{ maxWidth: 980, margin: '0 auto' }}>
+      <div style={{ fontSize: 10.5, color: 'var(--text-low)', marginBottom: 12 }}>
+        Counted hours (submitted/approved/synced/paid) from the last 70 days grouped by job reference, at fully loaded
+        cost from your burden config. A cost shows only when every contributing person has a rate — never estimated.
+      </div>
+      {!raw && <div className="glass" style={{ padding: 24, textAlign: 'center', fontSize: 12, color: 'var(--text-low)' }}>Loading labor…</div>}
+      {raw && jobs.length === 0 && <HREmpty icon="🏗️" title="No allocated labor yet" sub="Time entries with a job reference roll up here per project." />}
+      {jobs.map(j => (
+        <div key={j.ref} className="glass" style={{ padding: '10px 14px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>{j.ref}</div>
+            <div style={{ fontSize: 10.5, color: 'var(--text-low)' }}>{j.techs} tech{j.techs === 1 ? '' : 's'}</div>
+          </div>
+          <span className="mono" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--brand)' }}>{j.hours}h</span>
+          <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: j.loaded != null ? 'var(--text-high)' : 'var(--status-warn)', minWidth: 96, textAlign: 'right' }}>
+            {j.loaded != null ? hrMoney(j.loaded) : 'rate missing'}
+          </span>
+        </div>
+      ))}
+      {orphans.length > 0 && (<>
+        <div className="label-sm" style={{ margin: '16px 0 8px', color: 'var(--status-warn)' }}>UNALLOCATED LABOR ({orphans.length} entr{orphans.length === 1 ? 'y' : 'ies'})</div>
+        {orphans.slice(0, 40).map(e => (
+          <div key={e.id} className="glass" style={{ padding: '8px 14px', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <span className="mono" style={{ fontSize: 10.5, color: 'var(--text-low)', minWidth: 78 }}>{e.work_date}</span>
+            <span style={{ fontSize: 11.5, color: 'var(--text-high)', flex: 1, minWidth: 120 }}>{e.techName || e.tech_id}</span>
+            <span className="mono" style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{Number(e.hours).toFixed(2)}h</span>
+            <button onClick={() => allocate(e)} style={hrBtnQuiet()}>Assign job</button>
+          </div>
+        ))}
+      </>)}
+    </div>
+  );
+}
+
+/* ── Compensation analyzer card (deterministic; used inside Insights) ───── */
+function HRCompAnalyzer({ cfg }) {
+  const calc = window.__shieldLaborCalc;
+  const [f, setF] = React.useState({ currentRate: '', proposedRate: '', hoursPerWeek: '40', targetMarginPct: '40' });
+  const [out, setOut] = React.useState(null);
+  const run = () => {
+    const o = calc.compChange({
+      currentRate: parseFloat(f.currentRate) || null, proposedRate: parseFloat(f.proposedRate) || null,
+      hoursPerWeek: parseFloat(f.hoursPerWeek), components: cfg, targetMarginPct: parseFloat(f.targetMarginPct),
+    });
+    if (!o) { shieldToast('Both rates are required', 'warn'); return; }
+    setOut(o);
+    window.__shieldHR.saveScenario('rate_change', o.inputs, o);
+  };
+  return (
+    <div className="glass" style={{ padding: 14, marginBottom: 12 }}>
+      <div className="label-sm" style={{ marginBottom: 8 }}>COMPENSATION ANALYZER</div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {[['currentRate', 'Current $/hr'], ['proposedRate', 'Proposed $/hr'], ['hoursPerWeek', 'Hrs/wk'], ['targetMarginPct', 'Target margin %']].map(([k, l]) => (
+          <input key={k} type="number" placeholder={l} value={f[k]} onChange={e => setF(x => ({ ...x, [k]: e.target.value }))} style={{ ...hrInput, width: 130 }} />
+        ))}
+        <button onClick={run} style={hrBtnPrimary()}>Analyze</button>
+      </div>
+      {out && (
+        <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-mid)' }}>
+          {hrMoney(out.inputs.currentRate)}/hr → {hrMoney(out.inputs.proposedRate)}/hr at {out.inputs.hoursPerWeek}h/wk:
+          direct increase <b className="mono">{hrMoney(out.directAnnualIncrease)}/yr</b>;
+          fully loaded <b className="mono">{hrMoney(out.loadedWeeklyIncrease)}/wk</b> = <b className="mono">{hrMoney(out.loadedAnnualIncrease)}/yr</b>
+          {' '}(loaded hourly {hrMoney(out.loadedHourlyBefore)} → {hrMoney(out.loadedHourlyAfter)}).
+          {out.requiredBillingRateAfter != null && <> To hold a {out.inputs.targetMarginPct}% labor margin, bill
+            {' '}<b className="mono">{hrMoney(out.requiredBillingRateAfter)}/hr</b> (was {hrMoney(out.requiredBillingRateBefore)}/hr).</>}
+          <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 4 }}>
+            Analysis only — an actual pay change goes through Hiring & Actions → proposal → Admin approval.
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -607,15 +745,26 @@ function HRSetupScreen() {
         {st?.error && <div style={{ fontSize: 11.5, color: 'var(--status-warn)' }}>{st.error}</div>}
         {st && !st.error && (<>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 12, color: 'var(--text-mid)' }}>
-            <span>Token: <b style={{ color: st.configured ? 'var(--status-ok)' : 'var(--status-warn)' }}>{st.configured ? 'configured (server-side)' : 'not configured'}</b></span>
+            {['hr', 'business'].map(inst => {
+              const c = st.credentials?.[inst] || {};
+              return <span key={inst}>{inst === 'hr' ? 'HR/Payroll credential' : 'Business credential'}:{' '}
+                <b style={{ color: c.configured ? 'var(--status-ok)' : 'var(--status-warn)' }}>
+                  {c.configured ? (c.dedicated ? 'configured' : 'using shared token') : 'not configured'}
+                </b></span>;
+            })}
             <span>Status: <b style={{ color: st.connection?.status === 'connected' ? 'var(--status-ok)' : 'var(--text-low)' }}>{st.connection?.status || 'unknown'}</b></span>
             {st.connection?.last_ok_at && <span>Last OK: {hrWhen(st.connection.last_ok_at)}</span>}
           </div>
           {st.connection?.last_error && <div style={{ fontSize: 10.5, color: 'var(--status-warn)', marginTop: 6 }}>{st.connection.last_error}</div>}
           <div style={{ fontSize: 10.5, color: 'var(--text-low)', marginTop: 8 }}>
-            The API token lives only in Supabase secrets (<span className="mono">RIPPLING_API_TOKEN</span>, plus optional{' '}
-            <span className="mono">RIPPLING_API_VERSION</span>) and is never stored in the database, sent to the browser,
-            or displayed anywhere — this screen only ever shows whether it exists. Setup steps: docs/rippling-setup-checklist.md.
+            Two independently revocable Rippling API tokens live only in Supabase secrets —{' '}
+            <span className="mono">HR_RIPPLING_API_TOKEN</span> (sync, HR/Payroll MCP) and{' '}
+            <span className="mono">BUSINESS_RIPPLING_API_TOKEN</span> (Business MCP) — never in the database, the
+            browser, or any prompt; this screen only shows whether each exists. Two MCP servers:{' '}
+            <span className="mono">/functions/v1/mcp-business</span> and <span className="mono">/functions/v1/mcp-hr</span>,
+            each gated by its own access key (<span className="mono">MCP_BUSINESS_ACCESS_KEY</span> /{' '}
+            <span className="mono">MCP_HR_ACCESS_KEY</span>) plus an office user login — revoke one without touching the
+            other. Setup steps: docs/rippling-setup-checklist.md.
           </div>
         </>)}
       </div>
@@ -675,9 +824,10 @@ function HRSetupScreen() {
 
 /* ── The hub ────────────────────────────────────────────────────────────── */
 function HRHubScreen() {
-  return <HubTabs initial={{ 'hr-payroll': 'paycenter', 'hr-hiring': 'hiring', 'hr-insights': 'insights', 'hr-audit': 'audit', 'hr-setup': 'setup' }[window.__hubScreenId] || 'people'} tabs={[
+  return <HubTabs initial={{ 'hr-payroll': 'paycenter', 'hr-hiring': 'hiring', 'hr-projects': 'projects', 'hr-insights': 'insights', 'hr-audit': 'audit', 'hr-setup': 'setup' }[window.__hubScreenId] || 'people'} tabs={[
     { id: 'people', label: 'People', C: HRPeopleScreen },
     { id: 'paycenter', label: 'Payroll Center', C: HRPayrollCenterScreen },
+    { id: 'projects', label: 'Project Labor', C: HRProjectsScreen },
     { id: 'hiring', label: 'Hiring & Actions', C: HRHiringScreen },
     { id: 'insights', label: 'Insights', C: HRInsightsScreen },
     { id: 'audit', label: 'Audit', C: HRAuditScreen },
@@ -685,4 +835,4 @@ function HRHubScreen() {
   ]} />;
 }
 
-Object.assign(window, { HRHubScreen, HRPeopleScreen, HRPayrollCenterScreen, HRHiringScreen, HRInsightsScreen, HRAuditScreen, HRSetupScreen });
+Object.assign(window, { HRHubScreen, HRPeopleScreen, HRPayrollCenterScreen, HRProjectsScreen, HRHiringScreen, HRInsightsScreen, HRAuditScreen, HRSetupScreen });

@@ -91,6 +91,32 @@ cursor pagination via `limit`/`cursor` → `next_cursor`):
   later after verification against developer.rippling.com. The UI says exactly
   this ("Final onboarding action required in Rippling").
 
+## 2b. Two-instance architecture (Business MCP vs HR/Payroll MCP)
+
+The integration runs as TWO separate MCP server instances that share libraries
+and the database but stay independently authenticated, configurable,
+deployable, auditable and revocable:
+
+| | `mcp-business` | `mcp-hr` |
+|---|---|---|
+| Purpose | BI, labor analytics, finance, staffing, profitability, scenarios | HR admin, hiring, compensation, time, payroll workflows |
+| Rippling credential | `BUSINESS_RIPPLING_API_TOKEN` | `HR_RIPPLING_API_TOKEN` |
+| Instance access key | `MCP_BUSINESS_ACCESS_KEY` (`x-mcp-key`) | `MCP_HR_ACCESS_KEY` (`x-mcp-key`) |
+| Write capability | none (read + analyze + scenario logs) | prepare-only → human Admin approval via the `hr` function |
+| Audit tag | `instance:"mcp-business"` | `instance:"mcp-hr"` |
+
+Both tokens fall back to the legacy `RIPPLING_API_TOKEN` so a single-token
+setup keeps working until the dedicated tokens are created. Revoking either
+instance = rotate/clear its access key (and/or its Rippling token) — the other
+is untouched. Credential selection lives in one place
+(`_shared/rippling.ts:tokenFor`), so the two tokens can never mix.
+
+**Browser-automation note:** creating the two Rippling API tokens could not be
+done from the build environment (no browser-control MCP attached; the network
+egress proxy blocks rippling.com; a container browser would be invisible for
+login/MFA anyway). The exact 2-minute manual steps are in
+`docs/rippling-setup-checklist.md`; everything on the application side is done.
+
 ## 3. Architecture decisions
 
 1. **All Rippling traffic stays server-side** in edge functions. The browser

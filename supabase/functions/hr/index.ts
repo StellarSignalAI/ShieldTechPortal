@@ -20,7 +20,7 @@
 // kinds produces a validated hand-off package + deep link into Rippling —
 // no undocumented endpoint is ever called (see docs/rippling-integration.md).
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { RIPPLING_ENDPOINTS, RipplingError, ripplingConfigured, ripplingPaginate } from "../_shared/rippling.ts";
+import { RIPPLING_ENDPOINTS, RipplingError, ripplingConfigured, ripplingCredentialStatus, ripplingPaginate } from "../_shared/rippling.ts";
 
 type Admin = ReturnType<typeof createClient>;
 
@@ -68,7 +68,7 @@ async function syncWorkers(admin: Admin, caller: Caller, onlyEmail?: string) {
   }).select().single();
   const stats = { seen: 0, upserted: 0, linked: 0, conflicts: 0 };
   try {
-    for await (const w of ripplingPaginate(RIPPLING_ENDPOINTS.workers)) {
+    for await (const w of ripplingPaginate(RIPPLING_ENDPOINTS.workers, { instance: "hr" })) {
       const email = String(
         (w as Record<string, Record<string, unknown>>)?.work_email ??
         (w?.user as Record<string, unknown>)?.work_email ?? w?.email ?? "",
@@ -437,16 +437,58 @@ async function metricsRun(admin: Admin, caller: Caller) {
     meta: { source: "time_entries×rates×labor_cost_config", completeness: missing ? `partial (${missing} entries without a rate)` : "complete", calculated_at: calculatedAt, gross: r2(gross), hours: r2(hours) },
   });
 
-  // Revenue + AR from the QuickBooks landing tables (only if data exists).
-  const { data: invoices } = await admin.from("qbo_invoices").select("total, balance, status, txn_date").gte("txn_date", monthStart).limit(2000);
+  // Revenue / AR / AP from the QuickBooks landing tables (only if data exists —
+  // absent data yields no snapshot, never a guessed number).
+  const yearStart = `${now.getUTCFullYear()}-01-01`;
+  const { data: invoices } = await admin.from("qbo_invoices").select("total, balance, status, txn_date").gte("txn_date", yearStart).limit(5000);
   if (invoices && invoices.length) {
-    const revenue = invoices.reduce((s, i) => s + (Number(i.total) || 0), 0);
-    inserts.push({ metric: "invoiced_month", period_start: monthStart, period_end: now.toISOString().slice(0, 10), value: r2(revenue), meta: { source: "qbo_invoices", completeness: "complete", calculated_at: calculatedAt, count: invoices.length } });
+    const mtd = invoices.filter((i) => i.txn_date >= monthStart);
+    if (mtd.length) inserts.push({ metric: "invoiced_month", period_start: monthStart, period_end: now.toISOString().slice(0, 10), value: r2(mtd.reduce((s, i) => s + (Number(i.total) || 0), 0)), meta: { source: "qbo_invoices", completeness: "complete", calculated_at: calculatedAt, count: mtd.length } });
+    inserts.push({ metric: "invoiced_ytd", period_start: yearStart, period_end: now.toISOString().slice(0, 10), value: r2(invoices.reduce((s, i) => s + (Number(i.total) || 0), 0)), meta: { source: "qbo_invoices", completeness: "complete", calculated_at: calculatedAt, count: invoices.length } });
   }
   const { data: openInv } = await admin.from("qbo_invoices").select("balance").gt("balance", 0).limit(2000);
   if (openInv && openInv.length) {
     const ar = openInv.reduce((s, i) => s + (Number(i.balance) || 0), 0);
     inserts.push({ metric: "ar_open", period_start: null, period_end: now.toISOString().slice(0, 10), value: r2(ar), meta: { source: "qbo_invoices.balance", completeness: "complete", calculated_at: calculatedAt, count: openInv.length } });
+  }
+  const { data: openBills } = await admin.from("qbo_bills").select("balance").gt("balance", 0).limit(2000);
+  if (openBills && openBills.length) {
+    const ap = openBills.reduce((s, i) => s + (Number(i.balance) || 0), 0);
+    inserts.push({ metric: "ap_open", period_start: null, period_end: now.toISOString().slice(0, 10), value: r2(ap), meta: { source: "qbo_bills.balance", completeness: "complete", calculated_at: calculatedAt, count: openBills.length } });
+  }
+  // Payroll next 14 days: 2× the trailing 4-full-week average of loaded weekly
+  // labor cost. Explicitly a projection from real trailing data; meta says so.
+  {
+    const start28 = new Date(Date.now() - 35 * 86400000).toISOString().slice(0, 10);
+    const { data: trail } = await admin.from("time_entries").select("tech_id, work_date, hours, status").gte("work_date", start28).lt("work_date", weekStart).limit(5000);
+    const weekly = new Map<string, number>();
+    const weeklyHours = new Map<string, number>();
+    let trailMissing = 0;
+    for (const e of trail ?? []) {
+      if (!["submitted", "approved", "synced", "paid"].includes(e.status)) continue;
+      const rate = rates.get(e.tech_id);
+      if (rate == null) { trailMissing++; continue; }
+      const wk = mondayOf(e.work_date);
+      weekly.set(wk, (weekly.get(wk) ?? 0) + (Number(e.hours) || 0) * rate);
+      weeklyHours.set(wk, (weeklyHours.get(wk) ?? 0) + (Number(e.hours) || 0));
+    }
+    if (weekly.size > 0) {
+      const grossAvg = [...weekly.values()].reduce((s, v) => s + v, 0) / weekly.size;
+      const hoursAvg = [...weeklyHours.values()].reduce((s, v) => s + v, 0) / weekly.size;
+      const { loaded: weeklyLoaded } = loadedCost(grossAvg, hoursAvg, 1, (cfg?.components ?? []) as Component[]);
+      inserts.push({
+        metric: "payroll_next_14d", period_start: now.toISOString().slice(0, 10),
+        period_end: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10),
+        value: r2(weeklyLoaded * 2),
+        meta: { source: `projection: 2× trailing ${weekly.size}-week avg loaded labor`, completeness: trailMissing ? `partial (${trailMissing} entries without a rate)` : "complete", calculated_at: calculatedAt, weekly_avg_loaded: r2(weeklyLoaded) },
+      });
+      // Payroll as % of trailing revenue when both sides exist.
+      const trailingInv = (invoices ?? []).filter((i) => i.txn_date >= start28);
+      if (trailingInv.length) {
+        const rev = trailingInv.reduce((s, i) => s + (Number(i.total) || 0), 0);
+        if (rev > 0) inserts.push({ metric: "payroll_pct_revenue", period_start: start28, period_end: now.toISOString().slice(0, 10), value: r2((weeklyLoaded * weekly.size) / rev * 100), meta: { source: "trailing loaded labor ÷ qbo_invoices", completeness: trailMissing ? "partial" : "complete", calculated_at: calculatedAt } });
+      }
+    }
   }
   if (inserts.length) await admin.from("financial_metric_snapshots").insert(inserts);
 
@@ -514,7 +556,7 @@ Deno.serve(async (req) => {
           admin.from("integration_connections").select("*").eq("provider", "rippling").maybeSingle(),
           admin.from("integration_sync_runs").select("*").eq("provider", "rippling").order("started_at", { ascending: false }).limit(5),
         ]);
-        return json(200, { ok: true, data: { configured: ripplingConfigured(), connection: conn, recent_runs: runs ?? [] } });
+        return json(200, { ok: true, data: { configured: ripplingConfigured("hr"), credentials: ripplingCredentialStatus(), connection: conn, recent_runs: runs ?? [] } });
       }
       case "set_flags": {
         if (caller.role !== "Admin") return json(403, { ok: false, error: "Admin only" });
