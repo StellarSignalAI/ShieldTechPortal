@@ -111,6 +111,42 @@ export function scenario(kind, baseline, params, components = []) {
   };
 }
 
+/* Billing rate needed so an hour billed at it leaves marginPct after the
+   loaded hourly cost. margin = (rate - cost) / rate → rate = cost / (1 - m). */
+export function billingRateForMargin(loadedHourlyCost, marginPct) {
+  const m = Number(marginPct) / 100;
+  if (loadedHourlyCost == null || !(m >= 0) || m >= 1) return null;
+  return r2(Number(loadedHourlyCost) / (1 - m));
+}
+
+/* Compensation change analysis: current vs proposed pay. Direct + loaded
+   annual deltas, weekly payroll impact, and the billing rate required to
+   preserve a target labor margin at the new loaded cost. Every output is
+   deterministic from the inputs shown. */
+export function compChange({ currentRate, proposedRate, hoursPerWeek = 40, weeksPerYear = 52, components = [], targetMarginPct = null }) {
+  if (currentRate == null || proposedRate == null) return null;
+  const cur = Number(currentRate), next = Number(proposedRate);
+  const h = Number(hoursPerWeek) || 0, w = Number(weeksPerYear) || 52;
+  const directAnnual = r2((next - cur) * h * w);
+  const curLoaded = loadedCost(cur * h, h, components, 1).loaded;
+  const nextLoaded = loadedCost(next * h, h, components, 1).loaded;
+  const out = {
+    inputs: { currentRate: cur, proposedRate: next, hoursPerWeek: h, weeksPerYear: w, targetMarginPct },
+    directAnnualIncrease: directAnnual,
+    loadedWeeklyBefore: curLoaded,
+    loadedWeeklyAfter: nextLoaded,
+    loadedWeeklyIncrease: r2(nextLoaded - curLoaded),
+    loadedAnnualIncrease: r2((nextLoaded - curLoaded) * w),
+    loadedHourlyBefore: loadedHourlyRate(cur, components),
+    loadedHourlyAfter: loadedHourlyRate(next, components),
+  };
+  if (targetMarginPct != null) {
+    out.requiredBillingRateBefore = billingRateForMargin(out.loadedHourlyBefore, targetMarginPct);
+    out.requiredBillingRateAfter = billingRateForMargin(out.loadedHourlyAfter, targetMarginPct);
+  }
+  return out;
+}
+
 /* Group time entries (id, tech_id, work_date, hours, status) into per-tech
    weekly buckets keyed by Monday. countedStatuses defaults to payable ones. */
 export function weeklyBuckets(entries, { counted = ['submitted', 'approved', 'synced', 'paid'] } = {}) {
@@ -130,5 +166,5 @@ export function weeklyBuckets(entries, { counted = ['submitted', 'approved', 'sy
 export const __calc = { r2 };
 
 if (typeof window !== 'undefined') {
-  window.__shieldLaborCalc = { otSplit, weeklyGross, loadedCost, loadedHourlyRate, hireVsOvertime, staffingForecast, scenario, weeklyBuckets };
+  window.__shieldLaborCalc = { otSplit, weeklyGross, loadedCost, loadedHourlyRate, hireVsOvertime, staffingForecast, scenario, weeklyBuckets, billingRateForMargin, compChange };
 }

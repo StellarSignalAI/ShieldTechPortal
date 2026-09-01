@@ -97,16 +97,45 @@ Existing pg_cron → edge-function pattern applies: point a cron job at
 `{"action":"metrics_run"}`. Runs are idempotent (upserts keyed on natural
 keys) and recorded in `integration_sync_runs` / `audit_events`.
 
-## MCP server
+## Two MCP server instances
 
-`POST https://<project>.supabase.co/functions/v1/mcp-hr` (Streamable HTTP).
-Authenticate with a Supabase access token of an office user. Tools:
-`rippling_get_workers`, `rippling_get_worker`, `rippling_sync_workers`,
-`hr_get_time_entries`, `payroll_get_exceptions`, `payroll_get_snapshots`,
-`payroll_run_exception_scan`, `payroll_prepare_run`, `labor_get_cost_config`,
-`business_get_metrics`, `business_get_brief`, `business_get_recommendations`,
-`business_refresh_metrics`, `forecast_staffing`, `scenario_hire_vs_overtime`,
-`get_proposed_actions`, `audit_get_events`, `prepare_hire_draft`,
-`prepare_rate_change`, `prepare_comp_change`, `prepare_bonus`,
-`prepare_timecard_edit`, `prepare_payroll_run`, `approve_and_execute_action`,
-`reject_action`.
+Both are Streamable-HTTP MCP servers (official SDK). Each requires an office
+user's Supabase access token (`Authorization: Bearer …`) AND, when its access
+key secret is set, a matching `x-mcp-key` header — so each instance is
+independently revocable (rotate/clear `MCP_BUSINESS_ACCESS_KEY` or
+`MCP_HR_ACCESS_KEY`). Every audit event they write carries the instance name.
+Shared plumbing lives in `_shared/mcp-common.ts`; Rippling credential
+selection in `_shared/rippling.ts` (`business` → `BUSINESS_RIPPLING_API_TOKEN`,
+`hr` → `HR_RIPPLING_API_TOKEN`, each falling back to `RIPPLING_API_TOKEN`).
+
+### `POST /functions/v1/mcp-business` — ShieldTech Business MCP
+Read + analyze only; deterministic math server-side; missing data returns
+null, never an estimate. Tools: `business_get_health`,
+`business_get_daily_brief`, `business_get_alerts`,
+`business_get_recommendations`, `business_refresh_metrics`,
+`rippling_get_workers` (mirror, or `live:true` via the business credential),
+`rippling_get_worker`, `rippling_get_compensation`, `rippling_get_time`,
+`rippling_get_payroll_periods`, `rippling_get_payroll_history`,
+`rippling_get_organization`, `labor_analyze_employee`,
+`labor_analyze_project`, `labor_get_utilization`, `labor_get_overtime`,
+`finance_get_summary`, `finance_get_cashflow`, `finance_get_payroll_ratio`,
+`staffing_get_capacity`, `staffing_forecast`,
+`staffing_compare_hire_vs_overtime`, `scenario_hire_employee`,
+`scenario_change_compensation`, `scenario_change_billing_rate`,
+`scenario_reduce_overtime`.
+
+### `POST /functions/v1/mcp-hr` — ShieldTech HR/Payroll MCP
+Read + analyze + PREPARE; consequential changes require the human-approval
+pipeline. Tools: `hr_get_workers`, `hr_get_worker`, `hr_get_compensation`,
+`hr_sync_workers`, `time_get_entries`, `time_get_employee_summary`,
+`payroll_get_current_period`, `payroll_get_history`, `payroll_preview`,
+`payroll_get_exceptions`, `payroll_run_exception_scan`,
+`payroll_compare_periods`, `hr_prepare_new_hire`,
+`hr_prepare_employee_change`, `hr_prepare_compensation_change`,
+`time_prepare_change`, `payroll_prepare_bonus`, `get_proposed_actions`,
+`approve_and_execute_action`, `reject_action`, `rippling_get_capabilities`.
+
+Rippling Functions execution and payroll submission are deliberately NOT
+exposed: those capabilities could not be verified against current official
+Rippling documentation from this deployment environment, and unverified
+endpoints are never called — `rippling_get_capabilities` reports exactly this.
