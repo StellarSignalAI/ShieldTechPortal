@@ -49,6 +49,7 @@ const NAV_GROUPS = [
 },
 { id: 'admin', label: 'ADMIN', collapsible: false, items: [
   { id: 'employees', icon: 'employees', label: 'Team & Skills', useSvg: true },
+  { id: 'hr', icon: 'employees', label: 'HR Center', useSvg: true },
   { id: 'skills', icon: 'certs', label: 'Skills Matrix', useSvg: true, mobileOnly: true },
   { id: 'users', icon: 'credential', label: 'Users & Invites', useSvg: true },
   { id: 'approvals', icon: 'check', label: 'Approvals & Expenses', useSvg: true },
@@ -556,6 +557,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     costing: 'Job Costing', audit: 'Audit Trail',
     warroom: 'Monitoring Console', floorplan: 'Monitoring Console', anomaly: 'Monitoring Console',
     expenses: 'Expense Approval', timesheets: 'Timesheet Approval', payroll: 'Payroll',
+    hr: 'HR Center',
     projects: 'Projects', 'plan-room': 'BlueShield Studio', inventory: 'Inventory',
     reports: 'Reports & BI', proposals: 'Proposal Builder',
     employees: 'Team Management', contracts: 'Contracts', sla: 'SLA Dashboard',
