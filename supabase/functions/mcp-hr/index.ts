@@ -19,7 +19,7 @@ import { WebStandardStreamableHTTPServerTransport } from "npm:@modelcontextproto
 import { z } from "npm:zod@3.23.8";
 import {
   type McpCaller, auditMcp, hrForward, makeAdmin, mcpAuthenticate,
-  mcpCors, mcpError, mcpPropose, mcpText,
+  mcpCors, mcpError, mcpPropose, mcpText, mcpUnauthorized, protectedResourceMetadata,
 } from "../_shared/mcp-common.ts";
 
 const INSTANCE = "mcp-hr";
@@ -63,6 +63,29 @@ function buildServer(caller: McpCaller): McpServer {
     });
   });
   tool("hr_sync_workers", "Pull the worker roster from Rippling (HR credential) into the mirror.", {}, async () => mcpText(await hrForward(caller, { action: "sync_workers" })));
+  tool("hr_get_company", "Company/organization summary: headcount by department, employment type and status from the synced roster, plus integration connection health. (Worker locations are not part of the synced data and are reported as unavailable, not guessed.)", {}, async () => {
+    const [{ data: workers }, { data: conn }] = await Promise.all([
+      admin.from("rippling_workers").select("department, employment_type, status"),
+      admin.from("integration_connections").select("status, last_ok_at, last_error").eq("provider", "rippling").maybeSingle(),
+    ]);
+    const by = (key: "department" | "employment_type" | "status") => {
+      const m: Record<string, number> = {};
+      for (const w of workers ?? []) { const k = (w[key] as string) || "(unset)"; m[k] = (m[k] ?? 0) + 1; }
+      return m;
+    };
+    return mcpText({
+      company: "ShieldTech Security", total_workers: (workers ?? []).length,
+      by_department: by("department"), by_employment_type: by("employment_type"), by_status: by("status"),
+      rippling_connection: conn ?? { status: "unknown" },
+      locations: null, locations_note: "unavailable — worker locations are not synced",
+    });
+  });
+  tool("hr_get_departments", "Departments with headcount, from the synced roster.", {}, async () => {
+    const { data } = await admin.from("rippling_workers").select("department");
+    const m: Record<string, number> = {};
+    for (const w of data ?? []) { const k = (w.department as string) || "(unset)"; m[k] = (m[k] ?? 0) + 1; }
+    return mcpText({ departments: Object.entries(m).map(([name, headcount]) => ({ name, headcount })) });
+  });
 
   /* ── TIME ── */
   tool("time_get_entries", "Time entries in a date range (YYYY-MM-DD), optionally for one tech.", { start: z.string(), end: z.string(), tech_id: z.string().optional() }, async (a) => {
@@ -86,7 +109,44 @@ function buildServer(caller: McpCaller): McpServer {
     });
   });
 
+  tool("time_get_current_period", "This week's counted hours per employee (Monday-anchored), with the weekly-OT split.", {}, async () => {
+    const monday = (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); })();
+    const [{ data: entries }, { data: profiles }] = await Promise.all([
+      admin.from("time_entries").select("tech_id,hours,status").gte("work_date", monday).limit(3000),
+      admin.from("profiles").select("id,name"),
+    ]);
+    const names = new Map((profiles ?? []).map((p) => [p.id, p.name ?? ""]));
+    const per = new Map<string, number>();
+    for (const e of entries ?? []) {
+      if (!["submitted", "approved", "synced", "paid"].includes(e.status)) continue;
+      per.set(e.tech_id, (per.get(e.tech_id) ?? 0) + (Number(e.hours) || 0));
+    }
+    return mcpText({
+      week_start: monday,
+      employees: [...per.entries()].map(([tech_id, hours]) => ({
+        tech_id, name: names.get(tech_id) ?? "", hours: Math.round(hours * 100) / 100,
+        overtime: Math.round(Math.max(0, hours - 40) * 100) / 100,
+      })).sort((a, b) => b.hours - a.hours),
+    });
+  });
+
   /* ── PAYROLL ── */
+  tool("payroll_get_summary", "One-call payroll overview: latest snapshot totals, open exceptions by severity, and recent payout weeks.", {}, async () => {
+    const [{ data: snap }, { data: exs }, { data: pays }] = await Promise.all([
+      admin.from("payroll_snapshots").select("id,period_start,period_end,totals,created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      admin.from("payroll_exceptions").select("severity").eq("status", "open"),
+      admin.from("payroll_payments").select("week_start,amount").order("week_start", { ascending: false }).limit(24),
+    ]);
+    const sev: Record<string, number> = {};
+    for (const x of exs ?? []) sev[x.severity] = (sev[x.severity] ?? 0) + 1;
+    const byWeek = new Map<string, number>();
+    for (const p of pays ?? []) byWeek.set(p.week_start, (byWeek.get(p.week_start) ?? 0) + (Number(p.amount) || 0));
+    return mcpText({
+      latest_snapshot: snap ?? null,
+      open_exceptions: { total: (exs ?? []).length, by_severity: sev },
+      recent_payout_weeks: [...byWeek.entries()].map(([week_start, total_paid]) => ({ week_start, total_paid: Math.round(total_paid * 100) / 100 })),
+    });
+  });
   tool("payroll_get_current_period", "Latest prepared payroll snapshot + open exception count.", {}, async () => {
     const [{ data: snap }, { data: exs }] = await Promise.all([
       admin.from("payroll_snapshots").select("*").order("created_at", { ascending: false }).limit(1).maybeSingle(),
@@ -147,13 +207,21 @@ function buildServer(caller: McpCaller): McpServer {
     const { data } = await admin.from("proposed_actions").select("id,kind,summary,status,created_via,created_at,approved_at,executed_at,error").order("created_at", { ascending: false }).limit(100);
     return mcpText({ actions: data ?? [] });
   });
-  tool("approve_and_execute_action", "Approve then execute a proposed action. Succeeds ONLY when this connection is authenticated as a human Admin who is not the action's creator — validated server-side from the transport credential and the action's stored state; any 'approved' argument is ignored.", { id: z.string() }, async (a) => {
+  tool("action_get", "Full detail of one proposed action, including payload, approver and execution result.", { id: z.string() }, async (a) => {
+    const { data } = await admin.from("proposed_actions").select("*").eq("id", String(a.id)).maybeSingle();
+    return mcpText({ action: data ?? null });
+  });
+  tool("action_approve", "Approve a proposed action. Succeeds ONLY when this connection is authenticated as a human Admin who is not the action's creator — validated server-side from the transport credential and the action's stored state; any 'approved' argument in tool input is ignored.", { id: z.string() }, async (a) =>
+    mcpText(await hrForward(caller, { action: "action_approve", id: String(a.id) })));
+  tool("action_reject", "Reject a proposed action (Admin).", { id: z.string() }, async (a) => mcpText(await hrForward(caller, { action: "action_reject", id: String(a.id) })));
+  tool("action_execute", "Execute an already-approved action (Admin; feature flags gate execution). Local kinds apply in the portal; Rippling kinds return a validated hand-off package + deep link — final completion happens in Rippling.", { id: z.string() }, async (a) =>
+    mcpText(await hrForward(caller, { action: "action_execute", id: String(a.id) })));
+  tool("approve_and_execute_action", "Convenience: approve then immediately execute a proposed action, under the same server-side Admin checks as action_approve + action_execute.", { id: z.string() }, async (a) => {
     const approved = await hrForward(caller, { action: "action_approve", id: String(a.id) });
     if (!approved?.ok) return mcpText({ step: "approve", ...approved });
     const executed = await hrForward(caller, { action: "action_execute", id: String(a.id) });
     return mcpText({ step: "execute", approve: approved, execute: executed });
   });
-  tool("reject_action", "Reject a proposed action (Admin).", { id: z.string() }, async (a) => mcpText(await hrForward(caller, { action: "action_reject", id: String(a.id) })));
 
   /* ── CAPABILITIES (honest) ── */
   tool("rippling_get_capabilities", "What this integration can and cannot do against Rippling's public API, and why.", {}, async () => {
@@ -176,12 +244,13 @@ function buildServer(caller: McpCaller): McpServer {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: mcpCors });
-  const { caller, error } = await mcpAuthenticate(req, admin, "MCP_HR_ACCESS_KEY");
-  if (!caller) {
-    return new Response(JSON.stringify({ jsonrpc: "2.0", error: { code: -32001, message: `Unauthorized (${INSTANCE}): ${error}` }, id: null }), {
-      status: 401, headers: { ...mcpCors, "Content-Type": "application/json" },
-    });
+  // OAuth discovery (RFC 9728) — public by design so MCP clients like ChatGPT
+  // can find the Supabase Auth OAuth server before authenticating.
+  if (req.method === "GET" && new URL(req.url).pathname.endsWith("/.well-known/oauth-protected-resource")) {
+    return protectedResourceMetadata("mcp-hr", "ShieldTech HR & Payroll");
   }
+  const { caller, error } = await mcpAuthenticate(req, admin, "MCP_HR_ACCESS_KEY");
+  if (!caller) return mcpUnauthorized("mcp-hr", INSTANCE, error ?? "authentication failed");
   const server = buildServer(caller);
   const transport = new WebStandardStreamableHTTPServerTransport();
   await server.connect(transport);
