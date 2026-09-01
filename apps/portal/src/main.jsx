@@ -92,7 +92,11 @@ window.addEventListener('resize', () => {
   }, 350);
 });
 
-if (isMobile) {
+if (window.location.pathname === '/oauth/consent') {
+  // OAuth 2.1 consent screen (Supabase Auth OAuth server authorization path)
+  // — standalone page; the app shells never load here.
+  import('@shared/oauth-consent.js');
+} else if (isMobile) {
   import('./mobile.jsx');
 } else {
   import('./desktop.jsx');

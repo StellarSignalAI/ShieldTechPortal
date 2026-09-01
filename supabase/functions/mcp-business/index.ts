@@ -20,7 +20,7 @@ import { z } from "npm:zod@3.23.8";
 import { RIPPLING_ENDPOINTS, ripplingPaginate } from "../_shared/rippling.ts";
 import {
   type McpCaller, auditMcp, hrForward, makeAdmin, mcpAuthenticate,
-  mcpCors, mcpError, mcpText,
+  mcpCors, mcpError, mcpText, mcpUnauthorized, protectedResourceMetadata,
 } from "../_shared/mcp-common.ts";
 
 const INSTANCE = "mcp-business";
@@ -326,12 +326,13 @@ function buildServer(caller: McpCaller): McpServer {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: mcpCors });
-  const { caller, error } = await mcpAuthenticate(req, admin, "MCP_BUSINESS_ACCESS_KEY");
-  if (!caller) {
-    return new Response(JSON.stringify({ jsonrpc: "2.0", error: { code: -32001, message: `Unauthorized (${INSTANCE}): ${error}` }, id: null }), {
-      status: 401, headers: { ...mcpCors, "Content-Type": "application/json" },
-    });
+  // OAuth discovery (RFC 9728) — public by design so MCP clients like ChatGPT
+  // can find the Supabase Auth OAuth server before authenticating.
+  if (req.method === "GET" && new URL(req.url).pathname.endsWith("/.well-known/oauth-protected-resource")) {
+    return protectedResourceMetadata("mcp-business", "ShieldTech Business Intelligence");
   }
+  const { caller, error } = await mcpAuthenticate(req, admin, "MCP_BUSINESS_ACCESS_KEY");
+  if (!caller) return mcpUnauthorized("mcp-business", INSTANCE, error ?? "authentication failed");
   const server = buildServer(caller);
   const transport = new WebStandardStreamableHTTPServerTransport();
   await server.connect(transport);

@@ -4,6 +4,12 @@
   "installCommand": "cd ../.. && npm install",
   "buildCommand": "cd ../.. && npm run build:portal",
   "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/oauth/consent",
+      "destination": "/index.html"
+    }
+  ],
   "redirects": [
     {
       "source": "/sales/android",

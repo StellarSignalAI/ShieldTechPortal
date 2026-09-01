@@ -52,6 +52,40 @@ export async function mcpAuthenticate(
   return { caller: { id: data.user.id, name: p.name ?? "", role: p.role, jwt } };
 }
 
+/* OAuth resource-server plumbing (RFC 9728 / MCP authorization spec), so
+   OAuth-capable MCP clients — ChatGPT Business custom connectors included —
+   can discover the Supabase Auth OAuth 2.1 server and log a real portal user
+   in. The MCP endpoint never sees a client secret; it just validates the
+   Supabase-issued access token like any other user JWT. */
+export function resourceUrl(slug: string): string {
+  return `${Deno.env.get("SUPABASE_URL")}/functions/v1/${slug}`;
+}
+
+export function protectedResourceMetadata(slug: string, name: string): Response {
+  return new Response(JSON.stringify({
+    resource: resourceUrl(slug),
+    authorization_servers: [`${Deno.env.get("SUPABASE_URL")}/auth/v1`],
+    bearer_methods_supported: ["header"],
+    resource_name: name,
+    resource_documentation: "https://github.com/StellarSignalAI/ShieldTechPortal/blob/main/docs/chatgpt-rippling-mcp.md",
+  }), { status: 200, headers: { ...mcpCors, "Content-Type": "application/json" } });
+}
+
+export function mcpUnauthorized(slug: string, instance: string, error: string): Response {
+  return new Response(JSON.stringify({
+    jsonrpc: "2.0",
+    error: { code: -32001, message: `Unauthorized (${instance}): ${error}` },
+    id: null,
+  }), {
+    status: 401,
+    headers: {
+      ...mcpCors,
+      "Content-Type": "application/json",
+      "WWW-Authenticate": `Bearer realm="${instance}", resource_metadata="${resourceUrl(slug)}/.well-known/oauth-protected-resource"`,
+    },
+  });
+}
+
 export const mcpText = (v: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(v, null, 1).slice(0, 60_000) }] });
 export const mcpError = (msg: string) => ({ content: [{ type: "text" as const, text: JSON.stringify({ ok: false, error: msg }) }], isError: true });
 
