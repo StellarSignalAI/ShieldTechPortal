@@ -321,7 +321,6 @@ async function exceptionsRun(admin: Admin, caller: Caller, weeks = 3) {
 }
 
 /* ── Proposed-action lifecycle (Admin only; approval = authenticated human) ── */
-const EXECUTABLE_LOCALLY = new Set(["local_rate_change", "timecard_edit"]);
 const HANDOFF_KINDS = new Set(["hire_draft", "payroll_run", "comp_change", "bonus", "status_change"]);
 
 async function actionTransition(admin: Admin, caller: Caller, id: string, verb: "approve" | "reject" | "execute") {
