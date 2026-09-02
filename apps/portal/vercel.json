@@ -6,6 +6,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/oauth/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
       "source": "/oauth/consent",
       "destination": "/index.html"
     }
