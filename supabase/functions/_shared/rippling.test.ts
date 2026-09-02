@@ -89,6 +89,18 @@ Deno.test("pagination walks every cursor page and stops", withFetch(async (calls
   return json(200, { results: [{ id: 1 }, { id: 2 }], next_cursor: "c1" });
 }));
 
+Deno.test("pagination follows next_link (official SDK PageCursorURL model)", withFetch(async (calls) => {
+  setToken("t");
+  const items: unknown[] = [];
+  for await (const w of ripplingPaginate("/payroll-runs/", { instance: "hr" })) items.push(w);
+  if (items.length !== 3) throw new Error("expected 3 items across next_link pages, got " + items.length);
+  if (calls.length !== 2) throw new Error("expected 2 page fetches, got " + calls.length);
+  if (!calls[1].includes("/payroll-runs/?cursor=abc")) throw new Error("next_link path not followed: " + calls[1]);
+}, (u) => {
+  if (u.includes("cursor=abc")) return json(200, { results: [{ id: 3 }], next_link: null });
+  return json(200, { results: [{ id: 1 }, { id: 2 }], next_link: "https://rest.ripplingapis.com/payroll-runs/?cursor=abc" });
+}));
+
 Deno.test("successful empty page → genuinely empty, not an error", withFetch(async () => {
   setToken("t");
   const items: unknown[] = [];
