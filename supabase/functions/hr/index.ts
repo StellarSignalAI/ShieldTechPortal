@@ -20,7 +20,7 @@
 // kinds produces a validated hand-off package + deep link into Rippling —
 // no undocumented endpoint is ever called (see docs/rippling-integration.md).
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { RIPPLING_ENDPOINTS, RipplingError, ripplingConfigured, ripplingCredentialStatus, ripplingPaginate } from "../_shared/rippling.ts";
+import { RIPPLING_ENDPOINTS, RipplingError, ripplingConfigured, ripplingCredentialStatus, ripplingPaginate, ripplingRequest } from "../_shared/rippling.ts";
 
 type Admin = ReturnType<typeof createClient>;
 
@@ -126,16 +126,74 @@ async function syncWorkers(admin: Admin, caller: Caller, onlyEmail?: string) {
     await audit(admin, caller, "rippling.sync.workers", "sync_run", run?.id, stats);
     return { ok: true, data: stats };
   } catch (e) {
-    const msg = e instanceof RipplingError ? e.message : String(e);
+    const msg = e instanceof RipplingError ? e.sanitized() : String(e).slice(0, 400);
+    const connStatus = e instanceof RipplingError && e.category === "RIPPLING_SECRET_MISSING" ? "not_configured" : "error";
     await admin.from("integration_sync_runs").update({
       status: "error", finished_at: new Date().toISOString(), stats, error: msg.slice(0, 500),
     }).eq("id", run?.id);
     await admin.from("integration_connections").update({
-      status: "error", last_error: msg.slice(0, 500), updated_at: new Date().toISOString(),
+      status: connStatus, last_error: msg.slice(0, 500), updated_at: new Date().toISOString(),
     }).eq("provider", "rippling");
     await audit(admin, caller, "rippling.sync.error", "sync_run", run?.id, { error: msg.slice(0, 300) });
-    return { ok: false, error: msg, status: e instanceof RipplingError ? e.status : 500 };
+    return { ok: false, error: msg, category: e instanceof RipplingError ? e.category : "UNKNOWN", status: e instanceof RipplingError ? e.status : 500 };
   }
+}
+
+/* Read-only connection probe: one GET /companies?limit=1 with the HR
+   credential. Updates integration_connections truthfully — connected +
+   last_ok_at only after a real 2xx; otherwise a categorized, sanitized error
+   (missing secret / 401 / 403 / 429 / timeout / network) that the UI and MCP
+   diagnostics surface instead of pretending the company is empty. */
+async function testConnection(admin: Admin, caller: Caller) {
+  const now = new Date().toISOString();
+  try {
+    const body = await ripplingRequest(`${RIPPLING_ENDPOINTS.companies}?limit=1`, { instance: "hr" }) as Record<string, unknown>;
+    const count = ((body?.results ?? body?.data ?? []) as unknown[]).length;
+    await admin.from("integration_connections").update({
+      status: "connected", last_ok_at: now, last_error: null, updated_at: now,
+    }).eq("provider", "rippling");
+    await audit(admin, caller, "rippling.connection.tested", undefined, undefined, { ok: true, companies_seen: count });
+    return { ok: true, data: { connection_status: "connected", last_ok_at: now, companies_seen: count } };
+  } catch (e) {
+    const isR = e instanceof RipplingError;
+    const msg = isR ? e.sanitized() : String(e).slice(0, 400);
+    const connStatus = isR && e.category === "RIPPLING_SECRET_MISSING" ? "not_configured" : "error";
+    await admin.from("integration_connections").update({
+      status: connStatus, last_error: msg, updated_at: now,
+    }).eq("provider", "rippling");
+    await audit(admin, caller, "rippling.connection.tested", undefined, undefined, { ok: false, category: isR ? e.category : "UNKNOWN" });
+    return { ok: false, error: msg, category: isR ? e.category : "UNKNOWN", data: { connection_status: connStatus } };
+  }
+}
+
+/* Live time-card read (READ-ONLY): GET /time-cards with the HR credential,
+   cursor-paginated (verified 2026-09-02: doc list-time-cards, scope
+   time-cards.read). Rippling's pay_period and summary objects are passed
+   through UNMODIFIED — their subfields are Rippling's contract, and we do not
+   rename or invent fields. Worker identity is joined to the local mirror by
+   worker_id for readable names. Nothing is written to Rippling. */
+async function timecardsLive(admin: Admin, caller: Caller) {
+  const cards: Record<string, unknown>[] = [];
+  for await (const c of ripplingPaginate(RIPPLING_ENDPOINTS.timeCards, { instance: "hr", maxPages: 20 })) {
+    cards.push({
+      id: c.id, worker_id: c.worker_id ?? null,
+      pay_period: c.pay_period ?? null, summary: c.summary ?? null,
+      created_at: c.created_at ?? null, updated_at: c.updated_at ?? null,
+    });
+  }
+  const { data: mirror } = await admin.from("rippling_workers").select("rippling_worker_id, name, profile_id");
+  const names = new Map((mirror ?? []).map((w) => [w.rippling_worker_id, { name: w.name, profile_id: w.profile_id }]));
+  for (const c of cards) {
+    const m = names.get(String(c.worker_id));
+    (c as Record<string, unknown>).worker_name = m?.name ?? null;
+    (c as Record<string, unknown>).profile_id = m?.profile_id ?? null;
+  }
+  const now = new Date().toISOString();
+  await admin.from("integration_connections").update({
+    status: "connected", last_ok_at: now, last_error: null, updated_at: now,
+  }).eq("provider", "rippling");
+  await audit(admin, caller, "rippling.timecards.read", undefined, undefined, { count: cards.length });
+  return { ok: true, data: { time_cards: cards, count: cards.length, data_source: "rippling_live", as_of: now } };
 }
 
 /* ── Payroll math (deterministic; mirrors packages/shared/labor-calc.js) ── */
@@ -586,6 +644,19 @@ Deno.serve(async (req) => {
         if (error) return json(500, { ok: false, error: error.message });
         await audit(admin, caller, "rippling.worker.linked", "rippling_worker", workerId, { profile_id: profileId });
         return json(200, { ok: true });
+      }
+      case "test_connection": { const out = await testConnection(admin, caller); return json(out.ok ? 200 : 502, out); }
+      case "timecards_live": {
+        try { return json(200, await timecardsLive(admin, caller)); }
+        catch (e) {
+          const isR = e instanceof RipplingError;
+          const msg = isR ? e.sanitized() : String(e).slice(0, 400);
+          await admin.from("integration_connections").update({
+            status: isR && e.category === "RIPPLING_SECRET_MISSING" ? "not_configured" : "error",
+            last_error: msg, updated_at: new Date().toISOString(),
+          }).eq("provider", "rippling");
+          return json(isR && e.status === 503 ? 503 : 502, { ok: false, error: msg, category: isR ? e.category : "UNKNOWN" });
+        }
       }
       case "exceptions_run": return json(200, await exceptionsRun(admin, caller, Number(body.weeks ?? 3)));
       case "payroll_prepare": {

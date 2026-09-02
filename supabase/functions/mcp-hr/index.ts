@@ -21,9 +21,40 @@ import {
   type McpCaller, auditMcp, hrForward, makeAdmin, mcpAuthenticate,
   mcpCors, mcpError, mcpPropose, mcpText, mcpUnauthorized, protectedResourceMetadata,
 } from "../_shared/mcp-common.ts";
+import { addDays, mondayOf, nyToday } from "../_shared/dates.ts";
 
 const INSTANCE = "mcp-hr";
 const admin = makeAdmin();
+
+/* Connection provenance shared by every read tool, so an unconfigured or
+   failed Rippling connection is never presented as a genuinely empty company. */
+function tokenPresent(): { present: boolean; dedicated: boolean } {
+  return {
+    present: Boolean(Deno.env.get("HR_RIPPLING_API_TOKEN") || Deno.env.get("RIPPLING_API_TOKEN")),
+    dedicated: Boolean(Deno.env.get("HR_RIPPLING_API_TOKEN")),
+  };
+}
+
+async function connInfo() {
+  const tok = tokenPresent();
+  const { data: conn } = await admin.from("integration_connections")
+    .select("status,last_ok_at,last_error").eq("provider", "rippling").maybeSingle();
+  const raw = conn?.status ?? "unknown";
+  const connection_status = !tok.present
+    ? "not_configured"
+    : raw === "connected" ? "connected"
+    : raw === "error" ? "error"
+    : "configured_never_verified";
+  const warnings: string[] = [];
+  if (!tok.present) warnings.push("HR_RIPPLING_API_TOKEN is not set in Supabase secrets — Rippling has never been reached. Empty results mean 'never synced', NOT 'no employees'. See docs/rippling-setup-checklist.md.");
+  else if (connection_status === "configured_never_verified") warnings.push("A Rippling token is configured but no successful API call has been recorded yet — run hr_sync_workers or hr_get_company to verify the connection.");
+  else if (connection_status === "error") warnings.push(`Last Rippling call failed: ${conn?.last_error ?? "unknown error"}`);
+  return {
+    token_present: tok.present, token_dedicated: tok.dedicated,
+    connection_status, last_ok_at: conn?.last_ok_at ?? null,
+    last_error: conn?.last_error ?? null, warnings,
+  };
+}
 
 /* Portal rate wins over the Rippling mirror rate (same rule as payroll). */
 async function ratesByTech(): Promise<Map<string, { rate: number; source: string }>> {
@@ -45,9 +76,21 @@ function buildServer(caller: McpCaller): McpServer {
     });
 
   /* ── HR ── */
-  tool("hr_get_workers", "Synced Rippling worker roster + portal linkage (no SSNs/bank data are stored anywhere in this system).", {}, async () => {
-    const { data } = await admin.from("rippling_workers").select("*").order("name").limit(500);
-    return mcpText({ workers: data ?? [] });
+  tool("hr_get_workers", "Synced Rippling worker roster + portal linkage (no SSNs/bank data are stored anywhere in this system). Includes connection provenance so an unsynced mirror is never mistaken for an empty company.", {}, async () => {
+    const [{ data }, conn] = await Promise.all([
+      admin.from("rippling_workers").select("*").order("name").limit(500),
+      connInfo(),
+    ]);
+    const workers = data ?? [];
+    const asOf = workers.reduce((m, w) => (w.last_synced && w.last_synced > m ? w.last_synced : m), "");
+    return mcpText({
+      workers,
+      administered_by_you: workers.length,
+      rbac_scope: `Under ShieldTech's role model, office roles (Admin/Staff/Manager) administer the full roster; you are ${caller.role}.`,
+      data_source: "shieldtech_mirror (synced from Rippling via hr_sync_workers)",
+      as_of: asOf || null,
+      ...conn,
+    });
   });
   tool("hr_get_worker", "One worker by Rippling worker id or email.", { idOrEmail: z.string() }, async (a) => {
     const k = String(a.idOrEmail);
@@ -63,20 +106,28 @@ function buildServer(caller: McpCaller): McpServer {
     });
   });
   tool("hr_sync_workers", "Pull the worker roster from Rippling (HR credential) into the mirror.", {}, async () => mcpText(await hrForward(caller, { action: "sync_workers" })));
-  tool("hr_get_company", "Company/organization summary: headcount by department, employment type and status from the synced roster, plus integration connection health. (Worker locations are not part of the synced data and are reported as unavailable, not guessed.)", {}, async () => {
-    const [{ data: workers }, { data: conn }] = await Promise.all([
+  tool("hr_get_company", "Company/organization summary: headcount by department, employment type and status from the synced roster, plus LIVE-verified Rippling connection health (when a token is configured this performs a real read-only probe). (Worker locations are not part of the synced data and are reported as unavailable, not guessed.)", {}, async () => {
+    // Real probe first when configured, so status/last_ok_at reflect an actual call.
+    if (tokenPresent().present) await hrForward(caller, { action: "test_connection" });
+    const [{ data: workers }, conn] = await Promise.all([
       admin.from("rippling_workers").select("department, employment_type, status"),
-      admin.from("integration_connections").select("status, last_ok_at, last_error").eq("provider", "rippling").maybeSingle(),
+      connInfo(),
     ]);
     const by = (key: "department" | "employment_type" | "status") => {
       const m: Record<string, number> = {};
       for (const w of workers ?? []) { const k = (w[key] as string) || "(unset)"; m[k] = (m[k] ?? 0) + 1; }
       return m;
     };
+    const total = (workers ?? []).length;
+    if (total === 0 && conn.connection_status === "connected") {
+      conn.warnings.push("Rippling is reachable but the local mirror is empty — run hr_sync_workers to pull the roster.");
+    }
     return mcpText({
-      company: "ShieldTech Security", total_workers: (workers ?? []).length,
+      company: "ShieldTech Security", total_workers: total,
       by_department: by("department"), by_employment_type: by("employment_type"), by_status: by("status"),
-      rippling_connection: conn ?? { status: "unknown" },
+      rippling_connection: { status: conn.connection_status, last_ok_at: conn.last_ok_at, last_error: conn.last_error },
+      data_source: "shieldtech_mirror (roster) + live connection probe",
+      ...conn,
       locations: null, locations_note: "unavailable — worker locations are not synced",
     });
   });
@@ -92,7 +143,7 @@ function buildServer(caller: McpCaller): McpServer {
     let q = admin.from("time_entries").select("id,tech_id,work_date,hours,job_ref,status").gte("work_date", String(a.start)).lte("work_date", String(a.end)).limit(2000);
     if (a.tech_id) q = q.eq("tech_id", String(a.tech_id));
     const { data } = await q;
-    return mcpText({ entries: data ?? [] });
+    return mcpText({ entries: data ?? [], data_source: "shieldtech_time_entries (operational system of record; approved hours sync to Rippling)" });
   });
   tool("time_get_employee_summary", "Per-week hours + OT split for one employee over a range.", { tech_id: z.string(), start: z.string(), end: z.string() }, async (a) => {
     const { data } = await admin.from("time_entries").select("work_date,hours,status").eq("tech_id", String(a.tech_id)).gte("work_date", String(a.start)).lte("work_date", String(a.end)).limit(2000);
@@ -109,64 +160,153 @@ function buildServer(caller: McpCaller): McpServer {
     });
   });
 
-  tool("time_get_current_period", "This week's counted hours per employee (Monday-anchored), with the weekly-OT split.", {}, async () => {
-    const monday = (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); })();
-    const [{ data: entries }, { data: profiles }] = await Promise.all([
-      admin.from("time_entries").select("tech_id,hours,status").gte("work_date", monday).limit(3000),
+  tool("time_get_current_period", "Current week (Monday-anchored, America/New_York) per employee: hours, weekly-OT split, per-status breakdown, open/unapproved timecard classification, and missing-time detection. Includes a live read-only Rippling time-cards section when the HR token is configured. Never mislabels a nonexistent timecard as approved.", {}, async () => {
+    const today = nyToday();
+    const monday = mondayOf(today);
+    const weekEnd = addDays(monday, 6);
+    const [{ data: entries }, { data: profiles }, { data: mirror }, conn] = await Promise.all([
+      admin.from("time_entries").select("id,tech_id,work_date,hours,status").gte("work_date", monday).lte("work_date", weekEnd).limit(3000),
       admin.from("profiles").select("id,name"),
+      admin.from("rippling_workers").select("profile_id,status,end_date").not("profile_id", "is", null),
+      connInfo(),
     ]);
     const names = new Map((profiles ?? []).map((p) => [p.id, p.name ?? ""]));
-    const per = new Map<string, number>();
+    const per = new Map<string, { counted: number; by_status: Record<string, number>; hours_by_status: Record<string, number>; last: string }>();
     for (const e of entries ?? []) {
-      if (!["submitted", "approved", "synced", "paid"].includes(e.status)) continue;
-      per.set(e.tech_id, (per.get(e.tech_id) ?? 0) + (Number(e.hours) || 0));
+      const rec = per.get(e.tech_id) ?? { counted: 0, by_status: {}, hours_by_status: {}, last: "" };
+      const h = Number(e.hours) || 0;
+      rec.by_status[e.status] = (rec.by_status[e.status] ?? 0) + 1;
+      rec.hours_by_status[e.status] = Math.round(((rec.hours_by_status[e.status] ?? 0) + h) * 100) / 100;
+      if (["submitted", "approved", "synced", "paid"].includes(e.status)) rec.counted += h;
+      if (e.work_date > rec.last) rec.last = e.work_date;
+      per.set(e.tech_id, rec);
     }
-    return mcpText({
-      week_start: monday,
-      employees: [...per.entries()].map(([tech_id, hours]) => ({
-        tech_id, name: names.get(tech_id) ?? "", hours: Math.round(hours * 100) / 100,
-        overtime: Math.round(Math.max(0, hours - 40) * 100) / 100,
-      })).sort((a, b) => b.hours - a.hours),
-    });
+    const classify = (r: { by_status: Record<string, number> }) => {
+      const open = (r.by_status.draft ?? 0) > 0;
+      const awaiting = (r.by_status.submitted ?? 0) > 0;
+      const rejected = (r.by_status.rejected ?? 0) > 0;
+      const anyApproved = (r.by_status.approved ?? 0) + (r.by_status.synced ?? 0) + (r.by_status.paid ?? 0) > 0;
+      return {
+        open_not_submitted: open, submitted_unapproved: awaiting, rejected_needs_correction: rejected,
+        fully_approved: anyApproved && !open && !awaiting && !rejected,
+        timecard_state: open ? "open" : awaiting ? "submitted_unapproved" : rejected ? "rejected" : anyApproved ? "approved" : "no_entries",
+      };
+    };
+    const employees = [...per.entries()].map(([tech_id, r]) => ({
+      tech_id, name: names.get(tech_id) ?? "",
+      hours: Math.round(r.counted * 100) / 100,
+      overtime: Math.round(Math.max(0, r.counted - 40) * 100) / 100,
+      entries_by_status: r.by_status, hours_by_status: r.hours_by_status,
+      last_entry_date: r.last || null,
+      ...classify(r),
+    })).sort((a, b) => b.hours - a.hours);
+    // Missing time: active Rippling-linked workers with zero entries this week.
+    const active = (mirror ?? []).filter((w) => w.status !== "TERMINATED" && !(w.end_date && w.end_date < today));
+    const missing_time = active.filter((w) => !per.has(w.profile_id as string)).map((w) => ({
+      tech_id: w.profile_id, name: names.get(w.profile_id as string) ?? "", timecard_state: "missing_no_entries",
+    }));
+    const out: Record<string, unknown> = {
+      timezone: "America/New_York", week_start: monday, week_end: weekEnd,
+      employees, missing_time,
+      open_or_unapproved: employees.filter((e) => e.open_not_submitted || e.submitted_unapproved || e.rejected_needs_correction).length + missing_time.length,
+      data_source: "shieldtech_time_entries (operational system of record; approved hours sync to Rippling)",
+      ...conn,
+    };
+    // Live Rippling time-cards (read-only) when configured; failures are
+    // surfaced as categorized warnings, never as a silently absent section.
+    if (conn.token_present) {
+      const live = await hrForward(caller, { action: "timecards_live" });
+      if (live?.ok) out.rippling_time_cards = live.data;
+      else (out.warnings as string[]).push(`Live Rippling time-cards unavailable: ${live?.error ?? "unknown error"}`);
+    } else {
+      out.rippling_time_cards = null;
+    }
+    return mcpText(out);
   });
 
-  /* ── PAYROLL ── */
-  tool("payroll_get_summary", "One-call payroll overview: latest snapshot totals, open exceptions by severity, and recent payout weeks.", {}, async () => {
-    const [{ data: snap }, { data: exs }, { data: pays }] = await Promise.all([
+  /* ── PAYROLL ──
+     Live Rippling payroll-run reads are NOT implemented: the official
+     reference pages for list-payroll-runs / list-worker-payroll-records are
+     sign-in-gated on developer.rippling.com (verified 2026-09-02), so their
+     request/response contracts cannot be verified from here — and unverified
+     endpoints are never called. Everything below is ShieldTech-local payroll
+     preparation data, explicitly labeled; the pay schedule is reported as
+     unavailable rather than guessed. */
+  const PAYROLL_SCHEDULE_UNAVAILABLE = {
+    payroll_schedule: "unavailable_from_verified_rippling_api",
+    payroll_schedule_note: "No publicly verifiable Rippling pay-schedule/payroll-run read exists from this deployment (the official list-payroll-runs reference requires a Rippling sign-in to view). Once a Rippling admin can open that doc page, the endpoint can be verified and wired in. ShieldTech's own operational cadence is weekly (Monday-anchored, America/New_York) — that is the local convention, not Rippling data.",
+  };
+  tool("payroll_get_summary", "One-call payroll overview: latest LOCAL snapshot totals, open exceptions by severity, recent payout weeks, connection provenance. Local ShieldTech data — clearly labeled; live Rippling payroll runs are not verifiable from this deployment (see payroll_schedule_note).", {}, async () => {
+    const [{ data: snap }, { data: exs }, { data: pays }, conn] = await Promise.all([
       admin.from("payroll_snapshots").select("id,period_start,period_end,totals,created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
       admin.from("payroll_exceptions").select("severity").eq("status", "open"),
       admin.from("payroll_payments").select("week_start,amount").order("week_start", { ascending: false }).limit(24),
+      connInfo(),
     ]);
     const sev: Record<string, number> = {};
     for (const x of exs ?? []) sev[x.severity] = (sev[x.severity] ?? 0) + 1;
     const byWeek = new Map<string, number>();
     for (const p of pays ?? []) byWeek.set(p.week_start, (byWeek.get(p.week_start) ?? 0) + (Number(p.amount) || 0));
+    const weeks = [...byWeek.entries()].map(([week_start, total_paid]) => ({ week_start, total_paid: Math.round(total_paid * 100) / 100 }));
     return mcpText({
       latest_snapshot: snap ?? null,
+      most_recent_completed_payout_week: weeks[0] ?? null,
       open_exceptions: { total: (exs ?? []).length, by_severity: sev },
-      recent_payout_weeks: [...byWeek.entries()].map(([week_start, total_paid]) => ({ week_start, total_paid: Math.round(total_paid * 100) / 100 })),
+      recent_payout_weeks: weeks,
+      ...PAYROLL_SCHEDULE_UNAVAILABLE,
+      data_source: "shieldtech_local (payroll_snapshots + payroll_payments)",
+      as_of: new Date().toISOString(),
+      ...conn,
     });
   });
-  tool("payroll_get_current_period", "Latest prepared payroll snapshot + open exception count.", {}, async () => {
-    const [{ data: snap }, { data: exs }] = await Promise.all([
+  tool("payroll_get_current_period", "Latest LOCALLY prepared payroll snapshot + open exception count + current ShieldTech pay week (America/New_York). The Rippling pay schedule itself is reported as unavailable rather than guessed (see payroll_schedule_note).", {}, async () => {
+    const [{ data: snap }, { data: exs }, conn] = await Promise.all([
       admin.from("payroll_snapshots").select("*").order("created_at", { ascending: false }).limit(1).maybeSingle(),
       admin.from("payroll_exceptions").select("id", { count: "exact", head: true }).eq("status", "open"),
+      connInfo(),
     ]);
-    return mcpText({ snapshot: snap ?? null, open_exceptions: (exs as unknown as { count?: number })?.count ?? null });
+    const monday = mondayOf(nyToday());
+    return mcpText({
+      snapshot: snap ?? null,
+      open_exceptions: (exs as unknown as { count?: number })?.count ?? null,
+      current_local_pay_week: { start: monday, end: addDays(monday, 6), timezone: "America/New_York", basis: "ShieldTech weekly convention (local, not Rippling)" },
+      ...PAYROLL_SCHEDULE_UNAVAILABLE,
+      data_source: "shieldtech_local (payroll_snapshots + payroll_exceptions)",
+      as_of: new Date().toISOString(),
+      ...conn,
+    });
   });
-  tool("payroll_get_history", "Payroll snapshots and per-week payout records.", { limit: z.number().optional() }, async (a) => {
+  tool("payroll_get_history", "LOCAL payroll snapshots and per-week payout records, newest first, with the most recent completed payout identified. Local ShieldTech data — live Rippling run history is not verifiable from this deployment (see payroll_schedule_note).", { limit: z.number().optional() }, async (a) => {
     const n = Math.min(Number(a.limit) || 12, 50);
-    const [{ data: snaps }, { data: payments }] = await Promise.all([
+    const [{ data: snaps }, { data: payments }, conn] = await Promise.all([
       admin.from("payroll_snapshots").select("*").order("period_start", { ascending: false }).limit(n),
       admin.from("payroll_payments").select("*").order("week_start", { ascending: false }).limit(n * 8),
+      connInfo(),
     ]);
-    return mcpText({ snapshots: snaps ?? [], payments: payments ?? [] });
+    return mcpText({
+      snapshots: snaps ?? [],
+      payments: payments ?? [],
+      most_recent_completed: (payments ?? [])[0] ?? null,
+      ...PAYROLL_SCHEDULE_UNAVAILABLE,
+      data_source: "shieldtech_local (payroll_snapshots + payroll_payments)",
+      as_of: new Date().toISOString(),
+      ...conn,
+    });
   });
   tool("payroll_preview", "Compute + store a payroll snapshot for a period (hours, weekly-OT split, gross, loaded burden). Preparation only — this system cannot submit payroll; submission/finalization happens in Rippling.", { periodStart: z.string(), periodEnd: z.string() }, async (a) =>
     mcpText(await hrForward(caller, { action: "payroll_prepare", periodStart: String(a.periodStart), periodEnd: String(a.periodEnd) })));
-  tool("payroll_get_exceptions", "Open payroll exceptions from the configurable exception engine.", {}, async () => {
-    const { data } = await admin.from("payroll_exceptions").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(200);
-    return mcpText({ exceptions: data ?? [] });
+  tool("payroll_get_exceptions", "Open payroll exceptions from the configurable exception engine (missing time, unapproved timecards, high OT, duplicates, terminated-with-hours, missing rates, implausible hours) — the items that would block a clean pay run.", {}, async () => {
+    const [{ data }, conn] = await Promise.all([
+      admin.from("payroll_exceptions").select("*").eq("status", "open").order("created_at", { ascending: false }).limit(200),
+      connInfo(),
+    ]);
+    return mcpText({
+      exceptions: data ?? [],
+      data_source: "shieldtech_local (payroll_exceptions engine over time_entries + roster mirror)",
+      note: "Run payroll_run_exception_scan first for the freshest results.",
+      as_of: new Date().toISOString(),
+      ...conn,
+    });
   });
   tool("payroll_run_exception_scan", "Run the payroll exception engine now.", {}, async () => mcpText(await hrForward(caller, { action: "exceptions_run" })));
   tool("payroll_compare_periods", "Delta between two prepared snapshots (by id, or the two most recent).", { snapshot_a: z.string().optional(), snapshot_b: z.string().optional() }, async (a) => {
@@ -223,18 +363,38 @@ function buildServer(caller: McpCaller): McpServer {
     return mcpText({ step: "execute", approve: approved, execute: executed });
   });
 
-  /* ── CAPABILITIES (honest) ── */
-  tool("rippling_get_capabilities", "What this integration can and cannot do against Rippling's public API, and why.", {}, async () => {
+  /* ── CAPABILITIES (honest, live) ── */
+  tool("rippling_get_capabilities", "Truthful capability + connection report: which Rippling endpoints are verified and implemented, required scope names, whether the HR token is present (never its value), live connection state, per-tool data sources, and what remains intentionally unavailable.", {}, async () => {
     await auditMcp(admin, caller, INSTANCE, "mcp.capabilities.read");
+    const conn = await connInfo();
     return mcpText({
       instance: INSTANCE,
-      rippling_credential: "HR_RIPPLING_API_TOKEN (separate from the Business instance)",
-      verified_endpoints: ["GET /workers (cursor-paginated)", "POST /time-entries", "GET /time-entries/{id}"],
-      write_model: "prepare → human Admin approval → execute; feature flags gate every execution and default OFF",
+      credential: {
+        expected_secret: "HR_RIPPLING_API_TOKEN (separate from BUSINESS_RIPPLING_API_TOKEN)",
+        token_present: conn.token_present,
+        dedicated_hr_token: conn.token_dedicated,
+      },
+      connection: { status: conn.connection_status, last_ok_at: conn.last_ok_at, last_error: conn.last_error },
+      verified_endpoints: [
+        { endpoint: "GET /workers", scope: "workers.read", doc: "list-workers", verified: "2026-09-02", used_by: "hr_sync_workers (roster pull)" },
+        { endpoint: "GET /companies", scope: "companies.read", doc: "list-companies", verified: "2026-09-02", used_by: "hr_get_company connection probe" },
+        { endpoint: "GET /time-cards", scope: "time-cards.read", doc: "list-time-cards", verified: "2026-09-02", used_by: "time_get_current_period (live section)" },
+        { endpoint: "GET /time-entries", scope: "time-entries.read", doc: "list-time-entries", verified: "2026-09-02", used_by: "status pull in rippling-sync" },
+        { endpoint: "POST /time-entries", scope: "time-entries write (pre-existing)", doc: "create-time-entries", verified: "in production use", used_by: "rippling-sync approved-hours push (unchanged; NOT invoked by read tools)" },
+      ],
+      unverified_sign_in_gated: [
+        { endpoint: "GET /payroll-runs", doc: "list-payroll-runs", reason: "official reference page requires Rippling sign-in — contract not verifiable from this deployment; not called" },
+        { endpoint: "GET /worker-payroll-records", doc: "list-worker-payroll-records", reason: "same — not called" },
+      ],
+      tool_data_sources: {
+        rippling_live: ["hr_sync_workers (pull)", "hr_get_company (connection probe)", "time_get_current_period → rippling_time_cards section"],
+        shieldtech_local: ["hr_get_workers (mirror)", "hr_get_worker", "hr_get_compensation", "hr_get_departments", "time_get_entries", "time_get_employee_summary", "payroll_get_* (snapshots/payments/exceptions)", "get_proposed_actions", "action_*"],
+      },
+      write_model: "prepare → human Admin approval → execute; execution feature flags default OFF (currently enforced server-side)",
       not_exposed: {
-        rippling_functions: "Rippling Functions execution is not exposed: the capability could not be verified against current official docs from this deployment environment, and unverified endpoints are never called.",
-        payroll_submission: "No verified public endpoint submits/finalizes payroll; approved payroll runs produce a validated hand-off package + deep link into Rippling.",
-        draft_hire_api: "Same policy: approved hires hand off to Rippling for the final onboarding action.",
+        payroll_submission: "Never exposed: no verified public endpoint submits/finalizes payroll; approved payroll runs hand off to Rippling with a deep link.",
+        rippling_functions: "Not exposed — unverified from this deployment.",
+        draft_hire_api: "Approved hires hand off to Rippling for the final onboarding action.",
       },
     });
   });
