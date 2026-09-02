@@ -16,9 +16,16 @@
 // against https://developer.rippling.com/documentation/rest-api before being
 // added. DO NOT call Rippling outside this registry.
 export const RIPPLING_ENDPOINTS = {
-  workers: "/workers",              // GET, cursor-paginated       (in use)
-  timeEntries: "/time-entries",     // POST create                 (in use)
+  workers: "/workers",              // GET, cursor-paginated       (in use; doc: list-workers)
+  timeEntries: "/time-entries",     // POST create (in use) · GET list (doc: list-time-entries)
   timeEntry: (id: string) => `/time-entries/${encodeURIComponent(id)}`, // GET (in use)
+  // Verified 2026-09-02 against developer.rippling.com/documentation/rest-api/reference/<slug>
+  // (pages rendered live; every one is GET, cursor-paginated via limit/cursor):
+  companies: "/companies",                       // doc: list-companies
+  departments: "/departments",                   // doc: list-departments
+  timeCards: "/time-cards",                      // doc: list-time-cards (filterable)
+  payrollRuns: "/payroll-runs",                  // doc: list-payroll-runs
+  workerPayrollRecords: "/worker-payroll-records", // doc: list-worker-payroll-records
 } as const;
 
 export type RipplingInstance = "business" | "hr";
@@ -35,13 +42,38 @@ function tokenFor(instance: RipplingInstance): string | undefined {
   return specific || Deno.env.get("RIPPLING_API_TOKEN") || undefined;
 }
 
+export type RipplingErrorCategory =
+  | "RIPPLING_SECRET_MISSING"
+  | "RIPPLING_UNAUTHORIZED"
+  | "RIPPLING_FORBIDDEN"
+  | "RIPPLING_RATE_LIMITED"
+  | "RIPPLING_TIMEOUT"
+  | "RIPPLING_NETWORK_ERROR"
+  | "RIPPLING_BAD_RESPONSE";
+
+export function categorize(status: number, timeout = false): RipplingErrorCategory {
+  if (timeout) return "RIPPLING_TIMEOUT";
+  if (status === 0) return "RIPPLING_NETWORK_ERROR";
+  if (status === 401) return "RIPPLING_UNAUTHORIZED";
+  if (status === 403) return "RIPPLING_FORBIDDEN";
+  if (status === 429) return "RIPPLING_RATE_LIMITED";
+  if (status === 503 && !Deno.env.get("RIPPLING_API_TOKEN") && !Deno.env.get("HR_RIPPLING_API_TOKEN") && !Deno.env.get("BUSINESS_RIPPLING_API_TOKEN")) return "RIPPLING_SECRET_MISSING";
+  return "RIPPLING_BAD_RESPONSE";
+}
+
 export class RipplingError extends Error {
   status: number;
   correlationId: string;
-  constructor(message: string, status: number, correlationId: string) {
+  category: RipplingErrorCategory;
+  constructor(message: string, status: number, correlationId: string, category?: RipplingErrorCategory) {
     super(message);
     this.status = status;
     this.correlationId = correlationId;
+    this.category = category ?? categorize(status);
+  }
+  /* Sanitized, category-first string safe for storage/UI (never a token). */
+  sanitized(): string {
+    return `[${this.category}] ${this.message}`.slice(0, 400);
   }
 }
 
@@ -67,12 +99,15 @@ export async function ripplingRequest(
   const instance: RipplingInstance = init?.instance ?? "hr";
   const token = tokenFor(instance);
   const cid = init?.correlationId ?? crypto.randomUUID().slice(0, 8);
-  if (!token) throw new RipplingError(`Rippling not configured for the ${instance} instance (set ${instance === "business" ? "BUSINESS" : "HR"}_RIPPLING_API_TOKEN)`, 503, cid);
+  if (!token) throw new RipplingError(`Rippling not configured for the ${instance} instance (set ${instance === "business" ? "BUSINESS" : "HR"}_RIPPLING_API_TOKEN)`, 503, cid, "RIPPLING_SECRET_MISSING");
 
   let lastErr: RipplingError | null = null;
+  let retryAfterMs: number | null = null;
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     if (attempt > 0) {
-      await new Promise((r) => setTimeout(r, Math.min(8000, 500 * 2 ** attempt) + Math.random() * 250));
+      const backoff = Math.min(8000, 500 * 2 ** attempt) + Math.random() * 250;
+      await new Promise((r) => setTimeout(r, retryAfterMs != null ? Math.min(15_000, retryAfterMs) : backoff));
+      retryAfterMs = null;
     }
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
@@ -98,14 +133,20 @@ export async function ripplingRequest(
         ? (body as { message: string }).message
         : `HTTP ${res.status}`;
       lastErr = new RipplingError(`Rippling ${path.split("?")[0]} → ${res.status}: ${msg.slice(0, 300)}`, res.status, cid);
-      // Retry only rate limits and server errors; 4xx are final.
+      // Retry only rate limits and server errors; 4xx are final. Honor Retry-After.
+      if (res.status === 429) {
+        const ra = Number(res.headers.get("Retry-After"));
+        if (Number.isFinite(ra) && ra > 0) retryAfterMs = ra * 1000;
+      }
       if (res.status !== 429 && res.status < 500) break;
     } catch (e) {
       clearTimeout(timer);
+      const isTimeout = e instanceof DOMException && e.name === "AbortError";
       lastErr = new RipplingError(
-        `Rippling ${path.split("?")[0]} → ${e instanceof DOMException && e.name === "AbortError" ? "timeout" : "network error"}`,
+        `Rippling ${path.split("?")[0]} → ${isTimeout ? "timeout" : "network error"}`,
         0,
         cid,
+        isTimeout ? "RIPPLING_TIMEOUT" : "RIPPLING_NETWORK_ERROR",
       );
     }
   }
