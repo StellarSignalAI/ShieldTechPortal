@@ -11,27 +11,32 @@
 // keeps working; setting the per-instance secrets makes them independently
 // revocable. Tokens never appear in logs, errors, or responses.
 //
-// Endpoint registry — the only paths this integration touches. Each entry is
-// in production use already (deployed rippling-sync) or must be verified
-// against https://developer.rippling.com/documentation/rest-api before being
-// added. DO NOT call Rippling outside this registry.
+// Endpoint registry — the only paths this integration touches. Every path is
+// verified against the official generated client @rippling/rippling-sdk
+// 0.2.0-alpha.85 (2026-09-02): trailing-slash forms, GET lists paginated via
+// {results, next_link} with a `cursor` request param. Entitlements per the
+// SDK docstrings: workers/companies = "API Tier 1", time-cards/time-entries =
+// "API Tier 2", payroll-runs = "Global Payroll".
+// DO NOT call Rippling outside this registry.
 export const RIPPLING_ENDPOINTS = {
-  workers: "/workers",              // GET, cursor-paginated       (in use; doc: list-workers)
-  timeEntries: "/time-entries",     // POST create (in use) · GET list (doc: list-time-entries)
-  timeEntry: (id: string) => `/time-entries/${encodeURIComponent(id)}`, // GET (in use)
-  // Verified 2026-09-02 against developer.rippling.com/documentation/rest-api/reference/<slug>
-  // (pages rendered live; every one is GET, cursor-paginated via limit/cursor):
-  companies: "/companies",                       // doc: list-companies
-  departments: "/departments",                   // doc: list-departments
-  timeCards: "/time-cards",                      // doc: list-time-cards (filterable)
-  payrollRuns: "/payroll-runs",                  // doc: list-payroll-runs
-  workerPayrollRecords: "/worker-payroll-records", // doc: list-worker-payroll-records
+  workers: "/workers/",             // GET list (SDK: workers.list)
+  timeEntries: "/time-entries/",    // POST create (pre-existing use) · GET list (SDK: timeEntries.list)
+  timeEntry: (id: string) => `/time-entries/${encodeURIComponent(id)}/`, // GET (SDK: timeEntries.retrieve)
+  companies: "/companies/",         // GET list (SDK: companies.list)
+  departments: "/departments/",     // GET list (SDK: departments.list)
+  timeCards: "/time-cards/",        // GET list (SDK: timeCards.list; params cursor/expand/filter/order_by)
+  payrollRuns: "/payroll-runs/",    // GET list (SDK: payrollRuns.list; Global Payroll; sortable check_date)
+  payrollRun: (id: string) => `/payroll-runs/${encodeURIComponent(id)}/`, // GET (SDK: payrollRuns.retrieve)
+  // Verified but NOT exposed to MCP output: per-worker tax/deduction/garnishment
+  // line items are sensitive (SDK: payrollRuns.workerPayrollRecords.list).
+  workerPayrollRecords: (runId: string) => `/payroll-runs/${encodeURIComponent(runId)}/worker-payroll-records/`,
 } as const;
 
 export type RipplingInstance = "business" | "hr";
 
 const BASE = Deno.env.get("RIPPLING_API_BASE") ?? "https://rest.ripplingapis.com";
-const VERSION = Deno.env.get("RIPPLING_API_VERSION") ?? "";
+// Default matches the official SDK's pinned header (client.js: 'Rippling-Api-Version': '2024-08-01').
+const VERSION = Deno.env.get("RIPPLING_API_VERSION") ?? "2024-08-01";
 const TIMEOUT_MS = 20_000;
 const MAX_RETRIES = 3;
 
@@ -154,19 +159,35 @@ export async function ripplingRequest(
   throw lastErr ?? new RipplingError("Rippling request failed", 0, cid);
 }
 
-/* Iterate a cursor-paginated collection, yielding each item. */
+/* Iterate a cursor-paginated collection, yielding each item.
+   Official pagination model (SDK PageCursorURL): the response body is
+   {results: [...], next_link: "<absolute URL of the next page>"}; requests
+   accept a `cursor` param. We follow next_link (reduced to its path+query so
+   the base URL stays ours), with a next_cursor fallback for compatibility. */
 export async function* ripplingPaginate(
   path: string,
-  { limit = 100, maxPages = 50, correlationId, instance }: { limit?: number; maxPages?: number; correlationId?: string; instance?: RipplingInstance } = {},
+  { maxPages = 50, correlationId, instance }: { limit?: number; maxPages?: number; correlationId?: string; instance?: RipplingInstance } = {},
 ): AsyncGenerator<Record<string, unknown>> {
-  let cursor: string | null = null;
-  for (let page = 0; page < maxPages; page++) {
-    const sep = path.includes("?") ? "&" : "?";
-    const url = `${path}${sep}limit=${limit}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`;
-    const body = (await ripplingRequest(url, { correlationId, instance })) as Record<string, unknown>;
+  let nextPath: string | null = path;
+  for (let page = 0; page < maxPages && nextPath; page++) {
+    const body = (await ripplingRequest(nextPath, { correlationId, instance })) as Record<string, unknown>;
     const items = (body?.results ?? body?.data ?? []) as Record<string, unknown>[];
     for (const it of items) yield it;
-    cursor = (body?.next_cursor as string | undefined) ?? null;
-    if (!cursor || items.length === 0) break;
+    const nextLink = body?.next_link as string | undefined;
+    const nextCursor = body?.next_cursor as string | undefined;
+    if (nextLink) {
+      try {
+        const u = new URL(nextLink, BASE);
+        nextPath = `${u.pathname}${u.search}`;
+      } catch {
+        nextPath = null;
+      }
+    } else if (nextCursor) {
+      const sep = path.includes("?") ? "&" : "?";
+      nextPath = `${path}${sep}cursor=${encodeURIComponent(nextCursor)}`;
+    } else {
+      nextPath = null;
+    }
+    if (items.length === 0) break;
   }
 }

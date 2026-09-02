@@ -225,72 +225,116 @@ function buildServer(caller: McpCaller): McpServer {
   });
 
   /* ── PAYROLL ──
-     Live Rippling payroll-run reads are NOT implemented: the official
-     reference pages for list-payroll-runs / list-worker-payroll-records are
-     sign-in-gated on developer.rippling.com (verified 2026-09-02), so their
-     request/response contracts cannot be verified from here — and unverified
-     endpoints are never called. Everything below is ShieldTech-local payroll
-     preparation data, explicitly labeled; the pay schedule is reported as
-     unavailable rather than guessed. */
-  const PAYROLL_SCHEDULE_UNAVAILABLE = {
-    payroll_schedule: "unavailable_from_verified_rippling_api",
-    payroll_schedule_note: "No publicly verifiable Rippling pay-schedule/payroll-run read exists from this deployment (the official list-payroll-runs reference requires a Rippling sign-in to view). Once a Rippling admin can open that doc page, the endpoint can be verified and wired in. ShieldTech's own operational cadence is weekly (Monday-anchored, America/New_York) — that is the local convention, not Rippling data.",
-  };
-  tool("payroll_get_summary", "One-call payroll overview: latest LOCAL snapshot totals, open exceptions by severity, recent payout weeks, connection provenance. Local ShieldTech data — clearly labeled; live Rippling payroll runs are not verifiable from this deployment (see payroll_schedule_note).", {}, async () => {
+     Live payroll-run reads ARE implemented (read-only): GET /payroll-runs/
+     was verified 2026-09-02 against the official @rippling/rippling-sdk
+     0.2.0-alpha.85 generated client (requires the "Global Payroll"
+     entitlement). Rippling exposes NO pay-schedule read, so the schedule is
+     derived from real runs (pay_frequency + next check_date) and labeled
+     derived_from_verified_runs — never guessed. Local ShieldTech preparation
+     data stays clearly labeled shieldtech_local. Per-worker payroll records
+     (tax/deduction/garnishment line items) are verified in the SDK but
+     deliberately not exposed here. */
+  async function payrollLive(conn: { token_present: boolean }) {
+    if (!conn.token_present) {
+      return {
+        rippling_payroll: null,
+        payroll_schedule: "requires_hr_rippling_api_token" as unknown,
+        payroll_schedule_note: "GET /payroll-runs/ is verified (official Rippling SDK 0.2.0-alpha.85; Global Payroll entitlement) but HR_RIPPLING_API_TOKEN is not set, so no live read is possible yet. ShieldTech's local weekly cadence (Monday-anchored, America/New_York) is a local convention, not Rippling data.",
+        live_warnings: [] as string[],
+      };
+    }
+    const live = await hrForward(caller, { action: "payroll_runs_live" });
+    if (live?.ok) {
+      const d = live.data as { runs?: unknown[]; current_run?: unknown; most_recent_completed?: unknown; derived_schedule?: unknown; count?: number; as_of?: string };
+      return {
+        rippling_payroll: {
+          current_run: d.current_run ?? null,
+          most_recent_completed: d.most_recent_completed ?? null,
+          runs: (d.runs ?? []).slice(0, 25),
+          count: d.count ?? 0,
+          data_source: "rippling_live_rest",
+          as_of: d.as_of ?? null,
+        },
+        payroll_schedule: (d.derived_schedule ?? "no_payroll_runs_returned") as unknown,
+        payroll_schedule_note: "Rippling exposes no pay-schedule read; this schedule is derived from real payroll runs (basis: derived_from_verified_runs).",
+        live_warnings: [] as string[],
+      };
+    }
+    return {
+      rippling_payroll: null,
+      payroll_schedule: "unavailable_live_error" as unknown,
+      payroll_schedule_note: "Live payroll-run read failed; local data below is ShieldTech preparation data only.",
+      live_warnings: [`Live Rippling payroll runs unavailable: ${live?.error ?? "unknown error"}`],
+    };
+  }
+  tool("payroll_get_summary", "One-call payroll overview: LIVE Rippling payroll runs (current + most recent completed, when the HR token is configured) plus local snapshot totals, open exceptions by severity, recent payout weeks, connection provenance. Every block is labeled with its source.", {}, async () => {
     const [{ data: snap }, { data: exs }, { data: pays }, conn] = await Promise.all([
       admin.from("payroll_snapshots").select("id,period_start,period_end,totals,created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
       admin.from("payroll_exceptions").select("severity").eq("status", "open"),
       admin.from("payroll_payments").select("week_start,amount").order("week_start", { ascending: false }).limit(24),
       connInfo(),
     ]);
+    const live = await payrollLive(conn);
     const sev: Record<string, number> = {};
     for (const x of exs ?? []) sev[x.severity] = (sev[x.severity] ?? 0) + 1;
     const byWeek = new Map<string, number>();
     for (const p of pays ?? []) byWeek.set(p.week_start, (byWeek.get(p.week_start) ?? 0) + (Number(p.amount) || 0));
     const weeks = [...byWeek.entries()].map(([week_start, total_paid]) => ({ week_start, total_paid: Math.round(total_paid * 100) / 100 }));
     return mcpText({
+      rippling_payroll: live.rippling_payroll,
+      payroll_schedule: live.payroll_schedule,
+      payroll_schedule_note: live.payroll_schedule_note,
       latest_snapshot: snap ?? null,
       most_recent_completed_payout_week: weeks[0] ?? null,
       open_exceptions: { total: (exs ?? []).length, by_severity: sev },
       recent_payout_weeks: weeks,
-      ...PAYROLL_SCHEDULE_UNAVAILABLE,
-      data_source: "shieldtech_local (payroll_snapshots + payroll_payments)",
+      data_source: "rippling_live_rest (payroll runs) + shieldtech_local (payroll_snapshots + payroll_payments)",
       as_of: new Date().toISOString(),
       ...conn,
+      warnings: [...conn.warnings, ...live.live_warnings],
     });
   });
-  tool("payroll_get_current_period", "Latest LOCALLY prepared payroll snapshot + open exception count + current ShieldTech pay week (America/New_York). The Rippling pay schedule itself is reported as unavailable rather than guessed (see payroll_schedule_note).", {}, async () => {
+  tool("payroll_get_current_period", "Current payroll period: LIVE Rippling current run + derived schedule (when the HR token is configured), plus the latest locally prepared snapshot, open exception count, and the current ShieldTech pay week (America/New_York). Sources are labeled; nothing is guessed.", {}, async () => {
     const [{ data: snap }, { data: exs }, conn] = await Promise.all([
       admin.from("payroll_snapshots").select("*").order("created_at", { ascending: false }).limit(1).maybeSingle(),
       admin.from("payroll_exceptions").select("id", { count: "exact", head: true }).eq("status", "open"),
       connInfo(),
     ]);
+    const live = await payrollLive(conn);
     const monday = mondayOf(nyToday());
     return mcpText({
+      current_run: live.rippling_payroll ? (live.rippling_payroll as { current_run: unknown }).current_run : null,
+      payroll_schedule: live.payroll_schedule,
+      payroll_schedule_note: live.payroll_schedule_note,
       snapshot: snap ?? null,
       open_exceptions: (exs as unknown as { count?: number })?.count ?? null,
       current_local_pay_week: { start: monday, end: addDays(monday, 6), timezone: "America/New_York", basis: "ShieldTech weekly convention (local, not Rippling)" },
-      ...PAYROLL_SCHEDULE_UNAVAILABLE,
-      data_source: "shieldtech_local (payroll_snapshots + payroll_exceptions)",
+      data_source: "rippling_live_rest (current run + schedule) + shieldtech_local (snapshot + exceptions)",
       as_of: new Date().toISOString(),
       ...conn,
+      warnings: [...conn.warnings, ...live.live_warnings],
     });
   });
-  tool("payroll_get_history", "LOCAL payroll snapshots and per-week payout records, newest first, with the most recent completed payout identified. Local ShieldTech data — live Rippling run history is not verifiable from this deployment (see payroll_schedule_note).", { limit: z.number().optional() }, async (a) => {
+  tool("payroll_get_history", "Payroll history: LIVE Rippling runs newest-first with the most recent completed (PAID) run identified (when the HR token is configured), plus local snapshots and per-week payout records. Sources are labeled.", { limit: z.number().optional() }, async (a) => {
     const n = Math.min(Number(a.limit) || 12, 50);
     const [{ data: snaps }, { data: payments }, conn] = await Promise.all([
       admin.from("payroll_snapshots").select("*").order("period_start", { ascending: false }).limit(n),
       admin.from("payroll_payments").select("*").order("week_start", { ascending: false }).limit(n * 8),
       connInfo(),
     ]);
+    const live = await payrollLive(conn);
     return mcpText({
+      rippling_payroll: live.rippling_payroll,
+      most_recent_completed_run: live.rippling_payroll ? (live.rippling_payroll as { most_recent_completed: unknown }).most_recent_completed : null,
+      payroll_schedule: live.payroll_schedule,
       snapshots: snaps ?? [],
       payments: payments ?? [],
       most_recent_completed: (payments ?? [])[0] ?? null,
-      ...PAYROLL_SCHEDULE_UNAVAILABLE,
-      data_source: "shieldtech_local (payroll_snapshots + payroll_payments)",
+      most_recent_completed_local_payout: (payments ?? [])[0] ?? null,
+      data_source: "rippling_live_rest (runs) + shieldtech_local (payroll_snapshots + payroll_payments)",
       as_of: new Date().toISOString(),
       ...conn,
+      warnings: [...conn.warnings, ...live.live_warnings],
     });
   });
   tool("payroll_preview", "Compute + store a payroll snapshot for a period (hours, weekly-OT split, gross, loaded burden). Preparation only — this system cannot submit payroll; submission/finalization happens in Rippling.", { periodStart: z.string(), periodEnd: z.string() }, async (a) =>
@@ -376,24 +420,26 @@ function buildServer(caller: McpCaller): McpServer {
       },
       connection: { status: conn.connection_status, last_ok_at: conn.last_ok_at, last_error: conn.last_error },
       verified_endpoints: [
-        { endpoint: "GET /workers", scope: "workers.read", doc: "list-workers", verified: "2026-09-02", used_by: "hr_sync_workers (roster pull)" },
-        { endpoint: "GET /companies", scope: "companies.read", doc: "list-companies", verified: "2026-09-02", used_by: "hr_get_company connection probe" },
-        { endpoint: "GET /time-cards", scope: "time-cards.read", doc: "list-time-cards", verified: "2026-09-02", used_by: "time_get_current_period (live section)" },
-        { endpoint: "GET /time-entries", scope: "time-entries.read", doc: "list-time-entries", verified: "2026-09-02", used_by: "status pull in rippling-sync" },
-        { endpoint: "POST /time-entries", scope: "time-entries write (pre-existing)", doc: "create-time-entries", verified: "in production use", used_by: "rippling-sync approved-hours push (unchanged; NOT invoked by read tools)" },
+        { endpoint: "GET /workers/", scope: "workers.read", entitlement: "API Tier 1", verified: "2026-09-02 (official docs + @rippling/rippling-sdk 0.2.0-alpha.85)", used_by: "hr_sync_workers (roster pull)" },
+        { endpoint: "GET /companies/", scope: "companies.read", entitlement: "API Tier 1", verified: "2026-09-02 (official docs + SDK)", used_by: "hr_get_company connection probe" },
+        { endpoint: "GET /time-cards/", scope: "time-cards.read", entitlement: "API Tier 2", verified: "2026-09-02 (official docs + SDK)", used_by: "time_get_current_period (live section)" },
+        { endpoint: "GET /time-entries/", scope: "time-entries.read", entitlement: "API Tier 2", verified: "2026-09-02 (official docs + SDK)", used_by: "status pull in rippling-sync" },
+        { endpoint: "GET /payroll-runs/", entitlement: "Global Payroll", verified: "2026-09-02 via official @rippling/rippling-sdk 0.2.0-alpha.85 generated client (payrollRuns.list; sortable by check_date; {results,next_link} pagination)", used_by: "payroll_get_current_period / payroll_get_history / payroll_get_summary (live sections)" },
+        { endpoint: "GET /payroll-runs/{id}/", entitlement: "Global Payroll", verified: "same (payrollRuns.retrieve)", used_by: "available; not currently called" },
+        { endpoint: "POST /time-entries/", scope: "time-entries write (pre-existing)", verified: "pre-existing integration", used_by: "rippling-sync approved-hours push (unchanged; NOT invoked by read tools)" },
       ],
-      unverified_sign_in_gated: [
-        { endpoint: "GET /payroll-runs", doc: "list-payroll-runs", reason: "official reference page requires Rippling sign-in — contract not verifiable from this deployment; not called" },
-        { endpoint: "GET /worker-payroll-records", doc: "list-worker-payroll-records", reason: "same — not called" },
+      verified_not_exposed: [
+        { endpoint: "GET /payroll-runs/{run_id}/worker-payroll-records/", entitlement: "Global Payroll", verified: "2026-09-02 via official SDK (workerPayrollRecords.list)", reason: "contains per-worker tax, deduction, and garnishment line items — deliberately not exposed through MCP output" },
       ],
       tool_data_sources: {
-        rippling_live: ["hr_sync_workers (pull)", "hr_get_company (connection probe)", "time_get_current_period → rippling_time_cards section"],
-        shieldtech_local: ["hr_get_workers (mirror)", "hr_get_worker", "hr_get_compensation", "hr_get_departments", "time_get_entries", "time_get_employee_summary", "payroll_get_* (snapshots/payments/exceptions)", "get_proposed_actions", "action_*"],
+        rippling_live: ["hr_sync_workers (pull)", "hr_get_company (connection probe)", "time_get_current_period → rippling_time_cards section", "payroll_get_current_period / payroll_get_history / payroll_get_summary → rippling_payroll sections (rippling_live_rest)"],
+        derived_from_verified_runs: ["payroll_schedule (Rippling exposes no pay-schedule read; derived from real runs' pay_period + check_date)"],
+        shieldtech_local: ["hr_get_workers (mirror)", "hr_get_worker", "hr_get_compensation", "hr_get_departments", "time_get_entries", "time_get_employee_summary", "payroll snapshots/payments/exceptions blocks", "get_proposed_actions", "action_*"],
       },
       write_model: "prepare → human Admin approval → execute; execution feature flags default OFF (currently enforced server-side)",
       not_exposed: {
         payroll_submission: "Never exposed: no verified public endpoint submits/finalizes payroll; approved payroll runs hand off to Rippling with a deep link.",
-        rippling_functions: "Not exposed — unverified from this deployment.",
+        rippling_functions: "Not exposed — a Rippling Function bridge was evaluated and found unnecessary (the direct REST client covers every verified capability).",
         draft_hire_api: "Approved hires hand off to Rippling for the final onboarding action.",
       },
     });

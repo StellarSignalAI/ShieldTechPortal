@@ -21,6 +21,8 @@
 // no undocumented endpoint is ever called (see docs/rippling-integration.md).
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { RIPPLING_ENDPOINTS, RipplingError, ripplingConfigured, ripplingCredentialStatus, ripplingPaginate, ripplingRequest } from "../_shared/rippling.ts";
+import { summarizePayrollRuns } from "../_shared/payroll-runs.ts";
+import { nyToday } from "../_shared/dates.ts";
 
 type Admin = ReturnType<typeof createClient>;
 
@@ -139,7 +141,7 @@ async function syncWorkers(admin: Admin, caller: Caller, onlyEmail?: string) {
   }
 }
 
-/* Read-only connection probe: one GET /companies?limit=1 with the HR
+/* Read-only connection probe: one GET /companies/ with the HR
    credential. Updates integration_connections truthfully — connected +
    last_ok_at only after a real 2xx; otherwise a categorized, sanitized error
    (missing secret / 401 / 403 / 429 / timeout / network) that the UI and MCP
@@ -147,7 +149,7 @@ async function syncWorkers(admin: Admin, caller: Caller, onlyEmail?: string) {
 async function testConnection(admin: Admin, caller: Caller) {
   const now = new Date().toISOString();
   try {
-    const body = await ripplingRequest(`${RIPPLING_ENDPOINTS.companies}?limit=1`, { instance: "hr" }) as Record<string, unknown>;
+    const body = await ripplingRequest(RIPPLING_ENDPOINTS.companies, { instance: "hr" }) as Record<string, unknown>;
     const count = ((body?.results ?? body?.data ?? []) as unknown[]).length;
     await admin.from("integration_connections").update({
       status: "connected", last_ok_at: now, last_error: null, updated_at: now,
@@ -166,9 +168,9 @@ async function testConnection(admin: Admin, caller: Caller) {
   }
 }
 
-/* Live time-card read (READ-ONLY): GET /time-cards with the HR credential,
-   cursor-paginated (verified 2026-09-02: doc list-time-cards, scope
-   time-cards.read). Rippling's pay_period and summary objects are passed
+/* Live time-card read (READ-ONLY): GET /time-cards/ with the HR credential,
+   cursor-paginated (verified 2026-09-02: official docs + SDK, entitlement
+   "API Tier 2"). Rippling's pay_period and summary objects are passed
    through UNMODIFIED — their subfields are Rippling's contract, and we do not
    rename or invent fields. Worker identity is joined to the local mirror by
    worker_id for readable names. Nothing is written to Rippling. */
@@ -194,6 +196,29 @@ async function timecardsLive(admin: Admin, caller: Caller) {
   }).eq("provider", "rippling");
   await audit(admin, caller, "rippling.timecards.read", undefined, undefined, { count: cards.length });
   return { ok: true, data: { time_cards: cards, count: cards.length, data_source: "rippling_live", as_of: now } };
+}
+
+/* Live payroll-run read (READ-ONLY): GET /payroll-runs/ with the HR
+   credential, ordered by check_date, paginated via next_link. Contract
+   verified 2026-09-02 against the official @rippling/rippling-sdk
+   0.2.0-alpha.85 generated client (requires the "Global Payroll"
+   entitlement). Fields pass through unmodified; current/most-recent-completed
+   selection and the derived schedule live in _shared/payroll-runs.ts (pure,
+   tested). Per-worker payroll records (tax/deduction/garnishment line items)
+   are deliberately NOT fetched here. Nothing is written to Rippling. */
+async function payrollRunsLive(admin: Admin, caller: Caller) {
+  const raw: Record<string, unknown>[] = [];
+  for await (const r of ripplingPaginate(`${RIPPLING_ENDPOINTS.payrollRuns}?order_by=-check_date`, { instance: "hr", maxPages: 5 })) {
+    raw.push(r);
+    if (raw.length >= 100) break;
+  }
+  const summary = summarizePayrollRuns(raw, nyToday());
+  const now = new Date().toISOString();
+  await admin.from("integration_connections").update({
+    status: "connected", last_ok_at: now, last_error: null, updated_at: now,
+  }).eq("provider", "rippling");
+  await audit(admin, caller, "rippling.payroll_runs.read", undefined, undefined, { count: summary.runs.length });
+  return { ok: true, data: { ...summary, count: summary.runs.length, data_source: "rippling_live_rest", as_of: now } };
 }
 
 /* ── Payroll math (deterministic; mirrors packages/shared/labor-calc.js) ── */
@@ -648,6 +673,18 @@ Deno.serve(async (req) => {
       case "test_connection": { const out = await testConnection(admin, caller); return json(out.ok ? 200 : 502, out); }
       case "timecards_live": {
         try { return json(200, await timecardsLive(admin, caller)); }
+        catch (e) {
+          const isR = e instanceof RipplingError;
+          const msg = isR ? e.sanitized() : String(e).slice(0, 400);
+          await admin.from("integration_connections").update({
+            status: isR && e.category === "RIPPLING_SECRET_MISSING" ? "not_configured" : "error",
+            last_error: msg, updated_at: new Date().toISOString(),
+          }).eq("provider", "rippling");
+          return json(isR && e.status === 503 ? 503 : 502, { ok: false, error: msg, category: isR ? e.category : "UNKNOWN" });
+        }
+      }
+      case "payroll_runs_live": {
+        try { return json(200, await payrollRunsLive(admin, caller)); }
         catch (e) {
           const isR = e instanceof RipplingError;
           const msg = isR ? e.sanitized() : String(e).slice(0, 400);
