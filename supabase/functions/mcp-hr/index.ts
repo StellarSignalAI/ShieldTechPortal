@@ -93,8 +93,11 @@ function buildServer(caller: McpCaller): McpServer {
     });
   });
   tool("hr_get_worker", "One worker by Rippling worker id or email.", { idOrEmail: z.string() }, async (a) => {
+    // Two parameterized lookups — never interpolate tool input into a
+    // PostgREST .or() filter string (comma/paren injection).
     const k = String(a.idOrEmail);
-    const { data } = await admin.from("rippling_workers").select("*").or(`rippling_worker_id.eq.${k},email.ilike.${k}`).limit(1).maybeSingle();
+    let { data } = await admin.from("rippling_workers").select("*").eq("rippling_worker_id", k).limit(1).maybeSingle();
+    if (!data) ({ data } = await admin.from("rippling_workers").select("*").ilike("email", k).limit(1).maybeSingle());
     return mcpText({ worker: data ?? null });
   });
   tool("hr_get_compensation", "Effective hourly rates per person (portal-set rate wins over the Rippling mirror rate; missing = null, never estimated).", {}, async () => {
