@@ -1101,6 +1101,40 @@ const Cloud={
   if(data.vendors)localStorage.setItem("bsd_vendors",JSON.stringify(data.vendors));
   if(data.company&&Object.keys(data.company).length)localStorage.setItem("bsd_company",JSON.stringify(data.company))},
 };
+/* Drawing persistence. Documents used to live in ONE localStorage key
+   ("bsd_docs"), which caps out around 5MB — a wizard-generated sheet set with
+   page underlays is far bigger, so "Generate sheet set" died with "Storage
+   full". DocStore keeps the same synchronous docs()/setDocs() contract the
+   whole app relies on via an in-memory cache, persisted write-behind to
+   IndexedDB (hundreds of MB). Existing localStorage drawings are adopted once
+   on first load, then the old key is removed to free quota. */
+const DocStore={
+ db:null,cache:{},
+ open(){return new Promise((res,rej)=>{const rq=indexedDB.open("bsd",1);
+  rq.onupgradeneeded=()=>{try{rq.result.createObjectStore("docs",{keyPath:"id"})}catch(e){}};
+  rq.onsuccess=()=>res(rq.result);rq.onerror=()=>rej(rq.error);rq.onblocked=()=>rej(new Error("blocked"))})},
+ async init(){
+  try{this.db=await this.open();
+   const rows=await new Promise((res,rej)=>{const rq=this.db.transaction("docs","readonly").objectStore("docs").getAll();
+    rq.onsuccess=()=>res(rq.result||[]);rq.onerror=()=>rej(rq.error)});
+   for(const r of rows)if(r&&r.id)this.cache[r.id]=r;
+  }catch(e){this.db=null} // no IndexedDB → memory + legacy localStorage fallback
+  try{const legacy=localStorage.getItem("bsd_docs");
+   if(legacy){const d=JSON.parse(legacy)||{};
+    for(const[id,o]of Object.entries(d))if(!this.cache[id])this.cache[id]={...o,id};
+    this.persist(Object.keys(this.cache));
+    if(this.db){localStorage.removeItem("bsd_docs");localStorage.setItem("bsd_docs_migrated","1")}}
+  }catch(e){}},
+ persist(ids){ // async write-behind; failures surface on the hint bar, never thrown
+  if(!this.db)return this.lsFallback();
+  try{const tx=this.db.transaction("docs","readwrite"),st=tx.objectStore("docs");
+   for(const id of ids){const o=this.cache[id];if(o)st.put(o);else st.delete(id)}
+   tx.onerror=tx.onabort=()=>{const h=$("hint");if(h)h.textContent="⚠ Browser database write failed — export important drawings to JSON"};
+  }catch(e){const h=$("hint");if(h)h.textContent="⚠ Browser database unavailable — drawings held in memory only"}},
+ lsFallback(){try{localStorage.setItem("bsd_docs",JSON.stringify(this.cache))}catch(e){}},
+ replace(d){const ids=new Set([...Object.keys(this.cache),...Object.keys(d)]);
+  this.cache=d;this.persist([...ids])},
+};
 const App={
  shapes:[],layers:[
   {name:"A-MARKUP",color:"#2fd4ff",vis:true,lock:false},
@@ -1768,8 +1802,8 @@ const App={
  /* save / open — multi-document store */
  docId:null,
  doc(){return{name:$("docname").value,shapes:this.shapes,layers:this.layers,scale:this.scale,tb:this.tb}},
- docs(){try{return JSON.parse(localStorage.getItem("bsd_docs"))||{}}catch(e){return{}}},
- setDocs(d){localStorage.setItem("bsd_docs",JSON.stringify(d))},
+ docs(){return{...DocStore.cache}},
+ setDocs(d){DocStore.replace(d)},
  thumb(){try{const t=document.createElement("canvas");t.width=220;t.height=130;const c=t.getContext("2d");
   c.fillStyle="#0b1220";c.fillRect(0,0,220,130);
   c.drawImage(cv,0,0,cv.width,cv.height,0,0,220,130);return t.toDataURL("image/jpeg",.6)}catch(e){return null}},
@@ -1784,8 +1818,7 @@ const App={
   if(!this.docId)this.docId=uuid();
   const d=this.docs();
   d[this.docId]={...this.doc(),id:this.docId,updated:Date.now(),author:this.author,thumb:this.thumb(),under:this.underData||null};
-  try{this.setDocs(d)}catch(e){ // quota: retry without underlay raster
-   d[this.docId].under=null;try{this.setDocs(d)}catch(e2){$("hint").textContent="⚠ Storage full — export JSON to back up";return}}
+  this.setDocs(d); // IndexedDB-backed — no 5MB localStorage ceiling
   localStorage.setItem("bsd_lastdoc",this.docId);
   this.backupPush();
   if(Cloud.enabled&&Cloud.user){clearTimeout(this._cs);this._cs=setTimeout(()=>Cloud.push(d[this.docId]),900)}
@@ -1799,6 +1832,8 @@ const App={
    // stage a full snapshot so ANY origin (localhost / blueshield.local / 127.0.0.1) self-heals with the same data
    const dump={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
     if(k&&k.startsWith("bsd_"))dump[k]=localStorage.getItem(k)}
+   // docs now live in IndexedDB — stage them too (skipped when the set is huge)
+   try{const ds=JSON.stringify(DocStore.cache);if(ds.length<4_000_000)dump.bsd_docs=ds}catch(e){}
    fetch("/_migrate",{method:"POST",body:JSON.stringify(dump),keepalive:true}).catch(()=>{})
   }catch(e){}},1500)},
  load(){
@@ -2618,22 +2653,24 @@ const App={
   else if(this.wizPdf&&$("w_pdfPages").checked){const arr=await this.wizUnderlays(this.wizLayoutCount());arr.forEach((u,i)=>underMap[i+1]=u)}
   const n=this.wizLayoutCount();
   if(this.shapes.length&&this.docId)this.save(true);
-  const d=this.docs();let firstId=null,total=0,replaced=0;
+  const d=this.docs();let firstId=null,total=0,replaced=0;const createdIds=[];
   // re-running the wizard replaces its own previously generated pages (pages you've edited are kept)
-  for(const[oid,o]of Object.entries(d))if(o.gen&&o.tb?.project===base.project){delete d[oid];replaced++}
+  for(const[oid,o]of Object.entries(d))if(o.gen&&o.tb?.project===base.project){delete d[oid];replaced++;if(Cloud.enabled&&Cloud.user)Cloud.remove(oid)}
   if(this.docId&&!d[this.docId])this.docId=null;
   systems.forEach((ind,si)=>{
    const list=this.wizFilter(mirror?this.wizMirrorList(ind):this.wizPages(ind,n),si);
    list.forEach((pg,i)=>{const no=ind+"-"+String(i+1).padStart(2,"0");
     const tb={...base,industry:ind,no,title:pg.fullTitle||((SYSNAME[ind]||"SYSTEM")+" "+pg.suffix),cover:!!pg.cover};
-    const id=uuid();if(!firstId)firstId=id;
+    const id=uuid();if(!firstId)firstId=id;createdIds.push(id);
     d[id]={id,name:base.project.replace(/\s+/g,"_")+"_"+no+".bsd",shapes:pg.notes?this.notesShapes(ind,pg.srcLines,base.muni):[],
      layers:this.defLayers(),scale:0.1,tb,updated:Date.now()+si*100+i,author:this.author,thumb:null,gen:true,
      under:pg.layout&&underMap[pg.pdfPage]?underMap[pg.pdfPage]:null};
     total++})});
-  try{this.setDocs(d)}catch(e){$("hint").textContent="⚠ Storage full — delete old drawings and retry";return}
+  try{this.setDocs(d)}catch(e){$("hint").textContent="⚠ Could not store the sheet set — browser storage error";return}
   $("wizDlg").close();this.openDoc(firstId);this.zoomFit();
-  $("hint").textContent=`⚡ Generated ${total} sheets across ${systems.length} system${systems.length>1?"s":""}${replaced?` (replaced ${replaced} previous)`:""} — ◀ ▶ to page through`},
+  $("hint").textContent=`⚡ Generated ${total} sheets across ${systems.length} system${systems.length>1?"s":""}${replaced?` (replaced ${replaced} previous)`:""} — ◀ ▶ to page through`;
+  // sync the whole generated set to the cloud (previously only individually saved pages synced)
+  if(Cloud.enabled&&Cloud.user)(async()=>{for(const id of createdIds){try{await Cloud.push(d[id])}catch(e){}}})()},
 
  /* ---------- automatic riser / schematic page ---------- */
  riserBuild(){
@@ -3877,8 +3914,9 @@ const App={
   this.migratePull();this.watchServer();setTimeout(()=>this.showNew(),900);
   this.loadCatalog().then(c=>{if(c.length)$("hint").textContent=c.length.toLocaleString()+"-part catalog loaded"});
   this.loadCables()},
- BUILD:"2026-08-10",
+ BUILD:"2026-09-07",
  WHATSNEW:[
+  ["⚡ Sheet sets now generate reliably","Drawings moved from the browser's tiny 5MB localStorage into IndexedDB. Multi-page permit sets with full-resolution drawing underlays no longer fail with “Storage full”, existing drawings migrate automatically, and a generated set now syncs every page to the cloud immediately."],
   ["💰 Estimating — top toolbar","<b>Proposal</b> makes a clean client PDF (lump sum only). <b>Buy</b> makes the internal buy sheet with best vendor pricing, savings and gross profit. <b>Catalog</b> holds 72 real models (Axis, Hanwha, Avigilon, Verkada, Openpath, Brivo, Kantech, DMP, Notifier, Fire-Lite) with cost, labor hours, engineering and permit $ per unit."],
   ["🏷 Assign a model to a device","Select any device → <b>Props panel › Model</b> dropdown. Same model number always prices identically, everywhere in the project."],
   ["⇧ Distributor price import","<b>Takeoff tab › Import distributor prices</b>. Drop in CSV/Excel price files from ADI, Wesco, Graybar, SnapAV — it picks the lowest and flags quotes older than 30 days."],
@@ -3912,7 +3950,7 @@ const App={
  async migratePull(){ // first visit from a new browser: adopt drawings staged on the local server
   try{
    if(location.protocol!=="http:"&&location.protocol!=="https:")return;
-   if(localStorage.getItem("bsd_docs"))return;
+   if(localStorage.getItem("bsd_docs")||localStorage.getItem("bsd_docs_migrated")||Object.keys(DocStore.cache).length)return;
    const r=await fetch("/_migrate",{cache:"no-store"});if(!r.ok)return;
    const dump=await r.json();if(!dump||!dump.bsd_docs)return;
    for(const[k,v]of Object.entries(dump))localStorage.setItem(k,v);
@@ -3926,7 +3964,7 @@ const App={
   this.armClick(place,"Click canvas to place stamp: "+text)},
  countName(){this.ask("Name this count set (e.g. Sprinkler Heads)","Fixtures",v=>{this.countLabel=v;this.setTool("count")})},
 };
-App.init();
+DocStore.init().then(()=>App.init());
 </script>
 </body>
 </html>
