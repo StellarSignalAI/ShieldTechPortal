@@ -29,17 +29,37 @@ function HREmpty({ icon, title, sub }) {
   );
 }
 
+/* Truthful Rippling connection banner: shown on data tabs whenever the live
+   connection is anything other than verified-connected, so an empty mirror is
+   never mistaken for an empty company. Reads the hr function's `status`
+   diagnostics (connection_status + warnings). */
+function HRConnBanner() {
+  const [st, setSt] = React.useState(null);
+  React.useEffect(() => { window.__shieldHR.hrStatus().then(r => setSt(r.ok ? r.data : { connection_status: 'error', warnings: [r.error || 'Could not reach the hr service'] })); }, []);
+  if (!st || st.connection_status === 'connected') return null;
+  const err = st.connection_status === 'error';
+  const c = err ? 'var(--status-crit, #f87171)' : 'var(--status-warn)';
+  const label = { not_configured: 'RIPPLING NOT CONNECTED', configured_never_verified: 'RIPPLING NEVER VERIFIED', error: 'RIPPLING CONNECTION ERROR' }[st.connection_status] || 'RIPPLING STATUS UNKNOWN';
+  return (
+    <div className="glass" style={{ padding: '10px 14px', marginBottom: 12, borderLeft: `3px solid ${c}` }}>
+      <div style={{ fontSize: 10.5, fontWeight: 800, color: c, letterSpacing: '.06em', marginBottom: 2 }}>{label}</div>
+      {(st.warnings || []).map((w, i) => <div key={i} style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{w}</div>)}
+    </div>
+  );
+}
+
 /* ── People — Rippling worker roster + linkage ─────────────────────────── */
 function HRPeopleScreen() {
   const hr = window.__shieldHR;
   const [rows, setRows] = React.useState(null);
+  const [loadErr, setLoadErr] = React.useState(null);
   const [profiles, setProfiles] = React.useState([]);
   const [syncing, setSyncing] = React.useState(false);
   const [open, setOpen] = React.useState({});
   const [search, setSearch] = React.useState('');
 
   const load = React.useCallback(() => {
-    hr.workers().then(r => setRows(r.data || []));
+    hr.workers().then(r => { setRows(r.data || []); setLoadErr(r.ok ? null : (r.error || 'Could not load workers')); });
     window.__shieldSupabase?.from?.('profiles')?.select?.('id,name,email,role')
       ?.then?.(r => setProfiles(r.data || []));
   }, []);
@@ -71,6 +91,8 @@ function HRPeopleScreen() {
   const nameOf = new Map(profiles.map(p => [p.id, p.name || p.email]));
   return (
     <div style={{ maxWidth: 980, margin: '0 auto' }}>
+      <HRConnBanner />
+      {loadErr && <div className="glass" style={{ padding: '10px 14px', marginBottom: 12, borderLeft: '3px solid var(--status-crit, #f87171)', fontSize: 11.5, color: 'var(--text-mid)' }}>Could not load the roster: {loadErr} — what's shown below may be incomplete, not empty.</div>}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, title, department…"
           style={{ ...hrInput, flex: 1, minWidth: 180 }} />
@@ -79,9 +101,9 @@ function HRPeopleScreen() {
         </div>
         <button onClick={syncNow} disabled={syncing} style={hrBtnPrimary()}>{syncing ? 'Syncing…' : '⟳ Sync from Rippling'}</button>
       </div>
-      {rows && rows.length === 0 && (
-        <HREmpty icon="👥" title="No Rippling workers synced yet"
-          sub="Configure the Rippling API token (Setup tab), then Sync from Rippling to pull the roster." />
+      {rows && rows.length === 0 && !loadErr && (
+        <HREmpty icon="👥" title="No workers in the local mirror"
+          sub="This means 'never synced', not 'no employees'. Configure HR_RIPPLING_API_TOKEN (Setup tab), test the connection, then Sync from Rippling to pull the roster." />
       )}
       {(rows || []).filter(w => {
         const q = search.trim().toLowerCase();
@@ -175,6 +197,7 @@ function HRPayrollCenterScreen() {
 
   return (
     <div style={{ maxWidth: 980, margin: '0 auto' }}>
+      <HRConnBanner />
       {/* Prep controls */}
       <div className="glass" style={{ padding: 14, marginBottom: 12 }}>
         <div className="label-sm" style={{ marginBottom: 8 }}>PREPARE A PAY PERIOD</div>
@@ -703,11 +726,22 @@ function HRSetupScreen() {
   const hr = window.__shieldHR;
   const [st, setSt] = React.useState(null);
   const [cfg, setCfg] = React.useState(null);
+  const [testing, setTesting] = React.useState(false);
   const load = React.useCallback(() => {
     hr.hrStatus().then(r => { if (r.ok) setSt(r.data); else setSt({ error: r.error }); });
     hr.laborConfig().then(r => { if (r.ok) setCfg(r.data.components || []); });
   }, []);
   React.useEffect(() => { load(); }, [load]);
+
+  const testNow = () => {
+    setTesting(true);
+    hr.testConnection().then(r => {
+      setTesting(false);
+      if (r.ok) shieldToast(`Rippling reachable ✓ (${r.data?.companies_seen ?? 0} company record${r.data?.companies_seen === 1 ? '' : 's'} visible)`, 'ok');
+      else shieldToast(r.error || 'Connection test failed', 'warn');
+      load();
+    });
+  };
 
   const flags = st?.connection?.config || {};
   const flagRows = [
@@ -740,7 +774,10 @@ function HRSetupScreen() {
   return (
     <div style={{ maxWidth: 980, margin: '0 auto' }}>
       <div className="glass" style={{ padding: 14, marginBottom: 12 }}>
-        <div className="label-sm" style={{ marginBottom: 8 }}>RIPPLING CONNECTION</div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+          <div className="label-sm" style={{ flex: 1 }}>RIPPLING CONNECTION</div>
+          <button onClick={testNow} disabled={testing} style={hrBtnPrimary()}>{testing ? 'Testing…' : '⚡ Test connection'}</button>
+        </div>
         {!st && <div style={{ fontSize: 11.5, color: 'var(--text-low)' }}>Checking…</div>}
         {st?.error && <div style={{ fontSize: 11.5, color: 'var(--status-warn)' }}>{st.error}</div>}
         {st && !st.error && (<>
@@ -752,9 +789,11 @@ function HRSetupScreen() {
                   {c.configured ? (c.dedicated ? 'configured' : 'using shared token') : 'not configured'}
                 </b></span>;
             })}
-            <span>Status: <b style={{ color: st.connection?.status === 'connected' ? 'var(--status-ok)' : 'var(--text-low)' }}>{st.connection?.status || 'unknown'}</b></span>
+            <span>Status: <b style={{ color: (st.connection_status || st.connection?.status) === 'connected' ? 'var(--status-ok)' : (st.connection_status === 'error' ? 'var(--status-crit, #f87171)' : 'var(--status-warn)') }}>
+              {(st.connection_status || st.connection?.status || 'unknown').replace(/_/g, ' ')}</b></span>
             {st.connection?.last_ok_at && <span>Last OK: {hrWhen(st.connection.last_ok_at)}</span>}
           </div>
+          {(st.warnings || []).map((w, i) => <div key={i} style={{ fontSize: 10.5, color: 'var(--status-warn)', marginTop: 6 }}>{w}</div>)}
           {st.connection?.last_error && <div style={{ fontSize: 10.5, color: 'var(--status-warn)', marginTop: 6 }}>{st.connection.last_error}</div>}
           <div style={{ fontSize: 10.5, color: 'var(--text-low)', marginTop: 8 }}>
             Two independently revocable Rippling API tokens live only in Supabase secrets —{' '}
