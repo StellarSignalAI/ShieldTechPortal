@@ -88,7 +88,13 @@ Deno.serve(async (req) => {
       opps.push(...(out.opportunitiesData ?? []));
     }
   } catch (e) {
-    return json(502, { ok: false, error: `SAM.gov fetch failed: ${String(e)}` });
+    // Fetch TypeErrors embed the full request URL, which carries api_key —
+    // strip key material and URLs before the message leaves this function.
+    const msg = String(e instanceof Error ? e.message : e)
+      .replace(/api_key=[^&\s"']+/gi, "api_key=***")
+      .replace(/https?:\/\/\S+/g, "[url]")
+      .slice(0, 300);
+    return json(502, { ok: false, error: `SAM.gov fetch failed: ${msg}` });
   }
 
   // Trade tagging from the live keyword database (public.lead_keywords).

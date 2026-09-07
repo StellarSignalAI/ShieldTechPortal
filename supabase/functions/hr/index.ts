@@ -639,7 +639,19 @@ Deno.serve(async (req) => {
           admin.from("integration_connections").select("*").eq("provider", "rippling").maybeSingle(),
           admin.from("integration_sync_runs").select("*").eq("provider", "rippling").order("started_at", { ascending: false }).limit(5),
         ]);
-        return json(200, { ok: true, data: { configured: ripplingConfigured("hr"), credentials: ripplingCredentialStatus(), connection: conn, recent_runs: runs ?? [] } });
+        // Same truthful diagnostics the MCP surface returns, so the portal can
+        // never mistake "never synced" for "no employees".
+        const configured = ripplingConfigured("hr");
+        const raw = conn?.status ?? "unknown";
+        const connection_status = !configured ? "not_configured"
+          : raw === "connected" ? "connected"
+          : raw === "error" ? "error"
+          : "configured_never_verified";
+        const warnings: string[] = [];
+        if (!configured) warnings.push("HR_RIPPLING_API_TOKEN is not set in Supabase secrets — Rippling has never been reached. Empty results mean 'never synced', NOT 'no employees'.");
+        else if (connection_status === "configured_never_verified") warnings.push("A Rippling token is configured but no successful API call has been recorded yet — run Test connection or Sync workers.");
+        else if (connection_status === "error") warnings.push(`Last Rippling call failed: ${conn?.last_error ?? "unknown error"}`);
+        return json(200, { ok: true, data: { configured, connection_status, warnings, credentials: ripplingCredentialStatus(), connection: conn, recent_runs: runs ?? [] } });
       }
       case "set_flags": {
         if (caller.role !== "Admin") return json(403, { ok: false, error: "Admin only" });
