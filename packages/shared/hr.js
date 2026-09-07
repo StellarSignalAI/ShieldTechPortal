@@ -40,6 +40,10 @@ export const rejectAction = (id) => hrAction('action_reject', { id });
 export const executeAction = (id) => hrAction('action_execute', { id });
 export const runMetrics = () => hrAction('metrics_run');
 export const businessBrief = () => hrAction('brief');
+/* Live read-only Rippling reads (server-side; no token in the browser). */
+export const testConnection = () => hrAction('test_connection');
+export const timecardsLive = () => hrAction('timecards_live');
+export const payrollRunsLive = () => hrAction('payroll_runs_live');
 
 /* ── Direct table reads (RLS: office roles) ──────────────────────────────── */
 async function readTable(table, shape) {
@@ -132,6 +136,7 @@ export async function setRecommendationStatus(id, status) {
 window.__shieldHR = {
   hrAction, hrStatus, setFlags, syncWorkers, linkWorker, runExceptions, preparePayroll,
   approveAction, rejectAction, executeAction, runMetrics, businessBrief,
+  testConnection, timecardsLive, payrollRunsLive,
   workers, syncRuns, exceptions, snapshots, actions, recommendations, metricHistory,
   auditLog, setExceptionStatus, proposeAction,
   laborConfig, saveLaborConfig, saveForecast, saveScenario, setRecommendationStatus,
