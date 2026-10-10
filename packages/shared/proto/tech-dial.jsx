@@ -120,15 +120,20 @@ function tdSetField(job, s) {
 }
 const TD_TIMER_KEY = 'st2:timer';
 function tdTimerRead() { try { return JSON.parse(localStorage.getItem(TD_TIMER_KEY) || 'null'); } catch { return null; } }
+const tdTimerPing = () => { try { window.dispatchEvent(new Event('st2:timer')); } catch { /* noop */ } };
+/* Shared with the Clock (tech-money.jsx): {start, project, task, job, startedAt}
+   while running, {pausedElapsed, …} while paused. */
 function tdTimerStart(job) {
   const cur = tdTimerRead();
   if (cur && cur.start) return cur;
-  const t = { start: Date.now(), project: job.customer, task: 'Installation', job: job.woId || job.id };
+  const paused = (cur && cur.pausedElapsed) || 0;
+  const t = { start: Date.now() - paused * 1000, project: job.customer, task: (cur && cur.task) || 'Installation', job: job.woId || job.id, startedAt: (cur && cur.startedAt) || Date.now() };
   try { localStorage.setItem(TD_TIMER_KEY, JSON.stringify(t)); } catch { /* quota */ }
+  tdTimerPing();
   return t;
 }
-function tdTimerStop() { const t = tdTimerRead(); try { localStorage.removeItem(TD_TIMER_KEY); } catch { /* noop */ } return t && t.start ? Math.max(0, Date.now() - t.start) : 0; }
-function tdTimerElapsed() { const t = tdTimerRead(); return t && t.start ? Math.max(0, Date.now() - t.start) : 0; }
+function tdTimerStop() { const t = tdTimerRead(); try { localStorage.removeItem(TD_TIMER_KEY); } catch { /* noop */ } tdTimerPing(); return t ? (t.start ? Math.max(0, Date.now() - t.start) : (t.pausedElapsed || 0) * 1000) : 0; }
+function tdTimerElapsed() { const t = tdTimerRead(); return t ? (t.start ? Math.max(0, Date.now() - t.start) : (t.pausedElapsed || 0) * 1000) : 0; }
 
 /* ── the next right step for a job ── */
 const TD_FIELD_LABEL = { 'en-route': 'En route', 'on-site': 'On site', 'in-progress': 'In progress', paused: 'Paused', complete: 'Completed' };
@@ -575,7 +580,7 @@ function JobFlowView({ job: raw, setTab }) {
           {panel('Photos', photoStrip([['Before', 'before'], ['During', 'progress'], ['Issue', 'issue']]), jobPhotos.length ? <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)' }}>{jobPhotos.length}</span> : null)}
           {drawings.length > 0 && window.BlueprintRows && panel('Blueprints', <BlueprintRows drawings={drawings} onOpen={setOpenDrawing} />)}
           {primary(doneN === labels.length ? `Done — ${steps[3].toLowerCase()}` : `${steps[3]} (${labels.length - doneN} left)`, toTest)}
-          <div style={{ display: 'flex', gap: 8 }}>{job.field === 'paused' ? ghost('Resume', () => tdSetField(job, 'in-progress'), c) : ghost('Pause', pause)}{ghost('◉ Camera', () => openCamera('progress'))}</div>
+          <div style={{ display: 'flex', gap: 8 }}>{job.field === 'paused' ? ghost('Resume', () => tdSetField(job, 'in-progress'), c) : ghost('Pause', pause)}{ghost('◉ Camera', () => openCamera('progress'))}{window.openTechReceipt ? ghost('▢ Receipt', () => { window.openTechReceipt({ jobRef: woId || job.id, label: job.customer }); setTab('expenses'); }) : null}</div>
         </div>
       );
       case 3: return (

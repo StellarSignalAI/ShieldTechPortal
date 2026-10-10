@@ -107,6 +107,30 @@ Test → Sign-off (labels adapt per WO type): fieldStatus, checklist + test tick
 site" to completion, then optional one-tap hours submission (`__shieldTime.submitHours`).
 Colors are tokens only — the color pass is a `colors.css` change.
 
+### 2d. Technician app — Clock (Time) + Receipts (Expenses)
+`packages/shared/proto/tech-money.jsx` replaces `TimeViewV2` / `ExpenseView` (both kept as
+fallbacks in `apps/tech/src/main.jsx`).
+- **Clock**: the one `st2:timer` the Dial runs, on a card with one action — Start (defaults
+  to the job under the needle; "Job…" picks any today-job / category / project / WO), Pause,
+  Resume, Stop → one note → draft or submitted `time_entries` row with real start/end.
+  Today is a strip on the Dial's 6 AM–8 PM track plus entry rows; Week is seven bars,
+  draft/submitted/approved counts and one "Submit week" button. Rejected entries surface at
+  the top with the office's reason and a "Fix & resubmit" path (new `__shieldTime.updateEntry`
+  in `time.js`; drafts can be edited/submitted singly). Paused time survives in the timer
+  (`pausedElapsed`); the Dial's helpers honor it and fire a `st2:timer` event on every write.
+- **Receipts**: camera first. Snap → `tmShrink` (≤1600px JPEG) → sheet with the photo,
+  big amount field, vendor/date/category/job/paid-with/note. If the `ai` edge function has
+  `OPENAI_API_KEY`, `tmScanReceipt` reads vendor/total/date/category/last4 off the image
+  (feature `extract`, vision) and pre-fills; otherwise the tech types the total. Duplicate
+  warning (same amount within 3 days). Sends to the office receipt inbox
+  (`__shieldReceipts.snap`, tagged with job + "PERSONAL CARD — reimburse" when applicable) —
+  the office converts → expense → QuickBooks, so nothing is entered twice. Mileage
+  (`TM_MILEAGE_RATE`, $0.70/mi) and no-receipt expenses go to `techExpenseStore` for approval.
+  One list merges receipts + expenses by day with thumbnails (signed URLs) and status;
+  totals: this month / with office / owed to you.
+- The Dial's Install step has a **Receipt** action (`window.openTechReceipt({jobRef,label})`)
+  that opens the camera pre-tagged to the job.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 
