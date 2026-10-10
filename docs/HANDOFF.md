@@ -68,6 +68,31 @@ enables portal→QBO write-back.
 - Employees/payroll need the payroll scope (or MCP payroll re-auth) — otherwise everything
   else syncs on the accounting scope.
 
+### 2b. QuickBooks write engine ("+ New") — built, waits on the same creds
+`qbo-sync` now has a full transaction engine (`{direction:'push', entity, payload}`):
+**customer, vendor, item, invoice, estimate, payment (receive payment), purchase (expense),
+bill, billpayment**. Payloads are portal-shaped (names, not Intuit ids); the server
+finds-or-creates customers/vendors/items, resolves accounts by name → type, posts the
+record, mirrors it into the `qbo_*` landing tables and refreshes the invoice/bill balance.
+Already-paid invoices/bills are skipped, never double-posted.
+- Client: `window.__shieldQBO.{receivePayment, recordExpense, createBill, payBill,
+  createVendor, createCustomer, createItem, push, notConnected}` (`packages/shared/qbo.js`).
+- UI: one shared **+ New** menu + forms (`packages/shared/proto/qbo-new.jsx`,
+  `window.openQboNew(kind, prefill)`) used by the desktop Finance Suite header, the mobile
+  Money tab, invoice "Receive Payment", Bills "Pay", Expenses approvals (desktop +
+  mobile + receipt-inbox conversions → one `qboPostExpense`), Products "+ New Item" and
+  **Add standard LV services** (reviewable low-voltage service catalog; reuses existing
+  item names). Modal on desktop, `MSheet` on phones — no duplicate forms.
+- Stripe: `stripe-webhook` books the matching QuickBooks Payment server-side on a verified
+  `checkout.session.completed` (via the cron secret; no-op until QBO is connected).
+- Every form writes the shared stores first and reports honestly: "recorded in QuickBooks"
+  vs "saved here — QuickBooks isn't connected yet". **Nothing reaches QuickBooks until the
+  four `QBO_*` secrets in item 2 are set.** Landing tables currently hold only the July
+  MCP import (13 customers / 32 seed items / 82 invoices / 61 estimates; no bills, vendors,
+  payments, accounts) — the first real sync replaces that.
+- Real QBO today (via the Intuit MCP): 40 items, all Service type, mostly one-off job
+  names; A/R $185,852.63 with $94,657.63 overdue across 7 customers.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

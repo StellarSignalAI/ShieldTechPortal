@@ -59,6 +59,28 @@ Deno.serve(async (req) => {
         await admin.from("invoice_links").update({
           status: "paid", paid_at: new Date().toISOString(), paid_via: "stripe",
         }).eq("id", link.id);
+        // Book the payment in QuickBooks too ("Receive payment" on the matching
+        // invoice). Runs only on the first delivery (the row was still 'sent'),
+        // and qbo-sync skips invoices that are already paid, so a replayed
+        // webhook can never double-post. Silently a no-op until the Intuit
+        // credentials are configured.
+        const cronSecret = Deno.env.get("CRON_SECRET");
+        if (cronSecret) {
+          try {
+            await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/qbo-sync`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "x-cron-secret": cronSecret },
+              body: JSON.stringify({
+                direction: "push", entity: "payment",
+                payload: {
+                  docNumber: ref, amount: paidCents / 100, method: "Stripe",
+                  memo: `Stripe checkout ${String(session.id ?? "")}`.trim(),
+                  reference: String(session.payment_intent ?? session.id ?? "").slice(0, 21),
+                },
+              }),
+            });
+          } catch (_e) { /* QBO booking is best-effort; the invoice_links row is the source of truth here */ }
+        }
       } else if (link) {
         await admin.from("invoice_links").update({
           status: "review", paid_via: "stripe",

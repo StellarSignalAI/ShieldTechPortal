@@ -588,6 +588,13 @@ function NIFinanceModal({ modal, setModal, showToast }) {
   if (modal.type === 'new-invoice' || modal.type === 'new-estimate') {
     return <InvoiceBuilderModal modal={modal} setModal={setModal} showToast={showToast} />;
   }
+  /* Bills, vendors, expenses and products are real QuickBooks writes now —
+     hand them to the shared "+ New" forms (qbo-new.jsx) instead of a stub. */
+  const qboKind = { 'new-bill': 'bill', 'new-vendor': 'vendor', 'new-expense': 'purchase', 'new-product': 'item' }[modal.type];
+  if (qboKind && window.openQboNew) {
+    setTimeout(() => { setModal(null); window.openQboNew(qboKind); }, 0);
+    return null;
+  }
   /* Fallback for other modal types */
   const titles = { 'new-bill': 'New Bill', 'new-vendor': 'New Vendor', 'new-po': 'New Purchase Order', 'new-expense': 'New Expense', 'new-account': 'New Account' };
   return (
