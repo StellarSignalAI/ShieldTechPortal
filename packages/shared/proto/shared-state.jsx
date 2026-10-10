@@ -1074,6 +1074,6 @@ Object.assign(window, {
   surveyStore, surveyTotals, SURVEY_RATE, SURVEY_BOM_SEED, studioInboxStore,
   showToast, navTo, genId, fmtDuration, fmtSeconds, savedScreen, saveScreen,
   techExpenseStore, rejectTimesheetEntry,
-  drawingAnnoStore, woCheckStore, projectScope,
+  drawingAnnoStore, woCheckStore, projectScope, WO_TEMPLATES,
   assetPwStore, assetDocStore, assetNetStore
 });

@@ -93,6 +93,20 @@ Already-paid invoices/bills are skipped, never double-posted.
 - Real QBO today (via the Intuit MCP): 40 items, all Service type, mostly one-off job
   names; A/R $185,852.63 with $94,657.63 overdue across 7 customers.
 
+### 2c. Technician app — the Dial (home) + execution flow
+`packages/shared/proto/tech-dial.jsx` replaces the tech home (`TechDialHome`) and job
+detail (`JobFlowView`); `apps/tech/src/main.jsx` falls back to the old `TodayView` /
+`JobDetailView` if the module is missing. The home is one instrument: a ticked bezel
+holding 6 AM–8 PM with every dispatched job (workOrderStore + jobStore, filtered to the
+signed-in tech, crew view when nothing is assigned) as a block colored by discipline
+(`--disc-*` tokens); a fixed needle; turn/flick/tap to dial a job in; one card with one
+action (Start → I'm on site → Begin work → Continue → Summary). Untimed work orders are
+packed into free slots and labeled "anytime". The flow is Arrive → Verify → Install →
+Test → Sign-off (labels adapt per WO type): fieldStatus, checklist + test ticks
+(`woCheckStore`), photos (`techcam` → capture), signature upload, `st2:timer` from "on
+site" to completion, then optional one-tap hours submission (`__shieldTime.submitHours`).
+Colors are tokens only — the color pass is a `colors.css` change.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

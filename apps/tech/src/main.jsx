@@ -296,13 +296,15 @@ function TechApp() {
   const tab = rawTab === 'job-detail' && !selectedJob ? 'today' : rawTab;
   const setTab = (v) => { setTweak('view', v); window.saveScreen('tech', v); };
 
+  /* Home is the Dial (tech-dial.jsx); the list view lives under More → All Jobs. */
+  const { TechDialHome, JobFlowView } = window;
   const views = {
-    today: () => <TodayView setTab={setTab} setSelectedJob={setSelectedJob} />,
+    today: () => TechDialHome ? <TechDialHome setTab={setTab} setSelectedJob={setSelectedJob} /> : <TodayView setTab={setTab} setSelectedJob={setSelectedJob} />,
     photos: () => <TechPhotosView setTab={setTab} />,
     capture: () => <TechCaptureView setTab={setTab} />,
     punch: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><TechPunchView setTab={setTab} /></React.Fragment>,
     truck: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><TechTruckView /></React.Fragment>,
-    'job-detail': () => <JobDetailView job={selectedJob} setTab={setTab} />,
+    'job-detail': () => JobFlowView ? <JobFlowView job={selectedJob} setTab={setTab} /> : <JobDetailView job={selectedJob} setTab={setTab} />,
     time: () => <TimeViewV2 />,
     assets: () => <TechAssetsView />,
     expenses: () => <ExpenseView />,

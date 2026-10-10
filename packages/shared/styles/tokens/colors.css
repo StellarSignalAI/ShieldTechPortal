@@ -33,6 +33,14 @@
   --status-critical: #FF6B6B;
   --status-info: #6366F1;
 
+  /* Service disciplines — one hue per line of work (job blocks on the tech
+     Dial, chips, discipline badges). Swap here and every surface follows. */
+  --disc-cctv: #1E80F0;
+  --disc-access: #19E3EC;
+  --disc-cabling: #27E39A;
+  --disc-alarm: #9B5CFF;
+  --disc-fire: #FF3B5C;
+
   /* Common alpha mixes (semantic aliases) */
   --brand-tint-05: rgba(99,102,241,0.06);   /* row hover */
   --brand-tint-12: rgba(99,102,241,0.14);   /* active tab / badge bg */
@@ -68,5 +76,11 @@
 
   --brand-tint-05: rgba(79,70,229,0.05);
   --brand-tint-12: rgba(79,70,229,0.12);
+
+  --disc-cctv: #1D6FD1;
+  --disc-access: #0E9FA8;
+  --disc-cabling: #16A36B;
+  --disc-alarm: #7C4DDB;
+  --disc-fire: #E0304F;
 }
 :root[data-theme="light"] body { background: var(--canvas); color: var(--text-high); }

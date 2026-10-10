@@ -8,6 +8,7 @@ import './proto/photos-shared.jsx';
 import './proto/shell.jsx';
 import './proto/screen-customer-expanded.jsx';
 import './proto/screen-tech-app.jsx';
+import './proto/tech-dial.jsx';
 import './proto/screen-tech-v2.jsx';
 import './proto/screen-customers.jsx';
 import './proto/screen-networkglue.jsx';
