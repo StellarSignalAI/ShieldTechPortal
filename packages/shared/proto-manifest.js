@@ -70,6 +70,7 @@ import './proto/screen-knowledge.jsx';
 
 /* V2 Upgrades */
 import './proto/screen-finance-v2.jsx';
+import './proto/screen-revops.jsx';
 import './proto/screen-finance-books.jsx';
 import './proto/screen-finance-payments.jsx';
 import './proto/screen-finance-extended.jsx';

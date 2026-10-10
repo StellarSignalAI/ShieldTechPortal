@@ -28,7 +28,7 @@ const SCREEN_LIST = [
   'login', 'custom-dashboard', 'customer', 'shieldtech-ai',
   /* Sell */    'crm', 'autobid', 'secret-weapon', 'proposals', 'studio', 'survey-cloud',
   /* Deliver */ 'calendar', 'copilot', 'dispatch', 'workorder', 'photos', 'punchlist', 'projects', 'plan-room',
-  /* Collect */ 'finance', 'invoices', 'estimates', 'outbox', 'purchase-orders', 'parts-req', 'mrr', 'rr-builder', 'pay',
+  /* Collect */ 'finance', 'revops', 'invoices', 'estimates', 'outbox', 'purchase-orders', 'parts-req', 'mrr', 'rr-builder', 'pay',
   /* Care */    'customers-list', 'cameras', 'assets', 'helpdesk', 'incidents', 'nps', 'messages',
   /* Admin */   'employees', 'skills', 'users', 'hr', 'approvals', 'timesheets', 'payroll', 'expenses', 'documents', 'portal-settings',
 ];
@@ -55,6 +55,7 @@ const SCREEN_COMPONENTS = {
   'plan-room': 'PlanRoomScreen',
   /* Collect */
   finance: 'FinanceScreen',
+  revops: 'RevOpsScreen',
   invoices: 'InvoicesDirectScreen',
   estimates: 'EstimatesDirectScreen',
   outbox: 'OutboxScreen',
