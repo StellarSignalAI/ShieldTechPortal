@@ -82,7 +82,7 @@ function CustomerHealthScreen() {
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 {Object.entries(c.factors).filter(([,v]) => v > 0).map(([k, v]) => (
                   <div key={k} style={{ textAlign: 'center' }}>
-                    <div style={{ width: 6, height: 30, borderRadius: 3, background: 'rgba(63,169,245,0.08)', overflow: 'hidden', display: 'flex', flexDirection: 'column-reverse' }}>
+                    <div style={{ width: 6, height: 30, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden', display: 'flex', flexDirection: 'column-reverse' }}>
                       <div style={{ width: '100%', height: `${v}%`, background: v >= 80 ? 'var(--status-ok)' : v >= 60 ? 'var(--status-warn)' : 'var(--status-critical)', borderRadius: 3 }} />
                     </div>
                     <div style={{ fontSize: 7, color: 'var(--text-low)', marginTop: 2, textTransform: 'uppercase' }}>{k.slice(0,3)}</div>
@@ -127,7 +127,7 @@ function RevenueForecastScreen() {
             <svg width="100%" height="200" viewBox="0 0 600 200" preserveAspectRatio="none">
               {/* Grid lines */}
               {[0,50,100,150,200].map(y => (
-                <line key={y} x1="0" y1={y} x2="600" y2={y} stroke="rgba(63,169,245,0.05)" strokeWidth="0.5" />
+                <line key={y} x1="0" y1={y} x2="600" y2={y} stroke="rgba(99,102,241,0.05)" strokeWidth="0.5" />
               ))}
               {/* Pessimistic band */}
               {(() => {
@@ -144,7 +144,7 @@ function RevenueForecastScreen() {
                 if (pts.length < 2) return null;
                 const top = ptsOpt.map(p => `${p.x},${p.y}`).join(' ');
                 const bot = pts.reverse().map(p => `${p.x},${p.y}`).join(' ');
-                return <polygon points={`${top} ${bot}`} fill="rgba(63,169,245,0.06)" />;
+                return <polygon points={`${top} ${bot}`} fill="rgba(99,102,241,0.06)" />;
               })()}
               {/* Actual line */}
               {(() => {
@@ -178,7 +178,7 @@ function RevenueForecastScreen() {
             <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 16, height: 2, background: 'var(--brand)' }} /><span style={{ fontSize: 10, color: 'var(--text-low)' }}>Actual</span></div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 16, height: 2, background: 'var(--brand)', opacity: 0.5 }} /><span style={{ fontSize: 10, color: 'var(--text-low)' }}>Forecast</span></div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 16, height: 8, background: 'rgba(63,169,245,0.1)', borderRadius: 2 }} /><span style={{ fontSize: 10, color: 'var(--text-low)' }}>Range</span></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 16, height: 8, background: 'rgba(99,102,241,0.1)', borderRadius: 2 }} /><span style={{ fontSize: 10, color: 'var(--text-low)' }}>Range</span></div>
             </div>
           </div>
         </GlassPanel>
@@ -194,7 +194,7 @@ function RevenueForecastScreen() {
                 <span className="mono" style={{ fontSize: 12, fontWeight: 500 }}>${(p.weighted/1000).toFixed(0)}K</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'rgba(63,169,245,0.08)', overflow: 'hidden' }}>
+                <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
                   <div style={{ width: `${p.prob}%`, height: '100%', borderRadius: 3, background: p.prob >= 80 ? 'var(--status-ok)' : p.prob >= 50 ? 'var(--brand)' : 'var(--status-warn)' }} />
                 </div>
                 <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', width: 30 }}>{p.prob}%</span>
@@ -263,7 +263,7 @@ function CommissionScreen() {
         {reps.map((rep, i) => (
           <GlassPanel key={i} onClick={() => openRep(rep)} className="st-rowcard" style={{ flex: 1, cursor: 'pointer' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg, rgba(63,169,245,0.2), rgba(63,169,245,0.05))', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, color: 'var(--brand)', fontFamily: 'var(--font-mono)' }}>{rep.initials}</div>
+              <div style={{ width: 42, height: 42, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.05))', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, color: 'var(--brand)', fontFamily: 'var(--font-mono)' }}>{rep.initials}</div>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 500 }}>{rep.name}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>{rep.role} · {rep.rate}% rate</div>
@@ -285,7 +285,7 @@ function CommissionScreen() {
             </div>
             {/* Quota bar */}
             <div className="label-sm" style={{ marginBottom: 4 }}>QUOTA: ${(rep.quota/1000).toFixed(0)}K</div>
-            <div style={{ height: 8, borderRadius: 4, background: 'rgba(63,169,245,0.08)', overflow: 'hidden' }}>
+            <div style={{ height: 8, borderRadius: 4, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
               <div style={{ width: `${Math.min(rep.quotaPct, 100)}%`, height: '100%', borderRadius: 4, background: rep.quotaPct >= 100 ? 'var(--status-ok)' : rep.quotaPct >= 70 ? 'var(--brand)' : 'var(--status-warn)' }} />
             </div>
             <div className="mono" style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 4, textAlign: 'right' }}>{rep.quotaPct.toFixed(1)}%</div>
@@ -306,14 +306,14 @@ function CommissionScreen() {
           </tr></thead>
           <tbody>
             {deals.map((d, i) => (
-              <tr key={i} onClick={() => openDeal(d)} style={{ transition: 'background 0.15s', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.background='rgba(63,169,245,0.04)'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>
-                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--brand)' }}>{d.rep}</td>
-                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{d.customer}</td>
-                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, textAlign: 'right' }}>${d.value.toLocaleString()}</td>
-                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, textAlign: 'right', fontWeight: 500, color: 'var(--status-ok)' }}>${d.commission.toLocaleString()}</td>
-                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{d.stage}</td>
-                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={d.status === 'earned' ? 'online' : d.status === 'paid' ? 'info' : 'pending'} label={d.status} /></td>
-                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, textAlign: 'right', color: 'var(--text-low)' }}>{d.closeDate}</td>
+              <tr key={i} onClick={() => openDeal(d)} style={{ transition: 'background 0.15s', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.background='rgba(99,102,241,0.04)'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--brand)' }}>{d.rep}</td>
+                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{d.customer}</td>
+                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right' }}>${d.value.toLocaleString()}</td>
+                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', fontWeight: 500, color: 'var(--status-ok)' }}>${d.commission.toLocaleString()}</td>
+                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{d.stage}</td>
+                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={d.status === 'earned' ? 'online' : d.status === 'paid' ? 'info' : 'pending'} label={d.status} /></td>
+                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, textAlign: 'right', color: 'var(--text-low)' }}>{d.closeDate}</td>
               </tr>
             ))}
           </tbody>
@@ -373,7 +373,7 @@ function ComplianceScreen() {
         {items.sort((a,b) => a.daysLeft - b.daysLeft).map((item, i) => (
           <div key={i} onClick={() => openItem(item)} className="st-clickrow" style={{
             display: 'flex', alignItems: 'center', gap: 14, padding: '12px 18px',
-            borderBottom: '1px solid rgba(63,169,245,0.04)',
+            borderBottom: '1px solid rgba(99,102,241,0.04)',
             background: item.status === 'overdue' ? 'rgba(244,63,94,0.03)' : 'transparent'
           }}>
             <span style={{ fontSize: 20 }}>{item.icon}</span>
@@ -422,7 +422,7 @@ function OnboardingScreen() {
             <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--brand)' }}>{wf.progress}%</div>
           </div>
           {/* Progress bar */}
-          <div style={{ height: 6, borderRadius: 3, background: 'rgba(63,169,245,0.08)', overflow: 'hidden', marginBottom: 14 }}>
+          <div style={{ height: 6, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden', marginBottom: 14 }}>
             <div style={{ width: `${wf.progress}%`, height: '100%', borderRadius: 3, background: 'var(--brand)', transition: 'width 0.6s ease' }} />
           </div>
           {/* Steps */}

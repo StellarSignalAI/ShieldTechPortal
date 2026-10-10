@@ -94,7 +94,7 @@ function SchedCopilotScreen() {
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           <button onClick={() => navTo('calendar')} style={{ padding: '7px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open calendar</button>
-          <button onClick={solve} disabled={stage === 'solving'} style={{ padding: '7px 18px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 4px 14px rgba(63,169,245,0.3)' }}>
+          <button onClick={solve} disabled={stage === 'solving'} style={{ padding: '7px 18px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 4px 14px rgba(99,102,241,0.3)' }}>
             {stage === 'solving' ? 'Solving…' : 'Optimize my week'}
           </button>
         </div>
@@ -129,7 +129,7 @@ function SchedCopilotScreen() {
                   <span style={{ fontSize: 11, color: 'var(--text-mid)' }}>{meta.name}</span>
                   <span className="mono" style={{ fontSize: 10, color: pct > 90 ? 'var(--status-critical)' : pct > 70 ? 'var(--status-warn)' : 'var(--text-low)' }}>{util[t]}h · {pct}%</span>
                 </div>
-                <div style={{ height: 5, borderRadius: 3, background: 'rgba(63,169,245,0.07)', overflow: 'hidden' }}>
+                <div style={{ height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.07)', overflow: 'hidden' }}>
                   <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%', borderRadius: 3, background: pct > 90 ? 'var(--status-critical)' : pct > 70 ? 'var(--status-warn)' : meta.color, transition: 'width 0.4s' }}></div>
                 </div>
               </div>
@@ -182,10 +182,10 @@ function SchedCopilotScreen() {
                   </div>
                   {done
                     ? <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--status-ok)' }}>✓ Applied</span>
-                    : <button onClick={() => applyOne(p)} style={{ padding: '6px 16px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Apply</button>}
+                    : <button onClick={() => applyOne(p)} style={{ padding: '6px 16px', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Apply</button>}
                 </div>
                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 8 }}>
-                  {p.reasons.map(r => <span key={r} style={{ fontSize: 9, padding: '3px 9px', borderRadius: 9, background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)' }}>{r}</span>)}
+                  {p.reasons.map(r => <span key={r} style={{ fontSize: 9, padding: '3px 9px', borderRadius: 9, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)' }}>{r}</span>)}
                 </div>
               </div>
             );

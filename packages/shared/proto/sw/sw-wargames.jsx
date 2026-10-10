@@ -34,8 +34,8 @@ function BrWarGames({ opp, state, update }) {
             const on = simTier === t.id;
             return (
               <div key={t.id} onClick={() => setSimTier(t.id)} style={{ position: 'absolute', left: X(t.price) + '%', top: 0, bottom: 24, cursor: 'pointer', zIndex: 3 }}>
-                <div style={{ position: 'absolute', top: 0, bottom: 0, left: -1, width: 2, background: on ? 'var(--brand)' : 'rgba(63,169,245,0.35)', boxShadow: on ? '0 0 10px rgba(63,169,245,0.6)' : 'none' }} />
-                <div style={{ position: 'absolute', top: -30, left: 0, transform: 'translateX(-50%)', padding: '4px 9px', borderRadius: 7, whiteSpace: 'nowrap', background: on ? 'var(--brand)' : 'rgba(63,169,245,0.1)', border: '1px solid ' + (on ? 'var(--brand)' : 'var(--border-strong)'), font: '700 10px/1 var(--font-mono)', color: on ? '#03121F' : 'var(--brand)', letterSpacing: '0.06em' }}>
+                <div style={{ position: 'absolute', top: 0, bottom: 0, left: -1, width: 2, background: on ? 'var(--brand)' : 'rgba(99,102,241,0.35)', boxShadow: on ? '0 0 10px rgba(99,102,241,0.6)' : 'none' }} />
+                <div style={{ position: 'absolute', top: -30, left: 0, transform: 'translateX(-50%)', padding: '4px 9px', borderRadius: 7, whiteSpace: 'nowrap', background: on ? 'var(--brand)' : 'rgba(99,102,241,0.1)', border: '1px solid ' + (on ? 'var(--brand)' : 'var(--border-strong)'), font: '700 10px/1 var(--font-mono)', color: on ? '#03121F' : 'var(--brand)', letterSpacing: '0.06em' }}>
                   {t.label.toUpperCase()} {fmt(t.price)}
                 </div>
               </div>

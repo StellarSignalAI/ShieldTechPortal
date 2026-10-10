@@ -45,7 +45,7 @@ function ChurnRadarPanel({ customer, showToast }) {
         <div className="label-sm" style={{ marginBottom: 14 }}>CHURN RISK</div>
         <div style={{ position: 'relative', width: 120, height: 120, margin: '0 auto' }}>
           <svg width="120" height="120" viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(63,169,245,0.08)" strokeWidth="10" />
+            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(99,102,241,0.08)" strokeWidth="10" />
             <circle cx="60" cy="60" r="50" fill="none" stroke={levelC} strokeWidth="10" strokeDasharray={`${score / 100 * 314} 314`} strokeLinecap="round" transform="rotate(-90 60 60)" style={{ transition: 'stroke-dasharray 0.6s' }} />
           </svg>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -76,9 +76,9 @@ function ChurnRadarPanel({ customer, showToast }) {
           {signals.map(sig => {
             const c = sig.score > 60 ? 'var(--status-critical)' : sig.score > 35 ? 'var(--status-warn)' : 'var(--status-ok)';
             return (
-              <div key={sig.label} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '8px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+              <div key={sig.label} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '8px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                 <span style={{ fontSize: 11, color: 'var(--text-mid)', width: 130, flexShrink: 0 }}>{sig.label}</span>
-                <div style={{ flex: 1, height: 5, borderRadius: 3, background: 'rgba(63,169,245,0.07)', overflow: 'hidden' }}>
+                <div style={{ flex: 1, height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.07)', overflow: 'hidden' }}>
                   <div style={{ width: `${sig.score}%`, height: '100%', borderRadius: 3, background: c, transition: 'width 0.5s' }}></div>
                 </div>
                 <span className="mono" style={{ fontSize: 10, color: c, width: 26, textAlign: 'right', flexShrink: 0 }}>{sig.score}</span>
@@ -98,7 +98,7 @@ function ChurnRadarPanel({ customer, showToast }) {
                   <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-high)' }}>{p.label}</div>
                   <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 1 }}>{p.desc}</div>
                 </div>
-                <button onClick={p.go} style={{ padding: '5px 13px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Run</button>
+                <button onClick={p.go} style={{ padding: '5px 13px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Run</button>
               </div>
             ))}
           </div>

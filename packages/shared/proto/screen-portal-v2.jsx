@@ -11,7 +11,7 @@ function DReceiptThumb({ row, size = 56 }) {
     return () => { alive = false; };
   }, [row.id]);
   return (
-    <div onClick={src ? () => window.open(src, '_blank') : undefined} style={{ width: size, height: size, borderRadius: 8, overflow: 'hidden', background: 'rgba(63,169,245,0.07)', border: '1px solid var(--border-subtle)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: src ? 'zoom-in' : 'default' }}>
+    <div onClick={src ? () => window.open(src, '_blank') : undefined} style={{ width: size, height: size, borderRadius: 8, overflow: 'hidden', background: 'rgba(99,102,241,0.07)', border: '1px solid var(--border-subtle)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: src ? 'zoom-in' : 'default' }}>
       {src ? <img src={src} alt="receipt" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 18 }}>🧾</span>}
     </div>
   );
@@ -81,7 +81,7 @@ function ExpenseApprovalScreen() {
           <SectionHeader title="Receipt inbox" icon="🧾" count={inbox ? inbox.length : undefined} />
           <div style={{ display: 'flex', gap: 8 }}>
             <input ref={fileRef} type="file" accept="image/*,.pdf" onChange={uploadReceipt} style={{ display: 'none' }} />
-            <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⬆ Upload receipt</button>
+            <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: '5px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⬆ Upload receipt</button>
             <button onClick={refreshInbox} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Refresh</button>
           </div>
         </div>
@@ -107,7 +107,7 @@ function ExpenseApprovalScreen() {
         {['pending','approved','rejected','all'].map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: '5px 14px', borderRadius: 6, fontSize: 12,
-            background: filter === f ? 'rgba(63,169,245,0.12)' : 'transparent',
+            background: filter === f ? 'rgba(99,102,241,0.12)' : 'transparent',
             border: '1px solid var(--border-subtle)',
             color: filter === f ? 'var(--brand)' : 'var(--text-low)',
             cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize'
@@ -123,7 +123,7 @@ function ExpenseApprovalScreen() {
         {filtered.map((e, i) => (
           <GlassPanel key={e.id || i} style={{ padding: '14px 18px', animation: `fade-up 0.3s ease ${i * 40}ms both` }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(63,169,245,0.1)', color: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>{(e.by || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(99,102,241,0.1)', color: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>{(e.by || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span style={{ fontSize: 13, fontWeight: 500 }}>{e.by || 'Team'}</span>
@@ -164,7 +164,7 @@ function ExpenseApprovalScreen() {
               <input value={convert.amount} onChange={e => setConvert(p => ({ ...p, amount: e.target.value.replace(/[^\d.]/g, '') }))} placeholder="Amount ($)" inputMode="decimal" style={{ padding: '9px 11px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
               <div style={{ display: 'flex', gap: 6 }}>
                 {['Materials','Fuel','Tools','Other'].map(c => (
-                  <button key={c} onClick={() => setConvert(p => ({ ...p, category: c }))} style={{ flex: 1, padding: '6px 0', borderRadius: 6, fontSize: 11, background: convert.category === c ? 'rgba(63,169,245,0.12)' : 'transparent', border: `1px solid ${convert.category === c ? 'var(--brand)' : 'var(--border-subtle)'}`, color: convert.category === c ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
+                  <button key={c} onClick={() => setConvert(p => ({ ...p, category: c }))} style={{ flex: 1, padding: '6px 0', borderRadius: 6, fontSize: 11, background: convert.category === c ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${convert.category === c ? 'var(--brand)' : 'var(--border-subtle)'}`, color: convert.category === c ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
                 ))}
               </div>
               <button onClick={doConvert} style={{ padding: '10px 0', background: 'var(--brand)', border: 'none', borderRadius: 7, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Convert to expense</button>
@@ -304,7 +304,7 @@ function TimesheetApprovalScreen() {
       {timesheets.map((ts, i) => (
         <GlassPanel key={i} style={{ animation: `fade-up 0.3s ease ${i * 60}ms both` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(63,169,245,0.1)', color: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{ts.initials}</div>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(99,102,241,0.1)', color: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{ts.initials}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 500 }}>{ts.tech}</div>
               <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{ts.period} · {ts.jobs} jobs</div>
@@ -321,7 +321,7 @@ function TimesheetApprovalScreen() {
               { label: 'Admin', value: ts.admin, color: 'var(--text-low)' },
               { label: 'OT', value: ts.overtime, color: ts.overtime > 0 ? 'var(--status-critical)' : 'var(--text-low)' },
             ].map((h, hi) => (
-              <div key={hi} style={{ flex: 1, textAlign: 'center', padding: '6px 0', borderRadius: 4, background: 'rgba(63,169,245,0.03)' }}>
+              <div key={hi} style={{ flex: 1, textAlign: 'center', padding: '6px 0', borderRadius: 4, background: 'rgba(99,102,241,0.03)' }}>
                 <div className="mono" style={{ fontSize: 14, fontWeight: 600, color: h.color }}>{h.value}h</div>
                 <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase' }}>{h.label}</div>
               </div>
@@ -342,7 +342,7 @@ function TimesheetApprovalScreen() {
               {Object.entries(ts.entries.reduce((m, e) => { (m[e.work_date] = m[e.work_date] || []).push(e); return m; }, {}))
                 .sort((a, b) => a[0] < b[0] ? -1 : 1)
                 .map(([date, dayEntries]) => (
-                  <div key={date} style={{ padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+                  <div key={date} style={{ padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                       <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-high)', minWidth: 110 }}>
                         {new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
@@ -367,7 +367,7 @@ function TimesheetApprovalScreen() {
 
           {/* Actions */}
           <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-            <button onClick={() => setOpenKeys(o => ({ ...o, [ts.key]: !o[ts.key] }))} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{openKeys[ts.key] ? '▾ Hide days' : '▸ Every day'}</button>
+            <button onClick={() => setOpenKeys(o => ({ ...o, [ts.key]: !o[ts.key] }))} style={{ padding: '5px 12px', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{openKeys[ts.key] ? '▾ Hide days' : '▸ Every day'}</button>
             {ts.status === 'submitted' && <>
               <button onClick={() => decideGroup(ts, true)} style={{ padding: '5px 16px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>
               <button onClick={() => decideGroup(ts, false)} style={{ padding: '5px 12px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Return</button>
@@ -490,7 +490,7 @@ function EmployeeScreen() {
         {employees.map((emp, i) => (
           <GlassPanel key={i} onClick={() => openEmployee(emp)} className="st-rowcard" style={{ cursor: 'pointer', animation: `fade-up 0.3s ease ${i * 50}ms both` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, rgba(63,169,245,0.2), rgba(63,169,245,0.05))', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'var(--brand)', fontFamily: 'var(--font-mono)' }}>{emp.initials}</div>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.05))', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'var(--brand)', fontFamily: 'var(--font-mono)' }}>{emp.initials}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 500 }}>{emp.name}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>{emp.role}</div>
@@ -657,7 +657,7 @@ function AddEmployeeModal({ onClose, showToast, onDone, team = [] }) {
           {steps.map((s, i) => (
             <button key={i} onClick={() => setStep(i)} style={{
               flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: step === i ? 600 : 400,
-              background: step === i ? 'rgba(63,169,245,0.1)' : i < step ? 'rgba(52,211,153,0.04)' : 'transparent',
+              background: step === i ? 'rgba(99,102,241,0.1)' : i < step ? 'rgba(52,211,153,0.04)' : 'transparent',
               border: 'none', borderBottom: step === i ? '2px solid var(--brand)' : '2px solid transparent',
               color: step === i ? 'var(--brand)' : i < step ? 'var(--status-ok)' : 'var(--text-low)',
               cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -697,14 +697,14 @@ function AddEmployeeModal({ onClose, showToast, onDone, team = [] }) {
                 {['Technician','Lead Technician','Fire Alarm Specialist','Sales Rep','Office Admin','Manager','Custom'].map(r => (
                   <button key={r} onClick={() => applyPreset(r)} style={{
                     padding: '6px 14px', borderRadius: 5, fontSize: 11,
-                    background: emp.role === r ? 'rgba(63,169,245,0.12)' : 'transparent',
+                    background: emp.role === r ? 'rgba(99,102,241,0.12)' : 'transparent',
                     border: `1px solid ${emp.role === r ? 'var(--brand)' : 'var(--border-subtle)'}`,
                     color: emp.role === r ? 'var(--brand)' : 'var(--text-mid)',
                     cursor: 'pointer', fontFamily: 'var(--font-body)'
                   }}>{r}</button>
                 ))}
               </div>
-              <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: 16, padding: '6px 10px', borderRadius: 4, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: 16, padding: '6px 10px', borderRadius: 4, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)' }}>
                 Selecting a role preset auto-configures app privileges. You can customize them in the next step.
               </div>
 
@@ -713,7 +713,7 @@ function AddEmployeeModal({ onClose, showToast, onDone, team = [] }) {
                 {['hourly','salary','1099'].map(p => (
                   <button key={p} onClick={() => update('payType', p)} style={{
                     flex: 1, padding: '7px', borderRadius: 5, fontSize: 11, textTransform: 'capitalize',
-                    background: emp.payType === p ? 'rgba(63,169,245,0.12)' : 'transparent',
+                    background: emp.payType === p ? 'rgba(99,102,241,0.12)' : 'transparent',
                     border: `1px solid ${emp.payType === p ? 'var(--brand)' : 'var(--border-subtle)'}`,
                     color: emp.payType === p ? 'var(--brand)' : 'var(--text-mid)',
                     cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -739,8 +739,8 @@ function AddEmployeeModal({ onClose, showToast, onDone, team = [] }) {
                       {group.items.map(item => (
                         <div key={item.id} onClick={() => update(item.id, !emp[item.id])} style={{
                           display: 'flex', alignItems: 'center', gap: 8, padding: '5px 10px', borderRadius: 5, cursor: 'pointer',
-                          background: emp[item.id] ? 'rgba(63,169,245,0.04)' : 'transparent',
-                          border: `1px solid ${emp[item.id] ? 'rgba(63,169,245,0.1)' : 'var(--border-subtle)'}`
+                          background: emp[item.id] ? 'rgba(99,102,241,0.04)' : 'transparent',
+                          border: `1px solid ${emp[item.id] ? 'rgba(99,102,241,0.1)' : 'var(--border-subtle)'}`
                         }}>
                           <div style={{
                             width: 16, height: 16, borderRadius: 3, flexShrink: 0,
@@ -804,7 +804,7 @@ function AddEmployeeModal({ onClose, showToast, onDone, team = [] }) {
           {/* Step 4: Send Invite */}
           {step === 4 && (
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <div style={{ width: 60, height: 60, borderRadius: 16, background: 'rgba(63,169,245,0.1)', border: '1px solid rgba(63,169,245,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <div style={{ width: 60, height: 60, borderRadius: 16, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                 <Icon name="employees" size={28} color="var(--brand)" />
               </div>
               <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 4 }}>{emp.firstName} {emp.lastName}</div>
@@ -835,7 +835,7 @@ function AddEmployeeModal({ onClose, showToast, onDone, team = [] }) {
                   <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--status-ok)', marginBottom: 8 }}>✓ {result.email} added to the team</div>
                   {result.emailed
                     ? <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>Invite emailed with a temporary password.</div>
-                    : <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>Give them this temporary password (email isn't configured):<br/><span className="mono" style={{ display: 'inline-block', marginTop: 8, padding: '6px 12px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 13 }}>{result.temp_password}</span></div>}
+                    : <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>Give them this temporary password (email isn't configured):<br/><span className="mono" style={{ display: 'inline-block', marginTop: 8, padding: '6px 12px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 13 }}>{result.temp_password}</span></div>}
                   <button onClick={onClose} style={{ marginTop: 16, padding: '9px 22px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Done</button>
                 </div>
               )}
@@ -919,17 +919,17 @@ function ContractsScreen() {
           </thead>
           <tbody>
             {contracts.map((c, i) => (
-              <tr key={i} onClick={() => openContract(c)} style={{ transition: 'background 0.15s', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.04)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--brand)' }}>{c.id}</td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500 }}>{c.customer}</td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{c.type}</td>
-                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500 }}>{c.value}</td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{c.term}</td>
-                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: c.renewsIn < 30 ? 'var(--status-critical)' : c.renewsIn < 60 ? 'var(--status-warn)' : 'var(--text-mid)' }}>{c.end} ({c.renewsIn}d)</td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+              <tr key={i} onClick={() => openContract(c)} style={{ transition: 'background 0.15s', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.04)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--brand)' }}>{c.id}</td>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500 }}>{c.customer}</td>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{c.type}</td>
+                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500 }}>{c.value}</td>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{c.term}</td>
+                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: c.renewsIn < 30 ? 'var(--status-critical)' : c.renewsIn < 60 ? 'var(--status-warn)' : 'var(--text-mid)' }}>{c.end} ({c.renewsIn}d)</td>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <span style={{ fontSize: 12, color: c.autoRenew ? 'var(--status-ok)' : 'var(--text-low)' }}>{c.autoRenew ? '✓ Yes' : '— No'}</span>
                 </td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <StatusBadge status={c.status === 'active' ? 'online' : c.status === 'expiring' ? 'warning' : 'offline'} label={c.status} />
                 </td>
               </tr>
@@ -997,18 +997,18 @@ function SLAScreen() {
             <tbody>
               {slas.map((sl, i) => (
                 <tr key={i} onClick={() => openSLA(sl)} className="st-clickrow">
-                  <td style={{ padding: '10px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13 }}>{sl.metric}</td>
-                  <td className="mono" style={{ padding: '10px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{sl.target}</td>
-                  <td className="mono" style={{ padding: '10px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, textAlign: 'right', fontWeight: 500 }}>{sl.actual}</td>
-                  <td style={{ padding: '10px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'right' }}>
+                  <td style={{ padding: '10px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13 }}>{sl.metric}</td>
+                  <td className="mono" style={{ padding: '10px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{sl.target}</td>
+                  <td className="mono" style={{ padding: '10px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', fontWeight: 500 }}>{sl.actual}</td>
+                  <td style={{ padding: '10px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
-                      <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(63,169,245,0.08)', overflow: 'hidden' }}>
+                      <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
                         <div style={{ width: `${sl.score}%`, height: '100%', borderRadius: 2, background: sl.score >= 95 ? 'var(--status-ok)' : sl.score >= 85 ? 'var(--status-warn)' : 'var(--status-critical)' }} />
                       </div>
                       <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: sl.score >= 95 ? 'var(--status-ok)' : sl.score >= 85 ? 'var(--status-warn)' : 'var(--status-critical)' }}>{sl.score}</span>
                     </div>
                   </td>
-                  <td style={{ padding: '10px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'right' }}>
+                  <td style={{ padding: '10px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right' }}>
                     <StatusDot status={sl.status === 'ok' ? 'online' : 'warning'} size={6} />
                   </td>
                 </tr>

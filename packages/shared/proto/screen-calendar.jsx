@@ -10,7 +10,7 @@
    - Click job → panel with tech toggle chips · double-click → work order · Esc cancels drags */
 
 const CAL_TYPES = {
-  install:     { bg: 'rgba(63,169,245,0.18)',  border: '#3FA9F5',  label: 'Install' },
+  install:     { bg: 'rgba(99,102,241,0.18)',  border: '#6366F1',  label: 'Install' },
   maintenance: { bg: 'rgba(251,191,36,0.18)',  border: '#FBBF24',  label: 'Maintenance' },
   repair:      { bg: 'rgba(244,63,94,0.18)',   border: '#F43F5E',  label: 'Repair' },
   survey:      { bg: 'rgba(192,132,252,0.18)', border: '#c084fc',  label: 'Survey' },
@@ -380,17 +380,17 @@ function CalendarScreen() {
         <span className="display" style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-high)', marginLeft: 4 }}>
           {view === 'week' ? `${formatDay(weekDays[0])} — ${formatDay(weekDays[6])}, ${weekDays[0].getFullYear()}` : `${monthNames[monthAnchor.getMonth()]} ${monthAnchor.getFullYear()}`}
         </span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, background: 'rgba(63,169,245,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, background: 'rgba(99,102,241,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)' }}>
           {['week','month'].map(v => (
-            <button key={v} onClick={() => setView(v)} style={{ padding: '4px 14px', borderRadius: 6, fontSize: 12, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', fontWeight: 500, background: view === v ? 'rgba(63,169,245,0.18)' : 'transparent', color: view === v ? 'var(--brand)' : 'var(--text-low)', transition: 'all 0.15s' }}>{v.charAt(0).toUpperCase()+v.slice(1)}</button>
+            <button key={v} onClick={() => setView(v)} style={{ padding: '4px 14px', borderRadius: 6, fontSize: 12, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', fontWeight: 500, background: view === v ? 'rgba(99,102,241,0.18)' : 'transparent', color: view === v ? 'var(--brand)' : 'var(--text-low)', transition: 'all 0.15s' }}>{v.charAt(0).toUpperCase()+v.slice(1)}</button>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 2, background: 'rgba(63,169,245,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)' }}>
+        <div style={{ display: 'flex', gap: 2, background: 'rgba(99,102,241,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)' }}>
           {['type','tech'].map(m => (
-            <button key={m} onClick={() => setColorMode(m)} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', background: colorMode === m ? 'rgba(63,169,245,0.18)' : 'transparent', color: colorMode === m ? 'var(--brand)' : 'var(--text-low)', transition: 'all 0.15s' }}>By {m.charAt(0).toUpperCase()+m.slice(1)}</button>
+            <button key={m} onClick={() => setColorMode(m)} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', background: colorMode === m ? 'rgba(99,102,241,0.18)' : 'transparent', color: colorMode === m ? 'var(--brand)' : 'var(--text-low)', transition: 'all 0.15s' }}>By {m.charAt(0).toUpperCase()+m.slice(1)}</button>
           ))}
         </div>
-        <button onClick={() => { setNewJobSlot(null); setShowNewModal(true); }} style={{ padding: '6px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Job</button>
+        <button onClick={() => { setNewJobSlot(null); setShowNewModal(true); }} style={{ padding: '6px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Job</button>
         <button disabled={gsyncBusy} onClick={async () => {
           const sb = window.__shieldSupabase;
           if (!sb) { showToast('Backend not configured', 'warn'); return; }
@@ -414,7 +414,7 @@ function CalendarScreen() {
         <div className="glass" style={{ width: 196, flexShrink: 0, padding: 14, display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto' }}>
           <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 2 }}>Technicians</div>
           <div style={{ display: 'flex', gap: 5 }}>
-            <button onClick={() => setTechFilter('all')} style={{ flex: 1, padding: '4px 0', borderRadius: 6, border: '1px solid', borderColor: techFilter === 'all' ? 'var(--border-strong)' : 'var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)', background: techFilter === 'all' ? 'rgba(63,169,245,0.1)' : 'transparent', color: techFilter === 'all' ? 'var(--brand)' : 'var(--text-low)', fontSize: 10, fontWeight: 600 }}>ALL</button>
+            <button onClick={() => setTechFilter('all')} style={{ flex: 1, padding: '4px 0', borderRadius: 6, border: '1px solid', borderColor: techFilter === 'all' ? 'var(--border-strong)' : 'var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)', background: techFilter === 'all' ? 'rgba(99,102,241,0.1)' : 'transparent', color: techFilter === 'all' ? 'var(--brand)' : 'var(--text-low)', fontSize: 10, fontWeight: 600 }}>ALL</button>
             <button onClick={() => setTechFilter(techFilter === 'none' ? 'all' : 'none')} style={{ flex: 2, padding: '4px 0', borderRadius: 6, border: '1px dashed', borderColor: techFilter === 'none' ? '#94A3B8' : 'var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)', background: techFilter === 'none' ? 'rgba(148,163,184,0.12)' : 'transparent', color: techFilter === 'none' ? '#94A3B8' : 'var(--text-low)', fontSize: 10, fontWeight: 600 }}>◌ UNASSIGNED{unassignedCount ? ` (${unassignedCount})` : ''}</button>
           </div>
           {utilization.map(t => (
@@ -429,7 +429,7 @@ function CalendarScreen() {
                 <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-low)', letterSpacing: '0.05em' }}>⠿</span>
               </button>
               <div style={{ padding: '2px 8px 4px 37px' }}>
-                <div style={{ height: 3, borderRadius: 2, background: 'rgba(63,169,245,0.08)', overflow: 'hidden' }}>
+                <div style={{ height: 3, borderRadius: 2, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
                   <div style={{ width: `${Math.min(t.pct, 100)}%`, height: '100%', background: t.pct > 90 ? 'var(--status-critical)' : t.pct > 70 ? 'var(--status-warn)' : t.color, borderRadius: 2 }}></div>
                 </div>
                 <span style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 1, display: 'block' }}>{t.billableHours}h · {t.pct}%</span>
@@ -438,10 +438,10 @@ function CalendarScreen() {
           ))}
 
           {/* Unscheduled tray */}
-          <div ref={trayRef} style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6, padding: 6, margin: '-6px', borderRadius: 8, border: dragKind === 'job' ? '1px dashed var(--border-strong)' : '1px dashed transparent', background: dragKind === 'job' && drag.target && drag.target.area === 'tray' ? 'rgba(63,169,245,0.08)' : dragKind === 'job' ? 'rgba(63,169,245,0.03)' : 'transparent', transition: 'all 0.15s' }}>
+          <div ref={trayRef} style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6, padding: 6, margin: '-6px', borderRadius: 8, border: dragKind === 'job' ? '1px dashed var(--border-strong)' : '1px dashed transparent', background: dragKind === 'job' && drag.target && drag.target.area === 'tray' ? 'rgba(99,102,241,0.08)' : dragKind === 'job' ? 'rgba(99,102,241,0.03)' : 'transparent', transition: 'all 0.15s' }}>
             <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', display: 'flex', alignItems: 'center', gap: 6 }}>
               Unscheduled
-              <span className="mono" style={{ fontSize: 9, background: 'rgba(63,169,245,0.1)', color: 'var(--brand)', borderRadius: 8, padding: '1px 6px' }}>{trayItems.length}</span>
+              <span className="mono" style={{ fontSize: 9, background: 'rgba(99,102,241,0.1)', color: 'var(--brand)', borderRadius: 8, padding: '1px 6px' }}>{trayItems.length}</span>
             </div>
             {dragKind === 'job' && <div style={{ fontSize: 10, color: 'var(--brand)', padding: '2px 2px' }}>Drop here to unschedule</div>}
             {trayItems.map(p => {
@@ -479,7 +479,7 @@ function CalendarScreen() {
                 const hasConflict = dayJobs.some(j => conflicts.includes(j.id));
                 const isDropDay = ghost && ghost.day <= i + 1 && i + 1 <= ghost.endDay;
                 return (
-                  <div key={i} style={{ padding: '10px 8px', textAlign: 'center', borderLeft: '1px solid var(--border-subtle)', background: isDropDay ? 'rgba(63,169,245,0.1)' : isToday(d) ? 'rgba(63,169,245,0.06)' : 'transparent', transition: 'background 0.1s' }}>
+                  <div key={i} style={{ padding: '10px 8px', textAlign: 'center', borderLeft: '1px solid var(--border-subtle)', background: isDropDay ? 'rgba(99,102,241,0.1)' : isToday(d) ? 'rgba(99,102,241,0.06)' : 'transparent', transition: 'background 0.1s' }}>
                     <div style={{ fontSize: 10, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{dayLabels[i]}</div>
                     <div className="mono" style={{ fontSize: 18, fontWeight: isToday(d) ? 600 : 400, color: isToday(d) ? 'var(--brand)' : 'var(--text-high)', lineHeight: 1.2 }}>{d.getDate()}</div>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 2, marginTop: 3, minHeight: 6 }}>
@@ -495,16 +495,16 @@ function CalendarScreen() {
               <div ref={contentRef} style={{ display: 'grid', gridTemplateColumns: '52px repeat(7, 1fr)', position: 'relative' }}>
                 {hours.map(h => (
                   <React.Fragment key={h}>
-                    <div style={{ padding: '0 8px', height: HOUR_PX, display: 'flex', alignItems: 'flex-start', paddingTop: 6, flexShrink: 0, borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                    <div style={{ padding: '0 8px', height: HOUR_PX, display: 'flex', alignItems: 'flex-start', paddingTop: 6, flexShrink: 0, borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                       <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{h < 10 ? `0${h}` : h}:00</span>
                     </div>
                     {weekDays.map((_, di) => (
                       <div key={di}
                         onMouseDown={e => beginDrag(e, { kind: 'create', day: di + 1, anchorHour: h })}
                         onClick={() => handleSlotClick(di + 1, h)}
-                        style={{ height: HOUR_PX, borderLeft: '1px solid var(--border-subtle)', borderBottom: '1px solid rgba(63,169,245,0.04)', position: 'relative', background: isToday(weekDays[di]) ? 'rgba(63,169,245,0.02)' : 'transparent', cursor: drag ? 'inherit' : 'pointer', transition: 'background 0.1s' }}
-                        onMouseEnter={e => { if (!drag) e.currentTarget.style.background = 'rgba(63,169,245,0.06)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = isToday(weekDays[di]) ? 'rgba(63,169,245,0.02)' : 'transparent'; }}></div>
+                        style={{ height: HOUR_PX, borderLeft: '1px solid var(--border-subtle)', borderBottom: '1px solid rgba(99,102,241,0.04)', position: 'relative', background: isToday(weekDays[di]) ? 'rgba(99,102,241,0.02)' : 'transparent', cursor: drag ? 'inherit' : 'pointer', transition: 'background 0.1s' }}
+                        onMouseEnter={e => { if (!drag) e.currentTarget.style.background = 'rgba(99,102,241,0.06)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = isToday(weekDays[di]) ? 'rgba(99,102,241,0.02)' : 'transparent'; }}></div>
                     ))}
                   </React.Fragment>
                 ))}
@@ -577,7 +577,7 @@ function CalendarScreen() {
 
                 {/* Snapped ghost preview */}
                 {ghost && (
-                  <div style={{ position: 'absolute', top: (ghost.start - DAY_START) * HOUR_PX, left: `calc(52px + (100% - 52px) * ${(ghost.day - 1) / 7} + 2px)`, width: `calc((100% - 52px) * ${(ghost.endDay - ghost.day + 1) / 7} - 4px)`, height: ghost.dur * HOUR_PX - 4, border: `1.5px dashed ${ghostConflict ? 'var(--status-warn)' : 'var(--brand)'}`, borderRadius: 6, background: ghost.outline ? 'transparent' : ghostConflict ? 'rgba(251,191,36,0.08)' : 'rgba(63,169,245,0.08)', zIndex: 50, pointerEvents: 'none', padding: '4px 6px' }}>
+                  <div style={{ position: 'absolute', top: (ghost.start - DAY_START) * HOUR_PX, left: `calc(52px + (100% - 52px) * ${(ghost.day - 1) / 7} + 2px)`, width: `calc((100% - 52px) * ${(ghost.endDay - ghost.day + 1) / 7} - 4px)`, height: ghost.dur * HOUR_PX - 4, border: `1.5px dashed ${ghostConflict ? 'var(--status-warn)' : 'var(--brand)'}`, borderRadius: 6, background: ghost.outline ? 'transparent' : ghostConflict ? 'rgba(251,191,36,0.08)' : 'rgba(99,102,241,0.08)', zIndex: 50, pointerEvents: 'none', padding: '4px 6px' }}>
                     <div className="mono" style={{ fontSize: 9, fontWeight: 600, color: ghostConflict ? 'var(--status-warn)' : 'var(--brand)' }}>
                       {calFmtH(ghost.start)} – {calFmtH(ghost.start + ghost.dur)}{ghost.endDay > ghost.day ? ` · ${dayLabels[ghost.day-1]}–${dayLabels[ghost.endDay-1]}` : ''}{ghostConflict ? ' · ⚠ conflict' : ''}
                     </div>
@@ -614,7 +614,7 @@ function CalendarScreen() {
                   return (
                     <button key={t.id} onClick={() => toggleJobTech(selectedJob.id, t.id)}
                       title={on ? `Remove ${t.name}` : `Add ${t.name}`}
-                      style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 9px 4px 4px', borderRadius: 14, cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 600, transition: 'all 0.12s', background: on ? `${t.color}1c` : 'rgba(63,169,245,0.04)', border: `1px solid ${on ? t.color + '70' : 'var(--border-subtle)'}`, color: on ? t.color : 'var(--text-low)' }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 9px 4px 4px', borderRadius: 14, cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 600, transition: 'all 0.12s', background: on ? `${t.color}1c` : 'rgba(99,102,241,0.04)', border: `1px solid ${on ? t.color + '70' : 'var(--border-subtle)'}`, color: on ? t.color : 'var(--text-low)' }}>
                       <span style={{ width: 16, height: 16, borderRadius: '50%', background: `${t.color}28`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 700, color: t.color }}>{t.id}</span>
                       {t.name.split(' ')[0]}
                     </button>
@@ -689,6 +689,6 @@ function CalendarScreen() {
   );
 }
 
-const calNavBtn = { background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 16, cursor: 'pointer', padding: '4px 10px', fontFamily: 'var(--font-body)', lineHeight: 1, transition: 'all 0.15s' };
+const calNavBtn = { background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 16, cursor: 'pointer', padding: '4px 10px', fontFamily: 'var(--font-body)', lineHeight: 1, transition: 'all 0.15s' };
 
 Object.assign(window, { CalendarScreen });

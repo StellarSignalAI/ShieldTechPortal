@@ -7,7 +7,7 @@ const TWEAK_DEFAULTS = {
   "mscreen": "custom-dashboard"
 };
 
-const M_TECH_COLORS = { MR: '#3FA9F5', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
+const M_TECH_COLORS = { MR: '#6366F1', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
 const mFmtH = h => `${Math.floor(h)}:${h % 1 ? '30' : '00'}`;
 
 /* Same screen map as the desktop portal — 100% parity */
@@ -122,10 +122,10 @@ function MobileDirectory({ onNav }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search all screens…"
-        style={{ background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       {promoMatch(['auto bid', 'autobid', 'auto-bid', 'bids', 'proposals', 'leads', 'secret weapon']) && (
-        <button onClick={() => onNav('autobid')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(63,169,245,0.10), rgba(52,211,153,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>⟡</span>
+        <button onClick={() => onNav('autobid')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(99,102,241,0.10), rgba(52,211,153,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(99,102,241,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>⟡</span>
           <span style={{ flex: 1 }}>
             <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Auto-Bid <span style={{ fontSize: 8, fontWeight: 700, color: '#34D399', border: '1px solid rgba(52,211,153,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
             <span style={{ display: 'block', fontSize: 10, color: 'var(--text-low)' }}>AI-built bids for every scraped lead — pick a tier, send the proposal</span>
@@ -134,8 +134,8 @@ function MobileDirectory({ onNav }) {
         </button>
       )}
       {promoMatch(['survey scan', 'surveyscan', 'site scan', '3d', 'lidar']) && (
-        <button onClick={() => onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(63,169,245,0.10), rgba(192,132,252,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
+        <button onClick={() => onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(99,102,241,0.10), rgba(192,132,252,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(99,102,241,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
           <span style={{ flex: 1 }}>
             <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Survey Scan <span style={{ fontSize: 8, fontWeight: 700, color: '#c084fc', border: '1px solid rgba(192,132,252,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
             <span style={{ display: 'block', fontSize: 10, color: 'var(--text-low)' }}>Scan · document · estimate · report — the whole site visit</span>
@@ -194,7 +194,7 @@ function MAvatarMenu({ onNav }) {
   const setStatus = (s) => setPrefs(p => ({ ...(p || {}), status: s }));
   const go = (id) => { setOpen(false); onNav(id); };
   const item = { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '11px 14px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 13.5, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' };
-  const seg = (active, c) => ({ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', background: active ? (c ? `${c}22` : 'rgba(63,169,245,0.14)') : 'transparent', border: `1px solid ${active ? (c || 'var(--brand)') : 'var(--border-subtle)'}`, color: active ? (c || 'var(--brand)') : 'var(--text-low)' });
+  const seg = (active, c) => ({ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', background: active ? (c ? `${c}22` : 'rgba(99,102,241,0.14)') : 'transparent', border: `1px solid ${active ? (c || 'var(--brand)') : 'var(--border-subtle)'}`, color: active ? (c || 'var(--brand)') : 'var(--text-low)' });
   const label = { fontSize: 9, fontWeight: 700, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '4px 14px 6px' };
   return (
     <div style={{ position: 'relative' }}>
@@ -343,7 +343,7 @@ function MobilePortalApp() {
         </button>
         <img src="uploads/ShieldTech Logo Transparent MK3.png" alt="ShieldTech" style={{ height: 24 }} />
         <div style={{ flex: 1 }} />
-        <button onClick={() => nav('shieldtech-ai')} title="ShieldTech AI" style={{ background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 8, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+        <button onClick={() => nav('shieldtech-ai')} title="ShieldTech AI" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 8, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
           <Icon name="hermes" size={15} color="var(--brand)" />
         </button>
         <MAvatarMenu onNav={nav} />

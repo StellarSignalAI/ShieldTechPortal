@@ -5,7 +5,7 @@
 // toggles, and click-a-device → BOM line + spec + price.
 // ============================================================
 
-const BR_TRADE_COLOR = { 'CCTV': '#5FC0FF', 'Access': '#6EE7B7', 'Access (PACS)': '#6EE7B7', 'Intrusion': '#FCD34D', 'Cabling': '#A78BFA', 'Fiber': '#A78BFA', 'Network': '#7DD3FC', 'Intercom': '#FDBA74', 'Paging': '#FDBA74', 'Nurse call': '#F9A8D4', 'Fire': '#F87171', 'Div 28': '#94A3B8', 'Div 27': '#94A3B8' };
+const BR_TRADE_COLOR = { 'CCTV': '#7D7CF5', 'Access': '#6EE7B7', 'Access (PACS)': '#6EE7B7', 'Intrusion': '#FCD34D', 'Cabling': '#A78BFA', 'Fiber': '#A78BFA', 'Network': '#7DD3FC', 'Intercom': '#FDBA74', 'Paging': '#FDBA74', 'Nurse call': '#F9A8D4', 'Fire': '#F87171', 'Div 28': '#94A3B8', 'Div 27': '#94A3B8' };
 
 /* Combined single-plan model: rooms + every trade's devices */
 function brPlan(opp) {
@@ -67,7 +67,7 @@ function BrPlanSVG({ opp, plan, marked, layers, selected, onSelect }) {
       {plan.rooms.map((r, i) => (
         <g key={i}>
           <rect x={r.x - 0.45} y={r.y - 0.45} width={r.w + 0.9} height={r.h + 0.9} fill="none" stroke="rgba(125,211,252,0.55)" strokeWidth="0.28" />
-          <rect x={r.x} y={r.y} width={r.w} height={r.h} fill="rgba(63,169,245,0.02)" stroke="rgba(125,211,252,0.45)" strokeWidth="0.3" />
+          <rect x={r.x} y={r.y} width={r.w} height={r.h} fill="rgba(99,102,241,0.02)" stroke="rgba(125,211,252,0.45)" strokeWidth="0.3" />
           <text x={r.x + 1.5} y={r.y + 3} fontSize="1.8" fill="rgba(125,211,252,0.65)" fontFamily="var(--font-mono)">{100 + i * 2}</text>
           <text x={r.x + 1.5} y={r.y + 5.4} fontSize="1.3" fill="rgba(125,211,252,0.4)" fontFamily="var(--font-mono)">{Math.round(r.w * 2) * Math.round(r.h * 2)} SF</text>
           {/* room dimension */}
@@ -80,7 +80,7 @@ function BrPlanSVG({ opp, plan, marked, layers, selected, onSelect }) {
       {/* ── survey benchmark + north arrow + scale bar ── */}
       <g transform="translate(93.5 10.5)">
         <circle r="2.1" fill="none" stroke="rgba(125,211,252,0.5)" strokeWidth="0.25" />
-        <path d="M 0 -1.5 L 0.8 1.1 L 0 0.5 L -0.8 1.1 Z" fill="#5FC0FF" />
+        <path d="M 0 -1.5 L 0.8 1.1 L 0 0.5 L -0.8 1.1 Z" fill="#7D7CF5" />
         <text y="-2.9" fontSize="1.7" fill="rgba(125,211,252,0.7)" textAnchor="middle" fontFamily="var(--font-mono)">N</text>
       </g>
       <g transform="translate(88 16.5)">
@@ -201,7 +201,7 @@ function BrBlueprint({ opp, state, update, onClose }) {
             const on = layers[t] !== false;
             const c = BR_TRADE_COLOR[t] || '#7DD3FC';
             return (
-              <button key={t} onClick={() => setLayers(p => ({ ...p, [t]: !on }))} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 11px', borderRadius: 999, cursor: 'pointer', background: on ? `color-mix(in srgb, ${c} 12%, transparent)` : 'rgba(63,169,245,0.03)', border: `1px solid ${on ? c : 'var(--border-subtle)'}`, font: '600 11px/1 var(--font-body)', color: on ? c : 'var(--text-low)' }}>
+              <button key={t} onClick={() => setLayers(p => ({ ...p, [t]: !on }))} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 11px', borderRadius: 999, cursor: 'pointer', background: on ? `color-mix(in srgb, ${c} 12%, transparent)` : 'rgba(99,102,241,0.03)', border: `1px solid ${on ? c : 'var(--border-subtle)'}`, font: '600 11px/1 var(--font-body)', color: on ? c : 'var(--text-low)' }}>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: on ? c : 'var(--text-low)' }} />{t}
               </button>
             );
@@ -251,7 +251,7 @@ function BrBlueprint({ opp, state, update, onClose }) {
                 <div style={{ font: '500 12.5px/1.45 var(--font-body)', color: 'var(--text-high)' }}>{selRow.item}</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   {[['Spec §', selRow.csi], ['Sheet', selRow.sheet], ['Qty (bid)', selQty + ' ' + selRow.unit], ['Sell / unit', fmt(unitPrice)]].map(([l, v]) => (
-                    <div key={l} style={{ padding: '7px 9px', borderRadius: 8, background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)' }}>
+                    <div key={l} style={{ padding: '7px 9px', borderRadius: 8, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)' }}>
                       <div style={{ font: '600 8.5px/1 var(--font-mono)', color: 'var(--text-low)', letterSpacing: '0.1em' }}>{l.toUpperCase()}</div>
                       <div style={{ font: '600 12px/1.2 var(--font-mono)', color: 'var(--text-high)', marginTop: 4 }}>{v}</div>
                     </div>

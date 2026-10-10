@@ -227,7 +227,7 @@ function FleetMapScreen() {
               {techIds.map(id => {
                 const t = fleet.techs[id]; const stale = fleetIsStale(t, now);
                 return (
-                  <button key={id} onClick={() => setSel(sel === id ? null : id)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 13px', background: sel === id ? 'rgba(63,169,245,0.1)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+                  <button key={id} onClick={() => setSel(sel === id ? null : id)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 13px', background: sel === id ? 'rgba(99,102,241,0.1)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor(t), flexShrink: 0 }} />
                     <span style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</span>

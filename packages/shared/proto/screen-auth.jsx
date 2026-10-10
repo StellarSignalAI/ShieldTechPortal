@@ -17,7 +17,7 @@ const authPrimaryBtn = {
   width: '100%', padding: '12px', background: 'var(--brand)', border: 'none',
   borderRadius: 'var(--radius-sm)', color: '#fff', fontSize: 14, fontWeight: 600,
   cursor: 'pointer', fontFamily: 'var(--font-body)',
-  boxShadow: '0 0 20px -4px rgba(63,169,245,0.4)',
+  boxShadow: '0 0 20px -4px rgba(99,102,241,0.4)',
 };
 
 function AuthCardFrame({ children }) {
@@ -28,7 +28,7 @@ function AuthCardFrame({ children }) {
         position: 'relative', zIndex: 2, width: 400, maxWidth: 'calc(100vw - 32px)',
         background: 'var(--glass-bg)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
         border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '44px 40px',
-        boxShadow: '0 0 60px -20px rgba(63,169,245,0.15), 0 24px 48px -12px rgba(0,0,0,0.5)',
+        boxShadow: '0 0 60px -20px rgba(99,102,241,0.15), 0 24px 48px -12px rgba(0,0,0,0.5)',
         animation: 'fade-up 0.5s ease both',
       }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
@@ -121,7 +121,7 @@ function ShieldAuthGate({ appId, children }) {
   if (snap.loading) {
     return (
       <div style={{ width: '100vw', height: '100vh', background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ width: 22, height: 22, border: '2px solid rgba(63,169,245,0.3)', borderTopColor: 'var(--brand)', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
+        <span style={{ width: 22, height: 22, border: '2px solid rgba(99,102,241,0.3)', borderTopColor: 'var(--brand)', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
       </div>
     );
   }
@@ -289,7 +289,7 @@ function UserRow({ r, isSelf, onChange }) {
   const smallBtn = (bg, color, bd) => ({ padding: '7px 12px', background: bg, border: `1px solid ${bd}`, borderRadius: 6, color, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' });
 
   return (
-    <div style={{ borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+    <div style={{ borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
       {/* Header row */}
       <div onClick={() => setOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', flexWrap: 'wrap' }}>
         <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0 }}>{initials}</div>
@@ -297,7 +297,7 @@ function UserRow({ r, isSelf, onChange }) {
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{r.name || r.email}{isSelf && <span style={{ fontSize: 9, color: 'var(--text-low)', marginLeft: 6 }}>(you)</span>}</div>
           <div className="mono" style={{ fontSize: 11, color: 'var(--text-low)' }}>{r.email}</div>
         </div>
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', color: r.role === 'Admin' ? 'var(--status-critical)' : 'var(--brand)', background: 'rgba(63,169,245,0.08)', borderRadius: 8, padding: '3px 10px' }}>{r.role.toUpperCase()}</span>
+        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', color: r.role === 'Admin' ? 'var(--status-critical)' : 'var(--brand)', background: 'rgba(99,102,241,0.08)', borderRadius: 8, padding: '3px 10px' }}>{r.role.toUpperCase()}</span>
         <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{AU_APPS.filter(([id]) => r.app_rights && r.app_rights[id]).map(([, l]) => l).join(' · ') || 'no apps'}</span>
         {r.must_change_password && <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--status-warn)', background: 'rgba(251,191,36,0.08)', borderRadius: 8, padding: '3px 9px' }}>TEMP PW</span>}
         <span style={{ fontSize: 12, color: 'var(--text-low)', transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}>›</span>
@@ -328,8 +328,8 @@ function UserRow({ r, isSelf, onChange }) {
           </div>
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button onClick={() => callManage('reset')} disabled={busy === 'reset'} style={smallBtn('rgba(63,169,245,0.06)', 'var(--brand)', 'var(--border-subtle)')}>{busy === 'reset' ? 'Resetting…' : '↺ Reset password'}</button>
-            <button onClick={() => callManage('resend')} disabled={busy === 'resend'} style={smallBtn('rgba(63,169,245,0.06)', 'var(--brand)', 'var(--border-subtle)')}>{busy === 'resend' ? 'Sending…' : '✉ Resend invite'}</button>
+            <button onClick={() => callManage('reset')} disabled={busy === 'reset'} style={smallBtn('rgba(99,102,241,0.06)', 'var(--brand)', 'var(--border-subtle)')}>{busy === 'reset' ? 'Resetting…' : '↺ Reset password'}</button>
+            <button onClick={() => callManage('resend')} disabled={busy === 'resend'} style={smallBtn('rgba(99,102,241,0.06)', 'var(--brand)', 'var(--border-subtle)')}>{busy === 'resend' ? 'Sending…' : '✉ Resend invite'}</button>
             {!isSelf && <button onClick={() => callManage('remove', `Remove ${r.email}? This deletes their account.`)} disabled={busy === 'remove'} style={smallBtn('rgba(244,63,94,0.06)', 'var(--status-critical)', 'rgba(244,63,94,0.2)')}>{busy === 'remove' ? 'Removing…' : '✕ Remove user'}</button>}
           </div>
 

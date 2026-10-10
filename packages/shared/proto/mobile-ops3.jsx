@@ -71,7 +71,7 @@ function MPhotoDetail({ id, onClose, onNav }) {
         ))}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
           {[['WO', p.wo], ['Tech', p.techName], ['Customer', p.customer], ['Site', p.site], ['Slot', p.slot || '—'], ['Taken', `${p.day} ${p.time}`]].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
+            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</div>
               <div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{v}</div>
             </div>
@@ -150,14 +150,14 @@ function MPunchDetail({ id, onClose }) {
         {i.detail && <div style={{ fontSize: 12.5, color: 'var(--text-mid)', lineHeight: 1.45 }}>{i.detail}</div>}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
           {[['Customer', i.customer], ['Site', i.site], ['Assignee', tech ? tech.name : '—'], ['Linked photo', i.photoId || '—']].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
+            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</div>
               <div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{v}</div>
             </div>
           ))}
         </div>
         {next && <button onClick={advance} style={{ padding: '13px 0', background: i.status === 'open' ? 'linear-gradient(135deg, var(--status-ok), #1f9d6b)' : 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{i.status === 'open' ? '✓ Mark Done' : 'Mark Verified'}</button>}
-        {!next && <div style={{ padding: '13px 0', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'var(--brand)', background: 'rgba(63,169,245,0.08)', borderRadius: 11 }}>✓ Verified & closed</div>}
+        {!next && <div style={{ padding: '13px 0', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', borderRadius: 11 }}>✓ Verified & closed</div>}
       </div>
     </MSheet>
   );
@@ -193,7 +193,7 @@ function MSubcontractors({ onNav }) {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 }}>
-              {s.specialty.map(sp => <span key={sp} style={{ fontSize: 9, color: 'var(--brand)', background: 'rgba(63,169,245,0.06)', borderRadius: 7, padding: '2px 7px' }}>{sp}</span>)}
+              {s.specialty.map(sp => <span key={sp} style={{ fontSize: 9, color: 'var(--brand)', background: 'rgba(99,102,241,0.06)', borderRadius: 7, padding: '2px 7px' }}>{sp}</span>)}
             </div>
             {certIssue && <div style={{ fontSize: 10, color: 'var(--status-warn)', marginTop: 6 }}>⚠ Certification expiring/expired — review</div>}
           </div>
@@ -220,11 +220,11 @@ function MSubDetail({ id, onClose }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => { if (s.phone) window.location.href = `tel:${s.phone}`; else showToast('No phone number on file for this subcontractor', 'warn'); }} style={{ flex: 1, padding: '10px 0', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Call</button>
-          <button onClick={() => { if (s.email) window.location.href = `mailto:${s.email}`; else showToast('No email address on file for this subcontractor', 'warn'); }} style={{ flex: 1, padding: '10px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Email</button>
+          <button onClick={() => { if (s.email) window.location.href = `mailto:${s.email}`; else showToast('No email address on file for this subcontractor', 'warn'); }} style={{ flex: 1, padding: '10px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Email</button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
           {[['JOBS', s.jobs], ['REVENUE', `$${(s.revenue / 1000).toFixed(0)}K`], ['YTD PAID', `$${(s.ytdPaid / 1000).toFixed(0)}K`]].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '9px 10px', textAlign: 'center' }}>
+            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '9px 10px', textAlign: 'center' }}>
               <div className="mono" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-high)' }}>{v}</div>
               <div style={{ fontSize: 8, color: 'var(--text-low)', letterSpacing: '0.05em' }}>{k}</div>
             </div>
@@ -312,7 +312,7 @@ function MProjects({ onNav }) {
               </div>
             )}
           </div>
-          <button onClick={() => setInvoiceFor(p)} style={{ marginTop: 9, width: '100%', padding: '8px', borderRadius: 9, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer' }}>+ Create Invoice</button>
+          <button onClick={() => setInvoiceFor(p)} style={{ marginTop: 9, width: '100%', padding: '8px', borderRadius: 9, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer' }}>+ Create Invoice</button>
         </div>
       ))}
       {list.length === 0 && <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>No projects yet.</div>}
@@ -415,8 +415,8 @@ function MRealProjectDetail({ number, onClose }) {
     } else showToast(r.error, 'warn');
   };
 
-  const pctBtn = { padding: '9px 13px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
-  const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', fontSize: 12 };
+  const pctBtn = { padding: '9px 13px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
+  const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', fontSize: 12 };
   const selStyle = { width: '100%', padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, fontFamily: 'var(--font-body)' };
 
   return (
@@ -528,7 +528,7 @@ function MProjectDetail({ id, rec, onClose }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
           {[['PM', p.pm.split(' ')[0]], ['TIMELINE', `${p.start}–${p.end}`], ['TEAM', p.techs.join(',') || '—']].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
+            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</div>
               <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>{v}</div>
             </div>
@@ -594,7 +594,7 @@ function MProposalDetail({ id, onClose }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
           {[['SECTIONS', p.sections], ['CREATED', p.created], ['VIEW TIME', p.viewTime]].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '9px 10px', textAlign: 'center' }}>
+            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '9px 10px', textAlign: 'center' }}>
               <div className="mono" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{v}</div>
               <div style={{ fontSize: 8, color: 'var(--text-low)', letterSpacing: '0.04em' }}>{k}</div>
             </div>
@@ -605,7 +605,7 @@ function MProposalDetail({ id, onClose }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           {p.status === 'draft' && <button onClick={() => { showToast(`${p.id} sent to ${p.customer}`, 'ok'); onClose(); }} style={{ flex: 2, padding: '12px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send to Client</button>}
-          {p.status === 'sent' && <button onClick={() => { showToast('Reminder sent', 'ok'); }} style={{ flex: 2, padding: '12px 0', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send Reminder</button>}
+          {p.status === 'sent' && <button onClick={() => { showToast('Reminder sent', 'ok'); }} style={{ flex: 2, padding: '12px 0', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send Reminder</button>}
           <button onClick={() => showToast('Duplicated to draft', 'ok')} style={{ flex: 1, padding: '12px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Duplicate</button>
         </div>
       </div>

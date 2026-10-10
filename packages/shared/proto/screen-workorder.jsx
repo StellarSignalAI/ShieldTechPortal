@@ -81,7 +81,7 @@ function WorkOrderScreen() {
     const x = e.clientX - r.left, y = e.clientY - r.top;
     const ctx = canvasRef.current.getContext('2d');
     ctx.beginPath(); ctx.moveTo(lastPos.x, lastPos.y); ctx.lineTo(x, y);
-    ctx.strokeStyle = '#3FA9F5'; ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.stroke();
+    ctx.strokeStyle = '#6366F1'; ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.stroke();
     setLastPos({ x, y });
     setSignatureSigned(true);
   };
@@ -121,11 +121,11 @@ function WorkOrderScreen() {
       <div className="glass" style={{ width: 220, flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>Work Orders</span>
-          <button onClick={() => setShowNew(true)} style={{ ...sBtn, color: 'var(--brand)', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', padding: '3px 9px', fontSize: 11 }}>+ New WO</button>
+          <button onClick={() => setShowNew(true)} style={{ ...sBtn, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', padding: '3px 9px', fontSize: 11 }}>+ New WO</button>
         </div>
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {workOrders.map((w, i) => (
-            <div key={w.id} onClick={() => { setActiveWO(i); setSignatureSigned(w.signatureSigned || false); }} style={{ padding: '12px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border-subtle)', background: activeWO === i ? 'rgba(63,169,245,0.06)' : 'transparent', borderLeft: '3px solid ' + (activeWO === i ? statusColor[w.status] : 'transparent'), transition: 'all 0.15s' }}>
+            <div key={w.id} onClick={() => { setActiveWO(i); setSignatureSigned(w.signatureSigned || false); }} style={{ padding: '12px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border-subtle)', background: activeWO === i ? 'rgba(99,102,241,0.06)' : 'transparent', borderLeft: '3px solid ' + (activeWO === i ? statusColor[w.status] : 'transparent'), transition: 'all 0.15s' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{w.id}</span>
                 <span style={{ fontSize: 9, color: statusColor[w.status], background: statusColor[w.status] + '18', padding: '1px 6px', borderRadius: 100, fontWeight: 600 }}>{w.status}</span>
@@ -155,7 +155,7 @@ function WorkOrderScreen() {
               </button>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '5px 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '5px 12px' }}>
               <span className="mono" style={{ fontSize: 14, color: wo.timerRunning ? 'var(--status-warn)' : 'var(--text-mid)', fontWeight: 600, minWidth: 64 }}>{fmtSeconds(wo.timerSeconds || 0)}</span>
               <button onClick={toggleTimer} style={{ ...sBtn, padding: '3px 8px', fontSize: 10, color: wo.timerRunning ? 'var(--status-critical)' : 'var(--status-ok)', background: wo.timerRunning ? 'rgba(244,63,94,0.08)' : 'rgba(52,211,153,0.08)', border: '1px solid ' + (wo.timerRunning ? 'rgba(244,63,94,0.2)' : 'rgba(52,211,153,0.2)') }}>
                 {wo.timerRunning ? '⏸ Pause' : '▶ Start'}
@@ -163,8 +163,8 @@ function WorkOrderScreen() {
             </div>
 
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-              <button onClick={() => navTo('helpdesk')} style={{ ...sBtn, color: 'var(--text-mid)', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)' }}>Ticket</button>
-              <button onClick={() => { showToast('Sent to ' + wo.customer, 'ok'); }} style={{ ...sBtn, color: 'var(--brand)', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)' }}>Send to Customer</button>
+              <button onClick={() => navTo('helpdesk')} style={{ ...sBtn, color: 'var(--text-mid)', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)' }}>Ticket</button>
+              <button onClick={() => { showToast('Sent to ' + wo.customer, 'ok'); }} style={{ ...sBtn, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)' }}>Send to Customer</button>
             </div>
           </div>
 
@@ -172,9 +172,9 @@ function WorkOrderScreen() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 10 }}>
             {['Scheduled','In Progress','Completed'].map((s, i) => (
               <div key={s} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: i <= statusIdx ? statusColor[wo.status] : 'rgba(63,169,245,0.15)', border: i === statusIdx ? '2px solid ' + statusColor[wo.status] : 'none', boxShadow: i === statusIdx ? '0 0 6px ' + statusColor[wo.status] : 'none', flexShrink: 0, transition: 'all 0.3s' }} />
-                <div style={{ flex: 1, height: 2, background: i < statusIdx ? statusColor[wo.status] : 'rgba(63,169,245,0.1)', transition: 'all 0.3s' }} />
-                {i === 2 && <div style={{ width: 8, height: 8, borderRadius: '50%', background: statusIdx === 2 ? 'var(--status-ok)' : 'rgba(63,169,245,0.15)', flexShrink: 0 }} />}
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: i <= statusIdx ? statusColor[wo.status] : 'rgba(99,102,241,0.15)', border: i === statusIdx ? '2px solid ' + statusColor[wo.status] : 'none', boxShadow: i === statusIdx ? '0 0 6px ' + statusColor[wo.status] : 'none', flexShrink: 0, transition: 'all 0.3s' }} />
+                <div style={{ flex: 1, height: 2, background: i < statusIdx ? statusColor[wo.status] : 'rgba(99,102,241,0.1)', transition: 'all 0.3s' }} />
+                {i === 2 && <div style={{ width: 8, height: 8, borderRadius: '50%', background: statusIdx === 2 ? 'var(--status-ok)' : 'rgba(99,102,241,0.15)', flexShrink: 0 }} />}
               </div>
             ))}
           </div>
@@ -190,7 +190,7 @@ function WorkOrderScreen() {
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
           {['details','materials','checklist','photos','signature'].map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{ padding: '7px 14px', fontSize: 11, fontWeight: 500, borderRadius: 7, cursor: 'pointer', fontFamily: 'var(--font-body)', background: tab === t ? 'rgba(63,169,245,0.12)' : 'rgba(63,169,245,0.04)', color: tab === t ? 'var(--brand)' : 'var(--text-low)', border: '1px solid ' + (tab === t ? 'var(--border-strong)' : 'var(--border-subtle)'), transition: 'all 0.15s' }}>
+            <button key={t} onClick={() => setTab(t)} style={{ padding: '7px 14px', fontSize: 11, fontWeight: 500, borderRadius: 7, cursor: 'pointer', fontFamily: 'var(--font-body)', background: tab === t ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.04)', color: tab === t ? 'var(--brand)' : 'var(--text-low)', border: '1px solid ' + (tab === t ? 'var(--border-strong)' : 'var(--border-subtle)'), transition: 'all 0.15s' }}>
               {t === 'checklist' ? 'Checklist (' + checkedCount + '/' + data.checklist.length + ')' : t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
@@ -243,7 +243,7 @@ function WorkOrderScreen() {
 
           {tab === 'checklist' && (
             <div className="glass" style={{ padding: 16 }}>
-              <div style={{ height: 4, background: 'rgba(63,169,245,0.08)', borderRadius: 2, overflow: 'hidden', marginBottom: 14 }}>
+              <div style={{ height: 4, background: 'rgba(99,102,241,0.08)', borderRadius: 2, overflow: 'hidden', marginBottom: 14 }}>
                 <div style={{ width: (checkedCount/data.checklist.length*100) + '%', height: '100%', background: checkedCount === data.checklist.length ? 'var(--status-ok)' : 'var(--brand)', borderRadius: 2, transition: 'width 0.3s ease' }} />
               </div>
               {data.checklist.map((item, i) => {
@@ -275,7 +275,7 @@ function WorkOrderScreen() {
                   return (
                     <label key={i} style={{ cursor: 'pointer' }}>
                       <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handlePhotoUpload(e, i)} />
-                      <div style={{ aspectRatio: '4/3', background: src ? 'transparent' : 'rgba(63,169,245,0.04)', border: '1px dashed ' + (src ? 'var(--status-ok)' : 'var(--border-strong)'), borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'all 0.15s' }}>
+                      <div style={{ aspectRatio: '4/3', background: src ? 'transparent' : 'rgba(99,102,241,0.04)', border: '1px dashed ' + (src ? 'var(--status-ok)' : 'var(--border-strong)'), borderRadius: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', transition: 'all 0.15s' }}>
                         {src
                           ? <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={slot} />
                           : (<>
@@ -296,7 +296,7 @@ function WorkOrderScreen() {
             <div className="glass" style={{ padding: 20 }}>
               <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 8 }}>Customer Acceptance</div>
               <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, marginBottom: 14 }}>By signing below, you confirm that the work in {wo.id} has been completed to your satisfaction.</p>
-              <div style={{ background: 'rgba(63,169,245,0.03)', border: '2px dashed var(--border-strong)', borderRadius: 10, overflow: 'hidden', position: 'relative', cursor: 'crosshair' }}>
+              <div style={{ background: 'rgba(99,102,241,0.03)', border: '2px dashed var(--border-strong)', borderRadius: 10, overflow: 'hidden', position: 'relative', cursor: 'crosshair' }}>
                 <canvas ref={canvasRef} width={500} height={150} style={{ display: 'block', width: '100%', height: 150 }} onMouseDown={startDraw} onMouseMove={draw} onMouseUp={() => setIsDrawing(false)} onMouseLeave={() => setIsDrawing(false)} />
                 {!signatureSigned && (
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -306,7 +306,7 @@ function WorkOrderScreen() {
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                 <button onClick={clearSig} style={{ padding: '7px 16px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Clear</button>
-                <button onClick={() => { if (signatureSigned) { updateWO(wo.id, { status: 'completed', timerRunning: false, signatureSigned: true }); showToast('Work order signed and closed', 'ok'); } }} style={{ flex: 1, padding: '7px 0', background: signatureSigned ? 'rgba(52,211,153,0.12)' : 'rgba(63,169,245,0.04)', border: '1px solid ' + (signatureSigned ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'), borderRadius: 6, color: signatureSigned ? 'var(--status-ok)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: signatureSigned ? 'pointer' : 'default', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}>
+                <button onClick={() => { if (signatureSigned) { updateWO(wo.id, { status: 'completed', timerRunning: false, signatureSigned: true }); showToast('Work order signed and closed', 'ok'); } }} style={{ flex: 1, padding: '7px 0', background: signatureSigned ? 'rgba(52,211,153,0.12)' : 'rgba(99,102,241,0.04)', border: '1px solid ' + (signatureSigned ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'), borderRadius: 6, color: signatureSigned ? 'var(--status-ok)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: signatureSigned ? 'pointer' : 'default', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}>
                   {signatureSigned ? 'Submit & Close Work Order' : 'Sign above to submit'}
                 </button>
               </div>

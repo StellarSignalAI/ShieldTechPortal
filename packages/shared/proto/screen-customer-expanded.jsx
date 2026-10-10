@@ -52,7 +52,7 @@ function CustomerExpandedScreen() {
         ].map(tab => (
           <button key={tab.id} onClick={() => setView(tab.id)} style={{
             padding: '8px 16px', borderRadius: 8,
-            background: view === tab.id ? 'rgba(63,169,245,0.12)' : 'rgba(63,169,245,0.03)',
+            background: view === tab.id ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.03)',
             border: `1px solid ${view === tab.id ? 'var(--border-strong)' : 'var(--border-subtle)'}`,
             color: view === tab.id ? 'var(--brand)' : 'var(--text-mid)',
             fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)',
@@ -139,7 +139,7 @@ function CustomerDashboardView({ onNavigate }) {
           {recent.map(t => {
             const st = TKT_STATUS[t.status] || TKT_STATUS.open;
             return (
-              <div key={t.id} onClick={() => onNavigate('tickets')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', cursor: 'pointer' }}>
+              <div key={t.id} onClick={() => onNavigate('tickets')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', cursor: 'pointer' }}>
                 <span className="mono" style={{ fontSize: 11, color: 'var(--brand)' }}>{t.ref}</span>
                 <span style={{ flex: 1, fontSize: 13, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.subject}</span>
                 <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', padding: '2px 8px', borderRadius: 4, background: `${st.color}15`, color: st.color }}>{st.label}</span>
@@ -208,7 +208,7 @@ function NewTicketView({ onNavigate }) {
           Our team has been notified by email and will respond as soon as possible. You can track replies on the Tickets tab.
         </p>
         <button onClick={() => onNavigate('tickets')} style={{
-          background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)',
+          background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)',
           borderRadius: 8, padding: '10px 24px', color: 'var(--brand)',
           fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)'
         }}>View My Tickets</button>
@@ -228,7 +228,7 @@ function NewTicketView({ onNavigate }) {
             <button key={i} onClick={() => { setCategory(qp.cat); setPriority(qp.pri); if (!subject) setSubject(qp.label); }} className="glass" style={{
               padding: '12px 14px', cursor: 'pointer', textAlign: 'left',
               border: `1px solid ${category === qp.cat ? 'var(--border-strong)' : 'var(--border-subtle)'}`,
-              background: category === qp.cat ? 'rgba(63,169,245,0.08)' : 'var(--glass-bg)',
+              background: category === qp.cat ? 'rgba(99,102,241,0.08)' : 'var(--glass-bg)',
               display: 'flex', alignItems: 'center', gap: 8,
               fontSize: 12, color: 'var(--text-high)', fontFamily: 'var(--font-body)',
               borderRadius: 'var(--radius-sm)', transition: 'all 0.15s'
@@ -271,7 +271,7 @@ function NewTicketView({ onNavigate }) {
             borderRadius: 'var(--radius-sm)', color: '#fff', fontSize: 14,
             fontWeight: 600, cursor: busy ? 'default' : 'pointer', fontFamily: 'var(--font-body)',
             opacity: busy ? 0.6 : 1,
-            boxShadow: '0 0 20px -4px rgba(63,169,245,0.4)'
+            boxShadow: '0 0 20px -4px rgba(99,102,241,0.4)'
           }}>{busy ? 'Submitting…' : 'Submit Ticket'}</button>
         </div>
       </GlassPanel>
@@ -320,11 +320,11 @@ function TicketListView({ onNavigate, selectedTicket, setSelectedTicket }) {
           const isSel = selectedTicket === t.id;
           return (
             <div key={t.id} onClick={() => setSelectedTicket(t.id)} style={{
-              padding: '14px 20px', borderBottom: '1px solid rgba(63,169,245,0.04)',
-              cursor: 'pointer', background: isSel ? 'rgba(63,169,245,0.06)' : 'transparent',
+              padding: '14px 20px', borderBottom: '1px solid rgba(99,102,241,0.04)',
+              cursor: 'pointer', background: isSel ? 'rgba(99,102,241,0.06)' : 'transparent',
               transition: 'background 0.15s'
             }}
-            onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(63,169,245,0.03)'; }}
+            onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(99,102,241,0.03)'; }}
             onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
@@ -362,7 +362,7 @@ function TicketListView({ onNavigate, selectedTicket, setSelectedTicket }) {
                 const idx = ['open','in-progress','waiting','resolved','closed'].indexOf(sel.status);
                 const done = i <= idx;
                 return (
-                  <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: done ? (TKT_STATUS[s] || {}).color : 'rgba(63,169,245,0.08)' }} />
+                  <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: done ? (TKT_STATUS[s] || {}).color : 'rgba(99,102,241,0.08)' }} />
                 );
               })}
             </div>
@@ -439,7 +439,7 @@ function RemoteSessionView() {
           background: 'var(--brand)', border: 'none', borderRadius: 8,
           padding: '8px 18px', color: '#fff', fontSize: 13, fontWeight: 500,
           cursor: 'pointer', fontFamily: 'var(--font-body)',
-          boxShadow: '0 0 16px -4px rgba(63,169,245,0.3)'
+          boxShadow: '0 0 16px -4px rgba(99,102,241,0.3)'
         }}>Request Remote Session</button>
       </div>
 
@@ -482,7 +482,7 @@ function RemoteSessionView() {
         {remoteTickets.map(t => {
           const st = TKT_STATUS[t.status] || TKT_STATUS.open;
           return (
-            <div key={t.id} style={{ padding: '12px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', display: 'flex', gap: 12 }}>
+            <div key={t.id} style={{ padding: '12px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', display: 'flex', gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{t.ref}</span>
@@ -517,7 +517,7 @@ function MessageBubble({ from, time, text, isUser }) {
       <div style={{
         maxWidth: '85%', padding: '10px 14px',
         borderRadius: isUser ? '12px 12px 4px 12px' : '4px 12px 12px 12px',
-        background: isUser ? 'rgba(63,169,245,0.12)' : 'rgba(10,14,20,0.6)',
+        background: isUser ? 'rgba(99,102,241,0.12)' : 'rgba(10,14,20,0.6)',
         border: `1px solid ${isUser ? 'var(--border-strong)' : 'var(--border-subtle)'}`,
         fontSize: 13, color: 'var(--text-high)', lineHeight: 1.55
       }}>

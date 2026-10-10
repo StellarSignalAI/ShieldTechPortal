@@ -28,8 +28,8 @@ function DailyDigestScreen() {
           <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 3 }}>Auto-compiled by ShieldTech AI from field activity · refreshes live, sends at 6:00 PM</div>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-          <button onClick={() => showToast('Digest emailed to jmitchell@shieldtech.com', 'ok')} style={digestBtn('var(--brand)', 'rgba(63,169,245,0.08)', 'var(--border-strong)')}>Email now</button>
-          <button onClick={() => showToast('Posted to #field-ops', 'ok')} style={digestBtn('var(--text-mid)', 'rgba(63,169,245,0.03)', 'var(--border-subtle)')}>Send to Slack</button>
+          <button onClick={() => showToast('Digest emailed to jmitchell@shieldtech.com', 'ok')} style={digestBtn('var(--brand)', 'rgba(99,102,241,0.08)', 'var(--border-strong)')}>Email now</button>
+          <button onClick={() => showToast('Posted to #field-ops', 'ok')} style={digestBtn('var(--text-mid)', 'rgba(99,102,241,0.03)', 'var(--border-subtle)')}>Send to Slack</button>
         </div>
       </div>
 

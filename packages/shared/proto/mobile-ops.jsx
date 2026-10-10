@@ -2,7 +2,7 @@
    Helpdesk · Incidents · Quote-to-Cash · Purchase Orders · Parts Requests
    Each reads/writes its shared store, so every action syncs to the desktop portal. */
 
-const OPS_TECHS = { MR:{n:'Mike Reyes',c:'#3FA9F5'}, JL:{n:'Jessica Liu',c:'#34D399'}, KW:{n:'Kevin White',c:'#FBBF24'}, DP:{n:'Diana Patel',c:'#c084fc'}, TG:{n:'Tony Garcia',c:'#F43F5E'}, AL:{n:'Alex Lee',c:'#60a5fa'} };
+const OPS_TECHS = { MR:{n:'Mike Reyes',c:'#6366F1'}, JL:{n:'Jessica Liu',c:'#34D399'}, KW:{n:'Kevin White',c:'#FBBF24'}, DP:{n:'Diana Patel',c:'#c084fc'}, TG:{n:'Tony Garcia',c:'#F43F5E'}, AL:{n:'Alex Lee',c:'#60a5fa'} };
 const opsNow = () => new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 const PRI_COLOR = { critical:'var(--status-critical)', high:'var(--status-warn)', medium:'var(--brand)', low:'var(--text-low)', P1:'var(--status-critical)', P2:'var(--status-warn)', P3:'var(--brand)' };
 const STATUS_COLOR = { open:'var(--status-warn)', 'in-progress':'var(--brand)', resolved:'var(--status-ok)', active:'var(--status-critical)' };
@@ -86,26 +86,26 @@ function MTicketDetail({ id, onClose }) {
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
             <MBadge color={pc}>{t.priority}</MBadge>
             <MBadge color={STATUS_COLOR[t.status]}>{t.status}</MBadge>
-            {t.tags && t.tags.map(tag => <span key={tag} style={{ fontSize: 9, color: 'var(--text-low)', background: 'rgba(63,169,245,0.06)', borderRadius: 7, padding: '2px 7px' }}>#{tag}</span>)}
+            {t.tags && t.tags.map(tag => <span key={tag} style={{ fontSize: 9, color: 'var(--text-low)', background: 'rgba(99,102,241,0.06)', borderRadius: 7, padding: '2px 7px' }}>#{tag}</span>)}
           </div>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-high)' }}>{t.subject}</div>
           <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 2 }}>{t.customer} · {t.contact}{t.relatedAsset ? ` · ${t.relatedAsset}` : ''}</div>
         </div>
 
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setAssignOpen(v => !v)} style={{ flex: 1, padding: '10px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.assignee ? `Reassign · ${t.assignee}` : 'Assign'}</button>
+          <button onClick={() => setAssignOpen(v => !v)} style={{ flex: 1, padding: '10px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.assignee ? `Reassign · ${t.assignee}` : 'Assign'}</button>
           {t.status !== 'resolved' && <button onClick={resolve} style={{ flex: 1, padding: '10px 0', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Resolve</button>}
         </div>
         {assignOpen && (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {Object.keys(OPS_TECHS).map(tid => (
-              <button key={tid} onClick={() => assign(tid)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px 5px 5px', borderRadius: 16, background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--text-mid)' }}><TechAvatar id={tid} size={18} />{OPS_TECHS[tid].n.split(' ')[0]}</button>
+              <button key={tid} onClick={() => assign(tid)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px 5px 5px', borderRadius: 16, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--text-mid)' }}><TechAvatar id={tid} size={18} />{OPS_TECHS[tid].n.split(' ')[0]}</button>
             ))}
           </div>
         )}
 
         {t.aiSuggestion && (
-          <div style={{ background: 'linear-gradient(135deg, rgba(63,169,245,0.08), rgba(192,132,252,0.05))', border: '1px solid var(--border-strong)', borderRadius: 11, padding: '11px 13px' }}>
+          <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(192,132,252,0.05))', border: '1px solid var(--border-strong)', borderRadius: 11, padding: '11px 13px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}><Icon name="hermes" size={13} color="var(--brand)" /><span style={{ fontSize: 10, fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.04em' }}>SHIELDTECH AI SUGGESTS</span></div>
             <div style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.45 }}>{t.aiSuggestion}</div>
           </div>
@@ -116,7 +116,7 @@ function MTicketDetail({ id, onClose }) {
             {(t.thread || []).map((m, i) => (
               <div key={i} style={{ alignSelf: m.from === 'You' ? 'flex-end' : 'flex-start', maxWidth: '85%' }}>
                 {!m.system && <div style={{ fontSize: 9, color: 'var(--text-low)', marginBottom: 2, textAlign: m.from === 'You' ? 'right' : 'left' }}>{m.from} · {m.time}</div>}
-                <div style={{ fontSize: 12, lineHeight: 1.4, padding: m.system ? '5px 10px' : '8px 11px', borderRadius: 10, background: m.system ? 'transparent' : m.from === 'You' ? 'rgba(63,169,245,0.14)' : 'var(--glass-bg)', border: m.system ? 'none' : '1px solid var(--border-subtle)', color: m.system ? 'var(--text-low)' : 'var(--text-high)', fontStyle: m.system ? 'italic' : 'normal', textAlign: m.system ? 'center' : 'left' }}>{m.msg}</div>
+                <div style={{ fontSize: 12, lineHeight: 1.4, padding: m.system ? '5px 10px' : '8px 11px', borderRadius: 10, background: m.system ? 'transparent' : m.from === 'You' ? 'rgba(99,102,241,0.14)' : 'var(--glass-bg)', border: m.system ? 'none' : '1px solid var(--border-subtle)', color: m.system ? 'var(--text-low)' : 'var(--text-high)', fontStyle: m.system ? 'italic' : 'normal', textAlign: m.system ? 'center' : 'left' }}>{m.msg}</div>
               </div>
             ))}
           </div>
@@ -124,7 +124,7 @@ function MTicketDetail({ id, onClose }) {
 
         {t.status !== 'resolved' && (
           <div style={{ display: 'flex', gap: 8 }}>
-            <input value={reply} onChange={e => setReply(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(); }} placeholder="Type a reply…" style={{ flex: 1, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 13px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+            <input value={reply} onChange={e => setReply(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(); }} placeholder="Type a reply…" style={{ flex: 1, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 13px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
             <button onClick={send} style={{ padding: '0 16px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send</button>
           </div>
         )}
@@ -382,7 +382,7 @@ function MPODetail({ id, onClose }) {
         </div>
 
         <div style={{ display: 'flex', gap: 8 }}>
-          {p.status === 'draft' && <button onClick={send} style={{ flex: 1, padding: '12px 0', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send to Vendor</button>}
+          {p.status === 'draft' && <button onClick={send} style={{ flex: 1, padding: '12px 0', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send to Vendor</button>}
           {p.status !== 'received' && p.status !== 'draft' && <button onClick={receiveAll} style={{ flex: 1, padding: '12px 0', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 10, color: 'var(--status-ok)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Receive All</button>}
           {p.status === 'received' && <div style={{ flex: 1, padding: '12px 0', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'var(--status-ok)', background: 'rgba(52,211,153,0.08)', borderRadius: 10 }}>✓ Fully received</div>}
         </div>
@@ -446,7 +446,7 @@ function MPartsReqDetail({ id, onClose }) {
           <MBadge color={PR_COLOR[r.status]}>{r.status}</MBadge>
         </div>
 
-        {r.notes && <div style={{ fontSize: 12, color: 'var(--text-mid)', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '9px 12px' }}>{r.notes}</div>}
+        {r.notes && <div style={{ fontSize: 12, color: 'var(--text-mid)', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '9px 12px' }}>{r.notes}</div>}
 
         <MSection title="Parts">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

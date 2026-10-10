@@ -72,19 +72,19 @@ function WarrantyScreen() {
 
       {/* Filter bar */}
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-        <div style={{ display: 'flex', background: 'rgba(63,169,245,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)', gap: 2 }}>
+        <div style={{ display: 'flex', background: 'rgba(99,102,241,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)', gap: 2 }}>
           {['all','active','expiring','expired'].map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
               padding: '4px 14px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer',
-              background: filter === f ? 'rgba(63,169,245,0.18)' : 'transparent',
+              background: filter === f ? 'rgba(99,102,241,0.18)' : 'transparent',
               color: filter === f ? 'var(--brand)' : 'var(--text-low)',
               fontWeight: filter === f ? 600 : 400, transition: 'all 0.15s', textTransform: 'capitalize'
             }}>{f}</button>
           ))}
         </div>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search assets or customers…"
-          style={{ flex: 1, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '7px 14px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
-        <button onClick={() => shieldToast('Exporting warranty report to CSV', 'ok')} style={{ padding: '7px 16px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export Report</button>
+          style={{ flex: 1, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '7px 14px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        <button onClick={() => shieldToast('Exporting warranty report to CSV', 'ok')} style={{ padding: '7px 16px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export Report</button>
       </div>
 
       {/* Asset grid */}
@@ -102,7 +102,7 @@ function WarrantyScreen() {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <div>
-                    <div style={{ fontSize: 10, color: 'var(--brand)', background: 'rgba(63,169,245,0.08)', padding: '1px 7px', borderRadius: 4, display: 'inline-block', marginBottom: 4 }}>{a.type}</div>
+                    <div style={{ fontSize: 10, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', padding: '1px 7px', borderRadius: 4, display: 'inline-block', marginBottom: 4 }}>{a.type}</div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{a.name}</div>
                   </div>
                   <span style={{ fontSize: 9, fontWeight: 700, color: ss.color, background: ss.bg, padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', whiteSpace: 'nowrap', marginLeft: 8 }}>{ss.label}</span>
@@ -119,7 +119,7 @@ function WarrantyScreen() {
                       {a.daysLeft < 0 ? `Expired ${Math.abs(a.daysLeft)}d ago` : `${a.daysLeft}d remaining`}
                     </span>
                   </div>
-                  <div style={{ height: 5, background: 'rgba(63,169,245,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: 5, background: 'rgba(99,102,241,0.08)', borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{ width: `${a.pct}%`, height: '100%', borderRadius: 3, background: a.status === 'expired' ? 'var(--status-critical)' : a.status === 'expiring' ? 'var(--status-warn)' : 'var(--status-ok)', transition: 'width 0.5s ease' }} />
                   </div>
                   <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 2 }}>Expires {a.warrantyEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>

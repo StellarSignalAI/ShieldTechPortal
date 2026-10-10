@@ -12,7 +12,7 @@ function LinkChip({ screen, params, label, color }) {
   return (
     <button onClick={(e) => { e.stopPropagation(); qboGo(screen, params); }} style={{
       display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 20,
-      background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)',
+      background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)',
       color: color || 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer',
       fontFamily: 'var(--font-body)', whiteSpace: 'nowrap'
     }}>
@@ -45,7 +45,7 @@ function DemoStateBar({ state, setState }) {
       {QBO_STATES.map((s) => (
         <button key={s} onClick={() => setState(s)} style={{
           padding: '2px 8px', borderRadius: 16, fontSize: 9.5, fontWeight: state === s ? 700 : 400,
-          background: state === s ? 'rgba(63,169,245,0.15)' : 'transparent', border: 'none',
+          background: state === s ? 'rgba(99,102,241,0.15)' : 'transparent', border: 'none',
           color: state === s ? 'var(--brand)' : 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize'
         }}>{s}</button>
       ))}
@@ -59,7 +59,7 @@ function StateGate({ state = 'live', label = 'records', onRetry, children }) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0' }}>
         {[92, 100, 78, 96, 60].map((w, i) => (
-          <div key={i} style={{ height: 44, width: `${w}%`, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'linear-gradient(90deg, rgba(255,255,255,0.02), rgba(63,169,245,0.06), rgba(255,255,255,0.02))', backgroundSize: '200% 100%', animation: 'qbo-shimmer 1.4s linear infinite' }}></div>
+          <div key={i} style={{ height: 44, width: `${w}%`, borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'linear-gradient(90deg, rgba(255,255,255,0.02), rgba(99,102,241,0.06), rgba(255,255,255,0.02))', backgroundSize: '200% 100%', animation: 'qbo-shimmer 1.4s linear infinite' }}></div>
         ))}
         <div style={{ fontSize: 11, color: 'var(--text-mid)', fontFamily: 'var(--font-mono)' }}>Loading {label} from QuickBooks…</div>
       </div>

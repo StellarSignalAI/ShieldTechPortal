@@ -55,7 +55,7 @@ function MMRRDetail({ customer, onClose, onNav }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
           {[['ANNUAL', `$${(s.mrr * 12 / 1000).toFixed(0)}K`], ['RENEWS', s.renewal], ['RISK', s.risk]].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '9px 11px' }}>
+            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '9px 11px' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</div>
               <div className="mono" style={{ fontSize: 13, color: k === 'RISK' ? MRR_RISK[s.risk] : 'var(--text-mid)', textTransform: 'capitalize' }}>{v}</div>
             </div>
@@ -65,7 +65,7 @@ function MMRRDetail({ customer, onClose, onNav }) {
           {s.risk !== 'low'
             ? <button onClick={() => setRisk('low', 'active')} style={{ flex: 1, padding: '11px 0', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 10, color: 'var(--status-ok)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Clear Risk</button>
             : <button onClick={() => setRisk('high', 'at-risk')} style={{ flex: 1, padding: '11px 0', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', borderRadius: 10, color: 'var(--status-critical)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Flag At-Risk</button>}
-          <button onClick={() => { onClose(); onNav && onNav('nps'); }} style={{ flex: 1, padding: '11px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View NPS</button>
+          <button onClick={() => { onClose(); onNav && onNav('nps'); }} style={{ flex: 1, padding: '11px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View NPS</button>
         </div>
       </div>
     </MSheet>
@@ -121,12 +121,12 @@ function MNPSDetail({ id, onClose }) {
             <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 4 }}>{r.contact} · {r.job} · {r.date}</div>
           </div>
         </div>
-        <div style={{ fontSize: 13, color: 'var(--text-high)', lineHeight: 1.5, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 11, padding: '13px 15px' }}>"{r.comment}"</div>
+        <div style={{ fontSize: 13, color: 'var(--text-high)', lineHeight: 1.5, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 11, padding: '13px 15px' }}>"{r.comment}"</div>
         {r.followedUp
           ? <div style={{ padding: '12px 0', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'var(--status-ok)', background: 'rgba(52,211,153,0.08)', borderRadius: 11 }}>✓ Followed up</div>
           : <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={followUp} style={{ flex: 2, padding: '12px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Mark Followed-Up</button>
-              <button onClick={() => { if (r.phone) window.location.href = `tel:${r.phone}`; else showToast('No phone number on this response — add one to the customer record to call from here', 'warn'); }} style={{ flex: 1, padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Call</button>
+              <button onClick={() => { if (r.phone) window.location.href = `tel:${r.phone}`; else showToast('No phone number on this response — add one to the customer record to call from here', 'warn'); }} style={{ flex: 1, padding: '12px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Call</button>
             </div>}
       </div>
     </MSheet>
@@ -144,7 +144,7 @@ const SKILL_GROUPS = [
 ];
 const SKILL_LEVELS = [
   { bg:'rgba(92,111,134,0.12)', color:'var(--text-low)', sym:'·' },
-  { bg:'rgba(63,169,245,0.14)', color:'var(--brand)', sym:'1' },
+  { bg:'rgba(99,102,241,0.14)', color:'var(--brand)', sym:'1' },
   { bg:'rgba(251,191,36,0.16)', color:'var(--status-warn)', sym:'2' },
   { bg:'rgba(52,211,153,0.18)', color:'var(--status-ok)', sym:'★' },
 ];
@@ -224,7 +224,7 @@ function MKnowledge({ onNav }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search the knowledge base…" style={{ background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search the knowledge base…" style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       <MSegment options={KB_CATS.map(c => c[1])} value={cat} onChange={setCat} />
       {list.map(a => (
         <div key={a.id} onClick={() => setOpenId(a.id)} className="glass" style={{ padding: '13px 14px', borderRadius: 12, cursor: 'pointer' }}>
@@ -249,7 +249,7 @@ function MKBDetail({ id, onClose }) {
     <MSheet title={a.title} onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{a.author} · {a.updated} · {a.readTime} · ★ {a.rating}</div>
-        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>{a.tags.map(t => <span key={t} style={{ fontSize: 10, color: 'var(--brand)', background: 'rgba(63,169,245,0.06)', borderRadius: 7, padding: '2px 8px' }}>#{t}</span>)}</div>
+        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>{a.tags.map(t => <span key={t} style={{ fontSize: 10, color: 'var(--brand)', background: 'rgba(99,102,241,0.06)', borderRadius: 7, padding: '2px 8px' }}>#{t}</span>)}</div>
         <div style={{ fontSize: 13, color: 'var(--text-high)', lineHeight: 1.6 }}>
           {a.content.split('\n').map((line, i) => {
             if (line.startsWith('## ')) return <div key={i} style={{ fontSize: 13, fontWeight: 700, color: 'var(--brand)', margin: '8px 0 2px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{line.slice(3)}</div>;
@@ -258,7 +258,7 @@ function MKBDetail({ id, onClose }) {
             return <div key={i} style={{ color: 'var(--text-mid)' }}>{line}</div>;
           })}
         </div>
-        <button onClick={() => showToast('Offline saving isn\'t wired up yet — articles stay available while you\'re online', 'warn')} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>☆ Save for offline</button>
+        <button onClick={() => showToast('Offline saving isn\'t wired up yet — articles stay available while you\'re online', 'warn')} style={{ padding: '12px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>☆ Save for offline</button>
       </div>
     </MSheet>
   );
@@ -312,7 +312,7 @@ function MWarrantyDetail({ id, onClose }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
           {specs.map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
+            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</div>
               <div className="mono" style={{ fontSize: 12, color: k === 'Remaining' ? WARR_COLOR[a.status] : 'var(--text-mid)' }}>{v}</div>
             </div>

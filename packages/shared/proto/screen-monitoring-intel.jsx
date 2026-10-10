@@ -11,9 +11,9 @@ function MonitoringIntelScreen() {
   ];
   return (
     <div style={{ maxWidth: 1080, display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', gap: 2, background: 'rgba(63,169,245,0.06)', borderRadius: 9, padding: 3, border: '1px solid var(--border-subtle)', alignSelf: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: 2, background: 'rgba(99,102,241,0.06)', borderRadius: 9, padding: 3, border: '1px solid var(--border-subtle)', alignSelf: 'flex-start' }}>
         {tabs.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 16px', borderRadius: 7, fontSize: 12, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', fontWeight: 500, background: tab === t.id ? 'rgba(63,169,245,0.18)' : 'transparent', color: tab === t.id ? 'var(--brand)' : 'var(--text-low)', transition: 'all 0.15s' }}>
+          <button key={t.id} onClick={() => setTab(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 16px', borderRadius: 7, fontSize: 12, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', fontWeight: 500, background: tab === t.id ? 'rgba(99,102,241,0.18)' : 'transparent', color: tab === t.id ? 'var(--brand)' : 'var(--text-low)', transition: 'all 0.15s' }}>
             <Icon name={t.icon} size={13} color={tab === t.id ? 'var(--brand)' : 'var(--text-low)'} />{t.label}
           </button>
         ))}
@@ -64,7 +64,7 @@ function FalseAlarmShield() {
             <div key={s.customer} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 14px', borderRadius: 9, background: 'rgba(5,7,10,0.4)', border: `1px solid ${s.risk === 'high' ? 'rgba(244,63,94,0.25)' : 'var(--border-subtle)'}` }}>
               {/* sparkbars */}
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 30, width: 56, flexShrink: 0 }}>
-                {s.month.map((v, i) => <div key={i} style={{ flex: 1, height: `${Math.max(8, v / 8 * 100)}%`, borderRadius: 2, background: i === 3 ? riskC[s.risk] : 'rgba(63,169,245,0.25)' }}></div>)}
+                {s.month.map((v, i) => <div key={i} style={{ flex: 1, height: `${Math.max(8, v / 8 * 100)}%`, borderRadius: 2, background: i === 3 ? riskC[s.risk] : 'rgba(99,102,241,0.25)' }}></div>)}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -77,7 +77,7 @@ function FalseAlarmShield() {
               {s.risk !== 'low' && (
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button onClick={() => showToast(`${s.zone} bypassed tonight 1–5 AM`, 'ok')} style={intelBtn('var(--status-warn)', 'rgba(251,191,36,0.08)', 'rgba(251,191,36,0.3)')}>Bypass tonight</button>
-                  <button onClick={() => createRecal(s)} style={intelBtn('var(--brand)', 'rgba(63,169,245,0.08)', 'var(--border-strong)')}>Create recal job</button>
+                  <button onClick={() => createRecal(s)} style={intelBtn('var(--brand)', 'rgba(99,102,241,0.08)', 'var(--border-strong)')}>Create recal job</button>
                 </div>
               )}
             </div>
@@ -118,7 +118,7 @@ function FleetHealthPanel() {
           <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px', borderRadius: 9, background: 'rgba(5,7,10,0.4)', border: '1px solid var(--border-subtle)', marginBottom: 8 }}>
             <div style={{ position: 'relative', width: 44, height: 44, flexShrink: 0 }}>
               <svg width="44" height="44" viewBox="0 0 44 44">
-                <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(63,169,245,0.1)" strokeWidth="4" />
+                <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(99,102,241,0.1)" strokeWidth="4" />
                 <circle cx="22" cy="22" r="18" fill="none" stroke={riskColor(d.risk)} strokeWidth="4" strokeDasharray={`${d.risk / 100 * 113} 113`} strokeLinecap="round" transform="rotate(-90 22 22)" />
               </svg>
               <span className="mono" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: riskColor(d.risk) }}>{d.risk}</span>
@@ -132,7 +132,7 @@ function FleetHealthPanel() {
               <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 2 }}>{d.customer} · {d.age} yrs · {d.uptime}% uptime · {d.why}</div>
             </div>
             {d.risk > 50 && (
-              <button onClick={() => { showToast(`Refresh quote drafted for ${d.customer}`, 'ok'); navTo('survey-ai'); }} style={intelBtn('var(--brand)', 'rgba(63,169,245,0.08)', 'var(--border-strong)')}>Draft refresh quote</button>
+              <button onClick={() => { showToast(`Refresh quote drafted for ${d.customer}`, 'ok'); navTo('survey-ai'); }} style={intelBtn('var(--brand)', 'rgba(99,102,241,0.08)', 'var(--border-strong)')}>Draft refresh quote</button>
             )}
           </div>
         ))}
@@ -181,7 +181,7 @@ function CVECenter() {
             </div>
             {patched.includes(b.id)
               ? <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--status-ok)' }}>✓ Campaign queued</span>
-              : <button onClick={() => campaign(b)} style={intelBtn(sevC[b.sev], 'rgba(63,169,245,0.05)', 'var(--border-strong)')}>Create patch campaign</button>}
+              : <button onClick={() => campaign(b)} style={intelBtn(sevC[b.sev], 'rgba(99,102,241,0.05)', 'var(--border-strong)')}>Create patch campaign</button>}
           </div>
         ))}
         <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 6 }}>Feed: CISA KEV + vendor PSIRTs, cross-referenced nightly against Asset Management</div>

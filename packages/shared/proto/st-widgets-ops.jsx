@@ -1,8 +1,8 @@
 /* ShieldTech Widgets — Operations group
    Open Tickets · Device Monitoring · Work Orders · Today's Schedule · Fleet Map · Approvals */
 
-const PRIO = { critical: '#F43F5E', high: '#FBBF24', medium: '#3FA9F5', low: '#5C6F86' };
-const TECH_COLORS = { MR: '#3FA9F5', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
+const PRIO = { critical: '#F43F5E', high: '#FBBF24', medium: '#6366F1', low: '#5C6F86' };
+const TECH_COLORS = { MR: '#6366F1', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
 const fmtH = h => `${((h + 11) % 12) + 1}${h < 12 ? 'AM' : 'PM'}`;
 
 /* ─────────── Open Tickets / SLA ─────────── */
@@ -14,7 +14,7 @@ function WTickets({ size }) {
   const atRisk = [...open].sort((a, b) => (a.sla?.remaining ?? 99) - (b.sla?.remaining ?? 99));
   const crit = byP('critical');
   return (
-    <WCard size={size} accent={crit ? '#F43F5E' : '#3FA9F5'} title="Open Tickets" glyph="chat"
+    <WCard size={size} accent={crit ? '#F43F5E' : '#6366F1'} title="Open Tickets" glyph="chat"
       sub={size !== 'small' ? `${open.length} active · SLA live` : null}>
       {size === 'small' && (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -26,13 +26,13 @@ function WTickets({ size }) {
       )}
       {size !== 'small' && <>
         <WDivide />
-        <WStrip accent="#3FA9F5" anchor={size === 'medium'} cells={buckets.map(p => ({ top: p[0].toUpperCase() + p.slice(1, 4), color: PRIO[p], bot: byP(p) }))} />
+        <WStrip accent="#6366F1" anchor={size === 'medium'} cells={buckets.map(p => ({ top: p[0].toUpperCase() + p.slice(1, 4), color: PRIO[p], bot: byP(p) }))} />
       </>}
       {size === 'large' && (
         <div style={{ marginTop: 14 }}>
           {atRisk.slice(0, 4).map((t, i) => (
             <WRow key={t.id} last={i === 3} label={t.customer} glyph="clock" glyphColor={PRIO[t.priority]}
-              a={t.sla ? `${t.sla.remaining}h` : '—'} b={t.id.replace('TK-', '#')} accent="#3FA9F5" />
+              a={t.sla ? `${t.sla.remaining}h` : '—'} b={t.id.replace('TK-', '#')} accent="#6366F1" />
           ))}
         </div>
       )}
@@ -65,7 +65,7 @@ function WMonitoring({ size }) {
           <div style={{ flex: 1, minWidth: 0 }}>
             {active.slice(0, 3).map(i => (
               <div key={i.id} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '4px 0' }}>
-                <WPill color={i.severity === 'P1' ? '#F43F5E' : i.severity === 'P2' ? '#FBBF24' : '#3FA9F5'}>{i.severity}</WPill>
+                <WPill color={i.severity === 'P1' ? '#F43F5E' : i.severity === 'P2' ? '#FBBF24' : '#6366F1'}>{i.severity}</WPill>
                 <span style={{ fontSize: 11.5, color: 'var(--text-mid)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{i.customer}</span>
               </div>
             ))}
@@ -79,7 +79,7 @@ function WMonitoring({ size }) {
             <WStrip accent={accent} cells={[
               { top: 'P1', color: '#F43F5E', bot: sev('P1') },
               { top: 'P2', color: '#FBBF24', bot: sev('P2') },
-              { top: 'P3', color: '#3FA9F5', bot: sev('P3') },
+              { top: 'P3', color: '#6366F1', bot: sev('P3') },
               { top: 'OK', color: '#34D399', bot: 142 },
             ]} />
           </div>
@@ -117,7 +117,7 @@ function WWorkOrders({ size }) {
         <WDivide />
         <WStrip accent="#34D399" anchor={size === 'medium'} cells={[
           { top: 'Active', color: '#34D399', bot: inProg.length },
-          { top: 'Sched', color: '#3FA9F5', bot: sched },
+          { top: 'Sched', color: '#6366F1', bot: sched },
           { top: 'Done', color: '#5C6F86', bot: done },
           { top: 'Total', color: '#c084fc', bot: wos.length },
         ]} />
@@ -155,7 +155,7 @@ function WSchedule({ size }) {
         <WDivide />
         <WStrip accent="#c084fc" anchor={size === 'medium'} cells={today.slice(0, 6).map(j => ({
           top: fmtH(Math.floor(j.start)),
-          color: { install: '#3FA9F5', repair: '#F43F5E', survey: '#c084fc', maintenance: '#FBBF24', meeting: '#34D399' }[j.type] || '#3FA9F5',
+          color: { install: '#6366F1', repair: '#F43F5E', survey: '#c084fc', maintenance: '#FBBF24', meeting: '#34D399' }[j.type] || '#6366F1',
           bot: (j.techs && j.techs[0]) || '—',
         }))} />
       </>}
@@ -175,12 +175,12 @@ function WSchedule({ size }) {
 /* ─────────── Fleet Map / Tech Locations ─────────── */
 function MiniMap({ h, pins }) {
   return (
-    <div style={{ position: 'relative', width: '100%', height: h, borderRadius: 12, overflow: 'hidden', background: 'linear-gradient(160deg,#0b1622,#0a1018)', border: '1px solid rgba(63,169,245,0.15)' }}>
+    <div style={{ position: 'relative', width: '100%', height: h, borderRadius: 12, overflow: 'hidden', background: 'linear-gradient(160deg,#0b1622,#0a1018)', border: '1px solid rgba(99,102,241,0.15)' }}>
       <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
-        {[...Array(6)].map((_, i) => <line key={'h' + i} x1="0" y1={`${i * 18 + 8}%`} x2="100%" y2={`${i * 18 + 8}%`} stroke="rgba(63,169,245,0.08)" strokeWidth="1" />)}
-        {[...Array(7)].map((_, i) => <line key={'v' + i} x1={`${i * 15 + 6}%`} y1="0" x2={`${i * 15 + 6}%`} y2="100%" stroke="rgba(63,169,245,0.08)" strokeWidth="1" />)}
-        <path d="M5,40 Q40,38 55,60 T95,55" fill="none" stroke="rgba(63,169,245,0.18)" strokeWidth="2" />
-        <path d="M20,5 L25,95" fill="none" stroke="rgba(63,169,245,0.12)" strokeWidth="2" />
+        {[...Array(6)].map((_, i) => <line key={'h' + i} x1="0" y1={`${i * 18 + 8}%`} x2="100%" y2={`${i * 18 + 8}%`} stroke="rgba(99,102,241,0.08)" strokeWidth="1" />)}
+        {[...Array(7)].map((_, i) => <line key={'v' + i} x1={`${i * 15 + 6}%`} y1="0" x2={`${i * 15 + 6}%`} y2="100%" stroke="rgba(99,102,241,0.08)" strokeWidth="1" />)}
+        <path d="M5,40 Q40,38 55,60 T95,55" fill="none" stroke="rgba(99,102,241,0.18)" strokeWidth="2" />
+        <path d="M20,5 L25,95" fill="none" stroke="rgba(99,102,241,0.12)" strokeWidth="2" />
       </svg>
       {pins.map((p, i) => (
         <div key={i} style={{ position: 'absolute', left: `${p.x}%`, top: `${p.y}%`, transform: 'translate(-50%,-50%)' }}>
@@ -202,7 +202,7 @@ function WFleet({ size }) {
   const pins = techs.map(t => ({ x: t.x, y: t.y, color: TECH_COLORS[t.id], label: size === 'small' ? null : t.id }));
   const onSite = techs.filter(t => t.status === 'On site').length;
   return (
-    <WCard size={size} accent="#3FA9F5" title="Fleet" glyph="dispatch"
+    <WCard size={size} accent="#6366F1" title="Fleet" glyph="dispatch"
       sub={size !== 'small' ? `${techs.length} techs · ${onSite} on site` : null} flush={size === 'small'}>
       {size === 'small' && (
         <div style={{ position: 'relative', height: '100%' }}>
@@ -216,7 +216,7 @@ function WFleet({ size }) {
         <div style={{ marginTop: 8 }}>
           {techs.slice(0, 4).map((t, i) => (
             <WRow key={t.id} last={i === 3} label={t.cust} glyph="employees" glyphColor={TECH_COLORS[t.id]}
-              a={t.id} b={t.status} accent="#3FA9F5" />
+              a={t.id} b={t.status} accent="#6366F1" />
           ))}
         </div>
       </>}
@@ -242,7 +242,7 @@ function WApprovals({ size }) {
       {size !== 'small' && <>
         <WDivide />
         <WStrip accent="#FBBF24" anchor={size === 'medium'} cells={[
-          { top: 'Exp', color: '#3FA9F5', bot: byK('EXPENSE') },
+          { top: 'Exp', color: '#6366F1', bot: byK('EXPENSE') },
           { top: 'Time', color: '#34D399', bot: byK('TIMESHEET') },
           { top: 'PO', color: '#c084fc', bot: byK('PURCHASE ORDER') },
         ]} />
@@ -263,7 +263,7 @@ registerWidget('tickets',    { label: 'Open Tickets / SLA',     cat: 'Operations
 registerWidget('monitoring', { label: 'Device Monitoring',      cat: 'Operations', accent: '#34D399', glyph: 'topology',  sizes: ['small', 'medium', 'large'], render: s => <WMonitoring size={s} /> });
 registerWidget('workorders', { label: 'Work Orders',            cat: 'Operations', accent: '#34D399', glyph: 'clipboard', sizes: ['small', 'medium', 'large'], render: s => <WWorkOrders size={s} /> });
 registerWidget('schedule',   { label: "Today's Schedule",       cat: 'Operations', accent: '#c084fc', glyph: 'calendar',  sizes: ['small', 'medium', 'large'], render: s => <WSchedule size={s} /> });
-registerWidget('fleet',      { label: 'Fleet Map / Locations',  cat: 'Operations', accent: '#3FA9F5', glyph: 'dispatch',  sizes: ['small', 'medium', 'large'], render: s => <WFleet size={s} /> });
+registerWidget('fleet',      { label: 'Fleet Map / Locations',  cat: 'Operations', accent: '#6366F1', glyph: 'dispatch',  sizes: ['small', 'medium', 'large'], render: s => <WFleet size={s} /> });
 registerWidget('approvals',  { label: 'Approvals Pending',      cat: 'Operations', accent: '#FBBF24', glyph: 'check',     sizes: ['small', 'medium', 'large'], render: s => <WApprovals size={s} /> });
 
 Object.assign(window, { WTickets, WMonitoring, WWorkOrders, WSchedule, WFleet, WApprovals, MiniMap, TECH_COLORS, PRIO });

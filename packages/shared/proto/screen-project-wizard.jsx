@@ -60,12 +60,12 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
             <div key={s.id} onClick={() => { if (i <= step) setStep(i); }} style={{
               flex: 1, display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px',
               borderRadius: 6, cursor: i <= step ? 'pointer' : 'default',
-              background: i === step ? 'rgba(63,169,245,0.1)' : i < step ? 'rgba(52,211,153,0.06)' : 'transparent',
+              background: i === step ? 'rgba(99,102,241,0.1)' : i < step ? 'rgba(52,211,153,0.06)' : 'transparent',
               border: `1px solid ${i === step ? 'var(--brand)' : i < step ? 'rgba(52,211,153,0.15)' : 'var(--border-subtle)'}`,
             }}>
               <div style={{
                 width: 22, height: 22, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: i < step ? 'rgba(52,211,153,0.1)' : i === step ? 'rgba(63,169,245,0.1)' : 'transparent',
+                background: i < step ? 'rgba(52,211,153,0.1)' : i === step ? 'rgba(99,102,241,0.1)' : 'transparent',
                 flexShrink: 0
               }}>
                 {i < step ? <Icon name="check" size={12} color="var(--status-ok)" /> : <Icon name={s.icon} size={12} color={i === step ? 'var(--brand)' : 'var(--text-low)'} />}
@@ -92,7 +92,7 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
                     {['Install','Upgrade','PM','Service','Inspection'].map(t => (
                       <button key={t} onClick={() => updateProject('type', t)} style={{
                         flex: 1, padding: '7px 4px', borderRadius: 5, fontSize: 11,
-                        background: project.type === t ? 'rgba(63,169,245,0.12)' : 'transparent',
+                        background: project.type === t ? 'rgba(99,102,241,0.12)' : 'transparent',
                         border: `1px solid ${project.type === t ? 'var(--brand)' : 'var(--border-subtle)'}`,
                         color: project.type === t ? 'var(--brand)' : 'var(--text-mid)',
                         cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -106,7 +106,7 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
                     {['low','normal','high','urgent'].map(p => (
                       <button key={p} onClick={() => updateProject('priority', p)} style={{
                         flex: 1, padding: '7px 4px', borderRadius: 5, fontSize: 11, textTransform: 'capitalize',
-                        background: project.priority === p ? 'rgba(63,169,245,0.12)' : 'transparent',
+                        background: project.priority === p ? 'rgba(99,102,241,0.12)' : 'transparent',
                         border: `1px solid ${project.priority === p ? (p === 'urgent' ? 'var(--status-critical)' : 'var(--brand)') : 'var(--border-subtle)'}`,
                         color: project.priority === p ? (p === 'urgent' ? 'var(--status-critical)' : 'var(--brand)') : 'var(--text-mid)',
                         cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -175,7 +175,7 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
                   </div>
                 </div>
               ))}
-              <div style={{ marginTop: 12, padding: 10, borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ marginTop: 12, padding: 10, borderRadius: 6, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--brand)' }}>
                   <Icon name="hermes" size={14} color="var(--brand)" />
                   <span style={{ fontWeight: 500 }}>ShieldTech AI: Auto-populate from floor plan</span>
@@ -207,7 +207,7 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
                   autoDevices.push({ id: Date.now()+4, name: 'USW-Pro-24-PoE Switch', qty: 1, unitCost: 699, category: 'Network' });
                   updateProject('devices', autoDevices);
                   if (showToast) showToast('BOM auto-populated from survey');
-                }} style={{ width: '100%', padding: 12, marginBottom: 12, background: 'rgba(63,169,245,0.04)', border: '1px dashed var(--brand)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                }} style={{ width: '100%', padding: 12, marginBottom: 12, background: 'rgba(99,102,241,0.04)', border: '1px dashed var(--brand)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                   <Icon name="hermes" size={14} color="var(--brand)" /> Auto-populate BOM from Site Survey ({project.rooms.reduce((s,r) => s+r.cameras,0)} cameras, {project.rooms.reduce((s,r) => s+r.readers,0)} readers)
                 </button>
               )}
@@ -240,7 +240,7 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
               </div>
 
               {project.devices.length > 0 && (
-                <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 6, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 12, fontWeight: 500 }}>Equipment Total</span>
                   <span className="mono" style={{ fontSize: 14, fontWeight: 600, color: 'var(--brand)' }}>${project.devices.reduce((s, d) => s + d.qty * d.unitCost, 0).toLocaleString()}</span>
                 </div>
@@ -323,7 +323,7 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
                 </div>
               </GlassPanel>
 
-              <div style={{ marginTop: 10, padding: 10, borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ marginTop: 10, padding: 10, borderRadius: 6, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Icon name="hermes" size={14} color="var(--brand)" />
                 <span style={{ fontSize: 11, color: 'var(--brand)' }}>ShieldTech AI: Compare this estimate against 3 similar past projects — margins look healthy at 20%.</span>
               </div>
@@ -359,7 +359,7 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
                   { icon: 'inventory', label: 'Purchase orders staged', desc: 'Equipment POs drafted from the BOM, pending approval' },
                   { icon: 'finance', label: 'Invoice drafted', desc: 'Invoice pre-built from estimate, sent on project completion' },
                 ].map((item, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 6, background: 'rgba(63,169,245,0.02)', border: '1px solid var(--border-subtle)' }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 6, background: 'rgba(99,102,241,0.02)', border: '1px solid var(--border-subtle)' }}>
                     <Icon name={item.icon} size={16} color="var(--brand)" />
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 500 }}>{item.label}</div>
@@ -382,7 +382,7 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
               <button onClick={() => setStep(step + 1)} style={{ padding: '8px 20px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Skip</button>
             )}
             {step < steps.length - 1 ? (
-              <button onClick={() => setStep(step + 1)} disabled={!canNext()} style={{ padding: '8px 24px', background: canNext() ? 'var(--brand)' : 'rgba(63,169,245,0.15)', border: 'none', borderRadius: 6, color: canNext() ? '#fff' : 'var(--text-low)', fontSize: 12, fontWeight: 600, cursor: canNext() ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>Next →</button>
+              <button onClick={() => setStep(step + 1)} disabled={!canNext()} style={{ padding: '8px 24px', background: canNext() ? 'var(--brand)' : 'rgba(99,102,241,0.15)', border: 'none', borderRadius: 6, color: canNext() ? '#fff' : 'var(--text-low)', fontSize: 12, fontWeight: 600, cursor: canNext() ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>Next →</button>
             ) : (
               <button onClick={handleCreate} style={{ padding: '8px 24px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Icon name="check" size={14} color="#fff" /> Create Project

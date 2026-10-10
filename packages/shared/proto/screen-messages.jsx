@@ -94,7 +94,7 @@ function PortalMessagesScreen() {
         <div style={{ overflowY: 'auto', flex: 1 }}>
           {threads.length === 0 && <div style={{ padding: 18, fontSize: 12, color: 'var(--text-low)', lineHeight: 1.5 }}>No conversations yet. Field techs' messages land here, and you can reply from any technician's card on the Dispatch map.</div>}
           {threads.map(t => (
-            <button key={t.threadId} onClick={() => setSel(t.threadId)} style={{ display: 'flex', width: '100%', gap: 10, alignItems: 'center', padding: '11px 14px', background: sel === t.threadId ? 'rgba(63,169,245,0.1)' : 'none', border: 'none', borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+            <button key={t.threadId} onClick={() => setSel(t.threadId)} style={{ display: 'flex', width: '100%', gap: 10, alignItems: 'center', padding: '11px 14px', background: sel === t.threadId ? 'rgba(99,102,241,0.1)' : 'none', border: 'none', borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name || 'Technician'}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-low)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.last}</div>

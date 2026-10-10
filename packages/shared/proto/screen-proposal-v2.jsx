@@ -88,7 +88,7 @@ function ProposalScreen() {
           {proposalTabs.map(t => (
             <button key={t.id} onClick={() => setTopTab(t.id)} style={{
               padding: '6px 14px', fontSize: 11, fontWeight: topTab===t.id?600:400,
-              background: topTab===t.id?'rgba(63,169,245,0.1)':'transparent',
+              background: topTab===t.id?'rgba(99,102,241,0.1)':'transparent',
               border: 'none', borderBottom: topTab===t.id?'2px solid var(--brand)':'2px solid transparent',
               color: topTab===t.id?'var(--brand)':'var(--text-mid)',
               cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap'
@@ -114,7 +114,7 @@ function ProposalScreen() {
         {proposalTabs.map(t => (
           <button key={t.id} onClick={() => setTopTab(t.id)} style={{
             padding: '6px 18px', borderRadius: '6px 6px 0 0', fontSize: 12, fontWeight: topTab===t.id?600:400,
-            background: topTab===t.id?'rgba(63,169,245,0.1)':'transparent',
+            background: topTab===t.id?'rgba(99,102,241,0.1)':'transparent',
             border: 'none', borderBottom: topTab===t.id?'2px solid var(--brand)':'2px solid transparent',
             color: topTab===t.id?'var(--brand)':'var(--text-mid)',
             cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -160,17 +160,17 @@ function ProposalScreen() {
             )}
             {shown.map((p) => (
               <tr key={p.id} style={{ cursor: 'pointer' }} onClick={() => { setActiveId(p.id); setView('builder'); }}
-                onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'}
+                onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'}
                 onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{p.id}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }}>{p.customer}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{p.title}</td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${p.value.toLocaleString()}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--brand)' }}>{p.id}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, fontWeight: 500 }}>{p.customer}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{p.title}</td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${p.value.toLocaleString()}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <StatusBadge status={p.status==='accepted'?'online':p.status==='sent'?'info':p.status==='declined'?'critical':'draft'} label={p.status || 'draft'} />
                 </td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{p.created || '—'}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }} onClick={e => e.stopPropagation()}>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{p.created || '—'}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }} onClick={e => e.stopPropagation()}>
                   <div style={{ display: 'flex', gap: 4 }}>
                     {p.status === 'accepted' && <button onClick={() => toProject(p)} style={{ padding: '3px 8px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>→ Project</button>}
                     {(!p.status || p.status === 'draft') && <button onClick={() => sendProposal(p)} style={{ padding: '3px 8px', background: 'var(--brand)', border: 'none', borderRadius: 4, color: '#fff', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send</button>}
@@ -332,7 +332,7 @@ function ProposalBuilderView({ proposalId, onBack, previewMode, setPreviewMode }
           {blocks.map((b) => (
             <div key={b.id} onClick={() => setSelectedBlock(b.id)} style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 4, cursor: 'pointer', marginBottom: 2,
-              background: selectedBlock === b.id ? 'rgba(63,169,245,0.08)' : 'transparent',
+              background: selectedBlock === b.id ? 'rgba(99,102,241,0.08)' : 'transparent',
               border: `1px solid ${selectedBlock === b.id ? 'var(--brand)' : 'transparent'}`,
               color: selectedBlock === b.id ? 'var(--brand)' : 'var(--text-mid)'
             }}>
@@ -348,7 +348,7 @@ function ProposalBuilderView({ proposalId, onBack, previewMode, setPreviewMode }
         </div>
         {/* ShieldTech AI assist */}
         <div style={{ padding: '8px 12px', borderTop: '1px solid var(--border-subtle)' }}>
-          <button onClick={() => setShieldAIDrawer(!hermesDrawer)} style={{ width: '100%', padding: '6px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          <button onClick={() => setShieldAIDrawer(!hermesDrawer)} style={{ width: '100%', padding: '6px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
             <span>⟡</span> ShieldTech AI Assist
           </button>
         </div>
@@ -364,8 +364,8 @@ function ProposalBuilderView({ proposalId, onBack, previewMode, setPreviewMode }
             <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>${total.toLocaleString()}</span>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <button onClick={() => setPreviewMode(true)} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Preview</button>
-            <button onClick={exportPdf} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Download PDF</button>
+            <button onClick={() => setPreviewMode(true)} style={{ padding: '5px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Preview</button>
+            <button onClick={exportPdf} style={{ padding: '5px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Download PDF</button>
             <button onClick={doSend} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send Proposal</button>
           </div>
         </div>
@@ -425,7 +425,7 @@ function ProposalBuilderView({ proposalId, onBack, previewMode, setPreviewMode }
                 </div>
               ))}
               <button onClick={() => patchBlockContent(sel.id, { items: [...(sel.content.items || []), { desc: '', qty: 1, rate: 0 }] })}
-                style={{ alignSelf: 'flex-start', padding: '4px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add line</button>
+                style={{ alignSelf: 'flex-start', padding: '4px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add line</button>
               <div className="mono" style={{ fontSize: 12, color: 'var(--brand)', textAlign: 'right' }}>Total ${total.toLocaleString()}</div>
             </>}
             {(sel.type === 'intro' || sel.type === 'about' || sel.type === 'terms' || sel.type === 'text') && <>
@@ -434,7 +434,7 @@ function ProposalBuilderView({ proposalId, onBack, previewMode, setPreviewMode }
                 placeholder="Edit block text..." style={{ width: '100%', minHeight: 100, padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
               {sel.type !== 'terms' && (
                 <button disabled={aiBusy} onClick={() => aiRewrite(sel, 'Rewrite this proposal section to be persuasive and professional for a commercial security-integration customer.')}
-                  style={{ alignSelf: 'flex-start', padding: '4px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: aiBusy ? 'default' : 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4, opacity: aiBusy ? 0.5 : 1 }}>
+                  style={{ alignSelf: 'flex-start', padding: '4px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: aiBusy ? 'default' : 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4, opacity: aiBusy ? 0.5 : 1 }}>
                   <span>⟡</span> {aiBusy ? 'Rewriting…' : 'AI Rewrite'}
                 </button>
               )}
@@ -482,7 +482,7 @@ function ProposalBuilderView({ proposalId, onBack, previewMode, setPreviewMode }
                   aiRewrite(block, a.s + ' for this commercial security proposal.');
                 }
                 setSelectedBlock(block.id);
-              }} style={{ padding: '8px 12px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: aiBusy ? 'default' : 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left', opacity: aiBusy ? 0.5 : 1 }}>{aiBusy ? '⟡ Working…' : a.s}</button>
+              }} style={{ padding: '8px 12px', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: aiBusy ? 'default' : 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left', opacity: aiBusy ? 0.5 : 1 }}>{aiBusy ? '⟡ Working…' : a.s}</button>
             ))}
           </div>
         </div>
@@ -528,7 +528,7 @@ function ProposalBlockRenderer({ block, total }) {
       <div>
         <div className="label-sm" style={{ marginBottom: 8, color: 'var(--brand)' }}>SCOPE OF WORK</div>
         {(block.content.items || []).map((item, i) => (
-          <div key={i} style={{ display: 'flex', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+          <div key={i} style={{ display: 'flex', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
             <span style={{ color: 'var(--brand)', fontSize: 12 }}>✓</span>
             <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{item}</span>
           </div>
@@ -551,7 +551,7 @@ function ProposalBlockRenderer({ block, total }) {
           </tr></thead>
           <tbody>
             {items.map((item, i) => (
-              <tr key={i}><td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{item.desc}</td><td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, textAlign: 'right', color: 'var(--text-low)' }}>{item.qty}</td><td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, textAlign: 'right', color: 'var(--text-low)' }}>${(Number(item.rate) || 0).toLocaleString()}</td><td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, textAlign: 'right', fontWeight: 500 }}>${((Number(item.qty) || 0) * (Number(item.rate) || 0)).toLocaleString()}</td></tr>
+              <tr key={i}><td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{item.desc}</td><td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, textAlign: 'right', color: 'var(--text-low)' }}>{item.qty}</td><td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, textAlign: 'right', color: 'var(--text-low)' }}>${(Number(item.rate) || 0).toLocaleString()}</td><td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', fontWeight: 500 }}>${((Number(item.qty) || 0) * (Number(item.rate) || 0)).toLocaleString()}</td></tr>
             ))}
             <tr><td colSpan="3" style={{ padding: '8px', fontSize: 13, fontWeight: 600, borderTop: '1px solid var(--border-subtle)' }}>Total</td><td className="mono" style={{ padding: '8px', fontSize: 16, fontWeight: 700, textAlign: 'right', color: 'var(--brand)', borderTop: '1px solid var(--border-subtle)' }}>${blockTotal.toLocaleString()}</td></tr>
           </tbody>
@@ -565,7 +565,7 @@ function ProposalBlockRenderer({ block, total }) {
         <div className="label-sm" style={{ marginBottom: 8, color: 'var(--brand)' }}>SELECT YOUR PACKAGE</div>
         <div style={{ display: 'flex', gap: 10 }}>
           {(block.content.tiers || []).map((t, i) => (
-            <div key={i} style={{ flex: 1, padding: 14, borderRadius: 8, border: `1px solid ${t.recommended?'var(--brand)':'var(--border-subtle)'}`, background: t.recommended?'rgba(63,169,245,0.04)':'transparent', position: 'relative' }}>
+            <div key={i} style={{ flex: 1, padding: 14, borderRadius: 8, border: `1px solid ${t.recommended?'var(--brand)':'var(--border-subtle)'}`, background: t.recommended?'rgba(99,102,241,0.04)':'transparent', position: 'relative' }}>
               {t.recommended && <div style={{ position: 'absolute', top: -1, left: 0, right: 0, height: 3, background: 'var(--brand)', borderRadius: '8px 8px 0 0' }} />}
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: t.recommended?'var(--brand)':'var(--text-high)' }}>{t.name}</div>
@@ -597,7 +597,7 @@ function ProposalBlockRenderer({ block, total }) {
             <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 4 }}>Date</div>
           </div>
         </div>
-        <div style={{ marginTop: 12, padding: '8px 16px', borderRadius: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ marginTop: 12, padding: '8px 16px', borderRadius: 6, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           <span>⊛</span>
           <span style={{ fontSize: 11, color: 'var(--brand)' }}>Accept online via the emailed link</span>
         </div>
@@ -616,7 +616,7 @@ function ProposalBlockRenderer({ block, total }) {
     const pct = block.content.pct ?? 50;
     const amt = Math.round((Number(total) || 0) * (pct / 100));
     return (
-      <div style={{ textAlign: 'center', padding: 12, borderRadius: 8, border: '1px solid var(--border-strong)', background: 'rgba(63,169,245,0.03)' }}>
+      <div style={{ textAlign: 'center', padding: 12, borderRadius: 8, border: '1px solid var(--border-strong)', background: 'rgba(99,102,241,0.03)' }}>
         <span style={{ fontSize: 16 }}>⊛</span>
         <div style={{ fontSize: 14, fontWeight: 500, marginTop: 6 }}>Deposit Payment</div>
         <div className="mono" style={{ fontSize: 22, fontWeight: 600, color: 'var(--brand)', marginTop: 4 }}>${amt.toLocaleString()}</div>
@@ -637,7 +637,7 @@ function ProposalClientView({ blocks, onBack, customer, total, onAccept }) {
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <button onClick={onBack} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>← Exit Preview</button>
+        <button onClick={onBack} style={{ padding: '5px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>← Exit Preview</button>
         <StatusBadge status="info" label="Client View" />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -648,7 +648,7 @@ function ProposalClientView({ blocks, onBack, customer, total, onAccept }) {
                 <div className="label-sm" style={{ marginBottom: 12, color: 'var(--brand)' }}>SELECT YOUR PACKAGE</div>
                 <div style={{ display: 'flex', gap: 12 }}>
                   {(block.content.tiers || []).map((t, i) => (
-                    <div key={i} onClick={() => setSelectedTier(i)} style={{ flex: 1, padding: 16, borderRadius: 10, cursor: 'pointer', border: `2px solid ${selectedTier===i?'var(--brand)':'var(--border-subtle)'}`, background: selectedTier===i?'rgba(63,169,245,0.06)':'transparent', transition: 'all 0.2s' }}>
+                    <div key={i} onClick={() => setSelectedTier(i)} style={{ flex: 1, padding: 16, borderRadius: 10, cursor: 'pointer', border: `2px solid ${selectedTier===i?'var(--brand)':'var(--border-subtle)'}`, background: selectedTier===i?'rgba(99,102,241,0.06)':'transparent', transition: 'all 0.2s' }}>
                       {t.recommended && <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--brand)', textTransform: 'uppercase', marginBottom: 4, textAlign: 'center' }}>Recommended</div>}
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: 16, fontWeight: 600, color: selectedTier===i?'var(--brand)':'var(--text-high)' }}>{t.name}</div>
@@ -661,7 +661,7 @@ function ProposalClientView({ blocks, onBack, customer, total, onAccept }) {
                           </div>
                         ))}
                       </div>
-                      <button onClick={() => setSelectedTier(i)} style={{ width: '100%', marginTop: 12, padding: '8px', borderRadius: 6, background: selectedTier===i?'var(--brand)':'rgba(63,169,245,0.06)', border: selectedTier===i?'none':'1px solid var(--border-subtle)', color: selectedTier===i?'#fff':'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                      <button onClick={() => setSelectedTier(i)} style={{ width: '100%', marginTop: 12, padding: '8px', borderRadius: 6, background: selectedTier===i?'var(--brand)':'rgba(99,102,241,0.06)', border: selectedTier===i?'none':'1px solid var(--border-subtle)', color: selectedTier===i?'#fff':'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                         {selectedTier===i?'✓ Selected':'Select'}
                       </button>
                     </div>
@@ -674,10 +674,10 @@ function ProposalClientView({ blocks, onBack, customer, total, onAccept }) {
           </div>
         ))}
         {/* Accept */}
-        <div style={{ padding: 24, borderRadius: 10, background: 'rgba(63,169,245,0.04)', border: '2px solid var(--brand)', textAlign: 'center' }}>
+        <div style={{ padding: 24, borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '2px solid var(--brand)', textAlign: 'center' }}>
           <div style={{ fontSize: 16, fontWeight: 500 }}>Ready to proceed?</div>
           <div style={{ fontSize: 12, color: 'var(--text-mid)', marginTop: 4 }}>Accepting creates the project and attaches this quote</div>
-          <button onClick={() => onAccept ? onAccept() : shieldToast('This is a preview — customers accept via the emailed link')} style={{ marginTop: 14, padding: '12px 32px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 0 20px -4px rgba(63,169,245,0.4)' }}>Accept Proposal</button>
+          <button onClick={() => onAccept ? onAccept() : shieldToast('This is a preview — customers accept via the emailed link')} style={{ marginTop: 14, padding: '12px 32px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 0 20px -4px rgba(99,102,241,0.4)' }}>Accept Proposal</button>
           <div className="mono" style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 8 }}>{customer} · ${(Number(total) || 0).toLocaleString()}</div>
         </div>
       </div>

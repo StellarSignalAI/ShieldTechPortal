@@ -197,16 +197,16 @@ function BrReviewDeck({ opp, state, update, onMode, onBlueprint }) {
       {/* queue meta */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <span style={{ font: '600 11.5px/1 var(--font-mono)', color: 'var(--text-mid)' }}>DECISION {doneN + 1} OF {decisions.length}</span>
-        <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(63,169,245,0.1)', overflow: 'hidden' }}>
+        <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.1)', overflow: 'hidden' }}>
           <div style={{ width: (doneN / decisions.length) * 100 + '%', height: '100%', background: 'linear-gradient(90deg, var(--brand), var(--status-ok))', transition: 'width 0.4s ease' }} />
         </div>
         <span style={{ font: '500 10.5px/1 var(--font-mono)', color: 'var(--text-low)' }}>A approve · V options · S skip</span>
       </div>
 
       {/* the card */}
-      <div key={cur.id} className="sw-up" style={{ borderRadius: 'var(--radius-lg)', background: 'linear-gradient(180deg, rgba(63,169,245,0.06), rgba(63,169,245,0.015))', border: '1px solid var(--border-strong)', overflow: 'hidden', boxShadow: '0 24px 60px -24px rgba(0,0,0,0.7)' }}>
+      <div key={cur.id} className="sw-up" style={{ borderRadius: 'var(--radius-lg)', background: 'linear-gradient(180deg, rgba(99,102,241,0.06), rgba(99,102,241,0.015))', border: '1px solid var(--border-strong)', overflow: 'hidden', boxShadow: '0 24px 60px -24px rgba(0,0,0,0.7)' }}>
         <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', flexShrink: 0 }}>
+          <span style={{ width: 34, height: 34, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', flexShrink: 0 }}>
             <Icon name={cur.icon} size={16} color="var(--brand)" />
           </span>
           <div>
@@ -222,7 +222,7 @@ function BrReviewDeck({ opp, state, update, onMode, onBlueprint }) {
           {cur.compare && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 12 }}>
               {[['RFP schedule', cur.compare.rfp], ['Drawing count', cur.compare.drawing]].map(([l, v]) => (
-                <div key={l} style={{ textAlign: 'center', padding: '12px 8px', borderRadius: 10, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)' }}>
+                <div key={l} style={{ textAlign: 'center', padding: '12px 8px', borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)' }}>
                   <div style={{ font: '700 24px/1 var(--font-display)', color: v === Math.max(cur.compare.rfp, cur.compare.drawing) ? 'var(--status-warn)' : 'var(--text-high)' }}>{v}</div>
                   <div style={{ font: '600 9.5px/1.3 var(--font-body)', color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 5 }}>{l} · {cur.compare.unit}</div>
                 </div>
@@ -274,7 +274,7 @@ function BrReviewDeck({ opp, state, update, onMode, onBlueprint }) {
           <Eyebrow>Up next</Eyebrow>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
             {pending.slice(1, 4).map(d => (
-              <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 12px', borderRadius: 9, border: '1px solid var(--border-subtle)', background: 'rgba(63,169,245,0.02)', opacity: 0.75 }}>
+              <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 12px', borderRadius: 9, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.02)', opacity: 0.75 }}>
                 <Icon name={d.icon} size={13} color="var(--text-low)" />
                 <span style={{ font: '500 12px/1.3 var(--font-body)', color: 'var(--text-mid)' }}>{d.title}</span>
                 <span style={{ marginLeft: 'auto', font: '500 9.5px/1 var(--font-mono)', color: 'var(--text-low)', letterSpacing: '0.08em' }}>{d.phase.toUpperCase()}</span>

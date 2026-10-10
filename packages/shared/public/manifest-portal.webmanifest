@@ -10,8 +10,8 @@
     "standalone",
     "minimal-ui"
   ],
-  "background_color": "#05070A",
-  "theme_color": "#05070A",
+  "background_color": "#060410",
+  "theme_color": "#060410",
   "categories": [
     "business",
     "productivity"

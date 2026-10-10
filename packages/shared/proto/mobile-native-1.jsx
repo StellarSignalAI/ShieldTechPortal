@@ -1,5 +1,5 @@
 /* ShieldTech Mobile — native screens I: Home, Dispatch, Customers */
-const MN_TECH = { MR: '#3FA9F5', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
+const MN_TECH = { MR: '#6366F1', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
 const firstName = () => {
   const n = (window.__shieldUser && window.__shieldUser.name) || '';
   const f = String(n).trim().split(/\s+/)[0];
@@ -69,8 +69,8 @@ function MHomeView({ onNav }) {
           <MActionBtn label="Approve" icon="approvals" onClick={() => onNav('approvals')} />
         </div>
       </MSection>
-      <button onClick={() => onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(63,169,245,0.10), rgba(192,132,252,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-        <span style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
+      <button onClick={() => onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(99,102,241,0.10), rgba(192,132,252,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+        <span style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(99,102,241,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
         <span style={{ flex: 1 }}>
           <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Survey Scan <span style={{ fontSize: 8, fontWeight: 700, color: '#c084fc', border: '1px solid rgba(192,132,252,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
           <span style={{ display: 'block', fontSize: 10, color: 'var(--text-low)' }}>Scan · document · estimate · report — the whole site visit in one walk</span>
@@ -99,7 +99,7 @@ function MHomeView({ onNav }) {
           <div style={{ padding: '10px 2px', fontSize: 11, color: 'var(--text-low)' }}>Activity shows here as you work — send an invoice, pay link, or proposal and it lands in this feed.</div>
         )}
         {activity.map((a, i) => (
-          <div key={i} style={{ display: 'flex', gap: 10, padding: '7px 2px', borderBottom: '1px solid rgba(63,169,245,0.05)', alignItems: 'baseline' }}>
+          <div key={i} style={{ display: 'flex', gap: 10, padding: '7px 2px', borderBottom: '1px solid rgba(99,102,241,0.05)', alignItems: 'baseline' }}>
             <span style={{ fontSize: 12, color: 'var(--text-mid)', flex: 1 }}>{a.text}</span>
             {a.amt && <span className="mono" style={{ fontSize: 11, color: 'var(--status-ok)' }}>{a.amt}</span>}
             <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{fmtWhen(a.ts)}</span>
@@ -173,11 +173,11 @@ function MDispatchView({ onNav }) {
           const sent = results.filter(r => r && r.ok).length;
           showToast(sent ? `Broadcast delivered to ${sent} technician${sent === 1 ? '' : 's'}` : 'Broadcast failed — try Messages directly', sent ? 'ok' : 'warn');
         } });
-      }} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast all techs</button>
+      }} style={{ padding: '12px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast all techs</button>
     </div>
   );
 }
-const mDispBtn = { padding: '6px 13px', background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-mid)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
+const mDispBtn = { padding: '6px 13px', background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-mid)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
 
 function MCustomersView({ onNav }) {
   const [q, setQ] = React.useState('');
@@ -189,14 +189,14 @@ function MCustomersView({ onNav }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', gap: 8 }}>
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search customers…" style={{ flex: 1, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '10px 13px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
-        <button onClick={() => setFormOpen(true)} style={{ padding: '0 14px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 18, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+</button>
+        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search customers…" style={{ flex: 1, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '10px 13px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        <button onClick={() => setFormOpen(true)} style={{ padding: '0 14px', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 18, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+</button>
       </div>
       <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{custs.length} customers · changes sync to the portal live</div>
       {custs.map(c => (
         <div key={c.id} onClick={() => setDetailId(c.id)} className="glass" style={{ padding: '12px 13px', borderRadius: 12, cursor: 'pointer' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-            <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-subtle)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{c.logo}</span>
+            <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-subtle)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{c.logo}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{c.name}</div>
               <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{c.type} · {c.sites} site{c.sites !== 1 ? 's' : ''}{c.mrr > 0 ? <> · <span className="mono">${(c.mrr / 1000).toFixed(1)}K MRR</span></> : ''}</div>

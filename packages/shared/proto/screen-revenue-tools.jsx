@@ -50,7 +50,7 @@ function MarginXRayScreen() {
                 <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: mC, width: 48, textAlign: 'right' }}>{j.margin}%</span>
               </div>
               {/* margin bar vs target */}
-              <div style={{ position: 'relative', height: 5, borderRadius: 3, background: 'rgba(63,169,245,0.07)', marginTop: 8 }}>
+              <div style={{ position: 'relative', height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.07)', marginTop: 8 }}>
                 <div style={{ width: `${Math.min(j.margin, 60) / 60 * 100}%`, height: '100%', borderRadius: 3, background: mC }}></div>
                 <div style={{ position: 'absolute', left: `${35 / 60 * 100}%`, top: -3, bottom: -3, width: 2, background: 'rgba(255,255,255,0.35)' }} title="35% target"></div>
               </div>
@@ -72,7 +72,7 @@ function MarginXRayScreen() {
               <div style={{ fontSize: 10, color: 'var(--text-mid)', lineHeight: 1.5, flex: 1 }}>{f.detail}</div>
               {fixed.includes(f.id)
                 ? <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--status-ok)' }}>✓ Applied to Price Book</span>
-                : <button onClick={() => { setFixed(x => [...x, f.id]); showToast('Price Book updated', 'ok'); }} style={{ alignSelf: 'flex-start', padding: '5px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Apply fix</button>}
+                : <button onClick={() => { setFixed(x => [...x, f.id]); showToast('Price Book updated', 'ok'); }} style={{ alignSelf: 'flex-start', padding: '5px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Apply fix</button>}
             </div>
           ))}
         </div>
@@ -132,9 +132,9 @@ function RRBuilderScreen() {
                     queueEmail({ to: '', customer: c.name, subject: `Monitoring plan proposal — ${c.plan} ($${c.proposedMrr}/mo)`,
                       body: `Hi ${c.name},\n\nBased on your recent service history (${c.incidents} incidents, ${c.visits} visits, $${c.tmSpend.toLocaleString()} T&M), we recommend moving to our ${c.plan} plan at $${c.proposedMrr}/mo.\n\n${c.hook}\n\n— ShieldTech Solutions`, kind: 'pitch' });
                     setPitched(x => [...x, c.name]); showToast(`Pitch for ${c.name} queued in your outbox`, 'ok');
-                  }} style={{ padding: '7px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', width: 110 }}>Generate pitch</button>}
+                  }} style={{ padding: '7px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', width: 110 }}>Generate pitch</button>}
             </div>
-            <div style={{ marginTop: 8, padding: '7px 11px', borderRadius: 7, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-mid)' }}>
+            <div style={{ marginTop: 8, padding: '7px 11px', borderRadius: 7, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-mid)' }}>
               <span style={{ color: 'var(--brand)', fontWeight: 600 }}>ShieldTech AI angle:</span> {c.hook}
             </div>
           </div>

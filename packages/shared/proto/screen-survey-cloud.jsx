@@ -34,7 +34,7 @@ function SurveyCloudScreen() {
           {projects.map(x => {
             const xt = ssTotals(x), xe = svEstimate(x), on = x.id === p.id;
             return (
-              <button key={x.id} onClick={() => setSelId(x.id)} className="glass" style={{ padding: '12px 14px', borderRadius: 12, border: '1px solid', borderColor: on ? 'var(--border-strong)' : 'var(--border-subtle)', background: on ? 'rgba(63,169,245,0.08)' : 'var(--glass-bg)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+              <button key={x.id} onClick={() => setSelId(x.id)} className="glass" style={{ padding: '12px 14px', borderRadius: 12, border: '1px solid', borderColor: on ? 'var(--border-strong)' : 'var(--border-subtle)', background: on ? 'rgba(99,102,241,0.08)' : 'var(--glass-bg)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                   <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{x.id}</span>
                   <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: svStatusColor(xe.status), marginLeft: 'auto' }}>est {xe.status}</span>
@@ -51,7 +51,7 @@ function SurveyCloudScreen() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ display: 'flex', gap: 8 }}>
             {['Overview', 'Review', 'Estimate', 'Share'].map(tb => (
-              <button key={tb} onClick={() => setTab(tb)} style={{ padding: '8px 18px', borderRadius: 9, border: '1px solid', borderColor: tab === tb ? 'var(--border-strong)' : 'var(--border-subtle)', background: tab === tb ? 'rgba(63,169,245,0.12)' : 'transparent', color: tab === tb ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{tb}</button>
+              <button key={tb} onClick={() => setTab(tb)} style={{ padding: '8px 18px', borderRadius: 9, border: '1px solid', borderColor: tab === tb ? 'var(--border-strong)' : 'var(--border-subtle)', background: tab === tb ? 'rgba(99,102,241,0.12)' : 'transparent', color: tab === tb ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{tb}</button>
             ))}
           </div>
 
@@ -77,7 +77,7 @@ function SurveyCloudScreen() {
                 <div className="glass" style={{ padding: '11px 14px', borderRadius: 11, flex: 1 }}>
                   <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-low)', marginBottom: 7 }}>SYNC ACTIVITY</div>
                   {(p.sync || []).map((s, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '5px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
                       <span style={{ fontSize: 11, color: s.dir === 'up' ? 'var(--brand)' : '#c084fc' }}>{s.dir === 'up' ? '↑' : '↓'}</span>
                       <span style={{ fontSize: 11.5, color: 'var(--text-mid)', flex: 1 }}>{s.t}</span>
                       <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{s.time}</span>
@@ -108,7 +108,7 @@ function SurveyCloudScreen() {
                 <div className="glass" style={{ padding: '13px 16px', borderRadius: 12 }}>
                   <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--text-low)', marginBottom: 6 }}>ISSUES FLAGGED ON-SITE — {issues.length}</div>
                   {issues.map(i => (
-                    <div key={i.id} style={{ display: 'flex', gap: 9, padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', alignItems: 'baseline' }}>
+                    <div key={i.id} style={{ display: 'flex', gap: 9, padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', alignItems: 'baseline' }}>
                       <span style={{ width: 8, height: 8, borderRadius: '50%', background: SV_SEV[i.sev].c, flexShrink: 0, position: 'relative', top: 1 }}></span>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{i.title}</div>
@@ -122,7 +122,7 @@ function SurveyCloudScreen() {
                   {readings.map(r => {
                     const k = svReading(r.kind), ok = k.good(r.val);
                     return (
-                      <div key={r.id} style={{ display: 'flex', gap: 9, padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', alignItems: 'baseline' }}>
+                      <div key={r.id} style={{ display: 'flex', gap: 9, padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', alignItems: 'baseline' }}>
                         <span style={{ fontSize: 11, color: k.color, width: 68, flexShrink: 0 }}>{k.label}</span>
                         <span style={{ fontSize: 11.5, color: 'var(--text-mid)', flex: 1 }}>{r.label}</span>
                         <span className="mono" style={{ fontSize: 11.5, fontWeight: 700, color: ok ? 'var(--status-ok)' : 'var(--status-warn)' }}>{r.val} {k.unit}</span>
@@ -142,14 +142,14 @@ function SurveyCloudScreen() {
                   <span style={{ padding: '4px 12px', borderRadius: 14, background: svStatusColor(est.status) + '18', border: `1px solid ${svStatusColor(est.status)}50`, color: svStatusColor(est.status), fontSize: 10, fontWeight: 700, textTransform: 'uppercase' }}>{est.status}</span>
                 </div>
                 {est.bom.map(b => (
-                  <div key={b.sku} style={{ display: 'flex', gap: 10, fontSize: 12, padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+                  <div key={b.sku} style={{ display: 'flex', gap: 10, fontSize: 12, padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
                     <span className="mono" style={{ fontWeight: 700, color: 'var(--brand)', width: 24 }}>{b.qty}</span>
                     <span style={{ flex: 1, color: 'var(--text-mid)' }}>{b.desc}</span>
                     <span className="mono" style={{ color: 'var(--text-high)' }}>{money(b.qty * b.unit)}</span>
                   </div>
                 ))}
                 {est.extras.map(x => (
-                  <div key={x.id} style={{ display: 'flex', gap: 10, fontSize: 12, padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+                  <div key={x.id} style={{ display: 'flex', gap: 10, fontSize: 12, padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
                     <span className="mono" style={{ fontWeight: 700, color: '#c084fc', width: 24 }}>{x.qty}</span>
                     <span style={{ flex: 1, color: 'var(--text-mid)' }}>{x.desc}</span>
                     <span className="mono" style={{ color: 'var(--text-high)' }}>{money(x.qty * x.unit)}</span>
@@ -183,14 +183,14 @@ function SurveyCloudScreen() {
               <div className="glass" style={{ padding: '16px 18px', borderRadius: 12 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-high)', marginBottom: 4 }}>Shareable project link</div>
                 <div style={{ fontSize: 11, color: 'var(--text-low)', lineHeight: 1.5, marginBottom: 10 }}>Read-only view of the plan, media and report for the customer, GC or adjuster — no login needed.</div>
-                <div className="mono" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 9, background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--brand)' }}>
+                <div className="mono" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 9, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--brand)' }}>
                   <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>shieldtech.app/s/{p.id.toLowerCase()}-metro</span>
                   <button onClick={() => showToast('Link copied', 'ok')} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: 'var(--brand)', color: '#fff', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy</button>
                 </div>
                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--text-low)', margin: '16px 0 6px' }}>EXPORT FORMATS</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
                   {['PDF report', 'PNG plan', 'DXF (CAD)', 'CSV takeoff', 'OBJ / USDZ 3D', 'Estimate XLS'].map(f => (
-                    <button key={f} onClick={() => showToast(f + ' exported', 'ok')} style={{ padding: '9px 4px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'rgba(63,169,245,0.04)', color: 'var(--text-mid)', fontSize: 10.5, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{f}</button>
+                    <button key={f} onClick={() => showToast(f + ' exported', 'ok')} style={{ padding: '9px 4px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.04)', color: 'var(--text-mid)', fontSize: 10.5, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{f}</button>
                   ))}
                 </div>
               </div>

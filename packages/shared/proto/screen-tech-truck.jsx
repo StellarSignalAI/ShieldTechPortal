@@ -62,12 +62,12 @@ function TechTruckView() {
                 <div style={{ fontSize: 8, color: 'var(--text-low)', letterSpacing: '0.08em' }}>ON HAND</div>
               </div>
             </div>
-            <div style={{ height: 4, borderRadius: 2, background: 'rgba(63,169,245,0.08)', overflow: 'hidden', margin: '8px 0' }}>
+            <div style={{ height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.08)', overflow: 'hidden', margin: '8px 0' }}>
               <div style={{ width: `${pct}%`, height: '100%', borderRadius: 2, background: item.qty === 0 ? 'var(--status-critical)' : low ? 'var(--status-warn)' : 'var(--status-ok)', transition: 'width 0.25s' }}></div>
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <button onClick={() => useOne(item.sku)} disabled={item.qty === 0}
-                style={{ padding: '6px 14px', background: item.qty ? 'rgba(63,169,245,0.08)' : 'rgba(148,163,184,0.04)', border: `1px solid ${item.qty ? 'var(--border-strong)' : 'var(--border-subtle)'}`, borderRadius: 6, color: item.qty ? 'var(--brand)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: item.qty ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>
+                style={{ padding: '6px 14px', background: item.qty ? 'rgba(99,102,241,0.08)' : 'rgba(148,163,184,0.04)', border: `1px solid ${item.qty ? 'var(--border-strong)' : 'var(--border-subtle)'}`, borderRadius: 6, color: item.qty ? 'var(--brand)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: item.qty ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>
                 Use on job
               </button>
               {pending && <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--status-warn)', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8, padding: '3px 9px' }}>⟳ restock requested</span>}

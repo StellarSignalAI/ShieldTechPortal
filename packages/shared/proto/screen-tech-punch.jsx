@@ -40,7 +40,7 @@ function TechPunchView({ setTab }) {
         return (
           <div key={it.id} className="glass" style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', display: 'flex', gap: 12 }}>
             <button onClick={() => isOpen ? markDone(it) : reopen(it)} title={isOpen ? 'Mark done' : 'Reopen'}
-              style={{ width: 26, height: 26, borderRadius: '50%', border: `2px solid ${st.c}`, background: isOpen ? 'transparent' : st.c, color: isOpen ? st.c : '#0a0e14', fontSize: 11, fontWeight: 700, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+              style={{ width: 26, height: 26, borderRadius: '50%', border: `2px solid ${st.c}`, background: isOpen ? 'transparent' : st.c, color: isOpen ? st.c : '#0C0A14', fontSize: 11, fontWeight: 700, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
               {isOpen ? '' : '✓'}
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -54,10 +54,10 @@ function TechPunchView({ setTab }) {
               </div>
               {isOpen && (
                 <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                  <button onClick={() => setTab('capture')} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                  <button onClick={() => setTab('capture')} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                     <Icon name="cameras" size={11} color="var(--brand)" /> Shoot proof
                   </button>
-                  <button onClick={() => attachLatest(it)} style={{ padding: '5px 11px', background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Attach latest</button>
+                  <button onClick={() => attachLatest(it)} style={{ padding: '5px 11px', background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Attach latest</button>
                 </div>
               )}
             </div>

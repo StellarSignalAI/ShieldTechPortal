@@ -68,13 +68,13 @@ NAV_ITEMS.unshift({ id: 'login', icon: 'credential', label: 'Login', section: 'a
 function ShieldLogo({ size = 32 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
-      <path d="M24 4L8 12v12c0 11 16 20 16 20s16-9 16-20V12L24 4z" fill="rgba(63,169,245,0.1)" stroke="#3FA9F5" strokeWidth="1.5" />
-      <path d="M24 14l-8 4v6c0 5.5 8 10 8 10s8-4.5 8-10v-6l-8-4z" fill="rgba(63,169,245,0.15)" stroke="#3FA9F5" strokeWidth="1" />
-      <circle cx="24" cy="24" r="3" fill="#3FA9F5" opacity="0.8" />
-      <line x1="24" y1="21" x2="24" y2="16" stroke="#3FA9F5" strokeWidth="0.8" opacity="0.5" />
-      <line x1="24" y1="27" x2="24" y2="32" stroke="#3FA9F5" strokeWidth="0.8" opacity="0.5" />
-      <line x1="21" y1="24" x2="18" y2="24" stroke="#3FA9F5" strokeWidth="0.8" opacity="0.5" />
-      <line x1="27" y1="24" x2="30" y2="24" stroke="#3FA9F5" strokeWidth="0.8" opacity="0.5" />
+      <path d="M24 4L8 12v12c0 11 16 20 16 20s16-9 16-20V12L24 4z" fill="rgba(99,102,241,0.1)" stroke="#6366F1" strokeWidth="1.5" />
+      <path d="M24 14l-8 4v6c0 5.5 8 10 8 10s8-4.5 8-10v-6l-8-4z" fill="rgba(99,102,241,0.15)" stroke="#6366F1" strokeWidth="1" />
+      <circle cx="24" cy="24" r="3" fill="#6366F1" opacity="0.8" />
+      <line x1="24" y1="21" x2="24" y2="16" stroke="#6366F1" strokeWidth="0.8" opacity="0.5" />
+      <line x1="24" y1="27" x2="24" y2="32" stroke="#6366F1" strokeWidth="0.8" opacity="0.5" />
+      <line x1="21" y1="24" x2="18" y2="24" stroke="#6366F1" strokeWidth="0.8" opacity="0.5" />
+      <line x1="27" y1="24" x2="30" y2="24" stroke="#6366F1" strokeWidth="0.8" opacity="0.5" />
     </svg>);
 
 }
@@ -189,13 +189,13 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
                       width: '100%',
                       padding: collapsed ? '8px 0' : '6px 16px 6px 28px',
                       justifyContent: collapsed ? 'center' : 'flex-start',
-                      background: active ? 'rgba(63,169,245,0.08)' : 'transparent',
+                      background: active ? 'rgba(99,102,241,0.08)' : 'transparent',
                       border: 'none', cursor: 'pointer', position: 'relative',
                       color: active ? 'var(--brand)' : 'var(--text-mid)',
                       fontSize: 12, fontFamily: 'var(--font-body)',
                       transition: 'all 0.12s', borderRadius: 0, textAlign: 'left'
                     }}
-                    onMouseEnter={(e) => {if (!active) e.currentTarget.style.background = 'rgba(63,169,245,0.04)';}}
+                    onMouseEnter={(e) => {if (!active) e.currentTarget.style.background = 'rgba(99,102,241,0.04)';}}
                     onMouseLeave={(e) => {if (!active) e.currentTarget.style.background = 'transparent';}}>
 
                       {active &&
@@ -233,14 +233,14 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
       <div style={{ padding: '8px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: collapsed ? 'center' : 'flex-end' }}>
         <button onClick={onToggleCollapse} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} style={{
           width: 28, height: 28, borderRadius: 6,
-          background: 'rgba(63,169,245,0.04)',
+          background: 'rgba(99,102,241,0.04)',
           border: '1px solid var(--border-subtle)',
           color: 'var(--text-low)', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.15s'
         }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(63,169,245,0.1)'; e.currentTarget.style.color = 'var(--brand)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(63,169,245,0.04)'; e.currentTarget.style.color = 'var(--text-low)'; }}>
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.1)'; e.currentTarget.style.color = 'var(--brand)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.04)'; e.currentTarget.style.color = 'var(--text-low)'; }}>
           <Icon name={collapsed ? 'chevron-right' : 'chevron-down'} size={12} color="currentColor" style={{ transform: collapsed ? 'none' : 'rotate(90deg)' }} />
         </button>
       </div>
@@ -337,7 +337,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
       {/* Center: search */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)',
+        background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)',
         borderRadius: 8, padding: '6px 14px', width: 320, cursor: 'text'
       }}>
         <span style={{ color: 'var(--text-low)', fontSize: 13 }}>⌕</span>
@@ -353,14 +353,14 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
         {/* ShieldTech AI button */}
         <button onClick={() => onNav && onNav('shieldtech-ai')} style={{
           display: 'flex', alignItems: 'center', gap: 6,
-          background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)',
+          background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)',
           borderRadius: 8, padding: '5px 12px', cursor: 'pointer',
           color: 'var(--brand)', fontSize: 12, fontWeight: 500,
           fontFamily: 'var(--font-body)', transition: 'all 0.15s',
-          boxShadow: '0 0 12px -4px rgba(63,169,245,0.2)'
+          boxShadow: '0 0 12px -4px rgba(99,102,241,0.2)'
         }}
         onMouseEnter={(e) => e.currentTarget.style.boxShadow = 'var(--glow-brand-sm)'}
-        onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 12px -4px rgba(63,169,245,0.2)'}>
+        onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 12px -4px rgba(99,102,241,0.2)'}>
 
           <Icon name="hermes" size={14} color="#fff" /> Ask ShieldTech AI
         </button>
@@ -418,7 +418,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                       display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',
                       background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.06)'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                       <Icon name={item.icon} size={14} color="var(--text-mid)" />
                       <div>
@@ -441,7 +441,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                     display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',
                     background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left'
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.06)'}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                     <Icon name="lock" size={14} color="var(--text-mid)" />
                     <div>
@@ -462,7 +462,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                       display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',
                       background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.06)'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                       <Icon name={item.icon} size={14} color="var(--text-mid)" />
                       <div>
@@ -482,7 +482,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                     {[{id:'dark',l:'Dark'},{id:'light',l:'Light'},{id:'system',l:'System'}].map(t => (
                       <button key={t.id} onClick={() => { setTheme(t.id); shieldToast('Appearance: ' + t.l); }} style={{
                         flex: 1, padding: '4px', borderRadius: 4, fontSize: 10,
-                        background: t.id === theme ? 'rgba(63,169,245,0.12)' : 'transparent',
+                        background: t.id === theme ? 'rgba(99,102,241,0.12)' : 'transparent',
                         border: `1px solid ${t.id === theme ? 'var(--brand)' : 'var(--border-subtle)'}`,
                         color: t.id === theme ? 'var(--brand)' : 'var(--text-low)',
                         cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -608,7 +608,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {onBack &&
             <button onClick={onBack} style={{
-              background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)',
+              background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)',
               borderRadius: 6, padding: '4px 10px', color: 'var(--brand)',
               fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)',
               display: 'flex', alignItems: 'center', gap: 4
@@ -620,13 +620,13 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <button onClick={() => shieldToast('Connecting you with ShieldTech support…')} style={{
-              background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)',
+              background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)',
               borderRadius: 8, padding: '5px 14px', color: 'var(--brand)',
               fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)'
             }}>Support</button>
             <div style={{
               width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #1E6FB0, #3FA9F5)',
+              background: 'linear-gradient(135deg, #4F4CC7, #6366F1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 11, fontWeight: 600, color: '#fff'
             }}>AD</div>

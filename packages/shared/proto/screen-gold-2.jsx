@@ -11,7 +11,7 @@ function ServiceReportScreen() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 className="display" style={{ fontSize: 20, fontWeight: 300 }}>Service Reports</h2>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => { setGenerating(true); shieldToast('Generating service report from latest job…'); setTimeout(() => { setGenerating(false); shieldToast('Service report ready', 'ok'); }, 1400); }} style={{ padding: '6px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button onClick={() => { setGenerating(true); shieldToast('Generating service report from latest job…'); setTimeout(() => { setGenerating(false); shieldToast('Service report ready', 'ok'); }, 1400); }} style={{ padding: '6px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
             <span>⟡</span> Auto-Generate from Job
           </button>
         </div>
@@ -34,7 +34,7 @@ function ServiceReportScreen() {
             { step: '4', label: 'Auto-deliver', desc: 'Email to customer' },
           ].map((s, i) => (
             <div key={i} style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px', fontSize: 12, fontWeight: 700, color: 'var(--brand)' }}>{s.step}</div>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 6px', fontSize: 12, fontWeight: 700, color: 'var(--brand)' }}>{s.step}</div>
               <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-high)' }}>{s.label}</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{s.desc}</div>
             </div>
@@ -51,7 +51,7 @@ function ServiceReportScreen() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{r.id}</span>
                 <StatusBadge status={r.status === 'draft' ? 'pending' : r.status === 'sent' ? 'info' : 'online'} label={r.status} />
-                {r.aiGenerated && <span style={{ fontSize: 8, padding: '2px 6px', borderRadius: 3, background: 'rgba(63,169,245,0.1)', color: 'var(--brand)', fontWeight: 600, textTransform: 'uppercase' }}>AI Generated</span>}
+                {r.aiGenerated && <span style={{ fontSize: 8, padding: '2px 6px', borderRadius: 3, background: 'rgba(99,102,241,0.1)', color: 'var(--brand)', fontWeight: 600, textTransform: 'uppercase' }}>AI Generated</span>}
               </div>
               <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4 }}>{r.customer} — {r.type}</div>
               <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.5, marginBottom: 8 }}>{r.summary}</p>
@@ -67,7 +67,7 @@ function ServiceReportScreen() {
                 { k: 'Status', v: r.status === 'draft' ? 'Draft \u2014 pending review' : 'Final' },
                 { k: 'Site visit', v: r.date || 'Today' },
                 'Photos, checklist results, and the customer signature are attached in the full PDF.'
-              ] })} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Preview PDF</button>
+              ] })} style={{ padding: '5px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Preview PDF</button>
               {r.status === 'draft' && (
                 <button onClick={() => shieldToast(`Report sent to ${r.customer || 'customer'}`, 'ok')} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send to Customer</button>
               )}
@@ -94,7 +94,7 @@ function VendorPriceBookScreen() {
             { key: 'cat', label: 'Category', type: 'select', options: ['Camera','NVR','Access','Cable','Alarm','Other'] },
             { key: 'vendor', label: 'Preferred Vendor', type: 'select', options: ['ADI','Anixter','Tri-Ed','ScanSource'] },
             { key: 'price', label: 'List Price ($)', type: 'number', placeholder: '0', required: true }
-          ] })} style={{ padding: '6px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Product</button>
+          ] })} style={{ padding: '6px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Product</button>
         </div>
       </div>
 
@@ -103,13 +103,13 @@ function VendorPriceBookScreen() {
         <GlassPanel key={pi} style={{ padding: 0 }}>
           <div style={{ padding: '12px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 14, fontWeight: 500 }}>{prod.name}</span>
-            <span style={{ fontSize: 11, color: 'var(--text-low)', background: 'rgba(63,169,245,0.06)', padding: '2px 8px', borderRadius: 4 }}>{prod.cat}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-low)', background: 'rgba(99,102,241,0.06)', padding: '2px 8px', borderRadius: 4 }}>{prod.cat}</span>
             <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-low)' }}>Best: <span className="mono" style={{ color: 'var(--status-ok)', fontWeight: 600 }}>${Math.min(...prod.vendors.map(v => v.price)).toLocaleString()}</span></span>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead><tr>
               {['Vendor','Unit Price','vs Best','Stock','Ship Time',''].map((h, i) => (
-                <th key={i} style={{ textAlign: i === 1 || i === 2 ? 'right' : 'left', padding: '8px 14px', fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>{h}</th>
+                <th key={i} style={{ textAlign: i === 1 || i === 2 ? 'right' : 'left', padding: '8px 14px', fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>{h}</th>
               ))}
             </tr></thead>
             <tbody>
@@ -118,19 +118,19 @@ function VendorPriceBookScreen() {
                 const diff = v.price - best;
                 return (
                   <tr key={vi}>
-                    <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13 }}>
+                    <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13 }}>
                       {v.vendor} {v.preferred && <span style={{ fontSize: 8, color: 'var(--status-ok)', fontWeight: 600, marginLeft: 4 }}>★ PREFERRED</span>}
                     </td>
-                    <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: vi === 0 ? 600 : 400, textAlign: 'right', color: vi === 0 ? 'var(--status-ok)' : 'var(--text-high)' }}>${v.price.toLocaleString()}</td>
-                    <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, textAlign: 'right', color: diff === 0 ? 'var(--status-ok)' : 'var(--status-warn)' }}>{diff === 0 ? 'BEST' : `+$${diff}`}</td>
-                    <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: v.stock === 'Backorder' ? 'var(--status-critical)' : v.stock.includes('left') ? 'var(--status-warn)' : 'var(--text-mid)' }}>{v.stock}</td>
-                    <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{v.ship}</td>
-                    <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                    <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: vi === 0 ? 600 : 400, textAlign: 'right', color: vi === 0 ? 'var(--status-ok)' : 'var(--text-high)' }}>${v.price.toLocaleString()}</td>
+                    <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, textAlign: 'right', color: diff === 0 ? 'var(--status-ok)' : 'var(--status-warn)' }}>{diff === 0 ? 'BEST' : `+$${diff}`}</td>
+                    <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: v.stock === 'Backorder' ? 'var(--status-critical)' : v.stock.includes('left') ? 'var(--status-warn)' : 'var(--text-mid)' }}>{v.stock}</td>
+                    <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{v.ship}</td>
+                    <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                       <button onClick={() => shieldModal({ kind: 'form', title: `Order — ${p.name}`, subtitle: `From ${v.vendor} · $${v.price} each · ${v.ship}`, submitLabel: 'Place Order', successMsg: `PO created with ${v.vendor}`, fields: [
                         { key: 'qty', label: 'Quantity', type: 'number', value: '1', required: true },
                         { key: 'job', label: 'Assign to Job', placeholder: 'WO-2847 (optional)' },
                         { key: 'notes', label: 'Notes for vendor', type: 'textarea', placeholder: 'Delivery instructions…' }
-                      ] })} style={{ padding: '3px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Order</button>
+                      ] })} style={{ padding: '3px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Order</button>
                     </td>
                   </tr>
                 );
@@ -180,7 +180,7 @@ function ROICalculatorScreen() {
                 {[{id:'medical',label:'Medical'},{id:'retail',label:'Retail'},{id:'office',label:'Office'},{id:'warehouse',label:'Warehouse'}].map(ind => (
                   <button key={ind.id} onClick={() => setIndustry(ind.id)} style={{
                     flex: 1, padding: '8px', borderRadius: 6, fontSize: 12,
-                    background: industry === ind.id ? 'rgba(63,169,245,0.12)' : 'rgba(63,169,245,0.03)',
+                    background: industry === ind.id ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.03)',
                     border: `1px solid ${industry === ind.id ? 'var(--brand)' : 'var(--border-subtle)'}`,
                     color: industry === ind.id ? 'var(--brand)' : 'var(--text-mid)',
                     cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -220,26 +220,26 @@ function ROICalculatorScreen() {
               <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--status-ok)' }}>{roi}%</div>
               <div style={{ fontSize: 10, color: 'var(--text-low)', textTransform: 'uppercase' }}>Annual ROI</div>
             </div>
-            <div style={{ textAlign: 'center', padding: '14px', background: 'rgba(63,169,245,0.04)', borderRadius: 8 }}>
+            <div style={{ textAlign: 'center', padding: '14px', background: 'rgba(99,102,241,0.04)', borderRadius: 8 }}>
               <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: 'var(--brand)' }}>{payback}</div>
               <div style={{ fontSize: 10, color: 'var(--text-low)', textTransform: 'uppercase' }}>Months to Payback</div>
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
               <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>Estimated system investment</span>
               <span className="mono" style={{ fontSize: 13, fontWeight: 500 }}>${systemCost.toLocaleString()}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
               <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>Loss prevention savings (65%)</span>
               <span className="mono" style={{ fontSize: 13, fontWeight: 500, color: 'var(--status-ok)' }}>${Math.round(data.avgLoss * 0.65).toLocaleString()}/yr</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
               <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>Insurance discount ({data.insuranceDiscount}%)</span>
               <span className="mono" style={{ fontSize: 13, fontWeight: 500, color: 'var(--status-ok)' }}>${Math.round(systemCost * 12 * data.insuranceDiscount / 100).toLocaleString()}/yr</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
               <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>Liability reduction</span>
               <span className="mono" style={{ fontSize: 13, fontWeight: 500, color: 'var(--status-ok)' }}>{data.liabilityReduction}%</span>
             </div>
@@ -259,7 +259,7 @@ function ROICalculatorScreen() {
             width: '100%', padding: '10px', marginTop: 12,
             background: 'var(--brand)', border: 'none', borderRadius: 6,
             color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)',
-            boxShadow: '0 0 16px -4px rgba(63,169,245,0.3)'
+            boxShadow: '0 0 16px -4px rgba(99,102,241,0.3)'
           }}>Generate Customer-Facing PDF</button>
         </GlassPanel>
       </div>
@@ -420,7 +420,7 @@ function TeamChatScreen() {
           </div>
           <div style={{ display: 'flex', gap: 0, borderRadius: 5, overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
             {['channels', 'dms'].map(s => (
-              <button key={s} onClick={() => setSidebarSection(s)} style={{ flex: 1, padding: '4px', fontSize: 10, fontWeight: 500, textTransform: 'uppercase', background: sidebarSection === s ? 'rgba(63,169,245,0.12)' : 'transparent', border: 'none', color: sidebarSection === s ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s === 'channels' ? 'Channels' : 'Direct'}</button>
+              <button key={s} onClick={() => setSidebarSection(s)} style={{ flex: 1, padding: '4px', fontSize: 10, fontWeight: 500, textTransform: 'uppercase', background: sidebarSection === s ? 'rgba(99,102,241,0.12)' : 'transparent', border: 'none', color: sidebarSection === s ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s === 'channels' ? 'Channels' : 'Direct'}</button>
             ))}
           </div>
         </div>
@@ -448,12 +448,12 @@ function TeamChatScreen() {
             {dmContacts.map(dm => (
               <button key={dm.id} onClick={() => { setActiveDM(dm.id); }} style={{
                 width: '100%', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 8,
-                background: activeDM === dm.id ? 'rgba(63,169,245,0.08)' : 'transparent',
+                background: activeDM === dm.id ? 'rgba(99,102,241,0.08)' : 'transparent',
                 border: 'none', borderRadius: 0, cursor: 'pointer', textAlign: 'left',
                 fontFamily: 'var(--font-body)', borderLeft: activeDM === dm.id ? '2px solid var(--brand)' : '2px solid transparent'
               }}>
                 <div style={{ position: 'relative' }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, rgba(63,169,245,0.15), rgba(63,169,245,0.05))', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--brand)' }}>{dm.initials}</div>
+                  <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--brand)' }}>{dm.initials}</div>
                   <div style={{ position: 'absolute', bottom: -1, right: -1, width: 8, height: 8, borderRadius: '50%', background: dm.status === 'online' ? 'var(--status-ok)' : dm.status === 'busy' ? 'var(--status-warn)' : 'var(--text-low)', border: '2px solid var(--card)' }} />
                 </div>
                 <div style={{ flex: 1, overflow: 'hidden' }}>
@@ -476,7 +476,7 @@ function TeamChatScreen() {
               <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-low)', flexShrink: 0 }}>To:</span>
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', flex: 1, alignItems: 'center' }}>
                 {composeRecipients.map(r => (
-                  <span key={r.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, background: 'rgba(63,169,245,0.1)', border: '1px solid rgba(63,169,245,0.2)', fontSize: 11, color: 'var(--brand)' }}>
+                  <span key={r.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', fontSize: 11, color: 'var(--brand)' }}>
                     {r.name}
                     <span onClick={() => removeRecipient(r.id)} style={{ cursor: 'pointer', fontSize: 10, color: 'var(--text-low)' }}>✕</span>
                   </span>
@@ -490,9 +490,9 @@ function TeamChatScreen() {
               <div style={{ background: 'var(--modal)', border: '1px solid var(--border-strong)', borderRadius: 6, padding: '4px 0', marginTop: 4, maxHeight: 160, overflow: 'auto' }}>
                 {filteredContacts.map(c => (
                   <button key={c.id} onClick={() => addRecipient(c)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '6px 12px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.06)'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}>
-                    <div style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--brand)' }}>{c.id}</div>
+                    <div style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--brand)' }}>{c.id}</div>
                     <div>
                       <div style={{ fontSize: 12, color: 'var(--text-high)' }}>{c.name}</div>
                       <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{c.role} · {c.status}</div>
@@ -507,10 +507,10 @@ function TeamChatScreen() {
                 <div className="label-sm" style={{ padding: '4px 0', marginBottom: 4 }}>CONTACTS</div>
                 {allContacts.map(c => (
                   <button key={c.id} onClick={() => addRecipient(c)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '6px 4px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left', borderRadius: 4 }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.06)'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                     <div style={{ position: 'relative' }}>
-                      <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, rgba(63,169,245,0.15), rgba(63,169,245,0.05))', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--brand)' }}>{c.id}</div>
+                      <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--brand)' }}>{c.id}</div>
                       <div style={{ position: 'absolute', bottom: -1, right: -1, width: 8, height: 8, borderRadius: '50%', background: c.status === 'online' ? 'var(--status-ok)' : c.status === 'busy' ? 'var(--status-warn)' : 'var(--text-low)', border: '2px solid var(--card)' }} />
                     </div>
                     <div>
@@ -523,10 +523,10 @@ function TeamChatScreen() {
             )}
             {/* Group name + icon when 2+ recipients */}
             {composeRecipients.length >= 2 && (
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8, padding: '8px 0', borderTop: '1px solid rgba(63,169,245,0.06)' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8, padding: '8px 0', borderTop: '1px solid rgba(99,102,241,0.06)' }}>
                 <div style={{ display: 'flex', gap: 4 }}>
                   {['✉','🛡','◉','⚙','▤','⚡'].map((ic, i) => (
-                    <button key={i} onClick={() => showToast(`Icon: ${ic}`)} style={{ width: 28, height: 28, borderRadius: 6, background: i === 0 ? 'rgba(63,169,245,0.12)' : 'transparent', border: `1px solid ${i === 0 ? 'var(--brand)' : 'var(--border-subtle)'}`, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{ic}</button>
+                    <button key={i} onClick={() => showToast(`Icon: ${ic}`)} style={{ width: 28, height: 28, borderRadius: 6, background: i === 0 ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${i === 0 ? 'var(--brand)' : 'var(--border-subtle)'}`, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{ic}</button>
                   ))}
                 </div>
                 <input placeholder="Group name (optional)" style={{ flex: 1, padding: '5px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' }} />
@@ -546,7 +546,7 @@ function TeamChatScreen() {
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-low)', gap: 8 }}>
                 <div style={{ display: 'flex', gap: -4 }}>
                   {composeRecipients.slice(0, 3).map((r, i) => (
-                    <div key={r.id} style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, rgba(63,169,245,0.15), rgba(63,169,245,0.05))', border: '2px solid var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)', marginLeft: i > 0 ? -8 : 0 }}>{r.id}</div>
+                    <div key={r.id} style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))', border: '2px solid var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)', marginLeft: i > 0 ? -8 : 0 }}>{r.id}</div>
                   ))}
                 </div>
                 <span style={{ fontSize: 13, color: 'var(--text-mid)' }}>{composeRecipients.map(r => r.name.split(' ')[0]).join(', ')}</span>
@@ -555,7 +555,7 @@ function TeamChatScreen() {
             )}
             {composeMessages.map((msg, i) => (
               <div key={msg.id} style={{ display: 'flex', gap: 10, padding: '6px 0' }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: 'linear-gradient(135deg, rgba(63,169,245,0.15), rgba(63,169,245,0.05))', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)' }}>{msg.initials}</div>
+                <div style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)' }}>{msg.initials}</div>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
                     <span style={{ fontSize: 13, fontWeight: 600 }}>{msg.user}</span>
@@ -574,7 +574,7 @@ function TeamChatScreen() {
                 placeholder={composeRecipients.length > 0 ? `Message ${composeRecipients.map(r=>r.name.split(' ')[0]).join(', ')}…` : 'Add recipients first…'}
                 disabled={composeRecipients.length === 0}
                 style={{ flex: 1, padding: '10px 14px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', opacity: composeRecipients.length > 0 ? 1 : 0.4 }} />
-              <button onClick={sendComposeMessage} disabled={!inputText.trim() || composeRecipients.length === 0} style={{ padding: '10px 20px', background: inputText.trim() && composeRecipients.length > 0 ? 'var(--brand)' : 'rgba(63,169,245,0.15)', border: 'none', borderRadius: 8, color: inputText.trim() ? '#fff' : 'var(--text-low)', fontSize: 13, cursor: inputText.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-body)', fontWeight: 500 }}>Send</button>
+              <button onClick={sendComposeMessage} disabled={!inputText.trim() || composeRecipients.length === 0} style={{ padding: '10px 20px', background: inputText.trim() && composeRecipients.length > 0 ? 'var(--brand)' : 'rgba(99,102,241,0.15)', border: 'none', borderRadius: 8, color: inputText.trim() ? '#fff' : 'var(--text-low)', fontSize: 13, cursor: inputText.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-body)', fontWeight: 500 }}>Send</button>
             </div>
           </div>
         </>
@@ -616,7 +616,7 @@ function TeamChatScreen() {
                 {!sameUser && (
                   <div style={{
                     width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                    background: msg.type === 'system' ? 'rgba(63,169,245,0.1)' : 'linear-gradient(135deg, rgba(63,169,245,0.15), rgba(63,169,245,0.05))',
+                    background: msg.type === 'system' ? 'rgba(99,102,241,0.1)' : 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))',
                     border: msg.type === 'system' ? '1px solid var(--border-strong)' : '1px solid var(--border-subtle)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: msg.type === 'system' ? 14 : 11, fontWeight: 700,
@@ -638,7 +638,7 @@ function TeamChatScreen() {
                       {msg.reactions.map((r, ri) => (
                         <button key={ri} onClick={() => addReaction(msg.id, r.emoji)} style={{
                           padding: '1px 6px', borderRadius: 10, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)',
-                          background: r.users.includes('JM') ? 'rgba(63,169,245,0.12)' : 'rgba(92,111,134,0.08)',
+                          background: r.users.includes('JM') ? 'rgba(99,102,241,0.12)' : 'rgba(92,111,134,0.08)',
                           border: `1px solid ${r.users.includes('JM') ? 'var(--brand)' : 'var(--border-subtle)'}`,
                           display: 'flex', alignItems: 'center', gap: 3,
                           color: 'var(--text-mid)'
@@ -656,10 +656,10 @@ function TeamChatScreen() {
                   <div style={{ position: 'absolute', top: sameUser ? -8 : 0, right: 0, display: 'flex', gap: 2, padding: '2px', borderRadius: 6, background: 'var(--card)', border: '1px solid var(--border-subtle)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', zIndex: 5 }}>
                     {['😀', '👍', '❤️'].map(e => (
                       <button key={e} onClick={() => addReaction(msg.id, e)} style={{ width: 26, height: 26, borderRadius: 4, background: 'none', border: 'none', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.06)'}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'none'}>{e}</button>
                     ))}
-                    <button onClick={() => setReactionPicker(reactionPicker === msg.id ? null : msg.id)} style={{ width: 26, height: 26, borderRadius: 4, background: reactionPicker === msg.id ? 'rgba(63,169,245,0.08)' : 'none', border: 'none', fontSize: 10, cursor: 'pointer', color: 'var(--text-low)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>＋</button>
+                    <button onClick={() => setReactionPicker(reactionPicker === msg.id ? null : msg.id)} style={{ width: 26, height: 26, borderRadius: 4, background: reactionPicker === msg.id ? 'rgba(99,102,241,0.08)' : 'none', border: 'none', fontSize: 10, cursor: 'pointer', color: 'var(--text-low)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>＋</button>
                     <div style={{ width: 1, background: 'var(--border-subtle)', margin: '4px 1px' }} />
                     <button onClick={() => showToast('Thread opened')} style={{ width: 26, height: 26, borderRadius: 4, background: 'none', border: 'none', fontSize: 11, cursor: 'pointer', color: 'var(--text-low)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✉</button>
                     <button onClick={() => showToast('More options')} style={{ width: 26, height: 26, borderRadius: 4, background: 'none', border: 'none', fontSize: 11, cursor: 'pointer', color: 'var(--text-low)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⋯</button>
@@ -671,7 +671,7 @@ function TeamChatScreen() {
                   <div style={{ position: 'absolute', top: 30, right: 0, padding: 8, borderRadius: 8, background: 'var(--modal)', border: '1px solid var(--border-strong)', boxShadow: '0 8px 24px rgba(0,0,0,0.4)', zIndex: 10, display: 'flex', flexWrap: 'wrap', gap: 2, width: 200 }}>
                     {emojis.map(e => (
                       <button key={e} onClick={() => { addReaction(msg.id, e); setReactionPicker(null); }} style={{ width: 30, height: 30, borderRadius: 4, background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        onMouseEnter={ev => ev.currentTarget.style.background = 'rgba(63,169,245,0.08)'}
+                        onMouseEnter={ev => ev.currentTarget.style.background = 'rgba(99,102,241,0.08)'}
                         onMouseLeave={ev => ev.currentTarget.style.background = 'none'}>{e}</button>
                     ))}
                   </div>
@@ -687,8 +687,8 @@ function TeamChatScreen() {
           {/* Toolbar */}
           <div style={{ display: 'flex', gap: 2, marginBottom: 6 }}>
             <button onClick={() => showToast('Attach file')} title="Attach" style={{ padding: '4px 8px', background: 'none', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 12, cursor: 'pointer' }}>⧉</button>
-            <button onClick={() => { setEmojiOpen(!emojiOpen); setGifOpen(false); }} title="Emoji" style={{ padding: '4px 8px', background: emojiOpen ? 'rgba(63,169,245,0.08)' : 'none', border: `1px solid ${emojiOpen ? 'var(--brand)' : 'var(--border-subtle)'}`, borderRadius: 4, color: emojiOpen ? 'var(--brand)' : 'var(--text-low)', fontSize: 12, cursor: 'pointer' }}>😀</button>
-            <button onClick={() => { setGifOpen(!gifOpen); setEmojiOpen(false); }} title="GIF" style={{ padding: '4px 8px', background: gifOpen ? 'rgba(63,169,245,0.08)' : 'none', border: `1px solid ${gifOpen ? 'var(--brand)' : 'var(--border-subtle)'}`, borderRadius: 4, color: gifOpen ? 'var(--brand)' : 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600 }}>GIF</button>
+            <button onClick={() => { setEmojiOpen(!emojiOpen); setGifOpen(false); }} title="Emoji" style={{ padding: '4px 8px', background: emojiOpen ? 'rgba(99,102,241,0.08)' : 'none', border: `1px solid ${emojiOpen ? 'var(--brand)' : 'var(--border-subtle)'}`, borderRadius: 4, color: emojiOpen ? 'var(--brand)' : 'var(--text-low)', fontSize: 12, cursor: 'pointer' }}>😀</button>
+            <button onClick={() => { setGifOpen(!gifOpen); setEmojiOpen(false); }} title="GIF" style={{ padding: '4px 8px', background: gifOpen ? 'rgba(99,102,241,0.08)' : 'none', border: `1px solid ${gifOpen ? 'var(--brand)' : 'var(--border-subtle)'}`, borderRadius: 4, color: gifOpen ? 'var(--brand)' : 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600 }}>GIF</button>
             <button onClick={() => showToast('Format text')} title="Format" style={{ padding: '4px 8px', background: 'none', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontWeight: 700, fontFamily: 'var(--font-body)' }}>B</button>
             <button onClick={() => showToast('Insert link')} title="Link" style={{ padding: '4px 8px', background: 'none', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer' }}>⌁</button>
             <button onClick={() => showToast('Mention someone')} title="Mention" style={{ padding: '4px 8px', background: 'none', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>@</button>
@@ -701,7 +701,7 @@ function TeamChatScreen() {
               placeholder={`Message ${channelLabel}…`}
               style={{ flex: 1, padding: '10px 14px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }}
             />
-            <button onClick={sendMessage} disabled={!inputText.trim()} style={{ padding: '10px 20px', background: inputText.trim() ? 'var(--brand)' : 'rgba(63,169,245,0.15)', border: 'none', borderRadius: 8, color: inputText.trim() ? '#fff' : 'var(--text-low)', fontSize: 13, cursor: inputText.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-body)', fontWeight: 500, transition: 'all 0.15s' }}>Send</button>
+            <button onClick={sendMessage} disabled={!inputText.trim()} style={{ padding: '10px 20px', background: inputText.trim() ? 'var(--brand)' : 'rgba(99,102,241,0.15)', border: 'none', borderRadius: 8, color: inputText.trim() ? '#fff' : 'var(--text-low)', fontSize: 13, cursor: inputText.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-body)', fontWeight: 500, transition: 'all 0.15s' }}>Send</button>
           </div>
 
           {/* Emoji picker popover */}
@@ -711,7 +711,7 @@ function TeamChatScreen() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 {emojis.map(e => (
                   <button key={e} onClick={() => insertEmoji(e)} style={{ width: 32, height: 32, borderRadius: 4, background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    onMouseEnter={ev => ev.currentTarget.style.background = 'rgba(63,169,245,0.08)'}
+                    onMouseEnter={ev => ev.currentTarget.style.background = 'rgba(99,102,241,0.08)'}
                     onMouseLeave={ev => ev.currentTarget.style.background = 'none'}>{e}</button>
                 ))}
               </div>
@@ -725,9 +725,9 @@ function TeamChatScreen() {
               <input placeholder="Search GIFs..." style={{ ...inputStyle, marginBottom: 8, fontSize: 11 }} />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                 {gifs.map((g, i) => (
-                  <button key={i} onClick={() => sendGif(g)} style={{ padding: '12px 8px', borderRadius: 6, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', cursor: 'pointer', textAlign: 'center', fontFamily: 'var(--font-body)', color: 'var(--text-mid)', fontSize: 11, transition: 'all 0.1s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.background = 'rgba(63,169,245,0.08)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'rgba(63,169,245,0.04)'; }}>
+                  <button key={i} onClick={() => sendGif(g)} style={{ padding: '12px 8px', borderRadius: 6, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', cursor: 'pointer', textAlign: 'center', fontFamily: 'var(--font-body)', color: 'var(--text-mid)', fontSize: 11, transition: 'all 0.1s' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--brand)'; e.currentTarget.style.background = 'rgba(99,102,241,0.08)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'rgba(99,102,241,0.04)'; }}>
                     <div style={{ fontSize: 20, marginBottom: 4 }}>{g.url.split(' ')[0]}</div>
                     {g.label}
                   </button>
@@ -762,7 +762,7 @@ function ChatChannelItem({ channel, isActive, onClick }) {
   return (
     <button onClick={onClick} style={{
       width: '100%', padding: '7px 14px', display: 'flex', alignItems: 'center', gap: 8,
-      background: isActive ? 'rgba(63,169,245,0.08)' : 'transparent',
+      background: isActive ? 'rgba(99,102,241,0.08)' : 'transparent',
       border: 'none', borderRadius: 0, cursor: 'pointer', textAlign: 'left',
       fontFamily: 'var(--font-body)',
       borderLeft: isActive ? '2px solid var(--brand)' : '2px solid transparent'
@@ -792,7 +792,7 @@ function CreateChatModal({ onClose, onCreate, showToast }) {
           {[{ id: 'channel', l: '# Channel' }, { id: 'dm', l: '◯ Direct Message' }, { id: 'group', l: '◯ Group Chat' }].map(t => (
             <button key={t.id} onClick={() => setChatType(t.id)} style={{
               flex: 1, padding: '8px', borderRadius: 6, fontSize: 11,
-              background: chatType === t.id ? 'rgba(63,169,245,0.1)' : 'transparent',
+              background: chatType === t.id ? 'rgba(99,102,241,0.1)' : 'transparent',
               border: `1px solid ${chatType === t.id ? 'var(--brand)' : 'var(--border-subtle)'}`,
               color: chatType === t.id ? 'var(--brand)' : 'var(--text-mid)',
               cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -884,17 +884,17 @@ function StatusPageScreen() {
           <div style={{ padding: '12px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: 14, fontWeight: 500 }}>{cust.name}</span>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', background: 'rgba(63,169,245,0.06)', padding: '2px 8px', borderRadius: 4 }}>status.shieldtech.com/{cust.name.toLowerCase().replace(/\s+/g,'-')}</span>
+              <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', background: 'rgba(99,102,241,0.06)', padding: '2px 8px', borderRadius: 4 }}>status.shieldtech.com/{cust.name.toLowerCase().replace(/\s+/g,'-')}</span>
               <button onClick={() => shieldModal({ kind: 'doc', title: 'Status Page Preview', docTitle: `${cust.name} — System Status`, meta: `status.shieldtech.com/${cust.name.toLowerCase().replace(/\s+/g,'-')}`, downloadLabel: 'Open Live Page', downloadMsg: 'Opening live status page', paragraphs: [
                 'All monitored systems are operational. This public page lets the customer see real-time uptime without contacting support.',
                 { k: 'Overall status', v: 'Operational' },
                 { k: 'Sites monitored', v: String((cust.sites && cust.sites.length) || 1) },
                 { k: '30-day uptime', v: '99.7%' }
-              ] })} style={{ padding: '3px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Preview</button>
+              ] })} style={{ padding: '3px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Preview</button>
             </div>
           </div>
           {cust.sites.map((site, si) => (
-            <div key={si} onClick={() => openSite(site, cust.name)} className="st-clickrow" style={{ padding: '10px 18px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: si < cust.sites.length - 1 ? '1px solid rgba(63,169,245,0.04)' : 'none' }}>
+            <div key={si} onClick={() => openSite(site, cust.name)} className="st-clickrow" style={{ padding: '10px 18px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: si < cust.sites.length - 1 ? '1px solid rgba(99,102,241,0.04)' : 'none' }}>
               <StatusDot status={site.status === 'operational' ? 'online' : site.status === 'degraded' ? 'warning' : 'critical'} size={8} pulse={site.status === 'degraded'} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-high)' }}>{site.name}</div>

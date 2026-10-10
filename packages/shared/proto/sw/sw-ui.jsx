@@ -63,7 +63,7 @@ function Icon({ name, size = 16, color = 'currentColor', style = {} }) {
 function ShieldMark({ size = 26 }) {
   return (
     <img src="sw/shieldtech-emblem.png" alt="ShieldTech" width={size} height={size}
-      style={{ display: 'block', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(63,169,245,0.35))' }} />
+      style={{ display: 'block', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(99,102,241,0.35))' }} />
   );
 }
 
@@ -93,7 +93,7 @@ function Btn({ kind = 'primary', icon, iconR, children, onClick, disabled, full,
   const fs = size === 'sm' ? 12 : size === 'lg' ? 15 : 13;
   const kinds = {
     primary: { background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#03121F', border: '1px solid rgba(95,192,255,0.5)', boxShadow: '0 6px 18px -8px var(--brand)' },
-    secondary: { background: 'rgba(63,169,245,0.06)', color: 'var(--text-high)', border: '1px solid var(--border-strong)' },
+    secondary: { background: 'rgba(99,102,241,0.06)', color: 'var(--text-high)', border: '1px solid var(--border-strong)' },
     ghost: { background: 'transparent', color: 'var(--text-mid)', border: '1px solid transparent' },
     danger: { background: 'rgba(244,63,94,0.10)', color: 'var(--status-critical)', border: '1px solid rgba(244,63,94,0.35)' },
     success: { background: 'rgba(52,211,153,0.12)', color: 'var(--status-ok)', border: '1px solid rgba(52,211,153,0.4)' },
@@ -119,7 +119,7 @@ function IconBtn({ icon, onClick, label, active, size = 34, disabled }) {
   return (
     <button onClick={onClick} title={label} disabled={disabled} style={{
       width: size, height: size, borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: active ? 'rgba(63,169,245,0.14)' : 'rgba(63,169,245,0.05)',
+      background: active ? 'rgba(99,102,241,0.14)' : 'rgba(99,102,241,0.05)',
       border: '1px solid ' + (active ? 'var(--border-strong)' : 'var(--border-subtle)'),
       color: active ? 'var(--brand)' : 'var(--text-mid)', cursor: disabled ? 'not-allowed' : 'pointer',
       opacity: disabled ? 0.4 : 1, transition: 'all 0.14s ease', flexShrink: 0,
@@ -131,14 +131,14 @@ function IconBtn({ icon, onClick, label, active, size = 34, disabled }) {
 const SW_STATUS_C = {
   Hot: { bg: 'rgba(244,63,94,0.12)', fg: '#FB7185', bd: 'rgba(244,63,94,0.34)' },
   Warm: { bg: 'rgba(251,191,36,0.12)', fg: '#FCD34D', bd: 'rgba(251,191,36,0.32)' },
-  Nurture: { bg: 'rgba(63,169,245,0.12)', fg: '#7DD3FC', bd: 'rgba(63,169,245,0.32)' },
+  Nurture: { bg: 'rgba(99,102,241,0.12)', fg: '#7DD3FC', bd: 'rgba(99,102,241,0.32)' },
   Dead: { bg: 'rgba(148,163,184,0.1)', fg: '#94A3B8', bd: 'rgba(148,163,184,0.28)' },
   Done: { bg: 'rgba(52,211,153,0.12)', fg: '#6EE7B7', bd: 'rgba(52,211,153,0.34)' },
 };
 const SW_PRIO_C = {
   Urgent: { bg: 'rgba(244,63,94,0.12)', fg: '#FB7185', bd: 'rgba(244,63,94,0.34)' },
   High: { bg: 'rgba(251,146,60,0.12)', fg: '#FDBA74', bd: 'rgba(251,146,60,0.32)' },
-  Medium: { bg: 'rgba(63,169,245,0.1)', fg: '#7DD3FC', bd: 'rgba(63,169,245,0.3)' },
+  Medium: { bg: 'rgba(99,102,241,0.1)', fg: '#7DD3FC', bd: 'rgba(99,102,241,0.3)' },
   Low: { bg: 'rgba(148,163,184,0.1)', fg: '#94A3B8', bd: 'rgba(148,163,184,0.26)' },
 };
 function Pill({ tone, label, dot, small }) {
@@ -159,7 +159,7 @@ function TypeChip({ type }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 9px', borderRadius: 'var(--radius-sm)',
-      background: 'rgba(63,169,245,0.07)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)',
+      background: 'rgba(99,102,241,0.07)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)',
       font: '600 11px/1.3 var(--font-body)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap',
     }}><Icon name={icons[type] || 'doc'} size={12} color="var(--brand)" />{type}</span>
   );
@@ -188,7 +188,7 @@ function ProgressRing({ value, max = 100, size = 64, stroke = 6, color = 'var(--
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(63,169,245,0.12)" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(99,102,241,0.12)" strokeWidth={stroke} />
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round"
           strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.22,1,0.36,1)' }} />
       </svg>
@@ -202,7 +202,7 @@ function ProgressRing({ value, max = 100, size = 64, stroke = 6, color = 'var(--
 function LinearProgress({ value, max = 100, color = 'var(--brand)', height = 6 }) {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
   return (
-    <div style={{ height, borderRadius: height, background: 'rgba(63,169,245,0.1)', overflow: 'hidden' }}>
+    <div style={{ height, borderRadius: height, background: 'rgba(99,102,241,0.1)', overflow: 'hidden' }}>
       <div style={{ height: '100%', width: pct + '%', background: color, borderRadius: height, transition: 'width 0.5s ease' }} />
     </div>
   );
@@ -211,7 +211,7 @@ function LinearProgress({ value, max = 100, color = 'var(--brand)', height = 6 }
 /* ─────────── Segmented toggle ─────────── */
 function Segmented({ options, value, onChange, size = 'md' }) {
   return (
-    <div style={{ display: 'inline-flex', background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: 3, gap: 2 }}>
+    <div style={{ display: 'inline-flex', background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: 3, gap: 2 }}>
       {options.map(o => {
         const v = typeof o === 'string' ? o : o.value, l = typeof o === 'string' ? o : o.label, ic = o.icon;
         const active = v === value;
@@ -219,7 +219,7 @@ function Segmented({ options, value, onChange, size = 'md' }) {
           <button key={v} onClick={() => onChange(v)} style={{
             display: 'inline-flex', alignItems: 'center', gap: 6, padding: size === 'sm' ? '5px 11px' : '7px 14px',
             borderRadius: 'var(--radius-sm)', border: 'none', cursor: 'pointer',
-            background: active ? 'rgba(63,169,245,0.16)' : 'transparent',
+            background: active ? 'rgba(99,102,241,0.16)' : 'transparent',
             color: active ? 'var(--brand)' : 'var(--text-mid)', font: '600 12px/1 var(--font-body)',
             boxShadow: active ? 'inset 0 0 0 1px var(--border-strong)' : 'none', transition: 'all 0.14s ease',
           }}>{ic && <Icon name={ic} size={13} />}{l}</button>
@@ -270,7 +270,7 @@ function AssignMenu({ kind, id, defaultOwner, size = 24, showName = false, label
   return (
     <div style={{ position: 'relative', flexShrink: 0 }} onClick={halt}>
       <button onClick={(e) => { halt(e); setOpen(o => !o); }} title={owner ? `Assigned to ${owner.name}` : 'Unassigned — click to assign'}
-        style={{ display: 'flex', alignItems: 'center', gap: showName ? 7 : 4, padding: showName ? '4px 9px 4px 4px' : 3, borderRadius: 999, cursor: 'pointer', background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)' }}>
+        style={{ display: 'flex', alignItems: 'center', gap: showName ? 7 : 4, padding: showName ? '4px 9px 4px 4px' : 3, borderRadius: 999, cursor: 'pointer', background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)' }}>
         {owner ? <Avatar user={owner} size={size} /> : (
           <span style={{ width: size, height: size, borderRadius: '50%', border: '1.5px dashed var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="plus" size={Math.round(size * 0.5)} color="var(--text-low)" /></span>
         )}
@@ -283,7 +283,7 @@ function AssignMenu({ kind, id, defaultOwner, size = 24, showName = false, label
           <div className="sw-up" style={{ position: 'absolute', top: '100%', [align]: 0, marginTop: 6, width: 232, zIndex: 120, background: 'var(--modal)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-lg)', boxShadow: '0 20px 50px -18px rgba(0,0,0,0.9)', overflow: 'hidden' }}>
             <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-subtle)' }}><Eyebrow>{label || 'Assign to'}</Eyebrow></div>
             {users.map(u => (
-              <button key={u.id} onClick={(e) => pick(e, u.id)} className="sw-clickrow" style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 12px', background: u.id === ownerId ? 'rgba(63,169,245,0.08)' : 'transparent', border: 'none', cursor: 'pointer' }}>
+              <button key={u.id} onClick={(e) => pick(e, u.id)} className="sw-clickrow" style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 12px', background: u.id === ownerId ? 'rgba(99,102,241,0.08)' : 'transparent', border: 'none', cursor: 'pointer' }}>
                 <Avatar user={u} size={26} />
                 <div style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
                   <div style={{ font: '600 12.5px/1.2 var(--font-body)', color: 'var(--text-high)' }}>{u.name}</div>
@@ -374,10 +374,10 @@ function ReviewFrame({ items, renderItem, peekLabel, emptyLabel = 'Nothing to re
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 12 }}>
         {items.length <= 9 ? (
           <div style={{ display: 'flex', gap: 5 }}>
-            {items.map((_, k) => <span key={k} style={{ width: k === safe ? 22 : 7, height: 7, borderRadius: 4, background: k === safe ? 'var(--brand)' : 'rgba(63,169,245,0.2)', transition: 'all 0.2s ease' }} />)}
+            {items.map((_, k) => <span key={k} style={{ width: k === safe ? 22 : 7, height: 7, borderRadius: 4, background: k === safe ? 'var(--brand)' : 'rgba(99,102,241,0.2)', transition: 'all 0.2s ease' }} />)}
           </div>
         ) : (
-          <div style={{ flex: 1, maxWidth: 320, height: 5, borderRadius: 3, background: 'rgba(63,169,245,0.14)', overflow: 'hidden' }}>
+          <div style={{ flex: 1, maxWidth: 320, height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.14)', overflow: 'hidden' }}>
             <div style={{ width: `${((safe + 1) / items.length) * 100}%`, height: '100%', background: 'var(--brand)', borderRadius: 3, transition: 'width 0.2s ease' }} />
           </div>
         )}
@@ -387,7 +387,7 @@ function ReviewFrame({ items, renderItem, peekLabel, emptyLabel = 'Nothing to re
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, gap: 12 }}>
         <Btn kind="ghost" icon="chevL" size="sm" disabled={safe === 0} onClick={() => setI(v => Math.max(0, v - 1))}>Previous</Btn>
         {next && !isMobile ? (
-          <button onClick={() => setI(v => v + 1)} className="sw-clickrow" style={{ flex: 1, maxWidth: 360, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', cursor: 'pointer' }}>
+          <button onClick={() => setI(v => v + 1)} className="sw-clickrow" style={{ flex: 1, maxWidth: 360, minWidth: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', cursor: 'pointer' }}>
             <div style={{ font: '500 10px/1 var(--font-body)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', flexShrink: 0 }}>Next</div>
             <div style={{ flex: 1, textAlign: 'left', font: '500 12.5px/1.3 var(--font-body)', color: 'var(--text-mid)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{peekLabel ? peekLabel(next) : ''}</div>
             <Icon name="chevR" size={14} color="var(--text-low)" />

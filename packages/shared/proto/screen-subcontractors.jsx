@@ -76,7 +76,7 @@ function SubcontractorScreen() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
         <svg width={70} height={70}>
-          <circle cx={35} cy={35} r={r} fill="none" stroke="rgba(63,169,245,0.08)" strokeWidth={sw} />
+          <circle cx={35} cy={35} r={r} fill="none" stroke="rgba(99,102,241,0.08)" strokeWidth={sw} />
           <circle cx={35} cy={35} r={r} fill="none" stroke={color} strokeWidth={sw}
             strokeDasharray={circ} strokeDashoffset={circ - (value/100)*circ}
             strokeLinecap="round" transform="rotate(-90 35 35)"
@@ -101,7 +101,7 @@ function SubcontractorScreen() {
               { key: 'trade', label: 'Trade', type: 'select', options: ['Cabling','Electrical','Fire Alarm','Access Control','General'] },
               { key: 'rate', label: 'Hourly Rate ($)', type: 'number', placeholder: '85' },
               { key: 'coi', label: 'COI Expiry', type: 'date' }
-            ] })} style={{ fontSize: 11, color: 'var(--brand)', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, padding: '3px 9px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add</button>
+            ] })} style={{ fontSize: 11, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, padding: '3px 9px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add</button>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {contractors.map((c, i) => {
@@ -109,12 +109,12 @@ function SubcontractorScreen() {
               return (
                 <div key={c.id} onClick={() => setSelected(i)} style={{
                   padding: '12px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border-subtle)',
-                  background: selected === i ? 'rgba(63,169,245,0.06)' : 'transparent',
+                  background: selected === i ? 'rgba(99,102,241,0.06)' : 'transparent',
                   borderLeft: `3px solid ${selected === i ? 'var(--brand)' : 'transparent'}`,
                   transition: 'all 0.15s'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(63,169,245,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{c.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{c.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
                       <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{c.contact}</div>
@@ -140,7 +140,7 @@ function SubcontractorScreen() {
           {/* Header */}
           <div className="glass" style={{ padding: '14px 20px', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(63,169,245,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'var(--brand)', border: '1px solid var(--border-strong)' }}>{sc.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'var(--brand)', border: '1px solid var(--border-strong)' }}>{sc.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
               <div>
                 <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-high)' }}>{sc.name}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-low)' }}>{sc.contact} · {sc.phone} · {sc.email}</div>
@@ -151,7 +151,7 @@ function SubcontractorScreen() {
                   { key: 'date', label: 'Scheduled Date', type: 'date' },
                   { key: 'rate', label: 'Agreed Rate ($)', type: 'number', placeholder: '85' },
                   { key: 'scope', label: 'Scope', type: 'textarea', placeholder: 'Describe the work…' }
-                ] })} style={{ fontSize: 11, color: 'var(--brand)', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Assign Job</button>
+                ] })} style={{ fontSize: 11, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Assign Job</button>
                 <button onClick={() => shieldModal({ kind: 'confirm', title: 'Process Payment', message: 'Process payment for this sub-contractor’s completed work? This will queue an ACH transfer for the approved amount.', confirmLabel: 'Process Payment', successMsg: 'Payment queued for processing' })} style={{ fontSize: 11, color: 'var(--status-ok)', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Process Payment</button>
               </div>
             </div>
@@ -233,7 +233,7 @@ function SubcontractorScreen() {
                 <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 10 }}>Specialties</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                   {sc.specialty.map(s => (
-                    <span key={s} style={{ fontSize: 10, color: 'var(--brand)', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', padding: '3px 9px', borderRadius: 100 }}>{s}</span>
+                    <span key={s} style={{ fontSize: 10, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', padding: '3px 9px', borderRadius: 100 }}>{s}</span>
                   ))}
                 </div>
               </div>
