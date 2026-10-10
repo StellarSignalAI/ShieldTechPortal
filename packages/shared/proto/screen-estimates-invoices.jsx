@@ -41,7 +41,7 @@ function NIFinanceScreen({ initialTab }) {
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             padding: '6px 14px', borderRadius: 6, fontSize: 11, fontWeight: tab === t.id ? 600 : 400,
-            background: tab === t.id ? 'rgba(63,169,245,0.12)' : 'transparent',
+            background: tab === t.id ? 'rgba(99,102,241,0.12)' : 'transparent',
             border: `1px solid ${tab === t.id ? 'var(--brand)' : 'var(--border-subtle)'}`,
             color: tab === t.id ? 'var(--brand)' : 'var(--text-mid)',
             cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap',
@@ -190,7 +190,7 @@ function NIFinanceOverview({ onNav }) {
               { label: 'Due This Month', amount: money(ap.month), color: 'var(--status-warn)' },
               { label: 'Overdue', amount: money(ap.overdue), color: 'var(--status-critical)' },
             ].map((r, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{r.label}</span>
                 <span className="mono" style={{ fontSize: 13, fontWeight: 500, color: r.color }}>{r.amount}</span>
               </div>
@@ -216,7 +216,7 @@ function NIFinanceOverview({ onNav }) {
             { label: 'Operating Expenses', value: '—', indent: 1, color: 'var(--text-mid)' },
             { label: 'Net Income', value: '—', indent: 0, bold: true },
           ].map((r, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', paddingLeft: r.indent * 12, borderBottom: r.bold ? '1px solid var(--border-subtle)' : '1px solid rgba(63,169,245,0.03)' }}>
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', paddingLeft: r.indent * 12, borderBottom: r.bold ? '1px solid var(--border-subtle)' : '1px solid rgba(99,102,241,0.03)' }}>
               <span style={{ fontSize: 12, color: r.color || 'var(--text-high)', fontWeight: r.bold ? 600 : 400 }}>{r.label}</span>
               <span className="mono" style={{ fontSize: 12, fontWeight: r.bold ? 600 : 400, color: r.color || 'var(--text-high)' }}>{r.value}</span>
             </div>
@@ -242,10 +242,10 @@ function NIFinanceOverview({ onNav }) {
               </div>
             ))}
           </div>
-          <div style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span>⟡</span>
             <span style={{ fontSize: 11, color: 'var(--brand)' }}>ShieldTech AI: Cash position strong. $19,450 in overdue AR is the main risk — draft collection reminders?</span>
-            <button onClick={() => shieldModal({ kind: 'editor', title: 'Collection Reminders', subtitle: '3 overdue accounts · $19,450 outstanding', submitLabel: 'Send Reminders', successMsg: 'Reminders sent to 3 accounts', value: 'Subject: Friendly reminder — invoice past due\n\nHi {{customer}},\n\nOur records show invoice {{invoice}} for {{amount}} is now {{days}} days past due. If payment has already been sent, please disregard this note.\n\nYou can pay securely online or reply with any questions. We appreciate your business.\n\nBest regards,\nShieldTech Accounts Receivable' })} style={{ marginLeft: 'auto', padding: '3px 10px', fontSize: 10, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Draft Reminders</button>
+            <button onClick={() => shieldModal({ kind: 'editor', title: 'Collection Reminders', subtitle: '3 overdue accounts · $19,450 outstanding', submitLabel: 'Send Reminders', successMsg: 'Reminders sent to 3 accounts', value: 'Subject: Friendly reminder — invoice past due\n\nHi {{customer}},\n\nOur records show invoice {{invoice}} for {{amount}} is now {{days}} days past due. If payment has already been sent, please disregard this note.\n\nYou can pay securely online or reply with any questions. We appreciate your business.\n\nBest regards,\nShieldTech Accounts Receivable' })} style={{ marginLeft: 'auto', padding: '3px 10px', fontSize: 10, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Draft Reminders</button>
           </div>
         </GlassPanel>
 
@@ -259,11 +259,11 @@ function NIFinanceOverview({ onNav }) {
             { line: 'Fire / Life Safety', revenue: 28400, margin: 22.8, jobs: 6 },
             { line: 'Managed Services (RMR)', revenue: 171200, margin: 68.2, jobs: 0 },
           ].map((s, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
               <span style={{ fontSize: 12, color: 'var(--text-high)', flex: 1 }}>{s.line}</span>
               <span className="mono" style={{ fontSize: 11, color: 'var(--text-mid)', width: 70, textAlign: 'right' }}>${(s.revenue/1000).toFixed(0)}K</span>
               <div style={{ width: 60 }}>
-                <div style={{ height: 4, borderRadius: 2, background: 'rgba(63,169,245,0.08)', overflow: 'hidden' }}>
+                <div style={{ height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
                   <div style={{ width: `${Math.min(s.margin / 70 * 100, 100)}%`, height: '100%', borderRadius: 2, background: s.margin >= 30 ? 'var(--status-ok)' : s.margin >= 20 ? 'var(--status-warn)' : 'var(--status-critical)' }} />
                 </div>
               </div>
@@ -282,8 +282,8 @@ function NIFinanceOverview({ onNav }) {
         <div style={{ maxHeight: 200, overflow: 'auto' }}>
           {[
           ].map((tx, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 18px', borderBottom: '1px solid rgba(63,169,245,0.03)', cursor: 'pointer' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.03)'}
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 18px', borderBottom: '1px solid rgba(99,102,241,0.03)', cursor: 'pointer' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.03)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
               <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', width: 48 }}>{tx.date}</span>
               <span style={{ flex: 1, fontSize: 12, color: 'var(--text-high)' }}>{tx.desc}</span>
@@ -354,7 +354,7 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
           {['All','Paid','Pending','Overdue','Draft'].map(f => (
             <button key={f} onClick={() => setInvFilter(f)} style={{
               padding: '4px 12px', fontSize: 11, borderRadius: 5,
-              background: invFilter === f ? 'rgba(63,169,245,0.12)' : 'transparent',
+              background: invFilter === f ? 'rgba(99,102,241,0.12)' : 'transparent',
               border: `1px solid ${invFilter === f ? 'var(--brand)' : 'var(--border-subtle)'}`,
               color: invFilter === f ? 'var(--brand)' : 'var(--text-low)',
               cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -382,16 +382,16 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
               <tbody>
                 {filtered.length === 0 && <DocsEmptyRow colSpan={7} kind="invoices" />}
                 {filtered.map((inv, i) => (
-                  <tr key={i} onClick={() => setSelectedInv(i)} style={{ cursor: 'pointer', background: selectedInv === i ? 'rgba(63,169,245,0.06)' : 'transparent', transition: 'background 0.12s' }}
-                    onMouseEnter={e => { if (selectedInv !== i) e.currentTarget.style.background = 'rgba(63,169,245,0.03)'; }}
+                  <tr key={i} onClick={() => setSelectedInv(i)} style={{ cursor: 'pointer', background: selectedInv === i ? 'rgba(99,102,241,0.06)' : 'transparent', transition: 'background 0.12s' }}
+                    onMouseEnter={e => { if (selectedInv !== i) e.currentTarget.style.background = 'rgba(99,102,241,0.03)'; }}
                     onMouseLeave={e => { if (selectedInv !== i) e.currentTarget.style.background = 'transparent'; }}>
-                    <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{inv.num}</td>
-                    <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{inv.customer}</td>
-                    <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${inv.amount.toLocaleString()}</td>
-                    <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={inv.status} /></td>
-                    <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: inv.status === 'overdue' ? 'var(--status-critical)' : 'var(--text-mid)' }}>{inv.due}{inv.days > 0 ? ` (${inv.days}d)` : ''}</td>
-                    <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{inv.terms}</td>
-                    <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                    <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--brand)' }}>{inv.num}</td>
+                    <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{inv.customer}</td>
+                    <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${inv.amount.toLocaleString()}</td>
+                    <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={inv.status} /></td>
+                    <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: inv.status === 'overdue' ? 'var(--status-critical)' : 'var(--text-mid)' }}>{inv.due}{inv.days > 0 ? ` (${inv.days}d)` : ''}</td>
+                    <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{inv.terms}</td>
+                    <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                       <span style={{ color: 'var(--text-low)', fontSize: 14 }}>›</span>
                     </td>
                   </tr>
@@ -425,7 +425,7 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 14 }}>
               {filtered[selectedInv].project_id ? (
                 <>
-                  <button onClick={() => navTo('projects')} className="mono" style={{ padding: '5px 10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>
+                  <button onClick={() => navTo('projects')} className="mono" style={{ padding: '5px 10px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>
                     {filtered[selectedInv].project_id} →
                   </button>
                   <span style={{ fontSize: 11, color: 'var(--text-low)' }}>
@@ -455,7 +455,7 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
 
             <div className="label-sm" style={{ marginBottom: 6 }}>LINE ITEMS</div>
             {filtered[selectedInv].lines.map((li, j) => (
-              <div key={j} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>
+              <div key={j} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>
                 <span style={{ color: 'var(--text-mid)', flex: 1 }}>{li.desc}</span>
                 <span className="mono" style={{ color: 'var(--text-low)', marginRight: 8 }}>{li.qty > 1 ? `${li.qty} × $${li.rate.toLocaleString()}` : ''}</span>
                 <span className="mono" style={{ color: 'var(--text-high)', fontWeight: 500 }}>${(li.qty * li.rate).toLocaleString()}</span>
@@ -468,13 +468,13 @@ function NIFinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, se
                 <button onClick={() => sendPayLink(filtered[selectedInv], { finalize: true })} style={{ width: '100%', padding: '9px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Finalize & Send</button>
               )}
               {filtered[selectedInv].status === 'pending' && <>
-                <button onClick={() => sendPayLink(filtered[selectedInv])} style={{ width: '100%', padding: '9px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <button onClick={() => sendPayLink(filtered[selectedInv])} style={{ width: '100%', padding: '9px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                   <span>⊛</span> {filtered[selectedInv].payLink ? 'Payment Link Active ✓ — resend' : 'Create & Email Payment Link'}
                 </button>
                 <button onClick={() => { const inv = filtered[selectedInv]; updateInv(inv.num, { status: 'paid', balance: 0, days: 0, paidAt: Date.now() }); if (window.__shieldPay) window.__shieldPay.recordPaid(inv.num); showToast(`Payment recorded — ${inv.num} marked paid ($${inv.amount.toLocaleString()})`); }} style={{ width: '100%', padding: '9px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Record Payment</button>
               </>}
               {filtered[selectedInv].status === 'overdue' && <>
-                <button onClick={() => { const inv = filtered[selectedInv]; approvalStore.set(prev => [{ id: prev.reduce((m, a) => Math.max(m, a.id), 0) + 1, kind: 'AR REMINDER', title: `${inv.customer} — ${inv.num} reminder (${inv.days}d overdue)`, amt: `$${inv.amount.toLocaleString()}`, sub: 'AI-drafted · review before sending', status: 'pending' }, ...prev]); showToast(`Reminder drafted for ${inv.num} → Approvals queue`); }} style={{ width: '100%', padding: '9px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <button onClick={() => { const inv = filtered[selectedInv]; approvalStore.set(prev => [{ id: prev.reduce((m, a) => Math.max(m, a.id), 0) + 1, kind: 'AR REMINDER', title: `${inv.customer} — ${inv.num} reminder (${inv.days}d overdue)`, amt: `$${inv.amount.toLocaleString()}`, sub: 'AI-drafted · review before sending', status: 'pending' }, ...prev]); showToast(`Reminder drafted for ${inv.num} → Approvals queue`); }} style={{ width: '100%', padding: '9px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                   <span>⟡</span> AI Draft Reminder
                 </button>
                 <button onClick={() => sendPayLink(filtered[selectedInv])} style={{ width: '100%', padding: '9px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{filtered[selectedInv].payLinkSentAt ? 'Payment Link Sent ✓ — resend' : 'Send Payment Link'}</button>
@@ -529,15 +529,15 @@ function NIFinanceRecurring({ showToast }) {
           </tr></thead>
           <tbody>
             {subs.map((s, i) => (
-              <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{s.customer}</td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${s.amount.toLocaleString()}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{s.freq}</td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{s.next}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: s.stripe ? 'var(--brand)' : 'var(--text-low)' }}>{s.stripe && '⊛ '}{s.method}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={s.status === 'active' ? 'online' : 'critical'} label={s.status === 'active' ? 'Active' : 'Past Due'} /></td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
-                  <button onClick={() => showToast(s.stripe ? "Stripe subscription management isn't wired up yet" : "AutoPay enrollment isn't wired up yet")} style={{ padding: '3px 8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s.stripe ? 'Manage' : 'Enroll AutoPay'}</button>
+              <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{s.customer}</td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${s.amount.toLocaleString()}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{s.freq}</td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{s.next}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: s.stripe ? 'var(--brand)' : 'var(--text-low)' }}>{s.stripe && '⊛ '}{s.method}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={s.status === 'active' ? 'online' : 'critical'} label={s.status === 'active' ? 'Active' : 'Past Due'} /></td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                  <button onClick={() => showToast(s.stripe ? "Stripe subscription management isn't wired up yet" : "AutoPay enrollment isn't wired up yet")} style={{ padding: '3px 8px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s.stripe ? 'Manage' : 'Enroll AutoPay'}</button>
                 </td>
               </tr>
             ))}

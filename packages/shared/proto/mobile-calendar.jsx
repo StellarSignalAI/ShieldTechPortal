@@ -6,7 +6,7 @@
    (useTechs → Supabase profiles), not a hardcoded list. */
 
 const MC_TYPES = {
-  install:     { c: '#3FA9F5', label: 'Install' },
+  install:     { c: '#6366F1', label: 'Install' },
   maintenance: { c: '#FBBF24', label: 'Maintenance' },
   repair:      { c: '#F43F5E', label: 'Repair' },
   survey:      { c: '#c084fc', label: 'Survey' },
@@ -88,7 +88,7 @@ function MJobEditor({ job, slot, onClose }) {
           <div>
             <MWSelect label="From Project" value={f.projectId} onChange={pickProject} options={[{ value: '', label: '— none (ad-hoc job) —' }, ...projects.map(p => ({ value: p.number, label: `${p.number} · ${p.name}` }))]} />
             {f.scope && (
-              <div style={{ marginTop: 6, padding: '8px 11px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 9, fontSize: 11, lineHeight: 1.5, color: 'var(--text-mid)', maxHeight: 90, overflowY: 'auto' }}>
+              <div style={{ marginTop: 6, padding: '8px 11px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 9, fontSize: 11, lineHeight: 1.5, color: 'var(--text-mid)', maxHeight: 90, overflowY: 'auto' }}>
                 <span style={{ color: 'var(--brand)', fontWeight: 600 }}>Scope: </span>{f.scope}
               </div>
             )}
@@ -129,7 +129,7 @@ function MJobEditor({ job, slot, onClose }) {
             {roster.map(t => {
               const on = f.techs.includes(t.id);
               return (
-                <button key={t.id} onClick={() => toggleTech(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px 5px 5px', borderRadius: 16, cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, background: on ? `${t.color}1c` : 'rgba(63,169,245,0.04)', border: `1px solid ${on ? t.color + '70' : 'var(--border-subtle)'}`, color: on ? t.color : 'var(--text-low)' }}>
+                <button key={t.id} onClick={() => toggleTech(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px 5px 5px', borderRadius: 16, cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, background: on ? `${t.color}1c` : 'rgba(99,102,241,0.04)', border: `1px solid ${on ? t.color + '70' : 'var(--border-subtle)'}`, color: on ? t.color : 'var(--text-low)' }}>
                   <span style={{ width: 18, height: 18, borderRadius: '50%', background: `${t.color}28`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: t.color }}>{t.id}</span>
                   {(t.name || '').split(' ')[0]}{t.role && t.role !== 'Technician' ? <span style={{ fontSize: 8, opacity: 0.7 }}>· {t.role}</span> : null}
                 </button>
@@ -177,7 +177,7 @@ function MCWeek({ jobs, week, roster, onCreate, onOpen }) {
             {week.map((d, i) => {
               const isT = isoOfDate(d) === tISO;
               return (
-                <div key={i} style={{ padding: '7px 0', textAlign: 'center', borderLeft: '1px solid var(--border-subtle)', background: isT ? 'rgba(63,169,245,0.07)' : 'transparent' }}>
+                <div key={i} style={{ padding: '7px 0', textAlign: 'center', borderLeft: '1px solid var(--border-subtle)', background: isT ? 'rgba(99,102,241,0.07)' : 'transparent' }}>
                   <div style={{ fontSize: 9, color: 'var(--text-low)', letterSpacing: '0.06em' }}>{MC_DAYS[i].toUpperCase()}</div>
                   <div className="mono" style={{ fontSize: 14, fontWeight: isT ? 700 : 400, color: isT ? 'var(--brand)' : 'var(--text-high)' }}>{d.getDate()}</div>
                 </div>
@@ -188,11 +188,11 @@ function MCWeek({ jobs, week, roster, onCreate, onOpen }) {
           <div style={{ position: 'relative' }}>
             {hours.map(h => (
               <div key={h} style={{ display: 'grid', gridTemplateColumns: gridCols, height: MC_HPX }}>
-                <div style={{ paddingTop: 4, paddingRight: 6, textAlign: 'right', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <div style={{ paddingTop: 4, paddingRight: 6, textAlign: 'right', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <span className="mono" style={{ fontSize: 8.5, color: 'var(--text-low)' }}>{h <= 12 ? h : h - 12}{h < 12 ? 'a' : 'p'}</span>
                 </div>
                 {week.map((d, di) => (
-                  <div key={di} onClick={() => onCreate({ date: isoOfDate(d), start: h })} style={{ borderLeft: '1px solid var(--border-subtle)', borderBottom: '1px solid rgba(63,169,245,0.04)', background: isoOfDate(d) === tISO ? 'rgba(63,169,245,0.02)' : 'transparent', cursor: 'pointer' }}></div>
+                  <div key={di} onClick={() => onCreate({ date: isoOfDate(d), start: h })} style={{ borderLeft: '1px solid var(--border-subtle)', borderBottom: '1px solid rgba(99,102,241,0.04)', background: isoOfDate(d) === tISO ? 'rgba(99,102,241,0.02)' : 'transparent', cursor: 'pointer' }}></div>
                 ))}
               </div>
             ))}
@@ -248,7 +248,7 @@ function MCMonth({ jobs, anchor, onPickDay, onCreate }) {
           const isToday = iso === tISO;
           return (
             <button key={i} onClick={() => dayJobs.length ? onPickDay(iso) : onCreate({ date: iso, start: 9 })}
-              style={{ aspectRatio: '1', borderRadius: 9, border: `1px solid ${isToday ? 'var(--brand)' : 'var(--border-subtle)'}`, background: isToday ? 'rgba(63,169,245,0.08)' : dayJobs.length ? 'var(--glass-bg)' : 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, fontFamily: 'var(--font-body)', padding: 0 }}>
+              style={{ aspectRatio: '1', borderRadius: 9, border: `1px solid ${isToday ? 'var(--brand)' : 'var(--border-subtle)'}`, background: isToday ? 'rgba(99,102,241,0.08)' : dayJobs.length ? 'var(--glass-bg)' : 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, fontFamily: 'var(--font-body)', padding: 0 }}>
               <span className="mono" style={{ fontSize: 12, fontWeight: isToday ? 700 : 400, color: isToday ? 'var(--brand)' : 'var(--text-mid)' }}>{d}</span>
               <div style={{ display: 'flex', gap: 2, minHeight: 5 }}>
                 {dayJobs.slice(0, 4).map((j, k) => <span key={k} style={{ width: 4, height: 4, borderRadius: '50%', background: mcColor(j) }}></span>)}
@@ -275,7 +275,7 @@ function MCAgenda({ jobs, roster, dateISO, setDateISO, onCreate, onOpen }) {
           const n = jobs.filter(j => jobOnISO(j, iso)).length;
           const on = dateISO === iso, today = iso === tISO;
           return (
-            <button key={iso} onClick={() => setDateISO(iso)} style={{ padding: '8px 0 6px', borderRadius: 9, border: '1px solid', borderColor: on ? 'var(--border-strong)' : 'var(--border-subtle)', background: on ? 'rgba(63,169,245,0.12)' : 'transparent', cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+            <button key={iso} onClick={() => setDateISO(iso)} style={{ padding: '8px 0 6px', borderRadius: 9, border: '1px solid', borderColor: on ? 'var(--border-strong)' : 'var(--border-subtle)', background: on ? 'rgba(99,102,241,0.12)' : 'transparent', cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
               <span style={{ fontSize: 8, letterSpacing: '0.06em', color: on ? 'var(--brand)' : 'var(--text-low)' }}>{MC_DAYS[i].toUpperCase()}</span>
               <span className="mono" style={{ fontSize: 13, fontWeight: today ? 700 : 400, color: today ? 'var(--brand)' : on ? 'var(--text-high)' : 'var(--text-mid)' }}>{dateOfISO(iso).getDate()}</span>
               <span style={{ width: 4, height: 4, borderRadius: '50%', background: n ? 'var(--brand)' : 'transparent' }}></span>
@@ -336,7 +336,7 @@ function MobileCalendar({ onNav }) {
   const navBack = () => view === 'month' ? setMonthOffset(o => o - 1) : view === 'agenda' ? setAgendaISO(d => addDaysISO(d, -1)) : setWeekOffset(o => o - 1);
   const navFwd = () => view === 'month' ? setMonthOffset(o => o + 1) : view === 'agenda' ? setAgendaISO(d => addDaysISO(d, 1)) : setWeekOffset(o => o + 1);
   const navToday = () => { setWeekOffset(0); setMonthOffset(0); setAgendaISO(todayISO()); };
-  const navBtn = { padding: '5px 11px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-body)', lineHeight: 1 };
+  const navBtn = { padding: '5px 11px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-body)', lineHeight: 1 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -345,7 +345,7 @@ function MobileCalendar({ onNav }) {
         <button onClick={navToday} style={{ ...navBtn, fontSize: 10, fontWeight: 600 }}>Today</button>
         <button onClick={navFwd} style={navBtn}>›</button>
         <span className="display" style={{ fontSize: 14, color: 'var(--text-high)', flex: 1, textAlign: 'center' }}>{headline}</span>
-        <button onClick={() => create({ date: view === 'agenda' ? agendaISO : (view === 'month' && monthOffset !== 0 ? isoOfDate(monthAnchor) : todayISO()), start: 9 })} style={{ padding: '6px 13px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New</button>
+        <button onClick={() => create({ date: view === 'agenda' ? agendaISO : (view === 'month' && monthOffset !== 0 ? isoOfDate(monthAnchor) : todayISO()), start: 9 })} style={{ padding: '6px 13px', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New</button>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ flex: 1 }}><MSegment options={['Week', 'Month', 'Agenda']} value={view.charAt(0).toUpperCase() + view.slice(1)} onChange={v => setView(v.toLowerCase())} /></div>

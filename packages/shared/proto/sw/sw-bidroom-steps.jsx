@@ -7,7 +7,7 @@
 
 function BrCheckRow({ done, label, sub, onToggle, cta }) {
   return (
-    <div onClick={onToggle} className={onToggle ? 'sw-clickrow' : ''} style={{ display: 'flex', alignItems: 'flex-start', gap: 11, padding: '11px 13px', borderRadius: 10, border: '1px solid ' + (done ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'), background: done ? 'rgba(52,211,153,0.05)' : 'rgba(63,169,245,0.02)', cursor: onToggle ? 'pointer' : 'default' }}>
+    <div onClick={onToggle} className={onToggle ? 'sw-clickrow' : ''} style={{ display: 'flex', alignItems: 'flex-start', gap: 11, padding: '11px 13px', borderRadius: 10, border: '1px solid ' + (done ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'), background: done ? 'rgba(52,211,153,0.05)' : 'rgba(99,102,241,0.02)', cursor: onToggle ? 'pointer' : 'default' }}>
       <span style={{ width: 19, height: 19, borderRadius: 6, flexShrink: 0, marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: done ? 'var(--status-ok)' : 'transparent', border: done ? 'none' : '1.5px solid var(--border-strong)' }}>
         {done && <Icon name="check" size={12} color="#03121F" />}
       </span>
@@ -72,12 +72,12 @@ function BrStepScope({ opp, state, update }) {
           <span style={{ font: '500 11px/1 var(--font-body)', color: 'var(--text-low)' }}>— generated before you opened this lead</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(130px, 1fr))`, gap: 10 }}>
-          <div style={{ textAlign: 'center', padding: '12px 8px', borderRadius: 10, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)' }}>
+          <div style={{ textAlign: 'center', padding: '12px 8px', borderRadius: 10, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)' }}>
             <div style={{ font: '700 24px/1 var(--font-display)', color: 'var(--brand)' }}>{totalDevices}</div>
             <div style={{ font: '600 9.5px/1.3 var(--font-body)', color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 6 }}>Total devices</div>
           </div>
           {counts.map(c => (
-            <div key={c.trade} style={{ textAlign: 'center', padding: '12px 8px', borderRadius: 10, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)' }}>
+            <div key={c.trade} style={{ textAlign: 'center', padding: '12px 8px', borderRadius: 10, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ font: '700 24px/1 var(--font-display)', color: 'var(--text-high)' }}>{c.devices}</div>
               <div style={{ font: '600 9.5px/1.3 var(--font-body)', color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 6 }}>{c.trade}</div>
               <div style={{ font: '500 9.5px/1 var(--font-mono)', color: 'var(--text-mid)', marginTop: 3 }}>sheet {c.sheet}</div>
@@ -96,7 +96,7 @@ function BrStepScope({ opp, state, update }) {
           {opp.trades.map(trade => {
             const ok = (state.scopeApproved || {})[trade];
             return (
-              <div key={trade} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '11px 13px', borderRadius: 10, border: '1px solid ' + (ok ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'), background: ok ? 'rgba(52,211,153,0.04)' : 'rgba(63,169,245,0.02)', flexWrap: 'wrap' }}>
+              <div key={trade} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '11px 13px', borderRadius: 10, border: '1px solid ' + (ok ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'), background: ok ? 'rgba(52,211,153,0.04)' : 'rgba(99,102,241,0.02)', flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: 240 }}>
                   <div style={{ font: '700 12px/1 var(--font-mono)', color: 'var(--brand)', letterSpacing: '0.06em', marginBottom: 6 }}>{trade.toUpperCase()}</div>
                   <div style={{ font: '400 12.5px/1.6 var(--font-body)', color: 'var(--text-mid)' }}>{brScopeText(opp, trade, state)}</div>
@@ -116,7 +116,7 @@ function BrStepScope({ opp, state, update }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 }}>
           <div style={{ display: 'flex', gap: 6 }}>
             {[['marked', 'Marked drawings', 'sparkles'], ['clean', 'Unmarked (as issued)', 'doc'], ['rfp', 'RFP text', 'list']].map(([id, l, ic]) => (
-              <button key={id} onClick={() => setDocTab(id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 'var(--radius-md)', cursor: 'pointer', background: docTab === id ? 'rgba(63,169,245,0.14)' : 'rgba(63,169,245,0.04)', border: '1px solid ' + (docTab === id ? 'var(--border-strong)' : 'var(--border-subtle)'), color: docTab === id ? 'var(--brand)' : 'var(--text-mid)', font: '600 12px/1 var(--font-body)' }}>
+              <button key={id} onClick={() => setDocTab(id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 'var(--radius-md)', cursor: 'pointer', background: docTab === id ? 'rgba(99,102,241,0.14)' : 'rgba(99,102,241,0.04)', border: '1px solid ' + (docTab === id ? 'var(--border-strong)' : 'var(--border-subtle)'), color: docTab === id ? 'var(--brand)' : 'var(--text-mid)', font: '600 12px/1 var(--font-body)' }}>
                 <Icon name={ic} size={13} color={docTab === id ? 'var(--brand)' : 'var(--text-low)'} />{l}
               </button>
             ))}
@@ -146,7 +146,7 @@ function BrStepScope({ opp, state, update }) {
               const st = state.flagState[f.id];
               const status = st ? st.status : 'open';
               return (
-                <div key={f.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border-subtle)', background: 'rgba(63,169,245,0.02)', flexWrap: 'wrap' }}>
+                <div key={f.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.02)', flexWrap: 'wrap' }}>
                   <Icon name={status === 'open' ? 'alert' : status === 'rfi' ? 'message' : 'checkCircle'} size={15} color={status === 'open' ? 'var(--status-warn)' : status === 'rfi' ? 'var(--brand)' : 'var(--status-ok)'} style={{ marginTop: 1 }} />
                   <div style={{ flex: 1, minWidth: 220 }}>
                     <div style={{ font: '500 12.5px/1.5 var(--font-body)', color: status === 'open' ? 'var(--text-high)' : 'var(--text-mid)' }}>{f.note}</div>
@@ -179,7 +179,7 @@ function BrStepScope({ opp, state, update }) {
           {ambs.map(a => {
             const val = state.scope[a.id];
             return (
-              <div key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border-subtle)', background: 'rgba(63,169,245,0.02)', flexWrap: 'wrap' }}>
+              <div key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.02)', flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: 220 }}>
                   <div style={{ font: '600 12.5px/1.4 var(--font-body)', color: 'var(--text-high)' }}>{a.item}</div>
                   <div style={{ font: '400 12px/1.5 var(--font-body)', color: 'var(--text-mid)', marginTop: 3 }}>{a.note}</div>
@@ -187,7 +187,7 @@ function BrStepScope({ opp, state, update }) {
                 </div>
                 <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                   {[['include', 'In', 'var(--status-ok)'], ['exclude', 'Out', 'var(--status-critical)'], ['clarify', 'RFI', 'var(--brand)']].map(([v, l, c]) => (
-                    <button key={v} onClick={() => setAmb(a.id, v, a.note)} style={{ padding: '6px 12px', borderRadius: 7, cursor: 'pointer', font: '600 11.5px/1 var(--font-body)', background: val === v ? `color-mix(in srgb, ${c} 16%, transparent)` : 'rgba(63,169,245,0.04)', border: '1px solid ' + (val === v ? `color-mix(in srgb, ${c} 45%, transparent)` : 'var(--border-subtle)'), color: val === v ? c : 'var(--text-mid)' }}>{l}</button>
+                    <button key={v} onClick={() => setAmb(a.id, v, a.note)} style={{ padding: '6px 12px', borderRadius: 7, cursor: 'pointer', font: '600 11.5px/1 var(--font-body)', background: val === v ? `color-mix(in srgb, ${c} 16%, transparent)` : 'rgba(99,102,241,0.04)', border: '1px solid ' + (val === v ? `color-mix(in srgb, ${c} 45%, transparent)` : 'var(--border-subtle)'), color: val === v ? c : 'var(--text-mid)' }}>{l}</button>
                   ))}
                 </div>
               </div>
@@ -195,7 +195,7 @@ function BrStepScope({ opp, state, update }) {
           })}
         </div>
         {state.rfis.length > 0 && (
-          <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 10, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)' }}>
+          <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)' }}>
             <Eyebrow color="var(--brand)">RFI queue — {state.rfis.length} for the buyer portal</Eyebrow>
             <ul style={{ margin: '8px 0 0', paddingLeft: 18, font: '400 12px/1.6 var(--font-body)', color: 'var(--text-mid)' }}>
               {state.rfis.map((r, i) => <li key={r.id}>RFI-{String(i + 1).padStart(2, '0')} — {r.q}</li>)}
@@ -263,7 +263,7 @@ function BrStepBom({ opp, state, update }) {
                       <td style={{ padding: '7px 14px', font: '400 12px/1.4 var(--font-body)', color: 'var(--text-high)', borderBottom: '1px solid var(--border-subtle)' }}>{l.desc}</td>
                       <td style={{ padding: '7px 14px', textAlign: 'right', borderBottom: '1px solid var(--border-subtle)' }}>
                         {l.kind === 'device'
-                          ? <input type="number" value={l.qty} onChange={e => setQty(l, e.target.value)} style={{ width: 58, textAlign: 'right', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', font: '600 12px/1 var(--font-mono)', padding: '5px 7px' }} />
+                          ? <input type="number" value={l.qty} onChange={e => setQty(l, e.target.value)} style={{ width: 58, textAlign: 'right', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', font: '600 12px/1 var(--font-mono)', padding: '5px 7px' }} />
                           : <span style={{ font: '500 12px/1 var(--font-mono)', color: 'var(--text-mid)' }}>{l.qty}</span>}
                       </td>
                       <td style={{ padding: '7px 14px', textAlign: 'right', font: '500 12px/1 var(--font-mono)', color: 'var(--text-mid)', borderBottom: '1px solid var(--border-subtle)' }}>{fmt(l.unitCost)}</td>
@@ -296,7 +296,7 @@ function BrStepPricing({ opp, state, update }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
           {[['Material (BOM)', est.material], ['Labor · ' + Math.round(est.laborHrs) + ' hrs', est.labor], ['Equipment & lifts', est.equip], ['PM & engineering', est.pm], ['Total cost', est.subtotal]].map(([l, n], i, arr) => (
-            <div key={l} style={{ padding: '12px 14px', borderRadius: 10, background: i === arr.length - 1 ? 'rgba(63,169,245,0.08)' : 'rgba(63,169,245,0.03)', border: '1px solid ' + (i === arr.length - 1 ? 'var(--border-strong)' : 'var(--border-subtle)') }}>
+            <div key={l} style={{ padding: '12px 14px', borderRadius: 10, background: i === arr.length - 1 ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.03)', border: '1px solid ' + (i === arr.length - 1 ? 'var(--border-strong)' : 'var(--border-subtle)') }}>
               <div style={{ font: '700 17px/1 var(--font-display)', color: i === arr.length - 1 ? 'var(--brand)' : 'var(--text-high)' }}>{fmt(n)}</div>
               <div style={{ font: '600 9.5px/1.3 var(--font-body)', color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 6 }}>{l}</div>
             </div>
@@ -317,7 +317,7 @@ function BrStepPricing({ opp, state, update }) {
             const isRec = t.id === rec;
             return (
               <div key={t.id} onClick={() => { update({ tier: t.id, estimateLocked: false }); swToast(`${t.label} tier selected — ${fmt(price)}`, 'info'); }} className="sw-clickrow"
-                style={{ position: 'relative', padding: '18px 16px', borderRadius: 'var(--radius-lg)', cursor: 'pointer', background: on ? 'rgba(63,169,245,0.09)' : 'var(--card, rgba(63,169,245,0.02))', border: on ? '1.5px solid var(--brand)' : '1px solid var(--border-subtle)' }}>
+                style={{ position: 'relative', padding: '18px 16px', borderRadius: 'var(--radius-lg)', cursor: 'pointer', background: on ? 'rgba(99,102,241,0.09)' : 'var(--card, rgba(99,102,241,0.02))', border: on ? '1.5px solid var(--brand)' : '1px solid var(--border-subtle)' }}>
                 {isRec && <span style={{ position: 'absolute', top: -9, left: 14, padding: '3px 9px', borderRadius: 999, background: 'var(--brand)', color: '#03121F', font: '700 9px/1 var(--font-mono)', letterSpacing: '0.1em' }}>AI PICK</span>}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ font: '700 13px/1 var(--font-display)', color: on ? 'var(--brand)' : 'var(--text-high)', letterSpacing: '0.04em' }}>{t.label.toUpperCase()}</span>
@@ -326,7 +326,7 @@ function BrStepPricing({ opp, state, update }) {
                 <div style={{ font: '700 26px/1 var(--font-display)', color: 'var(--text-high)', margin: '14px 0 4px' }}>{fmt(price)}</div>
                 <div style={{ font: '500 11px/1.4 var(--font-mono)', color: 'var(--text-mid)' }}>{t.margin}% margin · {fmt(price - est.subtotal)} gross</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '12px 0' }}>
-                  <div style={{ flex: 1, height: 5, borderRadius: 3, background: 'rgba(63,169,245,0.1)', overflow: 'hidden' }}><div style={{ width: t.winP + '%', height: '100%', borderRadius: 3, background: t.winP >= 50 ? 'var(--status-ok)' : t.winP >= 35 ? 'var(--status-warn)' : 'var(--status-critical)' }} /></div>
+                  <div style={{ flex: 1, height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.1)', overflow: 'hidden' }}><div style={{ width: t.winP + '%', height: '100%', borderRadius: 3, background: t.winP >= 50 ? 'var(--status-ok)' : t.winP >= 35 ? 'var(--status-warn)' : 'var(--status-critical)' }} /></div>
                   <span style={{ font: '600 11px/1 var(--font-mono)', color: 'var(--text-mid)' }}>~{t.winP}% win</span>
                 </div>
                 <div style={{ font: '400 11.5px/1.55 var(--font-body)', color: 'var(--text-low)' }}>{t.note}</div>
@@ -439,7 +439,7 @@ function BrStepProposal({ opp, state, update }) {
           <Icon name="doc" size={14} color="var(--brand)" />
           <Eyebrow color="var(--brand)">Exactly what the buyer receives</Eyebrow>
           {state.coverLetter && <Pill tone="Done" label="Approved" small dot />}
-          <button onClick={() => { const est = brEstimate(opp, state); if (window.__shieldPdf) window.__shieldPdf.exportDoc({ kind: 'proposal', number: opp.id || 'Proposal', customer: opp.buyer || opp.title || '', date: new Date().toLocaleDateString(), sections: [{ title: 'Project', body: opp.title || '' }, { title: 'Scope of Work', body: (typeof brScopeText === 'function' ? brScopeText(opp, state) : 'Full scope as specified.') }], lineItems: (typeof brBOM === 'function' ? (brBOM(opp, state) || []).map(b => ({ desc: b.label || b.name || b.desc, qty: b.qty || 1, rate: b.unit || b.price || 0 })) : []), total: est && est.total }); else swToast('Export unavailable', 'warn'); }} style={{ marginLeft: 'auto', padding: '5px 13px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', font: '600 11px/1 var(--font-body)', cursor: 'pointer' }}>↓ Download proposal PDF</button>
+          <button onClick={() => { const est = brEstimate(opp, state); if (window.__shieldPdf) window.__shieldPdf.exportDoc({ kind: 'proposal', number: opp.id || 'Proposal', customer: opp.buyer || opp.title || '', date: new Date().toLocaleDateString(), sections: [{ title: 'Project', body: opp.title || '' }, { title: 'Scope of Work', body: (typeof brScopeText === 'function' ? brScopeText(opp, state) : 'Full scope as specified.') }], lineItems: (typeof brBOM === 'function' ? (brBOM(opp, state) || []).map(b => ({ desc: b.label || b.name || b.desc, qty: b.qty || 1, rate: b.unit || b.price || 0 })) : []), total: est && est.total }); else swToast('Export unavailable', 'warn'); }} style={{ marginLeft: 'auto', padding: '5px 13px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', font: '600 11px/1 var(--font-body)', cursor: 'pointer' }}>↓ Download proposal PDF</button>
         </div>
         <BrProposalDoc opp={opp} state={state} />
       </div>

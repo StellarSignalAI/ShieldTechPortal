@@ -10,7 +10,7 @@ function BrRfpDoc({ opp, highlightRow, compact }) {
   const rfp = brRFP(opp);
   return (
     <div style={{ background: '#0E1524', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-      <div style={{ padding: compact ? '14px 18px' : '20px 26px', borderBottom: '1px solid var(--border-subtle)', background: 'rgba(63,169,245,0.04)' }}>
+      <div style={{ padding: compact ? '14px 18px' : '20px 26px', borderBottom: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.04)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
           <div>
             <div style={{ font: '600 10px/1 var(--font-mono)', color: 'var(--brand)', letterSpacing: '0.12em', marginBottom: 6 }}>{rfp.number} · ISSUED {rfp.issued.toUpperCase()}</div>
@@ -42,10 +42,10 @@ function BrRfpDoc({ opp, highlightRow, compact }) {
 function BrSpecTable({ rows, col, highlightRow, caption, flagged }) {
   return (
     <div style={{ border: '1px solid var(--border-subtle)', borderRadius: 8, overflow: 'hidden', margin: '4px 0 10px' }}>
-      {caption && <div style={{ padding: '7px 12px', background: 'rgba(63,169,245,0.05)', borderBottom: '1px solid var(--border-subtle)', font: '600 10px/1 var(--font-mono)', letterSpacing: '0.1em', color: 'var(--text-low)', textTransform: 'uppercase' }}>{caption}</div>}
+      {caption && <div style={{ padding: '7px 12px', background: 'rgba(99,102,241,0.05)', borderBottom: '1px solid var(--border-subtle)', font: '600 10px/1 var(--font-mono)', letterSpacing: '0.1em', color: 'var(--text-low)', textTransform: 'uppercase' }}>{caption}</div>}
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
-          <tr style={{ background: 'rgba(63,169,245,0.03)' }}>
+          <tr style={{ background: 'rgba(99,102,241,0.03)' }}>
             {['Ref', 'Item', 'Qty', 'Unit'].map(h => <th key={h} style={{ textAlign: h === 'Qty' ? 'right' : 'left', padding: '6px 12px', font: '600 10px/1 var(--font-mono)', color: 'var(--text-low)', letterSpacing: '0.08em', borderBottom: '1px solid var(--border-subtle)' }}>{h.toUpperCase()}</th>)}
           </tr>
         </thead>
@@ -101,7 +101,7 @@ function BrDrawingSheet({ opp, sheet, highlightRow, marked = true }) {
         {/* rooms */}
         {rooms.map((r, i) => (
           <g key={i}>
-            <rect x={r.x} y={r.y} width={r.w} height={r.h} fill="rgba(63,169,245,0.025)" stroke="rgba(125,211,252,0.45)" strokeWidth="0.35" />
+            <rect x={r.x} y={r.y} width={r.w} height={r.h} fill="rgba(99,102,241,0.025)" stroke="rgba(125,211,252,0.45)" strokeWidth="0.35" />
             <text x={r.x + 1.6} y={r.y + 3.2} fontSize="1.9" fill="rgba(125,211,252,0.55)" fontFamily="var(--font-mono)">{100 + i * 2}</text>
             {/* door notch */}
             <line x1={r.x + r.w / 2 - 2} y1={r.y + r.h} x2={r.x + r.w / 2 + 2} y2={r.y + r.h} stroke="#0B111E" strokeWidth="0.6" />
@@ -113,7 +113,7 @@ function BrDrawingSheet({ opp, sheet, highlightRow, marked = true }) {
         {/* devices — only on the AI-marked set */}
         {marked && devices.map((d, i) => (
           <g key={i}>
-            {symFor === 'cam' && <><circle cx={d.x} cy={d.y} r="1.15" fill="none" stroke="#5FC0FF" strokeWidth="0.35" /><line x1={d.x} y1={d.y} x2={d.x + 1.7} y2={d.y - 1.2} stroke="#5FC0FF" strokeWidth="0.35" /></>}
+            {symFor === 'cam' && <><circle cx={d.x} cy={d.y} r="1.15" fill="none" stroke="#7D7CF5" strokeWidth="0.35" /><line x1={d.x} y1={d.y} x2={d.x + 1.7} y2={d.y - 1.2} stroke="#7D7CF5" strokeWidth="0.35" /></>}
             {symFor === 'door' && <rect x={d.x - 1} y={d.y - 1} width="2" height="2" fill="none" stroke="#6EE7B7" strokeWidth="0.35" transform={`rotate(45 ${d.x} ${d.y})`} />}
             {symFor === 'zone' && <path d={`M ${d.x} ${d.y - 1.3} L ${d.x + 1.2} ${d.y + 0.9} L ${d.x - 1.2} ${d.y + 0.9} Z`} fill="none" stroke="#FCD34D" strokeWidth="0.35" />}
             {symFor === 'drop' && <><circle cx={d.x} cy={d.y} r="0.5" fill="#A78BFA" /><line x1={d.x} y1={d.y} x2={d.x} y2={d.y - 1.6} stroke="#A78BFA" strokeWidth="0.3" /></>}
@@ -138,21 +138,21 @@ function BrDrawingSheet({ opp, sheet, highlightRow, marked = true }) {
         )}
         {/* title block */}
         <g>
-          <rect x="2.6" y="82" width="94.8" height="7.4" fill="rgba(63,169,245,0.04)" stroke="rgba(125,211,252,0.35)" strokeWidth="0.3" />
+          <rect x="2.6" y="82" width="94.8" height="7.4" fill="rgba(99,102,241,0.04)" stroke="rgba(125,211,252,0.35)" strokeWidth="0.3" />
           <line x1="26" y1="82" x2="26" y2="89.4" stroke="rgba(125,211,252,0.25)" strokeWidth="0.25" />
           <line x1="72" y1="82" x2="72" y2="89.4" stroke="rgba(125,211,252,0.25)" strokeWidth="0.25" />
           <text x="4" y="85" fontSize="1.9" fill="rgba(125,211,252,0.7)" fontFamily="var(--font-mono)">SHIELDTECH SECURITY LLC</text>
           <text x="4" y="87.8" fontSize="1.6" fill="rgba(125,211,252,0.45)" fontFamily="var(--font-mono)">BID SET — NOT FOR CONSTRUCTION</text>
           <text x="28" y="85" fontSize="1.9" fill="rgba(226,238,255,0.85)" fontFamily="var(--font-mono)">{sheet.title.toUpperCase()}</text>
           <text x="28" y="87.8" fontSize="1.6" fill="rgba(125,211,252,0.45)" fontFamily="var(--font-mono)">{opp.buyer.toUpperCase().slice(0, 42)}</text>
-          <text x="84" y="85.6" fontSize="3.4" fill="#5FC0FF" textAnchor="middle" fontFamily="var(--font-mono)" fontWeight="bold">{sheet.id}</text>
+          <text x="84" y="85.6" fontSize="3.4" fill="#7D7CF5" textAnchor="middle" fontFamily="var(--font-mono)" fontWeight="bold">{sheet.id}</text>
           <text x="84" y="88.2" fontSize="1.5" fill="rgba(125,211,252,0.45)" textAnchor="middle" fontFamily="var(--font-mono)">SCALE 1/8" = 1'-0"</text>
         </g>
       </svg>
       {/* device schedule under the plan — only on the marked set */}
       {marked ? (
       <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
-        <div style={{ padding: '7px 12px', font: '600 10px/1 var(--font-mono)', letterSpacing: '0.1em', color: 'var(--text-low)', textTransform: 'uppercase', background: 'rgba(63,169,245,0.04)' }}>Device schedule — sheet {sheet.id}</div>
+        <div style={{ padding: '7px 12px', font: '600 10px/1 var(--font-mono)', letterSpacing: '0.1em', color: 'var(--text-low)', textTransform: 'uppercase', background: 'rgba(99,102,241,0.04)' }}>Device schedule — sheet {sheet.id}</div>
         {sheet.rows.map(r => {
           const mismatch = r.drawingQty !== r.rfpQty;
           const hot = highlightRow === r.id;
@@ -189,7 +189,7 @@ function BrDrawings({ opp, highlightRow, activeSheet, onSheet, marked = true }) 
         {sheets.map(s => (
           <button key={s.id} onClick={() => onSheet && onSheet(s.id)} style={{
             display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 12px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
-            background: s.id === cur.id ? 'rgba(63,169,245,0.14)' : 'rgba(63,169,245,0.04)',
+            background: s.id === cur.id ? 'rgba(99,102,241,0.14)' : 'rgba(99,102,241,0.04)',
             border: '1px solid ' + (s.id === cur.id ? 'var(--border-strong)' : 'var(--border-subtle)'),
             color: s.id === cur.id ? 'var(--brand)' : 'var(--text-mid)', font: '600 11.5px/1 var(--font-mono)',
           }}>{s.id}<span style={{ font: '500 10.5px/1 var(--font-body)', color: 'var(--text-low)' }}>{s.trade}</span></button>
@@ -267,7 +267,7 @@ function BrCompare({ opp, state, update }) {
             const status = st ? st.status : 'open';
             const active = f.id === activeFlag;
             return (
-              <div key={f.id} onClick={() => setActiveFlag(f.id)} className="sw-clickrow" style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + (active ? 'rgba(251,191,36,0.45)' : 'var(--border-subtle)'), background: active ? 'rgba(251,191,36,0.05)' : 'rgba(63,169,245,0.02)' }}>
+              <div key={f.id} onClick={() => setActiveFlag(f.id)} className="sw-clickrow" style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + (active ? 'rgba(251,191,36,0.45)' : 'var(--border-subtle)'), background: active ? 'rgba(251,191,36,0.05)' : 'rgba(99,102,241,0.02)' }}>
                 <Icon name={status === 'open' ? 'alert' : status === 'rfi' ? 'message' : 'checkCircle'} size={15} color={status === 'open' ? 'var(--status-warn)' : status === 'rfi' ? 'var(--brand)' : 'var(--status-ok)'} style={{ marginTop: 1 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ font: '500 12.5px/1.5 var(--font-body)', color: status === 'open' ? 'var(--text-high)' : 'var(--text-mid)' }}>{f.note}</div>
@@ -290,11 +290,11 @@ function BrCompare({ opp, state, update }) {
         </div>
         {/* add your own flag */}
         <div style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <select value={noteRow} onChange={e => setNoteRow(e.target.value)} style={{ background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', font: '500 12px/1 var(--font-body)', padding: '8px 10px', maxWidth: 220 }}>
+          <select value={noteRow} onChange={e => setNoteRow(e.target.value)} style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', font: '500 12px/1 var(--font-body)', padding: '8px 10px', maxWidth: 220 }}>
             <option value="">General note</option>
             {rows.map(r => <option key={r.id} value={r.id}>{r.item.slice(0, 40)}</option>)}
           </select>
-          <input value={noteText} onChange={e => setNoteText(e.target.value)} onKeyDown={e => e.key === 'Enter' && addUserFlag()} placeholder="Flag something the AI missed…" style={{ flex: 1, minWidth: 200, background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', font: '400 12.5px/1 var(--font-body)', padding: '9px 12px' }} />
+          <input value={noteText} onChange={e => setNoteText(e.target.value)} onKeyDown={e => e.key === 'Enter' && addUserFlag()} placeholder="Flag something the AI missed…" style={{ flex: 1, minWidth: 200, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', font: '400 12.5px/1 var(--font-body)', padding: '9px 12px' }} />
           <Btn kind="secondary" size="sm" icon="flag" onClick={addUserFlag}>Flag</Btn>
         </div>
       </Card>

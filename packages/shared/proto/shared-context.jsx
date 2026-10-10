@@ -41,7 +41,7 @@ function CustomerSelect({ value, onChange, style, placeholder }) {
   void custs; // subscribe so new customers appear instantly
   const names = shieldCustomerNames();
   if (value && !names.includes(value)) names.unshift(value);
-  const base = { width: '100%', padding: '10px 12px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
+  const base = { width: '100%', padding: '10px 12px', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
   return (
     <select
       value={value || ''}

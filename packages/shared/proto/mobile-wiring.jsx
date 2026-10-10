@@ -7,7 +7,7 @@
 
 
 /* Shared field styles */
-const mwInput = { width: '100%', padding: '11px 13px', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' };
+const mwInput = { width: '100%', padding: '11px 13px', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' };
 const mwLabel = { fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', marginBottom: 5, display: 'block' };
 
 function MWField({ label, value, onChange, placeholder, type = 'text', textarea }) {
@@ -119,12 +119,12 @@ function MobileCustomerDetail({ customer, onClose, onNav }) {
     <MSheet title={c.name} onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ width: 46, height: 46, borderRadius: 12, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{c.logo}</span>
+          <span style={{ width: 46, height: 46, borderRadius: 12, background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{c.logo}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{c.acctNum} · {c.type}{c.industry ? ` · ${c.industry}` : ''}</div>
             <MBadge color={c.status === 'archived' ? 'var(--text-low)' : 'var(--status-ok)'}>{c.status}</MBadge>
           </div>
-          <button onClick={() => setEditOpen(true)} style={{ padding: '8px 16px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Edit</button>
+          <button onClick={() => setEditOpen(true)} style={{ padding: '8px 16px', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Edit</button>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
@@ -135,7 +135,7 @@ function MobileCustomerDetail({ customer, onClose, onNav }) {
 
         <MSection title="Company info">
           {[['Address', c.address], ['Phone', c.phone], ['Website', c.website], ['Tax ID', c.taxId], ['Terms', c.terms], ['Tax exempt', c.taxExempt ? 'Yes' : 'No'], ['Owner', c.owner], ['Sites', c.sites]].map(([k, v]) => (
-            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '7px 2px', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '7px 2px', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
               <span style={{ fontSize: 11, color: 'var(--text-low)', flexShrink: 0 }}>{k}</span>
               <span style={{ fontSize: 12, color: 'var(--text-mid)', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v || '—'}</span>
             </div>
@@ -144,7 +144,7 @@ function MobileCustomerDetail({ customer, onClose, onNav }) {
 
         {c.tags && c.tags.length > 0 && (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {c.tags.map(t => <span key={t} style={{ padding: '3px 10px', borderRadius: 8, background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--brand)' }}>{t}</span>)}
+            {c.tags.map(t => <span key={t} style={{ padding: '3px 10px', borderRadius: 8, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--brand)' }}>{t}</span>)}
           </div>
         )}
 
@@ -152,14 +152,14 @@ function MobileCustomerDetail({ customer, onClose, onNav }) {
           {mySubs.length === 0
             ? <div style={{ fontSize: 11, color: 'var(--text-low)', padding: '6px 2px' }}>None linked.</div>
             : mySubs.map(s => (
-              <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 2px', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+              <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 2px', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
                 <span style={{ flex: 1, fontSize: 12, color: 'var(--text-mid)' }}>{s.name}</span>
-                <span style={{ fontSize: 8, padding: '2px 7px', borderRadius: 7, background: 'rgba(63,169,245,0.08)', color: 'var(--brand)', fontWeight: 700, textTransform: 'uppercase' }}>{s.role.replace(/_/g, ' ')}</span>
+                <span style={{ fontSize: 8, padding: '2px 7px', borderRadius: 7, background: 'rgba(99,102,241,0.08)', color: 'var(--brand)', fontWeight: 700, textTransform: 'uppercase' }}>{s.role.replace(/_/g, ' ')}</span>
               </div>
             ))}
         </MSection>
 
-        <button onClick={() => { onClose(); onNav && onNav('customers-list'); }} style={{ padding: '12px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>All customers ›</button>
+        <button onClick={() => { onClose(); onNav && onNav('customers-list'); }} style={{ padding: '12px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>All customers ›</button>
       </div>
     </MSheet>
   );
@@ -208,7 +208,7 @@ function MNewJobSheet({ onClose, onSaved, defaultDate }) {
           <div>
             <MWSelect label="From Project" value={f.projectId} onChange={pickProject} options={[{ value: '', label: '— none (ad-hoc job) —' }, ...projects.map(p => ({ value: p.number, label: `${p.number} · ${p.name}` }))]} />
             {f.scope && (
-              <div style={{ marginTop: 6, padding: '8px 11px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 9, fontSize: 11, lineHeight: 1.5, color: 'var(--text-mid)', maxHeight: 90, overflowY: 'auto' }}>
+              <div style={{ marginTop: 6, padding: '8px 11px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 9, fontSize: 11, lineHeight: 1.5, color: 'var(--text-mid)', maxHeight: 90, overflowY: 'auto' }}>
                 <span style={{ color: 'var(--brand)', fontWeight: 600 }}>Scope: </span>{f.scope}
               </div>
             )}
@@ -360,7 +360,7 @@ function MTabEditor({ onClose }) {
 
             {/* Add slot */}
             {tabs.length < editableCap
-              ? <button onClick={() => setPickerOpen(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '11px 0', background: 'rgba(63,169,245,0.06)', border: '1px dashed var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add tab ({editableCap - tabs.length} left)</button>
+              ? <button onClick={() => setPickerOpen(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '11px 0', background: 'rgba(99,102,241,0.06)', border: '1px dashed var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add tab ({editableCap - tabs.length} left)</button>
               : <div style={{ padding: '11px 0', textAlign: 'center', fontSize: 11, color: 'var(--text-low)', border: '1px dashed var(--border-subtle)', borderRadius: 11 }}>All {editableCap} slots filled — raise the allocation or remove one to add more.</div>}
           </div>
         </div>
@@ -371,7 +371,7 @@ function MTabEditor({ onClose }) {
     </MSheet>
   );
 }
-const mwStep = (disabled) => ({ width: 30, height: 30, borderRadius: 8, background: disabled ? 'transparent' : 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', color: disabled ? 'var(--text-low)' : 'var(--brand)', fontSize: 16, cursor: disabled ? 'default' : 'pointer', fontFamily: 'var(--font-body)', opacity: disabled ? 0.4 : 1 });
+const mwStep = (disabled) => ({ width: 30, height: 30, borderRadius: 8, background: disabled ? 'transparent' : 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', color: disabled ? 'var(--text-low)' : 'var(--brand)', fontSize: 16, cursor: disabled ? 'default' : 'pointer', fontFamily: 'var(--font-body)', opacity: disabled ? 0.4 : 1 });
 const mwIconBtn = (disabled) => ({ width: 28, height: 28, borderRadius: 7, background: 'transparent', border: '1px solid var(--border-subtle)', color: disabled ? 'var(--text-low)' : 'var(--text-mid)', fontSize: 12, cursor: disabled ? 'default' : 'pointer', fontFamily: 'var(--font-body)', opacity: disabled ? 0.35 : 1 });
 
 Object.assign(window, { MobileCustomerForm, MobileCustomerDetail, MNewJobSheet, MTabEditor, MWField, MWSelect });

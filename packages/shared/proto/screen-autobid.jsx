@@ -91,7 +91,7 @@ function AutoBidScreen() {
                 </span>
               )}
               {status === 'none' || status === 'error' ? (
-                <button onClick={(e) => { e.stopPropagation(); buildOne(opp); }} disabled={!!b} style={{ padding: '5px 14px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--brand)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                <button onClick={(e) => { e.stopPropagation(); buildOne(opp); }} disabled={!!b} style={{ padding: '5px 14px', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--brand)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                   {b === 'build' ? 'Building…' : status === 'error' ? 'Retry build' : 'Build bid'}
                 </button>
               ) : status === 'building' ? (
@@ -140,7 +140,7 @@ function AutoBidScreen() {
                   <div>
                     <div className="label-sm" style={{ marginBottom: 4 }}>LINE ITEMS ({(bid.line_items || []).length}) · {bid.labor_hours}h labor</div>
                     {(bid.line_items || []).slice(0, 8).map((l, i) => (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
                         <span style={{ color: 'var(--text-mid)' }}>{l.qty}× {l.desc}</span>
                         <span className="mono" style={{ color: 'var(--text-low)' }}>{fmt$((l.qty || 0) * (l.unitCost || 0))}</span>
                       </div>
@@ -243,7 +243,7 @@ function ProposalViewer({ opp, bid, onClose }) {
             <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>{(bid.selected_tier || '').toUpperCase()} tier {bid.sent_at ? `· sent to ${bid.sent_to}` : ''}</div>
           </div>
           <button onClick={() => setEmailOpen(true)} style={{ ...btn, background: 'var(--brand)', border: 'none', color: '#fff' }}>✉ Email</button>
-          <button onClick={download} style={{ ...btn, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', color: 'var(--brand)' }}>⭳ Download</button>
+          <button onClick={download} style={{ ...btn, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', color: 'var(--brand)' }}>⭳ Download</button>
           <button onClick={share} style={{ ...btn, background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)' }}>⇪ Share</button>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
         </div>

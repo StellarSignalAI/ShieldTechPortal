@@ -140,7 +140,7 @@ function PayrollScreen() {
             </div>
           </div>
           <button onClick={() => editRate(r)} title={canEdit ? 'Edit hourly rate' : ''}
-            style={{ ...btn('rgba(63,169,245,0.06)', 'var(--border-subtle)', r.rate != null ? 'var(--text-mid)' : 'var(--status-warn)'), cursor: canEdit ? 'pointer' : 'default' }}>
+            style={{ ...btn('rgba(99,102,241,0.06)', 'var(--border-subtle)', r.rate != null ? 'var(--text-mid)' : 'var(--status-warn)'), cursor: canEdit ? 'pointer' : 'default' }}>
             {r.rate != null ? `${prMoney(r.rate)}/hr` : 'Set rate'}
           </button>
           <div className="mono" style={{ fontSize: 15, fontWeight: 700, color: r.owed != null ? 'var(--text-high)' : 'var(--text-low)', minWidth: 86, textAlign: 'right' }}>
@@ -152,7 +152,7 @@ function PayrollScreen() {
               ✓ Paid {new Date(r.pay.paid_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </button>
           ) : canEdit ? (
-            <button onClick={() => togglePaid(r)} style={btn('rgba(63,169,245,0.1)', 'var(--border-strong)', 'var(--brand)')}>Mark paid</button>
+            <button onClick={() => togglePaid(r)} style={btn('rgba(99,102,241,0.1)', 'var(--border-strong)', 'var(--brand)')}>Mark paid</button>
           ) : (
             <span style={{ fontSize: 10.5, color: 'var(--status-warn)', fontWeight: 700 }}>UNPAID</span>
           )}
@@ -160,7 +160,7 @@ function PayrollScreen() {
         {expanded && (
           <div style={{ marginTop: 10, borderTop: '1px solid var(--border-subtle)', paddingTop: 8 }}>
             {r.days.map(([date, entries]) => (
-              <div key={date} style={{ padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+              <div key={date} style={{ padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                   <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-high)', minWidth: 108 }}>{prDayLabel(date)}</div>
                   <div className="mono" style={{ fontSize: 12, fontWeight: 700, color: 'var(--brand)' }}>

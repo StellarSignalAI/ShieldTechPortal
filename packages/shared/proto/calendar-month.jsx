@@ -65,8 +65,8 @@ function CalMonthView({ jobs, techs, anchor, drag, monthGhost, conflicts, select
                 return (
                   <div key={di} data-cal-day={cell.iso}
                     onClick={() => { if (!didDrag()) onCellClick(cell.iso); }}
-                    style={{ borderLeft: '1px solid var(--border-subtle)', padding: '6px 8px', background: isGhost ? 'rgba(63,169,245,0.08)' : isT ? 'rgba(63,169,245,0.04)' : 'transparent', opacity: cell.isCurrentMonth ? 1 : 0.35, cursor: 'pointer', transition: 'background 0.1s', outline: isGhost ? '1.5px dashed var(--brand)' : 'none', outlineOffset: -2 }}>
-                    <div className="mono" style={{ fontSize: 12, fontWeight: isT ? 700 : 400, color: isT ? 'var(--brand)' : 'var(--text-mid)', width: 22, height: 22, borderRadius: '50%', background: isT ? 'rgba(63,169,245,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{cell.monthDay}</div>
+                    style={{ borderLeft: '1px solid var(--border-subtle)', padding: '6px 8px', background: isGhost ? 'rgba(99,102,241,0.08)' : isT ? 'rgba(99,102,241,0.04)' : 'transparent', opacity: cell.isCurrentMonth ? 1 : 0.35, cursor: 'pointer', transition: 'background 0.1s', outline: isGhost ? '1.5px dashed var(--brand)' : 'none', outlineOffset: -2 }}>
+                    <div className="mono" style={{ fontSize: 12, fontWeight: isT ? 700 : 400, color: isT ? 'var(--brand)' : 'var(--text-mid)', width: 22, height: 22, borderRadius: '50%', background: isT ? 'rgba(99,102,241,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{cell.monthDay}</div>
                   </div>
                 );
               })}
@@ -185,7 +185,7 @@ function NewJobModal({ techs, typeColors, initialSlot, onClose, onCreate, calFmt
               {projects.map(p => <option key={p.number} value={p.number}>{p.number} · {p.name}</option>)}
             </select>
             {form.scope && (
-              <div style={{ marginTop: 6, padding: '7px 10px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 7, fontSize: 10.5, lineHeight: 1.5, color: 'var(--text-mid)', maxHeight: 80, overflowY: 'auto' }}>
+              <div style={{ marginTop: 6, padding: '7px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 7, fontSize: 10.5, lineHeight: 1.5, color: 'var(--text-mid)', maxHeight: 80, overflowY: 'auto' }}>
                 <span style={{ color: 'var(--brand)', fontWeight: 600 }}>Scope: </span>{form.scope}
               </div>
             )}
@@ -224,7 +224,7 @@ function NewJobModal({ techs, typeColors, initialSlot, onClose, onCreate, calFmt
             {techs.map(t => {
               const on = form.techs.includes(t.id);
               return (
-                <button key={t.id} onClick={() => toggleTech(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px 5px 5px', borderRadius: 16, cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 500, transition: 'all 0.12s', background: on ? `${t.color}1c` : 'rgba(63,169,245,0.04)', border: `1px solid ${on ? t.color + '70' : 'var(--border-subtle)'}`, color: on ? t.color : 'var(--text-low)' }}>
+                <button key={t.id} onClick={() => toggleTech(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px 5px 5px', borderRadius: 16, cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 500, transition: 'all 0.12s', background: on ? `${t.color}1c` : 'rgba(99,102,241,0.04)', border: `1px solid ${on ? t.color + '70' : 'var(--border-subtle)'}`, color: on ? t.color : 'var(--text-low)' }}>
                   <span style={{ width: 18, height: 18, borderRadius: '50%', background: `${t.color}28`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 700, color: t.color }}>{t.id}</span>
                   {(t.name || '').split(' ')[0]}
                 </button>
@@ -270,7 +270,7 @@ function NewJobModal({ techs, typeColors, initialSlot, onClose, onCreate, calFmt
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={onClose} style={{ flex: 1, padding: '9px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-low)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-          <button onClick={submit} disabled={!form.title || !form.date} style={{ flex: 2, padding: '9px 0', background: form.title && form.date ? 'rgba(63,169,245,0.12)' : 'rgba(63,169,245,0.04)', border: `1px solid ${form.title && form.date ? 'var(--border-strong)' : 'var(--border-subtle)'}`, borderRadius: 7, color: form.title && form.date ? 'var(--brand)' : 'var(--text-low)', fontSize: 12, fontWeight: 600, cursor: form.title && form.date ? 'pointer' : 'default', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>Schedule Job</button>
+          <button onClick={submit} disabled={!form.title || !form.date} style={{ flex: 2, padding: '9px 0', background: form.title && form.date ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.04)', border: `1px solid ${form.title && form.date ? 'var(--border-strong)' : 'var(--border-subtle)'}`, borderRadius: 7, color: form.title && form.date ? 'var(--brand)' : 'var(--text-low)', fontSize: 12, fontWeight: 600, cursor: form.title && form.date ? 'pointer' : 'default', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>Schedule Job</button>
         </div>
       </div>
     </>
@@ -278,7 +278,7 @@ function NewJobModal({ techs, typeColors, initialSlot, onClose, onCreate, calFmt
 }
 
 const calLabelStyle = { fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 5 };
-const calInputStyle = { width: '100%', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
-const calSelStyle = { width: '100%', background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 10px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' };
+const calInputStyle = { width: '100%', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
+const calSelStyle = { width: '100%', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 10px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' };
 
 Object.assign(window, { CalMonthView, NewJobModal });

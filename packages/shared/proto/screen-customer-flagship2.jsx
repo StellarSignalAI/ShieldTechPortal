@@ -18,9 +18,9 @@ function CustBudgetPlannerView() {
       <GlassPanel style={{ padding: 20, marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)' }}>Planned replacements by year</span>
-          <div style={{ display: 'flex', gap: 2, background: 'rgba(63,169,245,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', gap: 2, background: 'rgba(99,102,241,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)' }}>
             {[['Pay per year', false], ['Finance monthly', true]].map(([label, v]) => (
-              <button key={label} onClick={() => setFinanced(v)} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', background: financed === v ? 'rgba(63,169,245,0.18)' : 'transparent', color: financed === v ? 'var(--brand)' : 'var(--text-low)' }}>{label}</button>
+              <button key={label} onClick={() => setFinanced(v)} style={{ padding: '4px 12px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', background: financed === v ? 'rgba(99,102,241,0.18)' : 'transparent', color: financed === v ? 'var(--brand)' : 'var(--text-low)' }}>{label}</button>
             ))}
           </div>
         </div>
@@ -29,7 +29,7 @@ function CustBudgetPlannerView() {
           {years.map(yr => (
             <div key={yr.y} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', gap: 6, height: '100%' }}>
               <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{`$${yr.cost.toLocaleString()}`}</span>
-              <div style={{ width: '70%', height: `${financed ? 30 : (yr.cost / max) * 100}%`, minHeight: 8, borderRadius: '6px 6px 0 0', background: financed ? 'linear-gradient(180deg, rgba(52,211,153,0.5), rgba(52,211,153,0.15))' : 'linear-gradient(180deg, rgba(63,169,245,0.55), rgba(63,169,245,0.15))', border: '1px solid var(--border-strong)', borderBottom: 'none', transition: 'height 0.5s ease' }}></div>
+              <div style={{ width: '70%', height: `${financed ? 30 : (yr.cost / max) * 100}%`, minHeight: 8, borderRadius: '6px 6px 0 0', background: financed ? 'linear-gradient(180deg, rgba(52,211,153,0.5), rgba(52,211,153,0.15))' : 'linear-gradient(180deg, rgba(99,102,241,0.55), rgba(99,102,241,0.15))', border: '1px solid var(--border-strong)', borderBottom: 'none', transition: 'height 0.5s ease' }}></div>
               <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)' }}>{yr.y}</span>
             </div>
           ))}
@@ -40,7 +40,7 @@ function CustBudgetPlannerView() {
         <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 10 }}>What's aging out & why</div>
         {years.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-low)', textAlign: 'center', padding: '14px 0' }}>Nothing aging out yet.</div>}
         {years.map(yr => yr.items.map(item => (
-          <div key={item} style={{ display: 'flex', gap: 12, padding: '8px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', alignItems: 'center' }}>
+          <div key={item} style={{ display: 'flex', gap: 12, padding: '8px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', alignItems: 'center' }}>
             <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)', width: 40 }}>{yr.y}</span>
             <span style={{ fontSize: 12, color: 'var(--text-high)', flex: 1 }}>{item}</span>
           </div>
@@ -50,7 +50,7 @@ function CustBudgetPlannerView() {
           if (!t) { showToast('Support backend not configured', 'warn'); return; }
           const r = await t.create({ subject: 'Refresh budget plan requested', description: 'Customer asked for their device refresh budget plan by email (with a walkthrough from their account manager).', category: 'billing', priority: 'medium' });
           showToast(r.ok ? `Request ${r.data.ref} sent — your account manager will email the plan and walk you through it` : `Could not send: ${r.error}`, r.ok ? 'ok' : 'warn');
-        }} style={{ marginTop: 12, padding: '8px 18px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Email me this plan</button>
+        }} style={{ marginTop: 12, padding: '8px 18px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Email me this plan</button>
       </GlassPanel>
     </div>
   );
@@ -79,10 +79,10 @@ function CustSitesView() {
               </div>
               {s.status === 'attention' && <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--status-warn)', background: 'rgba(251,191,36,0.1)', borderRadius: 8, padding: '3px 8px', letterSpacing: '0.06em' }}>NEEDS ATTENTION</span>}
             </div>
-            <div style={{ height: 5, borderRadius: 3, background: 'rgba(63,169,245,0.08)', overflow: 'hidden', marginBottom: 10 }}>
+            <div style={{ height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden', marginBottom: 10 }}>
               <div style={{ width: `${s.score}%`, height: '100%', borderRadius: 3, background: s.score >= 85 ? 'var(--status-ok)' : s.score >= 75 ? 'var(--brand)' : 'var(--status-warn)' }}></div>
             </div>
-            <button onClick={() => showToast("Per-site view isn't wired up yet", 'warn')} style={{ width: '100%', padding: '7px 0', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open site →</button>
+            <button onClick={() => showToast("Per-site view isn't wired up yet", 'warn')} style={{ width: '100%', padding: '7px 0', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open site →</button>
           </GlassPanel>
         ))}
       </div>
@@ -117,10 +117,10 @@ function CustDrillView() {
       <GlassPanel style={{ padding: 20 }}>
         <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 12 }}>What a drill records</div>
         <div style={{ position: 'relative', paddingLeft: 20 }}>
-          <div style={{ position: 'absolute', left: 6, top: 8, bottom: 8, width: 2, background: 'rgba(63,169,245,0.12)' }}></div>
+          <div style={{ position: 'absolute', left: 6, top: 8, bottom: 8, width: 2, background: 'rgba(99,102,241,0.12)' }}></div>
           {timeline.map((row, i) => (
             <div key={i} style={{ position: 'relative', padding: '8px 0' }}>
-              <span style={{ position: 'absolute', left: -19, top: 13, width: 10, height: 10, borderRadius: '50%', background: 'rgba(63,169,245,0.2)' }}></span>
+              <span style={{ position: 'absolute', left: -19, top: 13, width: 10, height: 10, borderRadius: '50%', background: 'rgba(99,102,241,0.2)' }}></span>
               <div style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
                 <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: 'var(--brand)', width: 52, flexShrink: 0 }}>{row.t}</span>
                 <span style={{ fontSize: 12, color: 'var(--text-high)', flex: 1 }}>{row.e}</span>
@@ -166,7 +166,7 @@ function CustApprovalsInboxView() {
       {items.map(item => (
         <GlassPanel key={item.id} style={{ padding: 18, marginBottom: 12, opacity: item.status === 'pending' ? 1 : 0.6 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--brand)', background: 'rgba(63,169,245,0.1)', borderRadius: 8, padding: '3px 9px' }}>{item.kind.toUpperCase()}</span>
+            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--brand)', background: 'rgba(99,102,241,0.1)', borderRadius: 8, padding: '3px 9px' }}>{item.kind.toUpperCase()}</span>
             <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{item.id}</span>
             {item.amount > 0 && <span className="mono" style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 600, color: 'var(--text-high)' }}>${item.amount.toLocaleString()}</span>}
           </div>
@@ -236,7 +236,7 @@ function CustClaimPackView() {
             ) : building === inc.id ? (
               <span style={{ fontSize: 11, color: 'var(--brand)' }}>Compiling evidence…</span>
             ) : (
-              <button onClick={() => build(inc.id)} style={{ padding: '7px 16px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Generate claim pack</button>
+              <button onClick={() => build(inc.id)} style={{ padding: '7px 16px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Generate claim pack</button>
             )}
           </div>
         </GlassPanel>

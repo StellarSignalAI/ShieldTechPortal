@@ -295,7 +295,7 @@ function JobDetailView({ job, setTab }) {
         </p>
         {job.site && (
           <button onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(job.site), '_blank')}
-            style={{ marginTop: 8, padding: '6px 14px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Navigate →</button>
+            style={{ marginTop: 8, padding: '6px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Navigate →</button>
         )}
 
         {/* Status workflow */}
@@ -307,7 +307,7 @@ function JobDetailView({ job, setTab }) {
                 flex: 1, padding: '6px 0', fontSize: 9, fontWeight: 600,
                 textTransform: 'uppercase', letterSpacing: '0.04em',
                 borderRadius: 4, cursor: 'pointer', fontFamily: 'var(--font-body)',
-                background: i <= idx ? 'rgba(63,169,245,0.12)' : 'rgba(63,169,245,0.03)',
+                background: i <= idx ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.03)',
                 border: i === idx ? '1px solid var(--brand)' : '1px solid var(--border-subtle)',
                 color: i <= idx ? 'var(--brand)' : 'var(--text-low)'
               }}>{s.replace('-',' ')}</button>
@@ -362,7 +362,7 @@ function JobDetailView({ job, setTab }) {
         </div>
         )}
         {accessNotes && (
-        <div style={{ fontSize: 12, color: 'var(--text-mid)', padding: '8px 10px', background: 'rgba(63,169,245,0.03)', borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
+        <div style={{ fontSize: 12, color: 'var(--text-mid)', padding: '8px 10px', background: 'rgba(99,102,241,0.03)', borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
           {accessNotes}
         </div>
         )}
@@ -376,7 +376,7 @@ function JobDetailView({ job, setTab }) {
         {bom.map((b, i) => (
           <div key={i} style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0',
-            borderBottom: i < bom.length - 1 ? '1px solid rgba(63,169,245,0.04)' : 'none'
+            borderBottom: i < bom.length - 1 ? '1px solid rgba(99,102,241,0.04)' : 'none'
           }}>
             <div style={{ flex: 1, fontSize: 13, color: 'var(--text-high)' }}>{b.name}</div>
             <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)' }}>{b.installed}/{b.qty}</span>
@@ -392,7 +392,7 @@ function JobDetailView({ job, setTab }) {
         {checklist.map((c, i) => (
           <label key={i} style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0',
-            borderBottom: '1px solid rgba(63,169,245,0.04)', cursor: 'pointer'
+            borderBottom: '1px solid rgba(99,102,241,0.04)', cursor: 'pointer'
           }}>
             <div onClick={() => toggleCheck(c.label)} style={{
               width: 20, height: 20, borderRadius: 4, flexShrink: 0,
@@ -441,7 +441,7 @@ function JobDetailView({ job, setTab }) {
           })}
         </div>
         <button onClick={openCamera} style={{
-          width: '100%', marginTop: 10, padding: '10px', background: 'rgba(63,169,245,0.08)',
+          width: '100%', marginTop: 10, padding: '10px', background: 'rgba(99,102,241,0.08)',
           border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)',
           fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)'
         }}>◉ Add Photo</button>
@@ -454,7 +454,7 @@ function JobDetailView({ job, setTab }) {
       {/* Actions */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <button onClick={() => shieldModal({ kind: 'confirm', title: 'Put Alarm on Test', message: 'Place this site’s alarm system on test mode? The central monitoring station will be notified and signals will be ignored until you take it off test. Auto-restore after 2 hours.', confirmLabel: 'Put on Test', successMsg: 'Alarm placed on test — central station notified' })} style={{
-          padding: '12px', background: 'rgba(63,169,245,0.08)',
+          padding: '12px', background: 'rgba(99,102,241,0.08)',
           border: '1px solid var(--border-strong)', borderRadius: 8,
           color: 'var(--brand)', fontSize: 13, fontWeight: 500,
           cursor: 'pointer', fontFamily: 'var(--font-body)',
@@ -481,7 +481,7 @@ function JobDetailView({ job, setTab }) {
           padding: '12px', background: 'var(--brand)', border: 'none', borderRadius: 8,
           color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
           fontFamily: 'var(--font-body)',
-          boxShadow: '0 0 16px -4px rgba(63,169,245,0.3)',
+          boxShadow: '0 0 16px -4px rgba(99,102,241,0.3)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
         }}>✍ Capture Signature & Complete</button>
       </div>
@@ -504,7 +504,7 @@ function ResourcesView() {
         {recent.map((r, i) => (
           <div key={i} style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0',
-            borderBottom: '1px solid rgba(63,169,245,0.04)', cursor: 'pointer'
+            borderBottom: '1px solid rgba(99,102,241,0.04)', cursor: 'pointer'
           }}>
             <span style={{ fontSize: 14 }}>{r.type === 'article' ? '▤' : r.type === 'diagram' ? '△' : '▤'}</span>
             <div style={{ flex: 1 }}>
@@ -540,7 +540,7 @@ function ResourcesView() {
       {/* Offline indicator */}
       <div style={{
         padding: '10px 14px', borderRadius: 8,
-        background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)',
+        background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)',
         display: 'flex', alignItems: 'center', gap: 8
       }}>
         <StatusDot status="online" size={6} />

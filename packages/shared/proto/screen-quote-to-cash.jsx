@@ -65,7 +65,7 @@ function QuoteToCashScreen() {
             <div className="mono" style={{ fontSize:22, fontWeight:700, color:k.color }}>{k.val}</div>
           </div>
         ))}
-        <button onClick={() => setShowNewDeal(true)} style={{ padding:'0 18px', background:'rgba(63,169,245,0.08)', border:'1px solid var(--border-strong)', borderRadius:10, color:'var(--brand)', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }}>+ New Deal</button>
+        <button onClick={() => setShowNewDeal(true)} style={{ padding:'0 18px', background:'rgba(99,102,241,0.08)', border:'1px solid var(--border-strong)', borderRadius:10, color:'var(--brand)', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }}>+ New Deal</button>
       </div>
 
       {/* Waterfall */}
@@ -164,7 +164,7 @@ function NewDealModal({ stages, onClose, onCreate }) {
     if (!form.name) return;
     onCreate({ id: genId('D'), name: form.name, value: parseFloat(form.value)||0, contact: form.contact, stage: form.stage, risk: form.risk, age: 0 });
   };
-  const inp = { width:'100%', background:'rgba(63,169,245,0.04)', border:'1px solid var(--border-subtle)', borderRadius:7, padding:'8px 12px', color:'var(--text-high)', fontSize:12, fontFamily:'var(--font-body)', outline:'none' };
+  const inp = { width:'100%', background:'rgba(99,102,241,0.04)', border:'1px solid var(--border-subtle)', borderRadius:7, padding:'8px 12px', color:'var(--text-high)', fontSize:12, fontFamily:'var(--font-body)', outline:'none' };
   return (
     <>
       <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:900, backdropFilter:'blur(4px)' }} />
@@ -195,7 +195,7 @@ function NewDealModal({ stages, onClose, onCreate }) {
         </div>
         <div style={{ display:'flex', gap:8 }}>
           <button onClick={onClose} style={{ flex:1, padding:'9px 0', background:'transparent', border:'1px solid var(--border-subtle)', borderRadius:7, color:'var(--text-low)', fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)' }}>Cancel</button>
-          <button onClick={submit} disabled={!form.name} style={{ flex:2, padding:'9px 0', background:form.name?'rgba(63,169,245,0.12)':'rgba(63,169,245,0.04)', border:'1px solid '+(form.name?'var(--border-strong)':'var(--border-subtle)'), borderRadius:7, color:form.name?'var(--brand)':'var(--text-low)', fontSize:12, fontWeight:600, cursor:form.name?'pointer':'default', fontFamily:'var(--font-body)', transition:'all 0.15s' }}>Create Deal</button>
+          <button onClick={submit} disabled={!form.name} style={{ flex:2, padding:'9px 0', background:form.name?'rgba(99,102,241,0.12)':'rgba(99,102,241,0.04)', border:'1px solid '+(form.name?'var(--border-strong)':'var(--border-subtle)'), borderRadius:7, color:form.name?'var(--brand)':'var(--text-low)', fontSize:12, fontWeight:600, cursor:form.name?'pointer':'default', fontFamily:'var(--font-body)', transition:'all 0.15s' }}>Create Deal</button>
         </div>
       </div>
     </>

@@ -54,7 +54,7 @@ function WPipeline({ size }) {
   const byStage = st => deals.filter(d => d.stage === st).reduce((s, d) => s + d.value, 0);
   const hot = [...open].sort((a, b) => b.value - a.value);
   return (
-    <WCard size={size} accent="#3FA9F5" title="Pipeline" glyph="pipeline"
+    <WCard size={size} accent="#6366F1" title="Pipeline" glyph="pipeline"
       sub={size !== 'small' ? `${open.length} open deals` : null}>
       {size === 'small' && (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -64,7 +64,7 @@ function WPipeline({ size }) {
       )}
       {size !== 'small' && <>
         <WDivide />
-        <WBars color="#3FA9F5" data={[
+        <WBars color="#6366F1" data={[
           { l: 'Qte', v: byStage('quote') }, { l: 'Apr', v: byStage('approved') }, { l: 'PO', v: byStage('po') },
           { l: 'Sch', v: byStage('scheduled') }, { l: 'Inst', v: byStage('installed') }, { l: 'Inv', v: byStage('invoiced') },
         ]} h={size === 'large' ? 56 : 46} />
@@ -74,7 +74,7 @@ function WPipeline({ size }) {
           {hot.slice(0, 4).map((d, i) => (
             <WRow key={d.id} last={i === 3} label={d.name} glyph="dollar"
               glyphColor={d.risk === 'high' ? '#F43F5E' : d.risk === 'medium' ? '#FBBF24' : '#34D399'}
-              a={`$${(d.value / 1000).toFixed(0)}k`} b={d.stage.slice(0, 4)} accent="#3FA9F5" />
+              a={`$${(d.value / 1000).toFixed(0)}k`} b={d.stage.slice(0, 4)} accent="#6366F1" />
           ))}
         </div>
       )}
@@ -142,7 +142,7 @@ function WRevenue({ size }) {
         <WDivide />
         {hasHistory ? <>
           <div style={{ fontSize: 10, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>6-month revenue ($k, paid invoices)</div>
-          <WBars data={monthly} color="#3FA9F5" h={64} />
+          <WBars data={monthly} color="#6366F1" h={64} />
         </> : (
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>No dated payment history yet — the 6-month chart appears as paid invoices accumulate.</div>
         )}
@@ -245,7 +245,7 @@ function WRenewals({ size }) {
 }
 
 registerWidget('mrr',       { label: 'MRR / Recurring Rev',  cat: 'Finance', accent: '#34D399', glyph: 'dollar',    sizes: ['small', 'medium', 'large'], render: s => <WMRR size={s} /> });
-registerWidget('pipeline',  { label: 'Pipeline / Deals',     cat: 'Finance', accent: '#3FA9F5', glyph: 'pipeline',  sizes: ['small', 'medium', 'large'], render: s => <WPipeline size={s} /> });
+registerWidget('pipeline',  { label: 'Pipeline / Deals',     cat: 'Finance', accent: '#6366F1', glyph: 'pipeline',  sizes: ['small', 'medium', 'large'], render: s => <WPipeline size={s} /> });
 registerWidget('revenue',   { label: 'Revenue & Cash',       cat: 'Finance', accent: '#34D399', glyph: 'finance',   sizes: ['small', 'medium', 'large'], render: s => <WRevenue size={s} /> });
 registerWidget('health',    { label: 'Customer Health',      cat: 'Finance', accent: '#FBBF24', glyph: 'health',    sizes: ['small', 'medium', 'large'], render: s => <WHealth size={s} /> });
 registerWidget('renewals',  { label: 'Upcoming Renewals',    cat: 'Finance', accent: '#FBBF24', glyph: 'contracts', sizes: ['small', 'medium', 'large'], render: s => <WRenewals size={s} /> });

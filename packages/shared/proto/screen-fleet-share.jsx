@@ -36,7 +36,7 @@ function TechAppScreen({ onBack }) {
 
         {/* App header */}
         <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 10, position: 'sticky', top: 0, background: 'rgba(10,14,20,0.95)', zIndex: 5 }}>
-          <button onClick={onBack} style={{ padding: '6px 12px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>← Portal</button>
+          <button onClick={onBack} style={{ padding: '6px 12px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>← Portal</button>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>ShieldTech Tech App</div>
             <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{TECH.name} · {TECH.role}</div>
@@ -76,7 +76,7 @@ function TechAppScreen({ onBack }) {
                 </div>
                 <div style={{ fontSize: 10, color: 'var(--text-mid)', marginTop: 2 }}>{j.customer} · {j.dur}h{j.wo ? ` · ${j.wo}` : ''}</div>
                 {j.wo && (
-                  <button onClick={() => { woFocusStore.set(j.wo); navTo('workorder'); }} style={{ marginTop: 8, padding: '5px 12px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open work order →</button>
+                  <button onClick={() => { woFocusStore.set(j.wo); navTo('workorder'); }} style={{ marginTop: 8, padding: '5px 12px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open work order →</button>
                 )}
               </div>
             ))}
@@ -127,7 +127,7 @@ function TechAppScreen({ onBack }) {
               ['Team chat', 'chat', 'chat'],
               ['Knowledge base', 'note', 'knowledge'],
             ].map(([label, icon, target]) => (
-              <button key={target} onClick={() => navTo(target)} className="glass" style={{ padding: '12px 10px', border: '1px solid var(--border-subtle)', borderRadius: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(63,169,245,0.03)' }}>
+              <button key={target} onClick={() => navTo(target)} className="glass" style={{ padding: '12px 10px', border: '1px solid var(--border-subtle)', borderRadius: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(99,102,241,0.03)' }}>
                 <Icon name={icon} size={14} color="var(--brand)" />
                 <span style={{ fontSize: 11, color: 'var(--text-high)' }}>{label}</span>
               </button>

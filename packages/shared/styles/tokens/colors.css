@@ -1,66 +1,72 @@
-/* ShieldTech — Color tokens */
+/* ShieldTech — Color tokens (dark SaaS design language) */
 :root {
-  /* Brand — electric security blue */
-  --brand: #3FA9F5;
-  --brand-hover: #5FC0FF;
-  --brand-pressed: #1E6FB0;
+  /* Brand — electric indigo */
+  --brand: #6366F1;
+  --brand-hover: #7D7CF5;
+  --brand-pressed: #4F4CC7;
+  --brand-rgb: 99,102,241;
 
-  /* Canvas & surfaces — near-black blue, three elevation steps */
-  --canvas: #05070A;
-  --card: #0A0E14;
-  --modal: #111721;
+  /* Secondary — periwinkle highlight (active/accents, never a text color) */
+  --accent-2: #A2A3ED;
+
+  /* Canvas & surfaces — indigo-tinted OLED near-black, three elevation steps */
+  --canvas: #060410;
+  --card: #0C0A14;
+  --modal: #141221;
 
   /* Glass */
-  --glass-bg: rgba(17,23,33,0.55);
+  --glass-bg: rgba(18,16,30,0.55);
   --glass-blur: 20px;
 
-  /* Borders — always brand-tinted alpha, never gray */
-  --border-subtle: rgba(63,169,245,0.10);
-  --border-strong: rgba(63,169,245,0.25);
+  /* Borders — hairline white alpha (depth without shadow on dark surfaces) */
+  --border-subtle: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.16);
 
-  /* Text — cool blue-grays, 3 steps */
-  --text-high: #EAF2FB;
-  --text-mid: #9FB2C8;
-  --text-low: #5C6F86;
+  /* Text — neutral cool grays, 3 steps */
+  --text-high: #FAFAFB;
+  --text-mid: #A1A0A6;
+  --text-low: #656365;
 
   /* Status */
-  --status-ok: #34D399;
+  --status-ok: #4ED99A;
   --status-warn: #FBBF24;
-  --status-critical: #F43F5E;
-  --status-info: #3FA9F5;
+  --status-critical: #FF6B6B;
+  --status-info: #6366F1;
 
   /* Common alpha mixes (semantic aliases) */
-  --brand-tint-05: rgba(63,169,245,0.05);   /* row hover */
-  --brand-tint-12: rgba(63,169,245,0.12);   /* active tab / badge bg */
-  --ok-tint-12: rgba(52,211,153,0.12);
-  --warn-tint-12: rgba(251,191,36,0.12);
-  --critical-tint-12: rgba(244,63,94,0.12);
+  --brand-tint-05: rgba(99,102,241,0.06);   /* row hover */
+  --brand-tint-12: rgba(99,102,241,0.14);   /* active tab / badge bg */
+  --ok-tint-12: rgba(78,217,154,0.14);
+  --warn-tint-12: rgba(251,191,36,0.14);
+  --critical-tint-12: rgba(255,107,107,0.14);
 }
 
 /* ── Light appearance ──
    Applied when the account menu's Appearance is set to Light (shared-state.jsx
    stamps data-theme="light" on <html>; "System" resolves to light/dark from the
-   OS). Flips the elevation surfaces, text and borders to a light palette while
-   keeping the electric-blue brand. */
+   OS). Keeps the indigo brand on a light neutral surface. */
 :root[data-theme="light"] {
-  --brand: #1E7FCB;
-  --brand-hover: #2A93E6;
-  --brand-pressed: #14608F;
+  --brand: #4F46E5;
+  --brand-hover: #6366F1;
+  --brand-pressed: #4338CA;
+  --brand-rgb: 79,70,229;
 
-  --canvas: #EEF3F9;
+  --accent-2: #6366F1;
+
+  --canvas: #F4F5F7;
   --card: #FFFFFF;
   --modal: #FFFFFF;
 
   --glass-bg: rgba(255,255,255,0.72);
 
-  --border-subtle: rgba(30,111,176,0.14);
-  --border-strong: rgba(30,111,176,0.30);
+  --border-subtle: rgba(16,24,40,0.10);
+  --border-strong: rgba(16,24,40,0.18);
 
-  --text-high: #0D1B2A;
-  --text-mid: #43586E;
-  --text-low: #7386A0;
+  --text-high: #101828;
+  --text-mid: #475467;
+  --text-low: #667085;
 
-  --brand-tint-05: rgba(30,127,203,0.05);
-  --brand-tint-12: rgba(30,127,203,0.12);
+  --brand-tint-05: rgba(79,70,229,0.05);
+  --brand-tint-12: rgba(79,70,229,0.12);
 }
 :root[data-theme="light"] body { background: var(--canvas); color: var(--text-high); }

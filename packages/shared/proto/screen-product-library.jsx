@@ -183,17 +183,17 @@ function ProductLibraryScreen({ onAddToDesign }) {
                   <th key={i} style={{ textAlign: i > 3 && i < 8 ? 'right' : 'left', padding: '8px 12px', fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}</tr></thead>
                 <tbody>{rows.map(p => (
-                  <tr key={p.id} onClick={() => setDetail(p)} onMouseEnter={e => e.currentTarget.style.background = 'rgba(63,169,245,0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'} style={{ cursor: 'pointer' }}>
-                    <td style={{ padding: '7px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }}>{p.name}</td>
-                    <td style={{ padding: '7px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{brandName(p.brand)}</td>
-                    <td style={{ padding: '7px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{p.cat}</td>
-                    <td className="mono" style={{ padding: '7px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{p.sku}</td>
-                    <td className="mono" style={{ padding: '7px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-low)', textAlign: 'right' }}>${p.cost.toLocaleString()}</td>
-                    <td className="mono" style={{ padding: '7px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)', textAlign: 'right' }}>${p.map.toLocaleString()}</td>
-                    <td className="mono" style={{ padding: '7px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, fontWeight: 600, textAlign: 'right' }}>${p.msrp.toLocaleString()}</td>
-                    <td className="mono" style={{ padding: '7px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--status-ok)', textAlign: 'right' }}>{p.margin}%</td>
-                    <td style={{ padding: '7px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 10, color: p.stock > 0 ? 'var(--status-ok)' : 'var(--status-warn)' }}>{p.stock > 0 ? p.stock : p.lead}</td>
-                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><button onClick={e => { e.stopPropagation(); showToast(`${p.name} → added to design`); }} style={plMiniBtn(true)}>+ Design</button></td>
+                  <tr key={p.id} onClick={() => setDetail(p)} onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'} style={{ cursor: 'pointer' }}>
+                    <td style={{ padding: '7px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, fontWeight: 500 }}>{p.name}</td>
+                    <td style={{ padding: '7px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{brandName(p.brand)}</td>
+                    <td style={{ padding: '7px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{p.cat}</td>
+                    <td className="mono" style={{ padding: '7px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{p.sku}</td>
+                    <td className="mono" style={{ padding: '7px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)', textAlign: 'right' }}>${p.cost.toLocaleString()}</td>
+                    <td className="mono" style={{ padding: '7px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)', textAlign: 'right' }}>${p.map.toLocaleString()}</td>
+                    <td className="mono" style={{ padding: '7px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, fontWeight: 600, textAlign: 'right' }}>${p.msrp.toLocaleString()}</td>
+                    <td className="mono" style={{ padding: '7px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--status-ok)', textAlign: 'right' }}>{p.margin}%</td>
+                    <td style={{ padding: '7px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: p.stock > 0 ? 'var(--status-ok)' : 'var(--status-warn)' }}>{p.stock > 0 ? p.stock : p.lead}</td>
+                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><button onClick={e => { e.stopPropagation(); showToast(`${p.name} → added to design`); }} style={plMiniBtn(true)}>+ Design</button></td>
                   </tr>
                 ))}</tbody>
               </table>
@@ -236,7 +236,7 @@ function ProductDetailDrawer({ p, brandName, onClose, showToast, onAddToDesign }
         {/* price tiers */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
           {[['DEALER COST', `$${p.cost.toLocaleString()}`, 'var(--text-low)'], ['MAP', `$${p.map.toLocaleString()}`, 'var(--text-mid)'], ['MSRP', `$${p.msrp.toLocaleString()}`, 'var(--text-high)']].map(([l, v, c]) => (
-            <div key={l} style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)' }}>
+            <div key={l} style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{l}</div>
               <div className="mono" style={{ fontSize: 15, fontWeight: 700, color: c }}>{v}</div>
             </div>
@@ -251,16 +251,16 @@ function ProductDetailDrawer({ p, brandName, onClose, showToast, onAddToDesign }
         <div style={{ fontSize: 10, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Specifications</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 16 }}>
           {[['Category', p.cat], ['Type', p.subcat], p.attr && ['Resolution / Rating', p.attr], ['PoE draw', p.poe ? `${p.poe} W` : '—'], ['Stock', p.stock > 0 ? `${p.stock} on hand` : p.lead], ['Lead time', p.lead], ['Warranty', p.warranty], ['Rating', `★ ${p.rating} / 5`]].filter(Boolean).map(([k, v], i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', fontSize: 11 }}>
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', fontSize: 11 }}>
               <span style={{ color: 'var(--text-low)' }}>{k}</span><span style={{ color: 'var(--text-mid)' }}>{v}</span>
             </div>
           ))}
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-mid)', lineHeight: 1.5, marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'rgba(63,169,245,0.03)' }}>{p.spec}</div>
+        <div style={{ fontSize: 11, color: 'var(--text-mid)', lineHeight: 1.5, marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.03)' }}>{p.spec}</div>
 
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => { onAddToDesign && onAddToDesign(p); showToast(`${p.name} → added to design`); }} style={{ flex: 1, padding: '10px', background: 'var(--brand)', border: 'none', borderRadius: 7, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add to Design</button>
-          <button onClick={() => showToast(`${p.name} → added to quote`)} style={{ flex: 1, padding: '10px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add to Quote</button>
+          <button onClick={() => showToast(`${p.name} → added to quote`)} style={{ flex: 1, padding: '10px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add to Quote</button>
         </div>
         <button onClick={() => showToast('Spec sheet (PDF) downloaded')} style={{ width: '100%', marginTop: 8, padding: '9px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⤓ Download spec sheet & datasheet</button>
       </div>
@@ -284,8 +284,8 @@ function BrandDirectoryModal({ onClose, onPick, showToast }) {
           {PL_BRANDS.map(b => {
             const sm = syncMeta[b.sync] || syncMeta.manual;
             return (
-              <div key={b.id} onClick={() => onPick(b.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 9, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', cursor: 'pointer' }}>
-                <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{b.name.slice(0, 2).toUpperCase()}</div>
+              <div key={b.id} onClick={() => onPick(b.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 9, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', cursor: 'pointer' }}>
+                <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{b.name.slice(0, 2).toUpperCase()}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{b.name}</div>
                   <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{b.country} · {b.tier} · {b.skus} SKUs</div>
@@ -302,8 +302,8 @@ function BrandDirectoryModal({ onClose, onPick, showToast }) {
 }
 
 /* tiny style helpers */
-function plNavBtn(active) { return { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '7px 10px', marginBottom: 2, borderRadius: 6, border: 'none', background: active ? 'rgba(63,169,245,0.12)' : 'transparent', color: active ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11.5, fontWeight: active ? 600 : 400, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }; }
+function plNavBtn(active) { return { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '7px 10px', marginBottom: 2, borderRadius: 6, border: 'none', background: active ? 'rgba(99,102,241,0.12)' : 'transparent', color: active ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11.5, fontWeight: active ? 600 : 400, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }; }
 function plSelect() { return { padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', cursor: 'pointer' }; }
-function plMiniBtn(primary) { return { flex: 1, padding: '5px', borderRadius: 5, border: primary ? 'none' : '1px solid var(--border-subtle)', background: primary ? 'rgba(63,169,245,0.12)' : 'transparent', color: primary ? 'var(--brand)' : 'var(--text-low)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }; }
+function plMiniBtn(primary) { return { flex: 1, padding: '5px', borderRadius: 5, border: primary ? 'none' : '1px solid var(--border-subtle)', background: primary ? 'rgba(99,102,241,0.12)' : 'transparent', color: primary ? 'var(--brand)' : 'var(--text-low)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }; }
 
 Object.assign(window, { ProductLibraryScreen, PL_CATALOG, PL_BRANDS, PL_CATS, PL_CAT_META });

@@ -44,7 +44,7 @@ function TechCopilotView() {
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
         {['NVR not recording', 'Reader won’t beep', 'Zone won’t clear', 'Camera no PoE'].map(s => (
           <button key={s} onClick={() => { const prior = thread; push({ from: 'me', text: s }); ask('Start a guided diagnostic: ' + s, prior); }}
-            style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 14, background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⚡ {s}</button>
+            style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 14, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⚡ {s}</button>
         ))}
       </div>
       {/* Thread */}
@@ -56,7 +56,7 @@ function TechCopilotView() {
         )}
         {thread.map((m, i) => (
           <div key={i} style={{ alignSelf: m.from === 'me' ? 'flex-end' : 'flex-start', maxWidth: '85%' }}>
-            <div style={{ padding: '9px 13px', borderRadius: m.from === 'me' ? '12px 12px 3px 12px' : '12px 12px 12px 3px', background: m.from === 'me' ? 'rgba(63,169,245,0.14)' : 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)', fontSize: 12, color: 'var(--text-high)', lineHeight: 1.5 }}>
+            <div style={{ padding: '9px 13px', borderRadius: m.from === 'me' ? '12px 12px 3px 12px' : '12px 12px 12px 3px', background: m.from === 'me' ? 'rgba(99,102,241,0.14)' : 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)', fontSize: 12, color: 'var(--text-high)', lineHeight: 1.5 }}>
               {m.text}
             </div>
           </div>
@@ -66,7 +66,7 @@ function TechCopilotView() {
       {attachments.length > 0 && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {attachments.map((a, i) => (
-            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 7px', borderRadius: 6, background: 'rgba(63,169,245,0.08)', border: `1px solid ${a.error ? 'var(--status-warn)' : 'var(--border-subtle)'}`, fontSize: 10, color: a.error ? 'var(--status-warn)' : 'var(--text-mid)' }}>
+            <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 7px', borderRadius: 6, background: 'rgba(99,102,241,0.08)', border: `1px solid ${a.error ? 'var(--status-warn)' : 'var(--border-subtle)'}`, fontSize: 10, color: a.error ? 'var(--status-warn)' : 'var(--text-mid)' }}>
               {a.dataUrl ? '🖼' : '📄'} {a.name}
               <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1 }}>✕</button>
             </span>
@@ -76,10 +76,10 @@ function TechCopilotView() {
       {/* Input */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <input ref={fileRef} type="file" multiple accept="image/*,text/*,.txt,.md,.csv,.json,.log,.yaml,.yml" style={{ display: 'none' }} onChange={e => { pickFiles(e.target.files); e.target.value = ''; }} />
-        <button onClick={() => fileRef.current && fileRef.current.click()} title="Attach a photo or file" style={{ width: 40, height: 40, flexShrink: 0, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 16, cursor: 'pointer' }}>📎</button>
+        <button onClick={() => fileRef.current && fileRef.current.click()} title="Attach a photo or file" style={{ width: 40, height: 40, flexShrink: 0, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 16, cursor: 'pointer' }}>📎</button>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Describe the symptom…"
-          style={{ flex: 1, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '10px 14px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
-        <button onClick={send} style={{ padding: '0 18px', background: 'rgba(63,169,245,0.12)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>↑</button>
+          style={{ flex: 1, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '10px 14px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        <button onClick={send} style={{ padding: '0 18px', background: 'rgba(99,102,241,0.12)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>↑</button>
       </div>
     </div>
   );
@@ -100,7 +100,7 @@ function TechVoiceView() {
       <div style={{ fontSize: 16, fontWeight: 500 }}>Voice Notes</div>
       <div className="glass" style={{ padding: 24, borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
         <button onClick={() => { setElapsed(0); if (state === 'listening') { setState('idle'); showToast('Transcription requires the ShieldTech AI service — recording discarded', 'warn'); } else { setState('listening'); } }}
-          style={{ width: 84, height: 84, borderRadius: '50%', border: state === 'listening' ? '3px solid var(--status-critical)' : '3px solid var(--brand)', background: state === 'listening' ? 'rgba(244,63,94,0.12)' : 'rgba(63,169,245,0.08)', cursor: 'pointer', fontSize: 30, color: state === 'listening' ? 'var(--status-critical)' : 'var(--brand)', boxShadow: state === 'listening' ? '0 0 0 8px rgba(244,63,94,0.08)' : 'none', transition: 'all 0.2s' }}>
+          style={{ width: 84, height: 84, borderRadius: '50%', border: state === 'listening' ? '3px solid var(--status-critical)' : '3px solid var(--brand)', background: state === 'listening' ? 'rgba(244,63,94,0.12)' : 'rgba(99,102,241,0.08)', cursor: 'pointer', fontSize: 30, color: state === 'listening' ? 'var(--status-critical)' : 'var(--brand)', boxShadow: state === 'listening' ? '0 0 0 8px rgba(244,63,94,0.08)' : 'none', transition: 'all 0.2s' }}>
           {state === 'listening' ? '■' : '🎙'}
         </button>
         <div style={{ marginTop: 12, fontSize: 12, color: state === 'listening' ? 'var(--status-critical)' : 'var(--text-low)' }}>
@@ -158,10 +158,10 @@ function TechScannerView() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ fontSize: 16, fontWeight: 500 }}>Model Scanner</div>
-      <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)', aspectRatio: '3/4', background: '#05070a' }}>
+      <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)', aspectRatio: '3/4', background: '#060410' }}>
         <video ref={videoRef} playsInline muted autoPlay style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: live ? 'block' : 'none' }} />
         {!live && (
-          <button onClick={enableCam} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#05070a', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 20 }}>
+          <button onClick={enableCam} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#060410', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 20 }}>
             <div style={{ width: 48, height: 48, borderRadius: '50%', border: '2px solid var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, color: 'var(--brand)' }}>◉</div>
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>Tap to start camera</div>
             {camErr && <div style={{ fontSize: 10, color: 'var(--status-warn)', maxWidth: 220, textAlign: 'center' }}>{camErr}</div>}
@@ -170,7 +170,7 @@ function TechScannerView() {
         {live && <div style={{ position: 'absolute', top: '32%', left: '22%', right: '22%', height: '20%', border: '2px solid var(--brand)', borderRadius: 8, boxShadow: '0 0 0 2000px rgba(0,0,0,0.35)', animation: 'pulse-online 2s ease-in-out infinite' }}>
           <span style={{ position: 'absolute', top: -22, left: 0, fontSize: 9, color: 'var(--brand)', letterSpacing: '0.08em' }}>ALIGN MODEL STICKER</span>
         </div>}
-        <button onClick={scan} disabled={busy} style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', padding: '10px 26px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 22, color: '#fff', fontSize: 13, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1, fontFamily: 'var(--font-body)', boxShadow: '0 6px 20px rgba(63,169,245,0.4)' }}>{busy ? 'Reading…' : 'Scan'}</button>
+        <button onClick={scan} disabled={busy} style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', padding: '10px 26px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 22, color: '#fff', fontSize: 13, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1, fontFamily: 'var(--font-body)', boxShadow: '0 6px 20px rgba(99,102,241,0.4)' }}>{busy ? 'Reading…' : 'Scan'}</button>
       </div>
       {result && (
         <div className="glass" style={{ padding: 14, borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--brand)' }}>
@@ -210,7 +210,7 @@ function TechRouteView() {
       </div>
       {stops.length === 0 && <div className="glass" style={{ padding: 24, textAlign: 'center', fontSize: 12, color: 'var(--text-low)', borderRadius: 'var(--radius-md)' }}>No stops today — your dispatched jobs build the route automatically.</div>}
       <div style={{ position: 'relative', paddingLeft: 22 }}>
-        {stops.length > 0 && <div style={{ position: 'absolute', left: 8, top: 10, bottom: 10, width: 2, background: 'rgba(63,169,245,0.15)' }}></div>}
+        {stops.length > 0 && <div style={{ position: 'absolute', left: 8, top: 10, bottom: 10, width: 2, background: 'rgba(99,102,241,0.15)' }}></div>}
         {stops.map((s, i) => (
           <div key={i} style={{ position: 'relative', marginBottom: 10 }}>
             <span style={{ position: 'absolute', left: -20, top: 16, width: 12, height: 12, borderRadius: '50%', background: s.status === 'now' ? 'var(--status-ok)' : 'var(--canvas)', border: `2px solid ${statusC[s.status]}`, boxShadow: s.status === 'now' ? '0 0 8px var(--status-ok)' : 'none' }}></span>
@@ -255,11 +255,11 @@ function TechARView() {
         <span style={{ fontSize: 9, color: 'var(--text-low)' }}>concept preview — nothing is saved</span>
       </div>
       <div onClick={addTag} style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)', aspectRatio: '3/4', background: photoBg({ h: 195, p: 'rack', s: 88 }), cursor: 'crosshair' }}>
-        <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', background: 'rgba(63,169,245,0.15)', border: '1px solid var(--border-strong)', borderRadius: 12, padding: '3px 12px', fontSize: 9, fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.08em' }}>AR OVERLAY</div>
+        <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', background: 'rgba(99,102,241,0.15)', border: '1px solid var(--border-strong)', borderRadius: 12, padding: '3px 12px', fontSize: 9, fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.08em' }}>AR OVERLAY</div>
         {tags.map((t, i) => (
           <div key={i} style={{ position: 'absolute', left: `${t.x}%`, top: `${t.y}%`, transform: 'translate(-50%,-50%)' }}>
-            <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid var(--brand)', background: 'rgba(63,169,245,0.25)', boxShadow: '0 0 10px rgba(63,169,245,0.6)' }}></div>
-            <div className="mono" style={{ position: 'absolute', left: 16, top: -4, whiteSpace: 'nowrap', fontSize: 8, color: '#fff', background: 'rgba(0,0,0,0.7)', borderRadius: 4, padding: '2px 6px', border: '1px solid rgba(63,169,245,0.4)' }}>{t.label}</div>
+            <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid var(--brand)', background: 'rgba(99,102,241,0.25)', boxShadow: '0 0 10px rgba(99,102,241,0.6)' }}></div>
+            <div className="mono" style={{ position: 'absolute', left: 16, top: -4, whiteSpace: 'nowrap', fontSize: 8, color: '#fff', background: 'rgba(0,0,0,0.7)', borderRadius: 4, padding: '2px 6px', border: '1px solid rgba(99,102,241,0.4)' }}>{t.label}</div>
           </div>
         ))}
       </div>

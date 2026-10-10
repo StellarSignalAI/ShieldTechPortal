@@ -36,8 +36,8 @@ function StudioDevicePicker({ deviceCatalog, brands, onPick, onClose, filter, ti
         <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Search the catalog…" style={{ width: '100%', padding: '8px 10px', marginBottom: 10, background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)' }} />
         <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
           {list.map(d => (
-            <button key={d.id} onClick={() => onPick(d)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 7, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>
-              <span style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(63,169,245,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <button key={d.id} onClick={() => onPick(d)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 7, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>
+              <span style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(99,102,241,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {typeof Icon !== 'undefined' && <Icon name={(window.__studioSubcatIcons && window.__studioSubcatIcons[d.subcat]) || 'cam-dome'} size={15} color="var(--brand)" />}
               </span>
               <span style={{ flex: 1, minWidth: 0 }}>
@@ -55,7 +55,7 @@ function StudioDevicePicker({ deviceCatalog, brands, onPick, onClose, filter, ti
 }
 
 function studioBtn(primary) {
-  return { padding: '4px 11px', borderRadius: 5, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', border: primary ? 'none' : '1px solid var(--border-strong)', background: primary ? 'var(--brand)' : 'rgba(63,169,245,0.08)', color: primary ? '#fff' : 'var(--brand)' };
+  return { padding: '4px 11px', borderRadius: 5, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', border: primary ? 'none' : '1px solid var(--border-strong)', background: primary ? 'var(--brand)' : 'rgba(99,102,241,0.08)', color: primary ? '#fff' : 'var(--brand)' };
 }
 
 /* ════════════════ INTERCONNECT — drag to connect ════════════════ */
@@ -161,7 +161,7 @@ function InterconnectCanvas({ placedDevices, connections, setConnections, brands
           {/* edges */}
           <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
             <defs>
-              <pattern id="icGrid" width="38" height="38" patternUnits="userSpaceOnUse"><path d="M38 0 L0 0 0 38" fill="none" stroke="rgba(63,169,245,0.04)" strokeWidth="0.5" /></pattern>
+              <pattern id="icGrid" width="38" height="38" patternUnits="userSpaceOnUse"><path d="M38 0 L0 0 0 38" fill="none" stroke="rgba(99,102,241,0.04)" strokeWidth="0.5" /></pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#icGrid)" />
             {connections.map(c => {
@@ -248,9 +248,9 @@ function RackFaceplate({ device, color, hpx, dragging }) {
     panel = (
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
         <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gridAutoFlow: 'column', gap: 1.5 }}>
-          {Array.from({ length: 24 }).map((_, i) => <span key={i} style={{ width: 5, height: 5, borderRadius: 1, background: [3, 7, 8, 14, 19].includes(i) ? '#34d399' : '#0a0e14', border: '0.5px solid #2a3340', boxShadow: [3, 7, 8, 14, 19].includes(i) ? '0 0 3px #34d399' : 'none' }} />)}
+          {Array.from({ length: 24 }).map((_, i) => <span key={i} style={{ width: 5, height: 5, borderRadius: 1, background: [3, 7, 8, 14, 19].includes(i) ? '#34d399' : '#0C0A14', border: '0.5px solid #2a3340', boxShadow: [3, 7, 8, 14, 19].includes(i) ? '0 0 3px #34d399' : 'none' }} />)}
         </div>
-        <div style={{ display: 'flex', gap: 2, marginLeft: 'auto' }}>{[0, 1].map(i => <span key={i} style={{ width: 8, height: 9, borderRadius: 1, background: '#0a0e14', border: '1px solid #2a3340' }} />)}</div>
+        <div style={{ display: 'flex', gap: 2, marginLeft: 'auto' }}>{[0, 1].map(i => <span key={i} style={{ width: 8, height: 9, borderRadius: 1, background: '#0C0A14', border: '1px solid #2a3340' }} />)}</div>
       </div>
     );
   } else if (kind === 'nvr') {
@@ -263,22 +263,22 @@ function RackFaceplate({ device, color, hpx, dragging }) {
   } else if (kind === 'ups') {
     panel = (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
-        <span style={{ width: 26, height: hpx > 44 ? 18 : 11, borderRadius: 2, background: 'linear-gradient(135deg,#0a2233,#06121a)', border: '1px solid #1a3344', boxShadow: 'inset 0 0 4px #3FA9F5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="mono" style={{ fontSize: 6, color: '#5bc0ff' }}>100%</span></span>
+        <span style={{ width: 26, height: hpx > 44 ? 18 : 11, borderRadius: 2, background: 'linear-gradient(135deg,#0a2233,#06121a)', border: '1px solid #1a3344', boxShadow: 'inset 0 0 4px #6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="mono" style={{ fontSize: 6, color: '#5bc0ff' }}>100%</span></span>
         <div style={{ display: 'flex', gap: 1.5 }}>{Array.from({ length: 5 }).map((_, i) => <span key={i} style={{ width: 4, height: 10, borderRadius: 1, background: i < 4 ? '#34d399' : '#1a2230', boxShadow: i < 4 ? '0 0 2px #34d399' : 'none' }} />)}</div>
-        <div style={{ display: 'flex', gap: 3, marginLeft: 'auto' }}>{[0, 1].map(i => <span key={i} style={{ width: 9, height: 9, borderRadius: '50%', background: '#0a0e14', border: '1.5px solid #2a3340' }} />)}</div>
+        <div style={{ display: 'flex', gap: 3, marginLeft: 'auto' }}>{[0, 1].map(i => <span key={i} style={{ width: 9, height: 9, borderRadius: '50%', background: '#0C0A14', border: '1.5px solid #2a3340' }} />)}</div>
       </div>
     );
   } else if (kind === 'psu') {
     panel = (
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1 }}>
         <div style={{ display: 'flex', gap: 3 }}>{Array.from({ length: 4 }).map((_, i) => <span key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: i < 3 ? '#34d399' : '#f59e0b', boxShadow: `0 0 3px ${i < 3 ? '#34d399' : '#f59e0b'}` }} />)}</div>
-        <div style={{ display: 'flex', gap: 2, marginLeft: 'auto' }}>{Array.from({ length: 6 }).map((_, i) => <span key={i} style={{ width: 5, height: 8, borderRadius: 1, background: '#0a0e14', border: '1px solid #2a3340' }} />)}</div>
+        <div style={{ display: 'flex', gap: 2, marginLeft: 'auto' }}>{Array.from({ length: 6 }).map((_, i) => <span key={i} style={{ width: 5, height: 8, borderRadius: 1, background: '#0C0A14', border: '1px solid #2a3340' }} />)}</div>
       </div>
     );
   } else if (kind === 'patch') {
     panel = (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(24, 1fr)', gap: 1, flex: 1 }}>
-        {Array.from({ length: 24 }).map((_, i) => <span key={i} style={{ height: 8, borderRadius: 1, background: '#0a0e14', border: '0.5px solid #2a3340' }} />)}
+        {Array.from({ length: 24 }).map((_, i) => <span key={i} style={{ height: 8, borderRadius: 1, background: '#0C0A14', border: '0.5px solid #2a3340' }} />)}
       </div>
     );
   } else {
@@ -378,10 +378,10 @@ function RackElevationView({ placedDevices, catColors, showToast, setPlacedDevic
             {Array.from({ length: RACK_U }, (_, i) => RACK_U - i).map(n => <div key={n} className="mono" style={{ height: UPX, fontSize: 7, color: 'var(--text-low)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 4 }}>{n}</div>)}
           </div>
           {/* rack frame */}
-          <div style={{ position: 'relative', width: 300, background: '#0a0e14', border: '3px solid #1a2230', borderRadius: 6, height: RACK_U * UPX }}
+          <div style={{ position: 'relative', width: 300, background: '#0C0A14', border: '3px solid #1a2230', borderRadius: 6, height: RACK_U * UPX }}
             ref={stackRef} onPointerMove={onStackMove} onPointerUp={onStackUp} onPointerLeave={onStackUp}>
             {/* empty slot lines */}
-            {Array.from({ length: RACK_U }).map((_, i) => <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: i * UPX, height: UPX, borderBottom: '1px solid rgba(63,169,245,0.04)' }} />)}
+            {Array.from({ length: RACK_U }).map((_, i) => <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: i * UPX, height: UPX, borderBottom: '1px solid rgba(99,102,241,0.04)' }} />)}
             {/* mounted units */}
             {order.map((idx, pos) => {
               const pd = placedDevices[idx]; if (!pd) return null;
@@ -405,7 +405,7 @@ function RackElevationView({ placedDevices, catColors, showToast, setPlacedDevic
             <div style={{ fontWeight: 600, color: 'var(--text-mid)', marginBottom: 8 }}>Mounted ({order.length})</div>
             {order.map((idx, pos) => { const pd = placedDevices[idx]; if (!pd) return null; const color = catColors[pd.device.cat] || 'var(--brand)';
               return (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <span style={{ width: 6, height: 6, borderRadius: 1, background: color, flexShrink: 0 }} />
                   <span style={{ color: 'var(--text-mid)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pd.device.name}</span>
                   <span className="mono" style={{ color: 'var(--text-low)' }}>{heights[pos]}U</span>
@@ -455,7 +455,7 @@ function PhotoQuoteCanvas({ placedDevices, setPlacedDevices, dragPlaceDevice, se
         <span style={{ fontSize: 12, fontWeight: 600 }}>Image Quoting</span>
         <span style={{ fontSize: 10, color: 'var(--text-low)' }}>Drop catalog devices onto a real site photo — each lands in the BOM</span>
         <div style={{ flex: 1 }} />
-        <button onClick={() => fileRef.current?.click()} style={{ padding: '4px 12px', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◉ {photo ? 'Replace Photo' : 'Upload Site Photo'}</button>
+        <button onClick={() => fileRef.current?.click()} style={{ padding: '4px 12px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◉ {photo ? 'Replace Photo' : 'Upload Site Photo'}</button>
         <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{ display: 'none' }} />
         <button onClick={() => onExportToProposal ? onExportToProposal() : (showToast && showToast('Photo markups added to proposal'))} style={studioBtn(true)}>↗ Export to Proposal</button>
       </div>
@@ -483,7 +483,7 @@ function PhotoQuoteCanvas({ placedDevices, setPlacedDevices, dragPlaceDevice, se
                 </div>
               );
             })}
-            {dragPlaceDevice && <div style={{ position: 'absolute', inset: 0, border: '3px dashed var(--brand)', background: 'rgba(63,169,245,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}><span style={{ color: 'var(--brand)', fontSize: 14, fontWeight: 600, background: 'rgba(10,14,20,0.8)', padding: '6px 14px', borderRadius: 6 }}>Drop {dragPlaceDevice.name}</span></div>}
+            {dragPlaceDevice && <div style={{ position: 'absolute', inset: 0, border: '3px dashed var(--brand)', background: 'rgba(99,102,241,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}><span style={{ color: 'var(--brand)', fontSize: 14, fontWeight: 600, background: 'rgba(10,14,20,0.8)', padding: '6px 14px', borderRadius: 6 }}>Drop {dragPlaceDevice.name}</span></div>}
           </div>
         )}
       </div>

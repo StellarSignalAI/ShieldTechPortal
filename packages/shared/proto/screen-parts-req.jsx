@@ -67,7 +67,7 @@ function PartsReqScreen() {
                           <span style={{ fontSize:8, color:urgencyColor[card.urgency], background:urgencyColor[card.urgency]+'15', padding:'1px 6px', borderRadius:100, fontWeight:600, textTransform:'uppercase' }}>{card.urgency}</span>
                         </div>
                         <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
-                          <div style={{ width:20, height:20, borderRadius:'50%', background:'rgba(63,169,245,0.15)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:8, fontWeight:700, color:'var(--brand)', flexShrink:0 }}>{card.tech}</div>
+                          <div style={{ width:20, height:20, borderRadius:'50%', background:'rgba(99,102,241,0.15)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:8, fontWeight:700, color:'var(--brand)', flexShrink:0 }}>{card.tech}</div>
                           <span style={{ fontSize:11, color:'var(--text-high)', fontWeight:500 }}>{card.techName.split(' ')[0]}</span>
                         </div>
                         <div style={{ fontSize:10, color:'var(--text-low)', marginBottom:5, lineHeight:1.3 }}>{card.job}</div>
@@ -95,14 +95,14 @@ function PartsReqScreen() {
           {truckStock.map(t => (
             <div key={t.tech} className="glass" style={{ padding:'10px 12px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:6 }}>
-                <div style={{ width:24, height:24, borderRadius:'50%', background:'rgba(63,169,245,0.12)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:700, color:'var(--brand)', flexShrink:0 }}>{t.tech}</div>
+                <div style={{ width:24, height:24, borderRadius:'50%', background:'rgba(99,102,241,0.12)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:700, color:'var(--brand)', flexShrink:0 }}>{t.tech}</div>
                 <div>
                   <div style={{ fontSize:11, fontWeight:500, color:'var(--text-high)' }}>{t.name.split(' ')[0]}</div>
                   <div style={{ fontSize:9, color:'var(--text-low)' }}>{t.truck}</div>
                 </div>
                 <span className="mono" style={{ marginLeft:'auto', fontSize:12, color:t.stock>=80?'var(--status-ok)':t.stock>=60?'var(--status-warn)':'var(--status-critical)', fontWeight:600 }}>{t.stock}%</span>
               </div>
-              <div style={{ height:4, background:'rgba(63,169,245,0.08)', borderRadius:2, overflow:'hidden' }}>
+              <div style={{ height:4, background:'rgba(99,102,241,0.08)', borderRadius:2, overflow:'hidden' }}>
                 <div style={{ width:t.stock+'%', height:'100%', background:t.stock>=80?'var(--status-ok)':t.stock>=60?'var(--status-warn)':'var(--status-critical)', borderRadius:2, transition:'width 0.4s ease' }} />
               </div>
             </div>

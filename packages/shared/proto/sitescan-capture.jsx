@@ -19,7 +19,7 @@ function SSFakeFeed() {
       <div style={{ position: 'absolute', left: '14%', bottom: '18%', width: '30%', height: '22%', background: 'linear-gradient(180deg, #232f3d, #1a232e)', borderRadius: '6px 6px 0 0' }}></div>
       <div style={{ position: 'absolute', right: '10%', bottom: '22%', width: '18%', height: '34%', background: 'linear-gradient(180deg, #202b38, #18202a)', borderRadius: 4 }}></div>
       <div style={{ position: 'absolute', left: '52%', bottom: '20%', width: '10%', height: '14%', background: '#1c2631', borderRadius: 3 }}></div>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: '46%', height: 1.5, background: 'rgba(63,169,245,0.22)' }}></div>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: '46%', height: 1.5, background: 'rgba(99,102,241,0.22)' }}></div>
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.55) 100%)' }}></div>
     </div>
   );
@@ -33,7 +33,7 @@ function SSPointCloud({ pct }) {
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
       {dots.filter(d => d.k < pct).map((d, i) => (
-        <span key={i} style={{ position: 'absolute', left: `${d.x}%`, top: `${d.y}%`, width: d.s, height: d.s, borderRadius: '50%', background: 'var(--brand)', opacity: d.o, boxShadow: '0 0 4px rgba(63,169,245,0.8)' }}></span>
+        <span key={i} style={{ position: 'absolute', left: `${d.x}%`, top: `${d.y}%`, width: d.s, height: d.s, borderRadius: '50%', background: 'var(--brand)', opacity: d.o, boxShadow: '0 0 4px rgba(99,102,241,0.8)' }}></span>
       ))}
     </div>
   );
@@ -47,7 +47,7 @@ function SSMesh({ on }) {
   return (
     <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.5 }}>
       {tris.map((t, i) => (
-        <polygon key={i} points={`0,${t.s} ${t.s},0 ${t.s},${t.s}`} fill="none" stroke="rgba(63,169,245,0.5)" strokeWidth="0.7"
+        <polygon key={i} points={`0,${t.s} ${t.s},0 ${t.s},${t.s}`} fill="none" stroke="rgba(99,102,241,0.5)" strokeWidth="0.7"
           style={{ transform: `translate(${t.x}%, ${t.y}%) rotate(${t.r}deg)`, transformOrigin: 'center', animation: `fade-up 0.6s ease ${i * 90}ms both` }}></polygon>
       ))}
     </svg>
@@ -84,7 +84,7 @@ function SSSessionMap({ rooms, current }) {
     <div style={{ position: 'absolute', left: 10, bottom: 104, borderRadius: 10, background: 'rgba(4,10,16,0.85)', border: '1px solid var(--border-strong)', padding: '5px 6px 3px', backdropFilter: 'blur(6px)' }}>
       <svg width={W} height={H}>
         {rooms.map((r, i) => <polygon key={i} points={M(r.poly)} fill="rgba(52,211,153,0.12)" stroke="#34D399" strokeWidth="1.3" strokeLinejoin="round"></polygon>)}
-        {current && <polygon points={M(current)} fill="rgba(63,169,245,0.12)" stroke="var(--brand)" strokeWidth="1.3" strokeDasharray="4 2"></polygon>}
+        {current && <polygon points={M(current)} fill="rgba(99,102,241,0.12)" stroke="var(--brand)" strokeWidth="1.3" strokeDasharray="4 2"></polygon>}
       </svg>
       <div className="mono" style={{ fontSize: 7.5, color: 'var(--text-low)', textAlign: 'center' }}>SESSION · {rooms.length} room{rooms.length === 1 ? '' : 's'}</div>
     </div>
@@ -419,7 +419,7 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
         <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-high)' }}>AI Camera Scan — {floorLabel}</span>
       </div>
       <div style={{ flex: 1, overflowY: 'auto', padding: '4px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ height: 120, borderRadius: 14, background: 'radial-gradient(ellipse at 50% 100%, rgba(63,169,245,0.25), rgba(5,10,17,0.9) 70%)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, color: 'var(--brand)' }}>◉</div>
+        <div style={{ height: 120, borderRadius: 14, background: 'radial-gradient(ellipse at 50% 100%, rgba(99,102,241,0.25), rgba(5,10,17,0.9) 70%)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, color: 'var(--brand)' }}>◉</div>
         <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-high)' }}>Before you scan</div>
         <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.25)' }}>
           <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--status-warn)', marginBottom: 3 }}>This is the AI camera estimate</div>
@@ -430,7 +430,7 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
         </div>
         {[['◫', 'Close room doors', 'so the scan doesn\'t capture adjoining rooms'], ['◔', 'Move slowly, one wall at a time', 'white lines show wall detection — walls turn green when captured'], ['▦', 'Obstructions are fine', 'AI classifies cabinets, counters, desks & racks and sees through them to the wall'], ['⚠', 'Orange wall = not captured', 'rescan it or the room won\'t close']].map(([g, t, s]) => (
           <div key={t} style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
-            <span style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--brand)', flexShrink: 0 }}>{g}</span>
+            <span style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--brand)', flexShrink: 0 }}>{g}</span>
             <div><div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>{t}</div><div style={{ fontSize: 10.5, color: 'var(--text-low)', lineHeight: 1.45 }}>{s}</div></div>
           </div>
         ))}
@@ -528,7 +528,7 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
         {/* reticle */}
         {(stage === 'ready' || stage === 'scanning') && (
           <div style={{ position: 'absolute', left: '50%', top: '54%', transform: 'translate(-50%,-50%)', pointerEvents: 'none' }}>
-            <div style={{ width: 44, height: 44, border: `1.5px solid ${mode === 'corner' ? 'rgba(52,211,153,0.9)' : 'rgba(63,169,245,0.85)'}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 18px ${mode === 'corner' ? 'rgba(52,211,153,0.4)' : 'rgba(63,169,245,0.35)'}` }}>
+            <div style={{ width: 44, height: 44, border: `1.5px solid ${mode === 'corner' ? 'rgba(52,211,153,0.9)' : 'rgba(99,102,241,0.85)'}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 18px ${mode === 'corner' ? 'rgba(52,211,153,0.4)' : 'rgba(99,102,241,0.35)'}` }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: mode === 'corner' ? '#34D399' : 'var(--brand)' }}></div>
             </div>
           </div>
@@ -623,7 +623,7 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
         {stage === 'ceiling' && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, background: 'rgba(2,5,10,0.5)', zIndex: 3 }}>
             <div style={{ fontSize: 13.5, fontWeight: 700, color: '#fff', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>Slide the grid from floor to ceiling</div>
-            <div className="mono" style={{ fontSize: 34, fontWeight: 800, color: 'var(--brand)', textShadow: '0 0 24px rgba(63,169,245,0.5)' }}>{ceilH.toFixed(1)}′</div>
+            <div className="mono" style={{ fontSize: 34, fontWeight: 800, color: 'var(--brand)', textShadow: '0 0 24px rgba(99,102,241,0.5)' }}>{ceilH.toFixed(1)}′</div>
             <input type="range" min="7" max="14" step="0.1" value={ceilH} onChange={e => setCeilH(Number(e.target.value))} style={{ width: '70%', accentColor: 'var(--brand)' }} />
             <button onClick={confirmCeiling} style={btn(true)}>✓ Set ceiling height</button>
           </div>
@@ -635,7 +635,7 @@ function SSCapture({ floorLabel, roomCount, onDone, onCancel }) {
             <div style={{ width: '100%', background: 'var(--canvas)', borderTop: '1px solid var(--border-strong)', borderRadius: '18px 18px 0 0', padding: '16px 16px calc(18px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', gap: 11, animation: 'fade-up 0.3s ease both' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                 <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(52,211,153,0.15)', border: '1.5px solid #34D399', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#34D399', fontSize: 12, fontWeight: 800 }}>✓</span>
-                <input value={name} onChange={e => setName(e.target.value)} style={{ flex: 1, background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '8px 10px', color: 'var(--text-high)', fontSize: 13.5, fontWeight: 700, fontFamily: 'var(--font-body)', outline: 'none', minWidth: 0 }} />
+                <input value={name} onChange={e => setName(e.target.value)} style={{ flex: 1, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '8px 10px', color: 'var(--text-high)', fontSize: 13.5, fontWeight: 700, fontFamily: 'var(--font-body)', outline: 'none', minWidth: 0 }} />
                 <span className="mono" style={{ fontSize: 11, color: 'var(--status-ok)', flexShrink: 0 }}>{Math.round(ssArea(result.poly))} ft²</span>
               </div>
               <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{result.orange ? '' : 'All walls closed ✓ · '}ceiling {result.h}′ · {result.doors.length} opening{result.doors.length !== 1 ? 's' : ''} · {result.objects.length} object{result.objects.length !== 1 ? 's' : ''} documented</div>

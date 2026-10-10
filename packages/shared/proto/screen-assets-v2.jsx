@@ -68,7 +68,7 @@ function AssetsScreen() {
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             padding: '5px 14px', borderRadius: 6, fontSize: 11, fontWeight: tab===t.id?600:400,
-            background: tab===t.id?'rgba(63,169,245,0.12)':'transparent',
+            background: tab===t.id?'rgba(99,102,241,0.12)':'transparent',
             border: `1px solid ${tab===t.id?'var(--brand)':'var(--border-subtle)'}`,
             color: tab===t.id?'var(--brand)':'var(--text-mid)',
             cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 5
@@ -113,25 +113,25 @@ function AssetsScreen() {
               ))}</tr></thead>
               <tbody>{siteScopedConfigs.map(cfg => (
                 <tr key={cfg.id} onClick={() => setSelectedConfig(cfg)} style={{ cursor: 'pointer' }}
-                  onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'}
+                  onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'}
                   onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)', width: 24 }}><StatusDot status={cfg.status==='online'?'online':cfg.status==='warning'?'warning':'critical'} size={7} /></td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', width: 24 }}><StatusDot status={cfg.status==='online'?'online':cfg.status==='warning'?'warning':'critical'} size={7} /></td>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                     <div style={{ fontSize: 12, fontWeight: 500 }}>{cfg.name}</div>
                     {!customerScope && <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{cfg.customer}</div>}
                   </td>
-                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 10, color: 'var(--brand)' }}>{cfg.tag}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{cfg.type}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--brand)' }}>{cfg.tag}</td>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{cfg.type}</td>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                     <div style={{ fontSize: 11 }}>{cfg.mfg}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{cfg.model}</div>
                   </td>
-                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: cfg.ip?'var(--text-mid)':'var(--text-low)' }}>{cfg.ip || '—'}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={cfg.status==='online'?'online':cfg.status==='warning'?'warning':'critical'} label={cfg.status} /></td>
-                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: cfg.uptime>=99?'var(--status-ok)':cfg.uptime>=95?'var(--status-warn)':'var(--status-critical)' }}>{cfg.uptime}%</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{cfg.site}<br/>{cfg.room}</td>
-                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{cfg.warranty}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: cfg.ip?'var(--text-mid)':'var(--text-low)' }}>{cfg.ip || '—'}</td>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={cfg.status==='online'?'online':cfg.status==='warning'?'warning':'critical'} label={cfg.status} /></td>
+                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: cfg.uptime>=99?'var(--status-ok)':cfg.uptime>=95?'var(--status-warn)':'var(--status-critical)' }}>{cfg.uptime}%</td>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{cfg.site}<br/>{cfg.room}</td>
+                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{cfg.warranty}</td>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                     {cfg.fwUpdate && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 3, background: 'rgba(251,191,36,0.08)', color: 'var(--status-warn)', fontWeight: 600 }}>UPDATE</span>}
                   </td>
                 </tr>
@@ -186,7 +186,7 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{cfg.customer} ▸ {cfg.site} ▸ {cfg.room} · {cfg.tag}</div>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
-          <button onClick={() => showToast("Configuration editing isn't wired up yet")} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit</button>
+          <button onClick={() => showToast("Configuration editing isn't wired up yet")} style={{ padding: '5px 12px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit</button>
           <button onClick={() => showToast("Revision history isn't wired up yet")} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>History</button>
           <button onClick={() => setDetailTab('related')} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Related</button>
         </div>
@@ -194,7 +194,7 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
 
       <div style={{ display: 'flex', gap: 3, padding: '0 0 10px', flexShrink: 0 }}>
         {['info','network','monitoring','photos','related','audit'].map(t => (
-          <button key={t} onClick={() => setDetailTab(t)} style={{ padding: '4px 12px', borderRadius: 5, fontSize: 11, background: detailTab===t?'rgba(63,169,245,0.12)':'transparent', border: `1px solid ${detailTab===t?'var(--brand)':'transparent'}`, color: detailTab===t?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{t}</button>
+          <button key={t} onClick={() => setDetailTab(t)} style={{ padding: '4px 12px', borderRadius: 5, fontSize: 11, background: detailTab===t?'rgba(99,102,241,0.12)':'transparent', border: `1px solid ${detailTab===t?'var(--brand)':'transparent'}`, color: detailTab===t?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{t}</button>
         ))}
       </div>
 
@@ -204,7 +204,7 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
             <GlassPanel>
               <div className="label-sm" style={{ marginBottom: 10 }}>IDENTITY</div>
               {[{l:'Asset ID',v:cfg.id},{l:'Asset Tag',v:cfg.tag},{l:'Name',v:cfg.name},{l:'Type',v:cfg.type},{l:'Manufacturer',v:cfg.mfg},{l:'Model',v:cfg.model},{l:'Serial #',v:cfg.serial},{l:'MAC Address',v:cfg.mac},{l:'Hostname',v:cfg.hostname}].map((f,i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <span style={{ fontSize: 11, color: 'var(--text-low)' }}>{f.l}</span>
                   <span className="mono" style={{ fontSize: 11, color: f.v?'var(--text-mid)':'var(--text-low)', textAlign: 'right', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.v || '—'}</span>
                 </div>
@@ -214,7 +214,7 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
             <GlassPanel>
               <div className="label-sm" style={{ marginBottom: 10 }}>NETWORK</div>
               {[{l:'IP Address',v:cfg.ip},{l:'Subnet',v:cfg.subnet},{l:'Gateway',v:cfg.gateway},{l:'VLAN',v:cfg.vlan||'—'},{l:'HTTP',v:cfg.ports.http},{l:'HTTPS',v:cfg.ports.https},{l:'RTSP',v:cfg.ports.rtsp},{l:'ONVIF',v:cfg.ports.onvif}].map((f,i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <span style={{ fontSize: 11, color: 'var(--text-low)' }}>{f.l}</span>
                   <span className="mono" style={{ fontSize: 11, color: f.v?'var(--text-mid)':'var(--text-low)' }}>{f.v || '—'}</span>
                 </div>
@@ -222,7 +222,7 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
               {cfg.rtsp && (
                 <div style={{ marginTop: 8 }}>
                   <div style={{ fontSize: 9, color: 'var(--text-low)' }}>RTSP URL</div>
-                  <div className="mono" style={{ fontSize: 10, color: 'var(--brand)', padding: '4px 8px', borderRadius: 4, background: 'rgba(63,169,245,0.04)', wordBreak: 'break-all', cursor: 'pointer' }} onClick={() => { if (navigator.clipboard) { navigator.clipboard.writeText(cfg.rtsp); showToast('Copied RTSP URL'); } else showToast('Clipboard unavailable'); }}>{cfg.rtsp}</div>
+                  <div className="mono" style={{ fontSize: 10, color: 'var(--brand)', padding: '4px 8px', borderRadius: 4, background: 'rgba(99,102,241,0.04)', wordBreak: 'break-all', cursor: 'pointer' }} onClick={() => { if (navigator.clipboard) { navigator.clipboard.writeText(cfg.rtsp); showToast('Copied RTSP URL'); } else showToast('Clipboard unavailable'); }}>{cfg.rtsp}</div>
                 </div>
               )}
               {cfg.ip && (
@@ -230,14 +230,14 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
                   const p = cfg.ports || {};
                   const url = p.https ? `https://${cfg.ip}:${p.https}` : `http://${cfg.ip}${p.http ? `:${p.http}` : ''}`;
                   window.open(url, '_blank', 'noopener');
-                }} style={{ marginTop: 8, width: '100%', padding: '6px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open Web UI →</button>
+                }} style={{ marginTop: 8, width: '100%', padding: '6px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open Web UI →</button>
               )}
             </GlassPanel>
 
             <GlassPanel>
               <div className="label-sm" style={{ marginBottom: 10 }}>INSTALLATION</div>
               {[{l:'Firmware',v:cfg.firmware},{l:'PoE',v:cfg.poe?'Yes':'No'},{l:'Mount',v:cfg.mount},{l:'Cable',v:cfg.cable},{l:'Switch / Port',v:cfg.switch},{l:'Install Date',v:cfg.installDate},{l:'Purchase Date',v:cfg.purchaseDate},{l:'Warranty',v:cfg.warranty}].map((f,i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <span style={{ fontSize: 11, color: 'var(--text-low)' }}>{f.l}</span>
                   <span className={f.l==='Firmware'?'mono':''} style={{ fontSize: 11, color: 'var(--text-mid)' }}>{f.v || '—'}</span>
                 </div>
@@ -254,7 +254,7 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
             <GlassPanel>
               <div className="label-sm" style={{ marginBottom: 10 }}>LOCATION</div>
               {[{l:'Customer',v:cfg.customer},{l:'Site',v:cfg.site},{l:'Room',v:cfg.room},{l:'Floor',v:cfg.floor}].map((f,i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <span style={{ fontSize: 11, color: 'var(--text-low)' }}>{f.l}</span>
                   <span style={{ fontSize: 11, color: f.l==='Customer'?'var(--brand)':'var(--text-mid)' }}>{f.v}</span>
                 </div>
@@ -265,7 +265,7 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
             <GlassPanel style={{ borderLeft: '3px solid var(--status-warn)' }}>
               <div className="label-sm" style={{ marginBottom: 10, color: 'var(--status-warn)' }}>COST (INTERNAL ONLY)</div>
               {[{l:'Purchase Cost',v:`$${cfg.cost}`},{l:'Install Cost',v:`$${cfg.installCost}`},{l:'Total',v:`$${cfg.cost+cfg.installCost}`}].map((f,i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: i<2?'1px solid rgba(63,169,245,0.04)':'2px solid var(--border-subtle)' }}>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: i<2?'1px solid rgba(99,102,241,0.04)':'2px solid var(--border-subtle)' }}>
                   <span style={{ fontSize: 11, color: 'var(--text-low)' }}>{f.l}</span>
                   <span className="mono" style={{ fontSize: 12, fontWeight: i===2?600:400 }}>{f.v}</span>
                 </div>
@@ -293,7 +293,7 @@ function ConfigurationDetail({ config: cfg, onBack, showToast, toast }) {
           <GlassPanel>
             <div className="label-sm" style={{ marginBottom: 10 }}>RELATED ITEMS</div>
             <div style={{ fontSize: 12, color: 'var(--text-low)', padding: '8px 0' }}>No related items linked to this configuration.</div>
-            <button onClick={() => showToast("Related-item linking isn't wired up yet")} style={{ marginTop: 8, padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Link Related Item</button>
+            <button onClick={() => showToast("Related-item linking isn't wired up yet")} style={{ marginTop: 8, padding: '5px 12px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Link Related Item</button>
           </GlassPanel>
         )}
 
@@ -381,7 +381,7 @@ function CreateAssetModal({ onClose, showToast }) {
             <div className="label-sm">ASSET TYPE</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {types.map(t => (
-                <button key={t} onClick={() => setAssetType(t)} style={{ padding: '8px 16px', borderRadius: 6, fontSize: 12, background: assetType===t?'rgba(63,169,245,0.12)':'transparent', border: `1px solid ${assetType===t?'var(--brand)':'var(--border-subtle)'}`, color: assetType===t?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t}</button>
+                <button key={t} onClick={() => setAssetType(t)} style={{ padding: '8px 16px', borderRadius: 6, fontSize: 12, background: assetType===t?'rgba(99,102,241,0.12)':'transparent', border: `1px solid ${assetType===t?'var(--brand)':'var(--border-subtle)'}`, color: assetType===t?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t}</button>
               ))}
             </div>
             <div className="label-sm" style={{ marginTop: 4 }}>CUSTOMER & LOCATION</div>
@@ -438,7 +438,7 @@ function CreateAssetModal({ onClose, showToast }) {
                 <div style={{ display: 'flex', gap: 6 }}>
                   <Segmented options={['Yes','No']} defaultValue="Yes"
                     btnStyle={{ flex: 1, padding: '7px', borderRadius: 5, fontSize: 12 }}
-                    activeStyle={{ background: 'rgba(63,169,245,0.1)', border: '1px solid var(--brand)', color: 'var(--brand)' }}
+                    activeStyle={{ background: 'rgba(99,102,241,0.1)', border: '1px solid var(--brand)', color: 'var(--brand)' }}
                     idleStyle={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-low)' }} />
                 </div>
               </div>
@@ -525,7 +525,7 @@ function CreateFlexAssetModal({ onClose, showToast }) {
           <div className="label-sm">ASSET TYPE</div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {Object.keys(flexTypes).map(t => (
-              <button key={t} onClick={() => setSelectedType(t)} style={{ padding: '6px 14px', borderRadius: 6, fontSize: 11, background: selectedType===t?'rgba(63,169,245,0.12)':'transparent', border: `1px solid ${selectedType===t?'var(--brand)':'var(--border-subtle)'}`, color: selectedType===t?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t}</button>
+              <button key={t} onClick={() => setSelectedType(t)} style={{ padding: '6px 14px', borderRadius: 6, fontSize: 11, background: selectedType===t?'rgba(99,102,241,0.12)':'transparent', border: `1px solid ${selectedType===t?'var(--brand)':'var(--border-subtle)'}`, color: selectedType===t?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t}</button>
             ))}
           </div>
           <CustomerSelector style={{}} showToast={showToast} value={f.customer || ''} onChange={(v) => setF(prev => ({ ...prev, customer: v }))} />
@@ -588,7 +588,7 @@ function CreatePasswordModal({ onClose, showToast }) {
             <div className="label-sm" style={{ marginBottom: 4 }}>Password</div>
             <div style={{ display: 'flex', gap: 6 }}>
               <input value={f['Password'] ?? genPass} onChange={bind('Password')} placeholder="Enter or generate..." style={{ flex: 1, padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none' }} />
-              <button onClick={generate} style={{ padding: '7px 14px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Generate</button>
+              <button onClick={generate} style={{ padding: '7px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>Generate</button>
             </div>
             {genPass && <div className="mono" style={{ fontSize: 11, color: 'var(--status-ok)', marginTop: 6, padding: '4px 8px', borderRadius: 4, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)' }}>{genPass}</div>}
           </div>
@@ -675,7 +675,7 @@ function CreateDocumentModal({ onClose, showToast }) {
               url: null, status: 'draft',
             }, ...(list || [])]);
             onClose(); showToast('Document saved as draft');
-          }} style={{ padding: '8px 20px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Draft</button>
+          }} style={{ padding: '8px 20px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Draft</button>
           <button onClick={() => {
             if (!(f['Document Title'] || '').trim()) { showToast('Add a document title first'); return; }
             assetDocStore.set(list => [{
@@ -729,7 +729,7 @@ function CreateNetworkModal({ onClose, showToast }) {
             <div style={{ display: 'flex', gap: 6 }}>
               <Segmented options={['Enabled','Disabled','External']} defaultValue="Disabled"
                 btnStyle={{ flex: 1, padding: '6px', borderRadius: 5, fontSize: 11 }}
-                activeStyle={{ background: 'rgba(63,169,245,0.1)', border: '1px solid var(--brand)', color: 'var(--brand)' }}
+                activeStyle={{ background: 'rgba(99,102,241,0.1)', border: '1px solid var(--brand)', color: 'var(--brand)' }}
                 idleStyle={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-low)' }} />
             </div>
           </div>

@@ -21,10 +21,10 @@ function PunchFloorPlan({ items, selected, onSelect, addMode, onAddAt }) {
   return (
     <div onClick={handleClick} style={{ position: 'relative', aspectRatio: '4 / 3', background: 'rgba(5,7,10,0.5)', borderRadius: 10, border: '1px solid var(--border-subtle)', overflow: 'hidden', cursor: addMode ? 'crosshair' : 'default' }}>
       {/* grid paper */}
-      <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, rgba(63,169,245,0.03) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(63,169,245,0.03) 0 1px, transparent 1px 24px)' }}></div>
+      <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, rgba(99,102,241,0.03) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(99,102,241,0.03) 0 1px, transparent 1px 24px)' }}></div>
       {rooms.map(r => (
-        <div key={r.label} style={{ position: 'absolute', left: `${r.x}%`, top: `${r.y}%`, width: `${r.w}%`, height: `${r.h}%`, border: `1px solid ${r.accent ? 'rgba(63,169,245,0.3)' : 'rgba(148,163,184,0.18)'}`, background: r.accent ? 'rgba(63,169,245,0.04)' : 'rgba(148,163,184,0.02)', borderRadius: 2 }}>
-          <span style={{ position: 'absolute', top: 4, left: 6, fontSize: 8, letterSpacing: '0.08em', color: r.accent ? 'rgba(63,169,245,0.6)' : 'var(--text-low)', fontWeight: 600 }}>{r.label}</span>
+        <div key={r.label} style={{ position: 'absolute', left: `${r.x}%`, top: `${r.y}%`, width: `${r.w}%`, height: `${r.h}%`, border: `1px solid ${r.accent ? 'rgba(99,102,241,0.3)' : 'rgba(148,163,184,0.18)'}`, background: r.accent ? 'rgba(99,102,241,0.04)' : 'rgba(148,163,184,0.02)', borderRadius: 2 }}>
+          <span style={{ position: 'absolute', top: 4, left: 6, fontSize: 8, letterSpacing: '0.08em', color: r.accent ? 'rgba(99,102,241,0.6)' : 'var(--text-low)', fontWeight: 600 }}>{r.label}</span>
         </div>
       ))}
       {/* pins */}
@@ -34,7 +34,7 @@ function PunchFloorPlan({ items, selected, onSelect, addMode, onAddAt }) {
         return (
           <button key={it.id} onClick={(e) => { e.stopPropagation(); onSelect(sel ? null : it.id); }}
             title={it.title}
-            style={{ position: 'absolute', left: `${it.pin.x}%`, top: `${it.pin.y}%`, transform: 'translate(-50%,-50%)', width: sel ? 28 : 22, height: sel ? 28 : 22, borderRadius: '50%', border: `2px solid ${st.c}`, background: sel ? st.c : 'rgba(0,0,0,0.6)', color: sel ? '#0a0e14' : st.c, fontSize: sel ? 11 : 9, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: sel ? `0 0 14px ${st.c}` : '0 2px 8px rgba(0,0,0,0.5)', transition: 'all 0.15s', zIndex: sel ? 10 : 5, fontFamily: 'var(--font-body)' }}>
+            style={{ position: 'absolute', left: `${it.pin.x}%`, top: `${it.pin.y}%`, transform: 'translate(-50%,-50%)', width: sel ? 28 : 22, height: sel ? 28 : 22, borderRadius: '50%', border: `2px solid ${st.c}`, background: sel ? st.c : 'rgba(0,0,0,0.6)', color: sel ? '#0C0A14' : st.c, fontSize: sel ? 11 : 9, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: sel ? `0 0 14px ${st.c}` : '0 2px 8px rgba(0,0,0,0.5)', transition: 'all 0.15s', zIndex: sel ? 10 : 5, fontFamily: 'var(--font-body)' }}>
             {i + 1}
           </button>
         );
@@ -113,10 +113,10 @@ function PunchListScreen() {
             <div className="mono" style={{ fontSize: 18, fontWeight: 600, color: pct === 100 ? 'var(--status-ok)' : 'var(--text-high)' }}>{pct}%</div>
             <div style={{ fontSize: 9, color: 'var(--text-low)', letterSpacing: '0.08em' }}>BURNED DOWN</div>
           </div>
-          <div style={{ width: 120, height: 6, borderRadius: 3, background: 'rgba(63,169,245,0.08)', overflow: 'hidden' }}>
+          <div style={{ width: 120, height: 6, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
             <div style={{ width: `${pct}%`, height: '100%', background: pct === 100 ? 'var(--status-ok)' : 'var(--brand)', borderRadius: 3, transition: 'width 0.3s' }}></div>
           </div>
-          <button onClick={() => { setAddMode(a => !a); setDraft(null); }} style={{ padding: '7px 14px', background: addMode ? 'rgba(251,191,36,0.12)' : 'rgba(63,169,245,0.08)', border: `1px solid ${addMode ? 'rgba(251,191,36,0.4)' : 'var(--border-strong)'}`, borderRadius: 8, color: addMode ? 'var(--status-warn)' : 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{addMode ? 'Cancel pin' : '+ Add pin'}</button>
+          <button onClick={() => { setAddMode(a => !a); setDraft(null); }} style={{ padding: '7px 14px', background: addMode ? 'rgba(251,191,36,0.12)' : 'rgba(99,102,241,0.08)', border: `1px solid ${addMode ? 'rgba(251,191,36,0.4)' : 'var(--border-strong)'}`, borderRadius: 8, color: addMode ? 'var(--status-warn)' : 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{addMode ? 'Cancel pin' : '+ Add pin'}</button>
           <button onClick={sendForSignoff} disabled={counts.open > 0} style={{ padding: '7px 14px', background: counts.open === 0 ? 'rgba(52,211,153,0.1)' : 'rgba(148,163,184,0.05)', border: `1px solid ${counts.open === 0 ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'}`, borderRadius: 8, color: counts.open === 0 ? 'var(--status-ok)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: counts.open === 0 ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }} title={counts.open > 0 ? `${counts.open} items still open` : 'Send to customer'}>Customer sign-off →</button>
         </div>
       </div>
@@ -129,11 +129,11 @@ function PunchListScreen() {
           {draft && (
             <div style={{ marginTop: 10, display: 'flex', gap: 8, alignItems: 'center' }}>
               <input autoFocus value={draftTitle} onChange={e => setDraftTitle(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') createItem(); }} placeholder="What needs fixing at this pin?"
-                style={{ flex: 1, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-strong)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
-              <select value={draftTech} onChange={e => setDraftTech(e.target.value)} style={{ background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 10px', color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+                style={{ flex: 1, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-strong)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+              <select value={draftTech} onChange={e => setDraftTech(e.target.value)} style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 10px', color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
                 {Object.entries(PUNCH_TECHS).map(([id, t]) => <option key={id} value={id}>{t.name}</option>)}
               </select>
-              <button onClick={createItem} disabled={!draftTitle} style={{ padding: '8px 16px', background: draftTitle ? 'rgba(63,169,245,0.12)' : 'rgba(63,169,245,0.04)', border: '1px solid var(--border-strong)', borderRadius: 7, color: draftTitle ? 'var(--brand)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: draftTitle ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>Create</button>
+              <button onClick={createItem} disabled={!draftTitle} style={{ padding: '8px 16px', background: draftTitle ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.04)', border: '1px solid var(--border-strong)', borderRadius: 7, color: draftTitle ? 'var(--brand)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: draftTitle ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>Create</button>
             </div>
           )}
           <div style={{ display: 'flex', gap: 14, marginTop: 10 }}>
@@ -149,7 +149,7 @@ function PunchListScreen() {
         <div className="glass" style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', gap: 4, marginBottom: 2 }}>
             {['all', 'open', 'done', 'verified'].map(f => (
-              <button key={f} onClick={() => setStatusFilter(f)} style={{ padding: '4px 11px', borderRadius: 11, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize', background: statusFilter === f ? 'rgba(63,169,245,0.15)' : 'transparent', border: `1px solid ${statusFilter === f ? 'var(--border-strong)' : 'var(--border-subtle)'}`, color: statusFilter === f ? 'var(--brand)' : 'var(--text-low)' }}>{f}</button>
+              <button key={f} onClick={() => setStatusFilter(f)} style={{ padding: '4px 11px', borderRadius: 11, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize', background: statusFilter === f ? 'rgba(99,102,241,0.15)' : 'transparent', border: `1px solid ${statusFilter === f ? 'var(--border-strong)' : 'var(--border-subtle)'}`, color: statusFilter === f ? 'var(--brand)' : 'var(--text-low)' }}>{f}</button>
             ))}
           </div>
           {shown.map((it) => {
@@ -160,9 +160,9 @@ function PunchListScreen() {
             const photo = it.photoId ? photos.find(p => p.id === it.photoId) : null;
             return (
               <div key={it.id} onClick={() => setSelected(sel ? null : it.id)}
-                style={{ display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', background: sel ? 'rgba(63,169,245,0.06)' : 'rgba(5,7,10,0.4)', border: `1px solid ${sel ? 'var(--border-strong)' : 'var(--border-subtle)'}`, transition: 'all 0.12s' }}>
+                style={{ display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', background: sel ? 'rgba(99,102,241,0.06)' : 'rgba(5,7,10,0.4)', border: `1px solid ${sel ? 'var(--border-strong)' : 'var(--border-subtle)'}`, transition: 'all 0.12s' }}>
                 <button onClick={(e) => { e.stopPropagation(); cycle(it); }} title={`Status: ${st.label} — click to advance`}
-                  style={{ width: 22, height: 22, borderRadius: '50%', border: `2px solid ${st.c}`, background: it.status !== 'open' ? st.c : 'transparent', color: it.status !== 'open' ? '#0a0e14' : st.c, fontSize: 9, fontWeight: 700, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-body)' }}>
+                  style={{ width: 22, height: 22, borderRadius: '50%', border: `2px solid ${st.c}`, background: it.status !== 'open' ? st.c : 'transparent', color: it.status !== 'open' ? '#0C0A14' : st.c, fontSize: 9, fontWeight: 700, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-body)' }}>
                   {it.status === 'open' ? num : '✓'}
                 </button>
                 <div style={{ flex: 1, minWidth: 0 }}>

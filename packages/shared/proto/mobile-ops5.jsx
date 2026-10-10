@@ -14,9 +14,9 @@ const ops5$ = (n) => '$' + Number(n || 0).toLocaleString(undefined, { maximumFra
 function MDeskIntro({ icon, title, blurb, chips = [], kpis, onNav }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div className="glass" style={{ padding: '15px 16px', borderRadius: 14, border: '1px solid var(--border-strong)', background: 'linear-gradient(125deg, rgba(63,169,245,0.08), rgba(63,169,245,0.02))' }}>
+      <div className="glass" style={{ padding: '15px 16px', borderRadius: 14, border: '1px solid var(--border-strong)', background: 'linear-gradient(125deg, rgba(99,102,241,0.08), rgba(99,102,241,0.02))' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(63,169,245,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>{icon}</span>
+          <span style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(99,102,241,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>{icon}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-high)' }}>{title}</div>
             <div style={{ fontSize: 11, color: 'var(--text-mid)', lineHeight: 1.45, marginTop: 2 }}>{blurb}</div>
@@ -24,7 +24,7 @@ function MDeskIntro({ icon, title, blurb, chips = [], kpis, onNav }) {
         </div>
         <div style={{ display: 'flex', gap: 7, marginTop: 12, flexWrap: 'wrap' }}>
           {chips.map(c => (
-            <button key={c.label} onClick={() => (c.onClick ? c.onClick() : onNav && onNav(c.to))} style={{ padding: '8px 14px', borderRadius: 9, border: '1px solid var(--border-strong)', background: 'rgba(63,169,245,0.08)', color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c.label}</button>
+            <button key={c.label} onClick={() => (c.onClick ? c.onClick() : onNav && onNav(c.to))} style={{ padding: '8px 14px', borderRadius: 9, border: '1px solid var(--border-strong)', background: 'rgba(99,102,241,0.08)', color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c.label}</button>
           ))}
         </div>
       </div>
@@ -76,7 +76,7 @@ function MChatN({ onNav }) {
             const mine = m.sender_id === me;
             return (
               <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start', marginBottom: 8 }}>
-                <div style={{ maxWidth: '82%', padding: '8px 12px', borderRadius: mine ? '13px 13px 4px 13px' : '13px 13px 13px 4px', background: mine ? 'rgba(63,169,245,0.18)' : 'rgba(148,163,184,0.1)', border: '1px solid var(--border-subtle)' }}>
+                <div style={{ maxWidth: '82%', padding: '8px 12px', borderRadius: mine ? '13px 13px 4px 13px' : '13px 13px 13px 4px', background: mine ? 'rgba(99,102,241,0.18)' : 'rgba(148,163,184,0.1)', border: '1px solid var(--border-subtle)' }}>
                   {!mine && <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--brand)', marginBottom: 2 }}>{m.sender_name}</div>}
                   <div style={{ fontSize: 13, color: 'var(--text-high)', lineHeight: 1.4, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{m.body}</div>
                   <div style={{ fontSize: 8.5, color: 'var(--text-low)', marginTop: 3, textAlign: 'right' }}>{new Date(m.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</div>
@@ -88,7 +88,7 @@ function MChatN({ onNav }) {
         </div>
         <div style={{ display: 'flex', gap: 8, paddingTop: 10 }}>
           <input value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Message…"
-            style={{ flex: 1, padding: '11px 13px', borderRadius: 11, border: '1px solid var(--border-subtle)', background: 'rgba(63,169,245,0.04)', color: 'var(--text-high)', fontSize: 13.5, fontFamily: 'var(--font-body)', outline: 'none' }} />
+            style={{ flex: 1, padding: '11px 13px', borderRadius: 11, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.04)', color: 'var(--text-high)', fontSize: 13.5, fontFamily: 'var(--font-body)', outline: 'none' }} />
           <button onClick={send} style={{ padding: '0 17px', borderRadius: 11, border: 'none', background: 'var(--brand)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>➤</button>
         </div>
       </div>
@@ -244,7 +244,7 @@ function MItemsList({ onNav, title }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <OpsKpis items={[['ITEMS', (items || []).length, 'var(--brand)'], ['SHOWN', list.length, 'var(--text-mid)']]} />
       <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Search ${title}…`}
-        style={{ padding: '11px 14px', borderRadius: 10, border: '1px solid var(--border-subtle)', background: 'rgba(63,169,245,0.04)', color: 'var(--text-high)', fontSize: 13.5, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        style={{ padding: '11px 14px', borderRadius: 10, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.04)', color: 'var(--text-high)', fontSize: 13.5, fontFamily: 'var(--font-body)', outline: 'none' }} />
       {items === null && <OPS5_EMPTY>Loading pricebook…</OPS5_EMPTY>}
       {list.slice(0, 40).map((i, ix) => (
         <MRow key={i.qbo_id || ix} icon="product-library" title={i.name} sub={i.description || i.type || ''} right={ops5$(i.unit_price)} />
@@ -418,7 +418,7 @@ function MUsersN({ onNav }) {
             </div>
             <button disabled={busy === 'save'} onClick={saveManage} style={{ padding: '12px 0', borderRadius: 11, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', opacity: busy === 'save' ? 0.6 : 1 }}>Save changes</button>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button disabled={!!busy} onClick={() => callManage('resend')} style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: '1px solid var(--border-strong)', background: 'rgba(63,169,245,0.06)', color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Resend invite</button>
+              <button disabled={!!busy} onClick={() => callManage('resend')} style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: '1px solid var(--border-strong)', background: 'rgba(99,102,241,0.06)', color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Resend invite</button>
               <button disabled={!!busy} onClick={() => callManage('reset', `Reset password for ${manage.email}?`)} style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--text-mid)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Reset password</button>
             </div>
             {manage.id !== selfId && (
@@ -777,7 +777,7 @@ function MAutoBidN({ onNav }) {
 
       {building.length > 0 && <MSection title="Finishing up" style={{ marginTop: 4 }} />}
       {building.map(o => card(o, o.bid.status === 'building' ? 'BUILDING' : 'PRICING DONE', 'var(--status-warn)', null, null, (
-        <button disabled={genBusy[o.id]} onClick={() => finishOne(o)} style={{ marginTop: 9, width: '100%', padding: '9px 0', borderRadius: 9, border: '1px solid var(--border-strong)', background: 'rgba(63,169,245,0.08)', color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+        <button disabled={genBusy[o.id]} onClick={() => finishOne(o)} style={{ marginTop: 9, width: '100%', padding: '9px 0', borderRadius: 9, border: '1px solid var(--border-strong)', background: 'rgba(99,102,241,0.08)', color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
           {genBusy[o.id] ? 'Writing proposal…' : 'Finish proposal now'}
         </button>
       )))}
@@ -843,7 +843,7 @@ function MBidReview({ opp, onClose }) {
     } else showToast(`Email failed: ${(r && r.error) || 'unknown'} — use Download instead`, 'error');
   };
   const mathRow = (k, v, strong) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.06)' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.06)' }}>
       <span style={{ fontSize: 11.5, color: strong ? 'var(--text-high)' : 'var(--text-mid)', fontWeight: strong ? 700 : 400 }}>{k}</span>
       <span className="mono" style={{ fontSize: 11.5, fontWeight: strong ? 700 : 500, color: strong ? 'var(--brand)' : 'var(--text-high)' }}>{v}</span>
     </div>
@@ -873,7 +873,7 @@ function MBidReview({ opp, onClose }) {
               const t = (bid.tiers || {})[k]; if (!t) return null;
               const onIt = k === tierKey;
               return (
-                <button key={k} disabled={tierBusy} onClick={() => switchTier(k)} style={{ flex: 1, padding: '8px 0 7px', borderRadius: 9, cursor: 'pointer', fontFamily: 'var(--font-body)', border: `1px solid ${onIt ? 'var(--brand)' : 'var(--border-subtle)'}`, background: onIt ? 'rgba(63,169,245,0.14)' : 'transparent', opacity: tierBusy ? 0.55 : 1 }}>
+                <button key={k} disabled={tierBusy} onClick={() => switchTier(k)} style={{ flex: 1, padding: '8px 0 7px', borderRadius: 9, cursor: 'pointer', fontFamily: 'var(--font-body)', border: `1px solid ${onIt ? 'var(--brand)' : 'var(--border-subtle)'}`, background: onIt ? 'rgba(99,102,241,0.14)' : 'transparent', opacity: tierBusy ? 0.55 : 1 }}>
                   <div style={{ fontSize: 9, fontWeight: 700, color: onIt ? 'var(--brand)' : 'var(--text-low)', textTransform: 'uppercase' }}>{label}</div>
                   <div className="mono" style={{ fontSize: 12.5, fontWeight: 700, color: onIt ? 'var(--text-high)' : 'var(--text-mid)' }}>{ab$(t.price)}</div>
                 </button>
@@ -935,7 +935,7 @@ function MBidReview({ opp, onClose }) {
 
       {/* Decision bar */}
       <div style={{ padding: '10px 14px calc(12px + env(safe-area-inset-bottom))', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 9, flexShrink: 0, background: 'rgba(10,14,20,0.96)' }}>
-        <button onClick={download} style={{ flex: 1, padding: '13px 0', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'rgba(63,169,245,0.08)', color: 'var(--brand)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⭳ Approve & Download</button>
+        <button onClick={download} style={{ flex: 1, padding: '13px 0', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'rgba(99,102,241,0.08)', color: 'var(--brand)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⭳ Approve & Download</button>
         <button onClick={() => setEmailOpen(true)} style={{ flex: 1.2, padding: '13px 0', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✉ Approve & Email</button>
       </div>
 

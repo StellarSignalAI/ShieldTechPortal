@@ -68,21 +68,21 @@ function TechPhotosView({ setTab }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ fontSize: 16, fontWeight: 500 }}>Site Photos</div>
-        <button onClick={() => { setCam({ ...cam, slot: null }); setTab('capture'); }} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 4px 14px rgba(63,169,245,0.3)' }}>
+        <button onClick={() => { setCam({ ...cam, slot: null }); setTab('capture'); }} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 4px 14px rgba(99,102,241,0.3)' }}>
           <Icon name="cameras" size={14} color="#fff" /> Camera
         </button>
       </div>
 
       {/* Job selector — includes an Unassigned bucket so photos can be shot with no job */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
-        <button onClick={() => setCam({ ...cam, wo: '__unassigned' })} style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-body)', background: !activeWo ? 'rgba(63,169,245,0.12)' : 'rgba(63,169,245,0.03)', border: `1px solid ${!activeWo ? 'var(--border-strong)' : 'var(--border-subtle)'}`, color: !activeWo ? 'var(--brand)' : 'var(--text-mid)', textAlign: 'left' }}>
+        <button onClick={() => setCam({ ...cam, wo: '__unassigned' })} style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-body)', background: !activeWo ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.03)', border: `1px solid ${!activeWo ? 'var(--border-strong)' : 'var(--border-subtle)'}`, color: !activeWo ? 'var(--brand)' : 'var(--text-mid)', textAlign: 'left' }}>
           <div className="mono" style={{ fontSize: 10, fontWeight: 600 }}>Unassigned</div>
           <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{unassignedPhotos.length} photo{unassignedPhotos.length === 1 ? '' : 's'}</div>
         </button>
         {wos.map(w => {
           const on = activeWo && w.id === activeWo.id;
           return (
-            <button key={w.id} onClick={() => setCam({ ...cam, wo: w.id })} style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-body)', background: on ? 'rgba(63,169,245,0.12)' : 'rgba(63,169,245,0.03)', border: `1px solid ${on ? 'var(--border-strong)' : 'var(--border-subtle)'}`, color: on ? 'var(--brand)' : 'var(--text-mid)', textAlign: 'left' }}>
+            <button key={w.id} onClick={() => setCam({ ...cam, wo: w.id })} style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-body)', background: on ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.03)', border: `1px solid ${on ? 'var(--border-strong)' : 'var(--border-subtle)'}`, color: on ? 'var(--brand)' : 'var(--text-mid)', textAlign: 'left' }}>
               <div className="mono" style={{ fontSize: 10, fontWeight: 600 }}>{w.id}</div>
               <div style={{ fontSize: 9, color: on ? 'var(--text-mid)' : 'var(--text-low)' }}>{w.customer}</div>
             </button>
@@ -133,7 +133,7 @@ function TechPhotosView({ setTab }) {
           <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)' }}>Required Shots — {activeWo.type}</span>
           <span className="mono" style={{ fontSize: 12, fontWeight: 700, color: comp.pct === 100 ? 'var(--status-ok)' : 'var(--status-warn)' }}>{comp.done.length}/{comp.required.length}</span>
         </div>
-        <div style={{ height: 5, borderRadius: 3, background: 'rgba(63,169,245,0.08)', overflow: 'hidden', marginBottom: 10 }}>
+        <div style={{ height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden', marginBottom: 10 }}>
           <div style={{ width: `${comp.pct}%`, height: '100%', borderRadius: 3, background: comp.pct === 100 ? 'var(--status-ok)' : 'var(--status-warn)', transition: 'width 0.3s' }}></div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -150,7 +150,7 @@ function TechPhotosView({ setTab }) {
                   {shot && <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{shot.time} · {shot.day}</div>}
                 </div>
                 {!done && (
-                  <button onClick={() => shootSlot(slot)} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Shoot</button>
+                  <button onClick={() => shootSlot(slot)} style={{ padding: '5px 12px', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Shoot</button>
                 )}
               </div>
             );
@@ -312,16 +312,16 @@ function TechCaptureView({ setTab }) {
       ) : activeWo && comp.missing.length > 0 && (
         <div style={{ margin: '0 16px', display: 'flex', gap: 5, overflowX: 'auto' }}>
           {comp.missing.map(s => (
-            <button key={s} onClick={() => setCam({ ...cam, slot: s })} style={{ flexShrink: 0, padding: '4px 10px', borderRadius: 10, background: 'rgba(63,169,245,0.05)', border: '1px dashed var(--border-strong)', color: 'var(--text-mid)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>○ {s}</button>
+            <button key={s} onClick={() => setCam({ ...cam, slot: s })} style={{ flexShrink: 0, padding: '4px 10px', borderRadius: 10, background: 'rgba(99,102,241,0.05)', border: '1px dashed var(--border-strong)', color: 'var(--text-mid)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>○ {s}</button>
           ))}
         </div>
       )}
 
       {/* Viewfinder */}
-      <div style={{ position: 'relative', flex: 1, minHeight: 320, margin: '0 16px', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)', background: '#05070a' }}>
+      <div style={{ position: 'relative', flex: 1, minHeight: 320, margin: '0 16px', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-strong)', background: '#060410' }}>
         <video ref={videoRef} playsInline muted autoPlay style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: live ? 'block' : 'none' }} />
         {!live && (
-          <button onClick={enableCam} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, background: '#05070a', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 20 }}>
+          <button onClick={enableCam} style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, background: '#060410', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 20 }}>
             <div style={{ width: 54, height: 54, borderRadius: '50%', border: '2px solid var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--brand)' }}>◉</div>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Tap to start camera</div>
             {camErr && <div style={{ fontSize: 11, color: 'var(--status-warn)', maxWidth: 250, textAlign: 'center', lineHeight: 1.4 }}>{camErr}</div>}
@@ -357,7 +357,7 @@ function TechCaptureView({ setTab }) {
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
-          <button onClick={() => { if (live) setFacing(f => f === 'environment' ? 'user' : 'environment'); else enableCam(); }} title={live ? 'Flip camera' : 'Start camera'} style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 15, cursor: 'pointer' }}>↻</button>
+          <button onClick={() => { if (live) setFacing(f => f === 'environment' ? 'user' : 'environment'); else enableCam(); }} title={live ? 'Flip camera' : 'Start camera'} style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 15, cursor: 'pointer' }}>↻</button>
           <button onClick={capture} style={{ width: 66, height: 66, borderRadius: '50%', background: 'transparent', border: '3px solid #fff', padding: 4, cursor: 'pointer', display: 'flex' }}>
             <div style={{ flex: 1, borderRadius: '50%', background: '#fff', transition: 'transform 0.1s' }}
               onMouseDown={e => e.currentTarget.style.transform = 'scale(0.85)'}

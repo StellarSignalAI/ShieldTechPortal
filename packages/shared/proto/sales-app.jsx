@@ -15,7 +15,7 @@ const salesStageStore = createShieldStore('sstages', {});   // stage overrides f
 
 const SALES_STAGES = [
   ['lead', 'Lead', '#94A3B8', 0.10],
-  ['qualified', 'Qualified', '#3FA9F5', 0.35],
+  ['qualified', 'Qualified', '#6366F1', 0.35],
   ['proposal', 'Proposal Sent', '#FBBF24', 0.60],
   ['won', 'Won', '#34D399', 1],
   ['lost', 'Lost', '#F43F5E', 0],
@@ -313,9 +313,9 @@ function SalesDealSheet({ item, onClose }) {
 
         {/* Actions */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          {item._doc && item.stage !== 'won' && <button onClick={emailAcceptLink} style={act('rgba(63,169,245,0.08)', '1px solid var(--border-strong)', 'var(--brand)')}>✉ Email accept link</button>}
+          {item._doc && item.stage !== 'won' && <button onClick={emailAcceptLink} style={act('rgba(99,102,241,0.08)', '1px solid var(--border-strong)', 'var(--brand)')}>✉ Email accept link</button>}
           {item.stage !== 'won' && <button onClick={winToProject} style={act('rgba(52,211,153,0.08)', '1px solid rgba(52,211,153,0.3)', 'var(--status-ok)')}>✓ Won{item._doc ? ' → Project' : ''}</button>}
-          <button onClick={() => setLogOpen(true)} style={act('rgba(63,169,245,0.05)', '1px solid var(--border-subtle)', 'var(--text-mid)')}>+ Log activity / task</button>
+          <button onClick={() => setLogOpen(true)} style={act('rgba(99,102,241,0.05)', '1px solid var(--border-subtle)', 'var(--text-mid)')}>+ Log activity / task</button>
           <button disabled={aiBusy} onClick={() => aiDraft('follow-up')} style={act('rgba(192,132,252,0.08)', '1px solid rgba(192,132,252,0.3)', '#c084fc')}>{aiBusy ? 'Drafting…' : '⟡ AI follow-up email'}</button>
         </div>
 
@@ -337,7 +337,7 @@ function SalesDealSheet({ item, onClose }) {
           <span style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-low)', marginBottom: 6, display: 'block' }}>Activity ({linked.length})</span>
           {linked.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)' }}>No activity yet — log a call, meeting, or task above.</div>}
           {linked.slice(0, 8).map(a => (
-            <div key={a.id} style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', alignItems: 'baseline' }}>
+            <div key={a.id} style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', alignItems: 'baseline' }}>
               <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: 'var(--brand)', width: 44, flexShrink: 0 }}>{a.type}</span>
               <span style={{ fontSize: 12, color: 'var(--text-mid)', flex: 1 }}>{a.note}</span>
               <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
@@ -367,7 +367,7 @@ function SalesLeadsView({ openDealFor }) {
       {rows.map(c => (
         <div key={c.id} className="glass" style={{ padding: '12px 13px', borderRadius: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-subtle)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{c.logo || (c.name || '?').slice(0, 2).toUpperCase()}</span>
+            <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-subtle)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{c.logo || (c.name || '?').slice(0, 2).toUpperCase()}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-high)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
               <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{[c.industry, c.phone, c.email].filter(Boolean).join(' · ') || '—'}</div>
@@ -375,7 +375,7 @@ function SalesLeadsView({ openDealFor }) {
             {c.leadStatus === 'lead' && <span style={{ fontSize: 8.5, fontWeight: 700, color: '#FBBF24', border: '1px solid rgba(251,191,36,0.4)', borderRadius: 100, padding: '2px 8px' }}>LEAD</span>}
           </div>
           <div style={{ display: 'flex', gap: 7, marginTop: 9 }}>
-            <button onClick={() => openDealFor(c.name)} style={{ flex: 1, padding: '8px 0', background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Deal</button>
+            <button onClick={() => openDealFor(c.name)} style={{ flex: 1, padding: '8px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Deal</button>
             {c.phone && <a href={`tel:${c.phone}`} onClick={() => addActivity({ type: 'call', note: `Called ${c.name}`, customer: c.name, status: 'done' })} style={{ flex: 1, padding: '8px 0', background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'center', textDecoration: 'none' }}>📞 Call</a>}
             <button onClick={() => addActivity({ type: 'task', note: `Follow up with ${c.name}`, customer: c.name, due: addDaysISO(todayISO(), 2) }) || showToast('Follow-up task added for 2 days out', 'ok')} style={{ flex: 1, padding: '8px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-mid)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⏰ Follow up</button>
           </div>
@@ -436,7 +436,7 @@ function SalesNewActivitySheet({ preset, onClose }) {
           <span style={lbl}>Type</span>
           <div style={{ display: 'flex', gap: 5 }}>
             {[['task', '⏰ Task'], ['call', '📞 Call'], ['meeting', '🤝 Meeting'], ['email', '✉ Email'], ['note', '📝 Note']].map(([id, l]) => (
-              <button key={id} onClick={() => setF(p => ({ ...p, type: id }))} style={{ flex: 1, padding: '8px 0', borderRadius: 9, fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', background: f.type === id ? 'rgba(63,169,245,0.14)' : 'transparent', border: `1px solid ${f.type === id ? 'var(--brand)' : 'var(--border-subtle)'}`, color: f.type === id ? 'var(--brand)' : 'var(--text-low)' }}>{l}</button>
+              <button key={id} onClick={() => setF(p => ({ ...p, type: id }))} style={{ flex: 1, padding: '8px 0', borderRadius: 9, fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', background: f.type === id ? 'rgba(99,102,241,0.14)' : 'transparent', border: `1px solid ${f.type === id ? 'var(--brand)' : 'var(--border-subtle)'}`, color: f.type === id ? 'var(--brand)' : 'var(--text-low)' }}>{l}</button>
             ))}
           </div>
         </div>
@@ -625,7 +625,7 @@ function SalesStatsView() {
                 <span style={{ fontSize: 11, color: c, fontWeight: 600 }}>{label}</span>
                 <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{col.length} · {salesFmt$(v)}</span>
               </div>
-              <div style={{ height: 7, borderRadius: 4, background: 'rgba(63,169,245,0.06)', overflow: 'hidden' }}>
+              <div style={{ height: 7, borderRadius: 4, background: 'rgba(99,102,241,0.06)', overflow: 'hidden' }}>
                 <div style={{ width: `${Math.round(v / maxCol * 100)}%`, height: '100%', background: c, borderRadius: 4, transition: 'width 0.4s' }} />
               </div>
             </div>
@@ -635,7 +635,7 @@ function SalesStatsView() {
       <MSection title="Activity leaderboard">
         {leaders.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)', padding: '6px 2px' }}>Log calls, meetings, and tasks — the leaderboard builds itself.</div>}
         {leaders.map(([who, n], i) => (
-          <div key={who} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 2px', borderBottom: '1px solid rgba(63,169,245,0.05)' }}>
+          <div key={who} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 2px', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
             <span className="mono" style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? '#FBBF24' : 'var(--text-low)', width: 18 }}>#{i + 1}</span>
             <span style={{ fontSize: 12.5, color: 'var(--text-high)', flex: 1 }}>{who}</span>
             <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{n} activit{n === 1 ? 'y' : 'ies'}</span>
@@ -662,7 +662,7 @@ function SalesAvatarMenu() {
   const u = window.__shieldUser;
   const theme = (prefs && prefs.theme) || 'dark';
   const item = { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '11px 14px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' };
-  const seg = (active) => ({ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', background: active ? 'rgba(63,169,245,0.14)' : 'transparent', border: `1px solid ${active ? 'var(--brand)' : 'var(--border-subtle)'}`, color: active ? 'var(--brand)' : 'var(--text-low)' });
+  const seg = (active) => ({ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', background: active ? 'rgba(99,102,241,0.14)' : 'transparent', border: `1px solid ${active ? 'var(--brand)' : 'var(--border-subtle)'}`, color: active ? 'var(--brand)' : 'var(--text-low)' });
   return (
     <div style={{ position: 'relative' }}>
       <button onClick={() => setOpen(o => !o)} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>{(u && u.initials) || '·'}</button>
@@ -728,7 +728,7 @@ function SalesApp() {
         {wide && (
           <nav style={{ width: 176, flexShrink: 0, borderRight: '1px solid var(--border-subtle)', padding: '14px 10px', display: 'flex', flexDirection: 'column', gap: 4, background: 'rgba(10,14,20,0.5)' }}>
             {SALES_TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', background: tab === t.id ? 'rgba(63,169,245,0.12)' : 'transparent', color: tab === t.id ? 'var(--brand)' : 'var(--text-mid)', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, textAlign: 'left' }}>
+              <button key={t.id} onClick={() => setTab(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', background: tab === t.id ? 'rgba(99,102,241,0.12)' : 'transparent', color: tab === t.id ? 'var(--brand)' : 'var(--text-mid)', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, textAlign: 'left' }}>
                 <Icon name={t.icon} size={17} color={tab === t.id ? 'var(--brand)' : 'var(--text-low)'} />
                 {t.label}
               </button>

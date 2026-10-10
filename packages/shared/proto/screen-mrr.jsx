@@ -57,7 +57,7 @@ function MRRScreen() {
             <div style={{ fontSize:10, color:k.alert?'var(--status-warn)':'var(--text-low)' }}>{k.sub}</div>
           </div>
         ))}
-        <button onClick={() => setShowChurnSim(!showChurnSim)} style={{ padding:'0 16px', background:showChurnSim?'rgba(244,63,94,0.08)':'rgba(63,169,245,0.08)', border:'1px solid '+(showChurnSim?'rgba(244,63,94,0.3)':'var(--border-strong)'), borderRadius:10, color:showChurnSim?'var(--status-critical)':'var(--brand)', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }}>
+        <button onClick={() => setShowChurnSim(!showChurnSim)} style={{ padding:'0 16px', background:showChurnSim?'rgba(244,63,94,0.08)':'rgba(99,102,241,0.08)', border:'1px solid '+(showChurnSim?'rgba(244,63,94,0.3)':'var(--border-strong)'), borderRadius:10, color:showChurnSim?'var(--status-critical)':'var(--brand)', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }}>
           {showChurnSim?'Hide':'Churn Sim'}
         </button>
       </div>
@@ -94,7 +94,7 @@ function MRRScreen() {
                       </div>
                     )}
                     {isLast && <span className="mono" style={{ fontSize:9, color:churnedMRR>0?'var(--status-critical)':'var(--brand)', fontWeight:700 }}>${(v/1000).toFixed(1)}K</span>}
-                    <div style={{ width:'100%', height:h, borderRadius:'3px 3px 0 0', background:isLast?(churnedMRR>0?'rgba(244,63,94,0.4)':'var(--brand)'):'rgba(63,169,245,0.3)', transition:'all 0.5s ease', boxShadow:isLast&&!churnedMRR?'0 0 10px rgba(63,169,245,0.3)':'none' }} />
+                    <div style={{ width:'100%', height:h, borderRadius:'3px 3px 0 0', background:isLast?(churnedMRR>0?'rgba(244,63,94,0.4)':'var(--brand)'):'rgba(99,102,241,0.3)', transition:'all 0.5s ease', boxShadow:isLast&&!churnedMRR?'0 0 10px rgba(99,102,241,0.3)':'none' }} />
                     <span style={{ fontSize:9, color:'var(--text-low)' }}>{months[i]}</span>
                   </div>
                 );
@@ -119,8 +119,8 @@ function MRRScreen() {
                 {contracts.sort((a,b) => b.mrr - a.mrr).map((c,i) => (
                   <tr key={i}
                     onClick={() => showChurnSim && toggleChurn(c.customer)}
-                    style={{ borderBottom:'1px solid rgba(63,169,245,0.05)', opacity:c.churned?0.5:1, cursor:showChurnSim?'pointer':'default', transition:'opacity 0.2s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background='rgba(63,169,245,0.04)'; }}
+                    style={{ borderBottom:'1px solid rgba(99,102,241,0.05)', opacity:c.churned?0.5:1, cursor:showChurnSim?'pointer':'default', transition:'opacity 0.2s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background='rgba(99,102,241,0.04)'; }}
                     onMouseLeave={e => { e.currentTarget.style.background='transparent'; }}>
                     <td style={{ padding:'9px 10px', fontSize:12, color:c.churned?'var(--text-low)':'var(--text-high)', fontWeight:500, textDecoration:c.churned?'line-through':'none' }}>{c.customer}</td>
                     <td style={{ padding:'9px 10px', fontSize:11, color:'var(--text-mid)' }}>{c.plan}</td>
@@ -152,7 +152,7 @@ function MRRScreen() {
                   <span style={{ fontSize:11, color:'var(--text-mid)' }}>{p.plan}</span>
                   <span className="mono" style={{ fontSize:11, color:p.color, fontWeight:600 }}>${p.mrr.toLocaleString()}</span>
                 </div>
-                <div style={{ height:5, background:'rgba(63,169,245,0.08)', borderRadius:3, overflow:'hidden' }}>
+                <div style={{ height:5, background:'rgba(99,102,241,0.08)', borderRadius:3, overflow:'hidden' }}>
                   <div style={{ width:currentMRR>0?(p.mrr/currentMRR)*100+'%':'0%', height:'100%', background:p.color, borderRadius:3, transition:'width 0.6s ease' }} />
                 </div>
               </div>

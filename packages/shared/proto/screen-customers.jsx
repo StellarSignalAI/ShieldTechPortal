@@ -107,25 +107,25 @@ function CustomersScreen() {
           <tbody>
             {customers.map(c => (
               <tr key={c.id} onClick={() => { setSelectedId(c.id); setView('detail'); }} style={{ cursor: 'pointer' }}
-                onMouseEnter={e => e.currentTarget.style.background='rgba(63,169,245,0.03)'}
+                onMouseEnter={e => e.currentTarget.style.background='rgba(99,102,241,0.03)'}
                 onMouseLeave={e => e.currentTarget.style.background='transparent'}>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', width: 40 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)' }}>{c.logo}</div>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', width: 40 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)' }}>{c.logo}</div>
                 </td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <div style={{ fontSize: 13, fontWeight: 500 }}>{c.name}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 1 }}>{c.acctNum}{c.dba ? ` · DBA: ${c.dba}` : ''}</div>
                 </td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{c.type}</td>
-                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{c.sites}</td>
-                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12 }}>{c.assets}</td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{c.owner}</td>
-                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, textAlign: 'right', color: c.mrr > 0 ? 'var(--text-high)' : 'var(--text-low)' }}>{c.mrr > 0 ? `$${c.mrr.toLocaleString()}` : '—'}</td>
-                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, textAlign: 'right', color: c.balance > 0 ? 'var(--status-warn)' : 'var(--text-low)' }}>{c.balance > 0 ? `$${c.balance.toLocaleString()}` : '—'}</td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'center' }}>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{c.type}</td>
+                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{c.sites}</td>
+                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{c.assets}</td>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{c.owner}</td>
+                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', color: c.mrr > 0 ? 'var(--text-high)' : 'var(--text-low)' }}>{c.mrr > 0 ? `$${c.mrr.toLocaleString()}` : '—'}</td>
+                <td className="mono" style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', color: c.balance > 0 ? 'var(--status-warn)' : 'var(--text-low)' }}>{c.balance > 0 ? `$${c.balance.toLocaleString()}` : '—'}</td>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'center' }}>
                   {c.health > 0 ? <MiniBar value={c.health} color={c.health>=80?'var(--status-ok)':c.health>=60?'var(--status-warn)':'var(--status-critical)'} width={50} label={`${c.health}`} /> : <span style={{ fontSize: 10, color: 'var(--text-low)' }}>—</span>}
                 </td>
-                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <td style={{ padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <StatusBadge status="online" label={c.status} />
                 </td>
               </tr>
@@ -168,14 +168,14 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '0 0 12px', flexShrink: 0 }}>
         <button onClick={onBack} style={{ background: 'none', border: '1px solid var(--border-subtle)', borderRadius: 5, padding: '4px 10px', color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>← Customers</button>
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'var(--brand)' }}>{c.logo}</div>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'var(--brand)' }}>{c.logo}</div>
         <div style={{ flex: 1 }}>
           <div className="display" style={{ fontSize: 18, fontWeight: 400 }}>{c.name}</div>
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{c.acctNum} · {c.type} · {c.industry}{c.dba ? ` · DBA: ${c.dba}` : ''}</div>
         </div>
         <StatusBadge status="online" label={c.status} />
         <div style={{ display: 'flex', gap: 4 }}>
-          <button onClick={() => setEditOpen(true)} style={{ padding: '5px 12px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit</button>
+          <button onClick={() => setEditOpen(true)} style={{ padding: '5px 12px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit</button>
           <button onClick={() => { customerStore.set(list => list.map(x => x.id === c.id ? { ...x, status: 'archived' } : x)); showToast(`${c.name} archived`); onBack(); }} style={{ padding: '5px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Archive</button>
         </div>
       </div>
@@ -185,7 +185,7 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
         {detailTabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             padding: '5px 12px', borderRadius: 5, fontSize: 11, fontWeight: tab===t.id?600:400,
-            background: tab===t.id?'rgba(63,169,245,0.12)':'transparent',
+            background: tab===t.id?'rgba(99,102,241,0.12)':'transparent',
             border: `1px solid ${tab===t.id?'var(--brand)':'transparent'}`,
             color: tab===t.id?'var(--brand)':'var(--text-mid)',
             cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap'
@@ -200,7 +200,7 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
             <GlassPanel>
               <div className="label-sm" style={{ marginBottom: 10 }}>COMPANY INFO</div>
               {[{l:'Address',v:c.address},{l:'Phone',v:c.phone},{l:'Website',v:c.website},{l:'Tax ID',v:c.taxId},{l:'Terms',v:c.terms},{l:'Tax Exempt',v:c.taxExempt?'Yes':'No'},{l:'Account Owner',v:c.owner}].map((f,i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <span style={{ fontSize: 11, color: 'var(--text-low)' }}>{f.l}</span>
                   <span style={{ fontSize: 11, color: 'var(--text-mid)', textAlign: 'right', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.v || '—'}</span>
                 </div>
@@ -219,18 +219,18 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
             <GlassPanel>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <div className="label-sm">SUB-CUSTOMERS</div>
-                <button onClick={() => setSubModal(true)} style={{ padding: '3px 8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add</button>
+                <button onClick={() => setSubModal(true)} style={{ padding: '3px 8px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add</button>
               </div>
               {subCustomers.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: 16, color: 'var(--text-low)', fontSize: 12 }}>No sub-customers</div>
               ) : subCustomers.map((sc, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <span style={{ flex: 1, fontSize: 12, color: 'var(--text-mid)' }}>{sc.name}</span>
-                  <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: sc.role==='billing_entity'?'rgba(251,191,36,0.08)':sc.role==='estimate_recipient'?'rgba(63,169,245,0.08)':'rgba(192,132,252,0.08)', color: sc.role==='billing_entity'?'var(--status-warn)':sc.role==='estimate_recipient'?'var(--brand)':'#c084fc', fontWeight: 600, textTransform: 'uppercase' }}>{sc.role.replace(/_/g,' ')}</span>
+                  <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: sc.role==='billing_entity'?'rgba(251,191,36,0.08)':sc.role==='estimate_recipient'?'rgba(99,102,241,0.08)':'rgba(192,132,252,0.08)', color: sc.role==='billing_entity'?'var(--status-warn)':sc.role==='estimate_recipient'?'var(--brand)':'#c084fc', fontWeight: 600, textTransform: 'uppercase' }}>{sc.role.replace(/_/g,' ')}</span>
                 </div>
               ))}
               {subCustomers.length > 0 && (
-                <div style={{ marginTop: 10, padding: '8px 10px', borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--text-mid)' }}>
+                <div style={{ marginTop: 10, padding: '8px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--text-mid)' }}>
                   <strong>Role routing:</strong> Estimates → <span style={{ color: 'var(--brand)' }}>Parks & Rec</span> · Invoices → <span style={{ color: 'var(--status-warn)' }}>Finance Dept</span>
                 </div>
               )}
@@ -240,7 +240,7 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
             <GlassPanel style={{ gridColumn: 'span 3' }}>
               <div className="label-sm" style={{ marginBottom: 8 }}>TAGS</div>
               <div style={{ display: 'flex', gap: 6 }}>
-                {(c.tags || []).map(t => <span key={t} style={{ padding: '3px 10px', borderRadius: 4, background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--brand)' }}>{t}</span>)}
+                {(c.tags || []).map(t => <span key={t} style={{ padding: '3px 10px', borderRadius: 4, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--brand)' }}>{t}</span>)}
                 <button onClick={() => showToast('Add tag')} style={{ padding: '3px 10px', borderRadius: 4, background: 'transparent', border: '1px dashed var(--border-subtle)', color: 'var(--text-low)', fontSize: 11, cursor: 'pointer' }}>+ Tag</button>
               </div>
             </GlassPanel>
@@ -271,7 +271,7 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
             <button onClick={() => setProjectWizardOpen(true)} style={{ padding: '8px 20px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Icon name="add" size={14} color="#fff" /> New Project</button>
           </div></GlassPanel>
         )}
-        {tab === 'monitoring' && <div style={{ padding: '8px 10px', borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', fontSize: 12, color: 'var(--text-mid)' }}>Monitoring scoped to <strong>{c.name}</strong> — {c.sites} sites, {c.assets} devices. All asset status, uptime, and events for this customer.</div>}
+        {tab === 'monitoring' && <div style={{ padding: '8px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', fontSize: 12, color: 'var(--text-mid)' }}>Monitoring scoped to <strong>{c.name}</strong> — {c.sites} sites, {c.assets} devices. All asset status, uptime, and events for this customer.</div>}
         {tab === 'timeline' && <CustomerTimeline customer={c.name} />}
         {tab === 'onboarding' && <CustomerOnboardingTab customer={c} showToast={showToast} />}
         {tab === 'status' && <CustomerStatusTab customer={c} showToast={showToast} />}
@@ -338,13 +338,13 @@ function CustomerContacts({ customer, showToast }) {
             ))}</tr></thead>
             <tbody>{contacts.map((ct) => (
               <tr key={ct.id} style={{ cursor: 'pointer' }} onClick={() => setModal({ contact: ct })}
-                onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }}>{ct.name}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{ct.title || '—'}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--brand)' }}>{ct.email || '—'}</td>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{ct.phone || '—'}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={ct.type==='Primary'?'info':ct.type==='Technical'?'online':'warning'} label={ct.type || 'Contact'} /></td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+                onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, fontWeight: 500 }}>{ct.name}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{ct.title || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--brand)' }}>{ct.email || '—'}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{ct.phone || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={ct.type==='Primary'?'info':ct.type==='Technical'?'online':'warning'} label={ct.type || 'Contact'} /></td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <div style={{ display: 'flex', gap: 4 }}>
                     {CONTACT_DOCS.filter(d => ct.receives && ct.receives[d.key]).map(d => (
                       <span key={d.key} title={d.label} style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: `${d.color}18`, color: d.color, letterSpacing: '0.04em' }}>{d.short}</span>
@@ -352,8 +352,8 @@ function CustomerContacts({ customer, showToast }) {
                     {(!ct.receives || !CONTACT_DOCS.some(d => ct.receives[d.key])) && <span style={{ fontSize: 11, color: 'var(--text-low)' }}>—</span>}
                   </div>
                 </td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: ct.portal?'var(--status-ok)':'var(--text-low)' }}>{ct.portal?'✓ Enabled':'—'}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'right' }}>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: ct.portal?'var(--status-ok)':'var(--text-low)' }}>{ct.portal?'✓ Enabled':'—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right' }}>
                   <button onClick={(e) => { e.stopPropagation(); removeContact(ct); }} title="Remove" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 14, cursor: 'pointer', padding: '0 4px' }}>✕</button>
                 </td>
               </tr>
@@ -362,7 +362,7 @@ function CustomerContacts({ customer, showToast }) {
         </GlassPanel>
       )}
       {contacts.length > 0 && (
-        <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 6, background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--text-mid)' }}>
+        <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 6, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--text-mid)' }}>
           <strong>Document routing:</strong> {CONTACT_DOCS.map(d => {
             const who = contacts.filter(c => c.receives && c.receives[d.key]).map(c => c.name);
             return <span key={d.key} style={{ marginRight: 14 }}>{d.label} → <span style={{ color: d.color }}>{who.length ? who.join(', ') : 'unassigned'}</span></span>;
@@ -576,14 +576,14 @@ function CustomerAssets({ customer, showToast }) {
               <th key={i} style={{ textAlign: 'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
             ))}</tr></thead>
             <tbody>{assets.map((a) => (
-              <tr key={a.id} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }} onClick={() => setModal({ record: a })}>{a.name}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{a.type}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{a.model || '—'}</td>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 10.5, color: 'var(--text-low)' }}>{a.serial || '—'}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{a.site || '—'}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={a.status==='online'?'online':a.status==='offline'?'critical':a.status==='retired'?'info':'warning'} label={a.status} /></td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'right' }}>
+              <tr key={a.id} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, fontWeight: 500 }} onClick={() => setModal({ record: a })}>{a.name}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{a.type}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{a.model || '—'}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10.5, color: 'var(--text-low)' }}>{a.serial || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{a.site || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={a.status==='online'?'online':a.status==='offline'?'critical':a.status==='retired'?'info':'warning'} label={a.status} /></td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right' }}>
                   <button onClick={() => remove(a)} title="Delete" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 13, cursor: 'pointer' }}>✕</button>
                 </td>
               </tr>
@@ -646,10 +646,10 @@ function CustomerFinanceDocs({ customer, kind, showToast }) {
             ))}</tr></thead>
             <tbody>{rows.map((r) => (
               <tr key={r.num}>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }}>{r.num}</td>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{kind === 'invoices' ? r.due : r.date}</td>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{money(r.amount)}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusBadge status={r.status==='paid'?'online':r.status==='overdue'?'critical':r.status==='accepted'?'online':'info'} label={r.status || '—'} /></td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--brand)' }}>{r.num}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{kind === 'invoices' ? r.due : r.date}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{money(r.amount)}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={r.status==='paid'?'online':r.status==='overdue'?'critical':r.status==='accepted'?'online':'info'} label={r.status || '—'} /></td>
               </tr>
             ))}</tbody>
           </table>
@@ -677,9 +677,9 @@ function CustomerProposalsTab({ customer, showToast }) {
       ) : (
         <GlassPanel style={{ padding: 0 }}>
           {rows.map((p) => (
-            <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid rgba(63,169,245,0.04)', cursor: 'pointer' }}
+            <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid rgba(99,102,241,0.04)', cursor: 'pointer' }}
               onClick={() => (window.navTo || navTo)('proposals')}
-              onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 500 }}>{p.title || 'Proposal'}</div>
                 <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.status || 'draft'}{typeof proposalValue === 'function' ? ` · ${'$' + (proposalValue(p.blocks) || 0).toLocaleString()}` : ''}</div>
@@ -721,7 +721,7 @@ function CustomerFlexAssets({ customer, showToast }) {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {t.fields.map((f,j) => <span key={j} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 3, background: 'rgba(63,169,245,0.04)', color: 'var(--text-low)' }}>{f}</span>)}
+              {t.fields.map((f,j) => <span key={j} style={{ fontSize: 9, padding: '2px 6px', borderRadius: 3, background: 'rgba(99,102,241,0.04)', color: 'var(--text-low)' }}>{f}</span>)}
             </div>
           </GlassPanel>
         ))}
@@ -770,20 +770,20 @@ function CustomerPasswords({ customer, showToast }) {
               <th key={i} style={{ textAlign: 'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
             ))}</tr></thead>
             <tbody>{creds.map(cr => (
-              <tr key={cr.id} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500, cursor: 'pointer' }} onClick={() => setModal({ record: cr })}>{cr.name}</td>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{cr.user || '—'}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}>
+              <tr key={cr.id} onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, fontWeight: 500, cursor: 'pointer' }} onClick={() => setModal({ record: cr })}>{cr.name}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{cr.user || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span className="mono" style={{ fontSize: 11, color: revealed[cr.id] ? 'var(--text-high)' : 'var(--text-low)', letterSpacing: revealed[cr.id] ? '0' : '0.1em' }}>{revealed[cr.id] ? cr.pass : '••••••••••••'}</span>
                     <button onClick={() => setRevealed(p => ({...p, [cr.id]: !p[cr.id]}))} style={{ padding: '2px 6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{revealed[cr.id]?'Hide':'Reveal'}</button>
                     <button onClick={() => { navigator.clipboard?.writeText?.(cr.pass); showToast('Copied'); }} style={{ padding: '2px 6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy</button>
                   </div>
                 </td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{cr.cat}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: cr.device?'var(--brand)':'var(--text-low)' }}>{cr.device || '—'}</td>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{cr.lastRotated || '—'}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'right' }}>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{cr.cat}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: cr.device?'var(--brand)':'var(--text-low)' }}>{cr.device || '—'}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{cr.lastRotated || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right' }}>
                   <button onClick={() => setModal({ record: cr })} style={{ padding: '2px 6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)', marginRight: 4 }}>Edit</button>
                   <button onClick={() => remove(cr)} title="Delete" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 13, cursor: 'pointer' }}>✕</button>
                 </td>
@@ -841,8 +841,8 @@ function CustomerDocs({ customer, showToast }) {
       ) : (
         <GlassPanel style={{ padding: 0 }}>
           {docs.map((d) => (
-            <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid rgba(63,169,245,0.04)' }}
-              onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+            <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}
+              onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
               <span style={{ fontSize: 20 }}>▤</span>
               <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => setModal({ record: d })}>
                 <div style={{ fontSize: 13, fontWeight: 500 }}>{d.name}</div>
@@ -891,13 +891,13 @@ function CustomerNetworks({ customer, showToast }) {
               <th key={i} style={{ textAlign: 'left', padding: '9px 12px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
             ))}</tr></thead>
             <tbody>{networks.map((n) => (
-              <tr key={n.id} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, color: 'var(--brand)' }} onClick={() => setModal({ record: n })}>{n.subnet}</td>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11 }}>{n.vlan || '—'}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 12, fontWeight: 500 }}>{n.name || '—'}</td>
-                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{n.gateway || '—'}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{n.site || '—'}</td>
-                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(63,169,245,0.04)', textAlign: 'right' }}>
+              <tr key={n.id} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--brand)' }} onClick={() => setModal({ record: n })}>{n.subnet}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11 }}>{n.vlan || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, fontWeight: 500 }}>{n.name || '—'}</td>
+                <td className="mono" style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{n.gateway || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{n.site || '—'}</td>
+                <td style={{ padding: '9px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right' }}>
                   <button onClick={() => remove(n)} title="Delete" style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 13, cursor: 'pointer' }}>✕</button>
                 </td>
               </tr>
@@ -1025,7 +1025,7 @@ function SubCustomerModal({ parent, onClose, showToast }) {
             <div className="label-sm" style={{ marginBottom: 6 }}>ROLE</div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               {roles.map(r => (
-                <button key={r} onClick={() => setRole(r)} style={{ padding: '5px 10px', borderRadius: 5, fontSize: 10, background: r===role?'rgba(63,169,245,0.12)':'transparent', border: `1px solid ${r===role?'var(--brand)':'var(--border-subtle)'}`, color: r===role?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{r.replace(/_/g,' ')}</button>
+                <button key={r} onClick={() => setRole(r)} style={{ padding: '5px 10px', borderRadius: 5, fontSize: 10, background: r===role?'rgba(99,102,241,0.12)':'transparent', border: `1px solid ${r===role?'var(--brand)':'var(--border-subtle)'}`, color: r===role?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{r.replace(/_/g,' ')}</button>
               ))}
             </div>
           </div>
@@ -1084,7 +1084,7 @@ function CustomerSelector({ value, onChange, showToast, style }) {
           </div>
           {filtered.map(c => (
             <button key={c} onClick={() => { onChange?.(c); setOpen(false); setSearch(''); }} style={{ display: 'block', width: '100%', padding: '7px 12px', background: 'none', border: 'none', color: value===c?'var(--brand)':'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left', fontWeight: value===c?600:400 }}
-              onMouseEnter={e=>e.currentTarget.style.background='rgba(63,169,245,0.06)'}
+              onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.06)'}
               onMouseLeave={e=>e.currentTarget.style.background='none'}>{c}</button>
           ))}
           <div style={{ height: 1, background: 'var(--border-subtle)', margin: '4px 8px' }} />
@@ -1125,14 +1125,14 @@ function CustomerOnboardingTab({ customer, showToast }) {
           <div><div style={{ fontSize: 14, fontWeight: 500 }}>Onboarding: {c.name}</div><div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 2 }}>{completedCount}/{steps.length} steps complete</div></div>
           <div className="mono" style={{ fontSize: 24, fontWeight: 600, color: pct === 100 ? 'var(--status-ok)' : 'var(--brand)' }}>{pct}%</div>
         </div>
-        <div style={{ height: 6, borderRadius: 3, background: 'rgba(63,169,245,0.08)', overflow: 'hidden' }}><div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: pct === 100 ? 'var(--status-ok)' : 'var(--brand)', transition: 'width 0.3s' }} /></div>
+        <div style={{ height: 6, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}><div style={{ width: `${pct}%`, height: '100%', borderRadius: 3, background: pct === 100 ? 'var(--status-ok)' : 'var(--brand)', transition: 'width 0.3s' }} /></div>
       </GlassPanel>
       <GlassPanel style={{ padding: 0 }}>
         {steps.map((step, i) => (
-          <div key={step.id} onClick={() => toggleStep(step.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: i < steps.length - 1 ? '1px solid rgba(63,169,245,0.04)' : 'none', cursor: 'pointer', opacity: step.done ? 0.6 : 1 }}>
+          <div key={step.id} onClick={() => toggleStep(step.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: i < steps.length - 1 ? '1px solid rgba(99,102,241,0.04)' : 'none', cursor: 'pointer', opacity: step.done ? 0.6 : 1 }}>
             <div style={{ width: 20, height: 20, borderRadius: 5, flexShrink: 0, background: step.done ? 'var(--status-ok)' : 'transparent', border: step.done ? 'none' : '1.5px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 700 }}>{step.done ? '✓' : ''}</div>
             <span style={{ flex: 1, fontSize: 12, color: 'var(--text-high)', textDecoration: step.done ? 'line-through' : 'none' }}>{step.label}</span>
-            {step.auto && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(63,169,245,0.06)', color: 'var(--brand)', border: '1px solid var(--border-subtle)' }}>Auto</span>}
+            {step.auto && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(99,102,241,0.06)', color: 'var(--brand)', border: '1px solid var(--border-subtle)' }}>Auto</span>}
           </div>
         ))}
       </GlassPanel>
@@ -1165,7 +1165,7 @@ function CustomerStatusTab({ customer, showToast }) {
       </GlassPanel>
       <GlassPanel style={{ padding: 0 }}>
         {systems.map((sys, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: i < systems.length - 1 ? '1px solid rgba(63,169,245,0.04)' : 'none' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: i < systems.length - 1 ? '1px solid rgba(99,102,241,0.04)' : 'none' }}>
             <StatusDot status={sys.status === 'operational' ? 'online' : sys.status === 'degraded' ? 'warning' : 'offline'} size={7} />
             <span style={{ flex: 1, fontSize: 12 }}>{sys.name}</span>
             <span style={{ fontSize: 10, color: statusColors[sys.status], textTransform: 'capitalize', fontWeight: 500 }}>{sys.status}</span>
@@ -1182,10 +1182,10 @@ function CustomerStatusTab({ customer, showToast }) {
       </GlassPanel>
       <GlassPanel>
         <div className="label-sm" style={{ marginBottom: 8 }}>RECENT INCIDENTS</div>
-        {incidents.map((inc, i) => (<div key={i} style={{ display: 'flex', gap: 8, padding: '8px 0', borderBottom: '1px solid rgba(63,169,245,0.04)' }}><StatusDot status="online" size={6} /><div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 500 }}>{inc.title}</div><div style={{ fontSize: 10, color: 'var(--text-low)' }}>{inc.date} · {inc.dur} · Resolved</div></div></div>))}
+        {incidents.map((inc, i) => (<div key={i} style={{ display: 'flex', gap: 8, padding: '8px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusDot status="online" size={6} /><div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 500 }}>{inc.title}</div><div style={{ fontSize: 10, color: 'var(--text-low)' }}>{inc.date} · {inc.dur} · Resolved</div></div></div>))}
       </GlassPanel>
       <div style={{ display: 'flex', gap: 6 }}>
-        <button onClick={() => showToast('Status page link copied')} style={{ flex: 1, padding: '8px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy Public Link</button>
+        <button onClick={() => showToast('Status page link copied')} style={{ flex: 1, padding: '8px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy Public Link</button>
         <button onClick={() => showToast('Notification settings opened')} style={{ flex: 1, padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Notification Settings</button>
       </div>
     </div>

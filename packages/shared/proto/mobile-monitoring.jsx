@@ -63,14 +63,14 @@ function MMNodeDetail({ node, onClose, onNav }) {
         )}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
           {specs.map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
+            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</div>
               <div className="mono" style={{ fontSize: 12, color: 'var(--text-mid)', textTransform: k === 'Status' ? 'capitalize' : 'none', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</div>
             </div>
           ))}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => { onClose(); onNav && onNav('assets'); }} style={{ flex: 2, padding: '12px 0', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⚙ Open in Assets</button>
+          <button onClick={() => { onClose(); onNav && onNav('assets'); }} style={{ flex: 2, padding: '12px 0', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⚙ Open in Assets</button>
           <button onClick={() => showToast('Ping: 2ms', 'ok')} style={{ flex: 1, padding: '12px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Ping</button>
           <button onClick={() => showToast(`Restarting ${node.label}…`, 'warn')} style={{ flex: 1, padding: '12px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Restart</button>
         </div>
@@ -134,7 +134,7 @@ function MMCameras({ onOpen }) {
                 <div style={{ textAlign: 'center' }}><span style={{ fontSize: 20, opacity: 0.3 }}>◉</span><div style={{ fontSize: 9, color: 'var(--status-critical)', marginTop: 2, fontWeight: 600 }}>SIGNAL LOST</div></div>
               ) : (
                 <>
-                  <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(63,169,245,0.025) 2px, rgba(63,169,245,0.025) 4px)' }}></div>
+                  <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(99,102,241,0.025) 2px, rgba(99,102,241,0.025) 4px)' }}></div>
                   <span style={{ fontSize: 26, opacity: 0.12 }}>◉</span>
                   {cam.recording && (
                     <div style={{ position: 'absolute', top: 6, left: 8, display: 'flex', alignItems: 'center', gap: 3 }}>
@@ -167,18 +167,18 @@ function MMCameraDetail({ cam, onClose }) {
         <div style={{ height: 150, borderRadius: 12, background: cam.status === 'offline' ? 'rgba(244,63,94,0.05)' : 'linear-gradient(135deg, rgba(10,14,20,0.9), rgba(17,23,33,0.8))', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
           {cam.status === 'offline'
             ? <div style={{ textAlign: 'center' }}><span style={{ fontSize: 28, opacity: 0.3 }}>◉</span><div style={{ fontSize: 11, color: 'var(--status-critical)', marginTop: 4, fontWeight: 600 }}>SIGNAL LOST</div></div>
-            : <><div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(63,169,245,0.025) 2px, rgba(63,169,245,0.025) 4px)' }}></div><span style={{ fontSize: 40, opacity: 0.12 }}>◉</span>{cam.recording && <div style={{ position: 'absolute', top: 10, left: 12, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--status-critical)' }}></span><span className="mono" style={{ fontSize: 9, color: 'var(--status-critical)', fontWeight: 700 }}>REC</span></div>}</>}
+            : <><div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(99,102,241,0.025) 2px, rgba(99,102,241,0.025) 4px)' }}></div><span style={{ fontSize: 40, opacity: 0.12 }}>◉</span>{cam.recording && <div style={{ position: 'absolute', top: 10, left: 12, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--status-critical)' }}></span><span className="mono" style={{ fontSize: 9, color: 'var(--status-critical)', fontWeight: 700 }}>REC</span></div>}</>}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
           {specs.map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
+            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</div>
               <div className="mono" style={{ fontSize: 12, color: 'var(--text-mid)', textTransform: 'capitalize' }}>{v}</div>
             </div>
           ))}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => showToast('Opening live view…', 'ok')} style={{ flex: 2, padding: '12px 0', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>▶ Live view</button>
+          <button onClick={() => showToast('Opening live view…', 'ok')} style={{ flex: 2, padding: '12px 0', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>▶ Live view</button>
           <button onClick={() => showToast('Opening playback…')} style={{ flex: 1, padding: '12px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Playback</button>
         </div>
       </div>
@@ -232,7 +232,7 @@ function MMDiscovery({ onNav }) {
       {/* Collector */}
       <div className="glass" style={{ padding: '12px 14px', borderRadius: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>⟲</span>
+          <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>⟲</span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>ShieldTech Collector</div>
             <div style={{ fontSize: 10, color: 'var(--text-low)' }}>Not connected — pair a collector from the desktop console</div>
@@ -255,7 +255,7 @@ function MMDiscovery({ onNav }) {
       {/* Filters */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
         {[['all', 'All'], ['new', 'New'], ['managed', 'Managed'], ['unmanaged', 'Unmanaged'], ['virtual', 'Virtual']].map(([id, l]) => (
-          <button key={id} onClick={() => setFilter(id)} style={{ flexShrink: 0, padding: '6px 13px', borderRadius: 8, fontSize: 11, background: filter === id ? 'rgba(63,169,245,0.14)' : 'transparent', border: `1px solid ${filter === id ? 'var(--brand)' : 'var(--border-subtle)'}`, color: filter === id ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>{l}</button>
+          <button key={id} onClick={() => setFilter(id)} style={{ flexShrink: 0, padding: '6px 13px', borderRadius: 8, fontSize: 11, background: filter === id ? 'rgba(99,102,241,0.14)' : 'transparent', border: `1px solid ${filter === id ? 'var(--brand)' : 'var(--border-subtle)'}`, color: filter === id ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>{l}</button>
         ))}
       </div>
 
@@ -277,7 +277,7 @@ function MMDiscovery({ onNav }) {
               <span className="mono" style={{ fontSize: 9, color: 'var(--brand)', flex: 1 }}>{d.type} · {d.port}</span>
               {st === 'new' ? (
                 <>
-                  <button onClick={() => { setState(d.id, 'documented'); if (window.showToast) showToast(`${d.name} → Configuration`, 'ok'); }} style={{ padding: '6px 13px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Accept</button>
+                  <button onClick={() => { setState(d.id, 'documented'); if (window.showToast) showToast(`${d.name} → Configuration`, 'ok'); }} style={{ padding: '6px 13px', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Accept</button>
                   <button onClick={() => setState(d.id, 'ignored')} style={{ padding: '6px 11px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Ignore</button>
                 </>
               ) : st === 'documented' ? <span style={{ fontSize: 10, color: 'var(--status-ok)' }}>✓ Documented</span> : <span style={{ fontSize: 10, color: 'var(--text-low)' }}>Ignored</span>}
@@ -307,7 +307,7 @@ function MMPortMap() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
         {SW.map(s => (
-          <button key={s.id} onClick={() => { setSw(s.id); setSel(null); }} style={{ flexShrink: 0, padding: '8px 13px', borderRadius: 9, background: sw === s.id ? 'rgba(63,169,245,0.14)' : 'var(--glass-bg)', border: `1px solid ${sw === s.id ? 'var(--brand)' : 'var(--border-subtle)'}`, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left', whiteSpace: 'nowrap' }}>
+          <button key={s.id} onClick={() => { setSw(s.id); setSel(null); }} style={{ flexShrink: 0, padding: '8px 13px', borderRadius: 9, background: sw === s.id ? 'rgba(99,102,241,0.14)' : 'var(--glass-bg)', border: `1px solid ${sw === s.id ? 'var(--brand)' : 'var(--border-subtle)'}`, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left', whiteSpace: 'nowrap' }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: sw === s.id ? 'var(--brand)' : 'var(--text-high)' }}>{s.name.split(' (')[0]}</div>
             <div className="mono" style={{ fontSize: 8, color: 'var(--text-low)' }}>{s.ports}-port</div>
           </button>
@@ -341,7 +341,7 @@ function MMPortMap() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
               {[['Device', a.d], ['Type', t.l], ['Speed', a.spd], ['VLAN', a.vlan], ['PoE', a.poe != null ? (a.poe > 0 ? `${a.poe} W` : 'none') : '—']].map(([k, v]) => (
-                <div key={k} style={{ background: 'rgba(63,169,245,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
+                <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
                   <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</div>
                   <div className="mono" style={{ fontSize: 12, color: 'var(--text-mid)' }}>{v}</div>
                 </div>

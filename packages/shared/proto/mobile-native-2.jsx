@@ -5,7 +5,7 @@ function MInventoryView() {
   const items = [].filter(i => (i.name + i.sku).toLowerCase().includes(q.toLowerCase()));
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search SKU or item…" style={{ background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '10px 13px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search SKU or item…" style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '10px 13px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
       {items.length === 0 && (
         <div className="glass" style={{ padding: '22px 16px', borderRadius: 14, textAlign: 'center' }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>No stock items yet</div>
@@ -81,7 +81,7 @@ function MWorkOrdersView({ onNav }) {
           <div style={{ fontSize: 22, marginBottom: 8 }}>▤</div>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>No work orders yet</div>
           <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 5 }}>New jobs land here the moment they're scheduled.</div>
-          <button onClick={() => window.__shieldNewJob && window.__shieldNewJob()} style={{ marginTop: 12, padding: '9px 18px', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Schedule a job</button>
+          <button onClick={() => window.__shieldNewJob && window.__shieldNewJob()} style={{ marginTop: 12, padding: '9px 18px', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Schedule a job</button>
         </div>
       )}
       {wos.map(w => {
@@ -132,7 +132,7 @@ function MWorkOrdersView({ onNav }) {
               </div>
             )}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => { setOpen(null); onNav('photos'); }} style={{ flex: 1, padding: '11px 0', background: 'rgba(63,169,245,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>All photos</button>
+              <button onClick={() => { setOpen(null); onNav('photos'); }} style={{ flex: 1, padding: '11px 0', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>All photos</button>
             </div>
           </div>
         </MSheet>
@@ -178,7 +178,7 @@ function MHermesView() {
       <div ref={ref} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 9, paddingBottom: 8 }}>
         {thread.map((m, i) => (
           <div key={i} style={{ alignSelf: m.from === 'me' ? 'flex-end' : 'flex-start', maxWidth: '86%' }}>
-            <div style={{ padding: '10px 13px', borderRadius: m.from === 'me' ? '13px 13px 4px 13px' : '13px 13px 13px 4px', background: m.from === 'me' ? 'rgba(63,169,245,0.14)' : 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)', fontSize: 13, color: 'var(--text-high)', lineHeight: 1.5 }}>{m.text}</div>
+            <div style={{ padding: '10px 13px', borderRadius: m.from === 'me' ? '13px 13px 4px 13px' : '13px 13px 13px 4px', background: m.from === 'me' ? 'rgba(99,102,241,0.14)' : 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)', fontSize: 13, color: 'var(--text-high)', lineHeight: 1.5 }}>{m.text}</div>
           </div>
         ))}
         {busy && (
@@ -189,12 +189,12 @@ function MHermesView() {
       </div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 8, overflowX: 'auto', paddingBottom: 2 }}>
         {['How’s revenue?', 'What’s my week look like?', 'Who’s at churn risk?'].map(s => (
-          <button key={s} onClick={() => send(s)} style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 13, background: 'rgba(63,169,245,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s}</button>
+          <button key={s} onClick={() => send(s)} style={{ flexShrink: 0, padding: '6px 12px', borderRadius: 13, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s}</button>
         ))}
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Ask ShieldTech AI anything…"
-          style={{ flex: 1, background: 'rgba(63,169,245,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 11, padding: '11px 14px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+          style={{ flex: 1, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 11, padding: '11px 14px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={() => send()} disabled={busy} style={{ padding: '0 18px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 15, fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1, fontFamily: 'var(--font-body)' }}>↑</button>
       </div>
     </div>

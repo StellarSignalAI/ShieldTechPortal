@@ -88,7 +88,7 @@ function NPSScreen() {
               return (
                 <div key={d.score} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
                   {d.count > 0 && <span style={{ fontSize:8, color:col }}>{d.count}</span>}
-                  <div style={{ width:'100%', height:h, background:h > 2 ? col : 'rgba(63,169,245,0.08)', borderRadius:'2px 2px 0 0', opacity:h>2?0.85:0.3 }} />
+                  <div style={{ width:'100%', height:h, background:h > 2 ? col : 'rgba(99,102,241,0.08)', borderRadius:'2px 2px 0 0', opacity:h>2?0.85:0.3 }} />
                   <span style={{ fontSize:8, color:'var(--text-low)' }}>{d.score}</span>
                 </div>
               );
@@ -108,9 +108,9 @@ function NPSScreen() {
 
       {/* Filter + alert */}
       <div style={{ display:'flex', gap:8, alignItems:'center', flexShrink:0 }}>
-        <div style={{ display:'flex', gap:2, background:'rgba(63,169,245,0.06)', borderRadius:8, padding:3, border:'1px solid var(--border-subtle)' }}>
+        <div style={{ display:'flex', gap:2, background:'rgba(99,102,241,0.06)', borderRadius:8, padding:3, border:'1px solid var(--border-subtle)' }}>
           {['all','promoter','passive','detractor'].map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{ padding:'4px 14px', borderRadius:6, fontSize:11, fontFamily:'var(--font-body)', border:'none', cursor:'pointer', background:filter===f?'rgba(63,169,245,0.18)':'transparent', color:filter===f?'var(--brand)':'var(--text-low)', fontWeight:filter===f?600:400, transition:'all 0.15s', textTransform:'capitalize' }}>
+            <button key={f} onClick={() => setFilter(f)} style={{ padding:'4px 14px', borderRadius:6, fontSize:11, fontFamily:'var(--font-body)', border:'none', cursor:'pointer', background:filter===f?'rgba(99,102,241,0.18)':'transparent', color:filter===f?'var(--brand)':'var(--text-low)', fontWeight:filter===f?600:400, transition:'all 0.15s', textTransform:'capitalize' }}>
               {f}{f!=='all'?' ('+responses.filter(r=>r.category===f).length+')':''}
             </button>
           ))}
@@ -151,10 +151,10 @@ function NPSScreen() {
                     <div onClick={e => e.stopPropagation()} style={{ marginTop:10 }}>
                       {r.category === 'detractor' && !sel.followedUp && (
                         <>
-                          <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Draft a reply to this customer..." style={{ width:'100%', height:64, background:'rgba(63,169,245,0.04)', border:'1px solid var(--border-subtle)', borderRadius:7, padding:'8px 12px', color:'var(--text-high)', fontSize:12, fontFamily:'var(--font-body)', outline:'none', resize:'none', lineHeight:1.5, marginBottom:8 }} />
+                          <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Draft a reply to this customer..." style={{ width:'100%', height:64, background:'rgba(99,102,241,0.04)', border:'1px solid var(--border-subtle)', borderRadius:7, padding:'8px 12px', color:'var(--text-high)', fontSize:12, fontFamily:'var(--font-body)', outline:'none', resize:'none', lineHeight:1.5, marginBottom:8 }} />
                           <div style={{ display:'flex', gap:6 }}>
                             <button onClick={() => sendReply(r.id)} style={{ padding:'6px 14px', fontSize:11, fontWeight:600, color:'var(--status-ok)', background:'rgba(52,211,153,0.08)', border:'1px solid rgba(52,211,153,0.2)', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-body)' }}>Send Reply</button>
-                            <button onClick={() => markFollowedUp(r.id)} style={{ padding:'6px 14px', fontSize:11, fontWeight:600, color:'var(--brand)', background:'rgba(63,169,245,0.08)', border:'1px solid var(--border-strong)', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-body)' }}>Mark Followed Up</button>
+                            <button onClick={() => markFollowedUp(r.id)} style={{ padding:'6px 14px', fontSize:11, fontWeight:600, color:'var(--brand)', background:'rgba(99,102,241,0.08)', border:'1px solid var(--border-strong)', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-body)' }}>Mark Followed Up</button>
                             <button onClick={() => createTicket(r)} style={{ padding:'6px 14px', fontSize:11, fontWeight:600, color:'var(--status-warn)', background:'rgba(251,191,36,0.06)', border:'1px solid rgba(251,191,36,0.2)', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-body)' }}>Create Ticket</button>
                           </div>
                         </>

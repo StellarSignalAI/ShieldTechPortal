@@ -76,7 +76,7 @@ function ApprovalsScreen() {
 
   const tagColors = {
     pricing: { bg: 'rgba(251,191,36,0.12)', color: 'var(--status-warn)', border: 'rgba(251,191,36,0.25)' },
-    comms: { bg: 'rgba(63,169,245,0.12)', color: 'var(--brand)', border: 'rgba(63,169,245,0.25)' },
+    comms: { bg: 'rgba(99,102,241,0.12)', color: 'var(--brand)', border: 'rgba(99,102,241,0.25)' },
     contract: { bg: 'rgba(192,132,252,0.12)', color: '#c084fc', border: 'rgba(192,132,252,0.25)' },
     alarm: { bg: 'rgba(244,63,94,0.12)', color: 'var(--status-critical)', border: 'rgba(244,63,94,0.25)' },
     refund: { bg: 'rgba(52,211,153,0.12)', color: 'var(--status-ok)', border: 'rgba(52,211,153,0.25)' },
@@ -101,7 +101,7 @@ function ApprovalsScreen() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
             padding: '6px 14px', borderRadius: 100,
-            background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)',
+            background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)',
             display: 'flex', alignItems: 'center', gap: 6
           }}>
             <span className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--brand)' }}>{queue.length}</span>
@@ -150,7 +150,7 @@ function ApprovalsScreen() {
               {/* Header */}
               <div style={{
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
-                borderBottom: '1px solid rgba(63,169,245,0.05)'
+                borderBottom: '1px solid rgba(99,102,241,0.05)'
               }}>
                 <span style={{
                   fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
@@ -203,7 +203,7 @@ function ApprovalsScreen() {
                     }}>✕ Reject</button>
                     {a.content && (
                       <button onClick={() => shieldModal({ kind: 'editor', title: 'Edit Draft — ' + a.title, subtitle: 'Affects: ' + a.who, submitLabel: 'Approve & Send', successMsg: 'Approved & sent: ' + a.title, value: a.content, onSubmit: () => resolve(a, 'approve') })} style={{
-                        background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)',
+                        background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)',
                         color: 'var(--brand)', padding: '7px 14px', borderRadius: 6,
                         fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)'
                       }}>Edit</button>

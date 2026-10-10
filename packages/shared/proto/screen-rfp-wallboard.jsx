@@ -89,8 +89,8 @@ function WallboardScreen() {
   const techs = [
     { id: 'MR', name: 'Mike Reyes', status: 'on-site', where: 'Acme Dental', c: '#34D399' },
     { id: 'JL', name: 'Jessica Liu', status: 'on-site', where: 'Metro Bank', c: '#34D399' },
-    { id: 'KW', name: 'Kevin White', status: 'driving', where: '→ Golden Gate Logistics', c: '#3FA9F5' },
-    { id: 'TG', name: 'Tony Garcia', status: 'driving', where: '→ Riverside Medical', c: '#3FA9F5' },
+    { id: 'KW', name: 'Kevin White', status: 'driving', where: '→ Golden Gate Logistics', c: '#6366F1' },
+    { id: 'TG', name: 'Tony Garcia', status: 'driving', where: '→ Riverside Medical', c: '#6366F1' },
     { id: 'DP', name: 'Diana Patel', status: 'idle', where: 'Shop', c: '#FBBF24' },
   ];
   const ticker = [
@@ -112,7 +112,7 @@ function WallboardScreen() {
           <span style={{ fontSize: 11, color: 'var(--status-ok)', letterSpacing: '0.1em' }}>ALL SYSTEMS NOMINAL</span>
         </span>
         <span className="mono" style={{ marginLeft: 'auto', fontSize: 30, fontWeight: 300, color: 'var(--text-high)' }}>{now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-        <button onClick={() => navTo('custom-dashboard')} style={{ padding: '6px 16px', background: 'rgba(63,169,245,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Exit ✕</button>
+        <button onClick={() => navTo('custom-dashboard')} style={{ padding: '6px 16px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Exit ✕</button>
       </div>
 
       {/* Rotating panel */}
@@ -159,7 +159,7 @@ function WallboardScreen() {
       {/* Panel dots */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 10, paddingTop: 18 }}>
         {[0, 1, 2].map(i => (
-          <button key={i} onClick={() => setPanel(i)} style={{ width: 10, height: 10, borderRadius: '50%', border: 'none', cursor: 'pointer', background: panel === i ? 'var(--brand)' : 'rgba(63,169,245,0.2)', transition: 'background 0.2s' }}></button>
+          <button key={i} onClick={() => setPanel(i)} style={{ width: 10, height: 10, borderRadius: '50%', border: 'none', cursor: 'pointer', background: panel === i ? 'var(--brand)' : 'rgba(99,102,241,0.2)', transition: 'background 0.2s' }}></button>
         ))}
       </div>
     </div>

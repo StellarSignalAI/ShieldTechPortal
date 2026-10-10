@@ -32,11 +32,11 @@ body::after {
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(63,169,245,0.15); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(63,169,245,0.3); }
+::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.3); }
 
 /* Selection */
-::selection { background: rgba(63,169,245,0.3); color: var(--text-high); }
+::selection { background: rgba(99,102,241,0.3); color: var(--text-high); }
 
 /* Focus ring */
 :focus-visible {
@@ -108,7 +108,7 @@ body::after {
 .badge.ok { background: rgba(52,211,153,0.12); color: var(--status-ok); }
 .badge.warn { background: rgba(251,191,36,0.12); color: var(--status-warn); }
 .badge.critical { background: rgba(244,63,94,0.12); color: var(--status-critical); }
-.badge.info { background: rgba(63,169,245,0.12); color: var(--status-info); }
+.badge.info { background: rgba(99,102,241,0.12); color: var(--status-info); }
 
 /* Animated grid background */
 @keyframes grid-move {
@@ -154,7 +154,7 @@ html:not(.anim-ready) [style*="fade-up"] {
 
 @keyframes count-glow {
   0% { text-shadow: 0 0 0 transparent; }
-  50% { text-shadow: 0 0 20px rgba(63,169,245,0.4); }
+  50% { text-shadow: 0 0 20px rgba(99,102,241,0.4); }
   100% { text-shadow: 0 0 0 transparent; }
 }
 

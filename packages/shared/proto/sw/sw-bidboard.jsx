@@ -6,7 +6,7 @@
 
 function BbLeadCard({ lead, onAccept, onDismiss }) {
   return (
-    <Card className="sw-hoverlift" style={{ padding: 14, width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid rgba(63,169,245,0.22)' }}>
+    <Card className="sw-hoverlift" style={{ padding: 14, width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid rgba(99,102,241,0.22)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: '600 10px/1 var(--font-mono)', letterSpacing: '0.1em', color: 'var(--brand)' }}><Icon name="sparkles" size={12} color="var(--brand)" />FOUND OVERNIGHT</span>
         <span style={{ font: '600 11px/1 var(--font-mono)', color: lead.fit >= 80 ? 'var(--status-ok)' : 'var(--status-warn)' }}>{lead.fit} fit</span>
@@ -51,7 +51,7 @@ function BbBidCard({ opp, onOpen }) {
         {nogo ? <Pill tone="Dead" label="No-go" small /> : cur === 'submitted' ? <Pill tone="Done" label="Submitted" small dot /> : <span>due {swDueLabel(opp.dueAt)}</span>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(63,169,245,0.12)', overflow: 'hidden' }}>
+        <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.12)', overflow: 'hidden' }}>
           <div style={{ width: pct + '%', height: '100%', borderRadius: 2, background: nogo ? 'var(--text-low)' : cur === 'submitted' ? 'var(--status-ok)' : 'linear-gradient(90deg, var(--brand), var(--status-ok))' }} />
         </div>
         <span style={{ font: '600 10.5px/1 var(--font-mono)', color: 'var(--text-low)' }}>{pct}%</span>
@@ -133,7 +133,7 @@ function BidBoardWorkspace({ onOpenOpp }) {
               <span style={{ font: '600 12px/1 var(--font-body)', color: 'var(--text-high)', letterSpacing: '0.03em' }}>{c.label}</span>
               <span style={{ font: '600 10.5px/1 var(--font-mono)', color: 'var(--text-low)', marginLeft: 'auto' }}>{byCol[c.id].length} · {swK(byCol[c.id].reduce((a, o) => a + o.value, 0))}</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 60, padding: 6, borderRadius: 'var(--radius-lg)', background: 'rgba(63,169,245,0.025)', border: '1px dashed var(--border-subtle)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 60, padding: 6, borderRadius: 'var(--radius-lg)', background: 'rgba(99,102,241,0.025)', border: '1px dashed var(--border-subtle)' }}>
               {byCol[c.id].map(o => <BbBidCard key={o.id} opp={o} onOpen={onOpenOpp} />)}
               {!byCol[c.id].length && <div style={{ font: '400 11.5px/1.5 var(--font-body)', color: 'var(--text-low)', textAlign: 'center', padding: '18px 8px' }}>Nothing in {c.label.toLowerCase()}</div>}
             </div>

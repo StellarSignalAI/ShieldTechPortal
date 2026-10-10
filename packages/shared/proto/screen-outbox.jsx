@@ -55,7 +55,7 @@ function PayPageScreen({ onBack }) {
           </div>
           <div style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 12 }}>Billed to <b style={{ color: 'var(--text-high)' }}>{inv.customer}</b> · due {inv.due}</div>
           {(inv.lines || []).map((li, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(63,169,245,0.05)', fontSize: 12 }}>
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', fontSize: 12 }}>
               <span style={{ color: 'var(--text-mid)' }}>{li.desc}</span>
               <span className="mono" style={{ color: 'var(--text-high)' }}>${(li.qty * li.rate).toLocaleString()}</span>
             </div>
@@ -83,7 +83,7 @@ function PayPageScreen({ onBack }) {
               <input value={card.exp} onChange={e => set('exp', e.target.value)} placeholder="MM / YY" style={{ ...payInput(), flex: 1 }} />
               <input value={card.cvc} onChange={e => set('cvc', e.target.value.replace(/\D/g, ''))} placeholder="CVC" inputMode="numeric" style={{ ...payInput(), flex: 1 }} />
             </div>
-            <button onClick={pay} disabled={state === 'processing'} style={{ width: '100%', marginTop: 12, padding: '12px 0', background: state === 'processing' ? 'rgba(63,169,245,0.3)' : 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 9, color: '#fff', fontSize: 14, fontWeight: 700, cursor: state === 'processing' ? 'default' : 'pointer', fontFamily: 'var(--font-body)' }}>
+            <button onClick={pay} disabled={state === 'processing'} style={{ width: '100%', marginTop: 12, padding: '12px 0', background: state === 'processing' ? 'rgba(99,102,241,0.3)' : 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 9, color: '#fff', fontSize: 14, fontWeight: 700, cursor: state === 'processing' ? 'default' : 'pointer', fontFamily: 'var(--font-body)' }}>
               {state === 'processing' ? 'Processing…' : `Pay $${inv.amount.toLocaleString()}`}
             </button>
             <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 10, textAlign: 'center', lineHeight: 1.5 }}>

@@ -6,7 +6,7 @@ const ssPrefsStore = createShieldStore('ssprefs', { theme: 'dark', icons: 'glyph
 
 /* ── Device palette: generic plan symbols mapped to Price Book SKUs ── */
 const SS_DEVICES = [
-  { type: 'dome',    label: 'Dome Camera',    glyph: 'M12 4a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8Zm0 4a4 4 0 0 1 4 4H8a4 4 0 0 1 4-4Z', letter: 'D', color: '#3FA9F5', sku: 'P3245-V',   desc: 'Axis P3245-V Indoor Dome',        unit: 285,  hrs: 1.5 },
+  { type: 'dome',    label: 'Dome Camera',    glyph: 'M12 4a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8Zm0 4a4 4 0 0 1 4 4H8a4 4 0 0 1 4-4Z', letter: 'D', color: '#6366F1', sku: 'P3245-V',   desc: 'Axis P3245-V Indoor Dome',        unit: 285,  hrs: 1.5 },
   { type: 'bullet',  label: 'Bullet Camera',  glyph: 'M4 10h12l4 2-4 2H4a2 2 0 0 1 0-4Zm2 6v3M14 16v3', letter: 'B', color: '#38BDF8', sku: 'P1468-LE',  desc: 'Axis P1468-LE Outdoor Bullet 4K', unit: 412,  hrs: 2 },
   { type: 'ptz',     label: 'PTZ Camera',     glyph: 'M12 3a6 6 0 0 1 6 6c0 4-6 12-6 12S6 13 6 9a6 6 0 0 1 6-6Zm0 3.5A2.5 2.5 0 1 0 12 11a2.5 2.5 0 0 0 0-5Z', letter: 'P', color: '#818CF8', sku: 'Q6135-LE',  desc: 'Axis Q6135-LE PTZ 32x',           unit: 2890, hrs: 2.5 },
   { type: 'reader',  label: 'Access Reader',  glyph: 'M7 3h10v18H7zM9 6h6M9 9h6M12 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z', letter: 'R', color: '#34D399', sku: 'RP40',      desc: 'HID RP40 Multi-Tech Reader',      unit: 165,  hrs: 1 },
