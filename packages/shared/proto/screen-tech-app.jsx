@@ -43,134 +43,136 @@ function TodayView({ setTab, setSelectedJob }) {
   }
   const fmtDay = (iso) => { const dt = new Date(iso + 'T12:00:00'); return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); };
 
-  const statusColors = { completed: 'var(--status-ok)', active: 'var(--brand)', upcoming: 'var(--text-low)' };
+  // ── ShieldTech dark design language (local palette, self-contained) ──
+  const F = "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  const MONO = "'Geist Mono', ui-monospace, SFMono-Regular, monospace";
+  const CARD = '#0C0A14', BORDER = 'rgba(255,255,255,0.08)';
+  const FG = '#FAFAFB', FG2 = '#A1A0A6', FG3 = '#656365';
+  const ACC = '#6366F1', ACC_LT = '#A2A3ED', OK = '#4ED99A';
+  const statusColors = { completed: OK, active: ACC, upcoming: FG3 };
+  const lbl = { fontFamily: MONO, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: FG3, marginBottom: 11 };
+
+  const done = jobs.filter(j => j.status === 'completed').length;
+  const total = jobs.length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const hoursTot = jobs.reduce((s, j) => s + (Number(j._cal && j._cal.dur) || 0), 0);
+  const sites = new Set(jobs.map(j => j.customer)).size;
+  const RC = 2 * Math.PI * 26; // progress-ring circumference
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {/* Day summary */}
-      <div style={{ display: 'flex', gap: 10 }}>
-        {[
-          { label: 'Jobs Left', value: String(jobs.filter(j => j.status !== 'completed').length), icon: '⚙' },
-          // Only real scheduled durations count — never an invented 2h per WO.
-          { label: 'Hours', value: (() => { const tot = jobs.reduce((s, j) => s + (Number(j._cal && j._cal.dur) || 0), 0); return tot > 0 ? `${tot}h` : '—'; })(), icon: '⏱' },
-          { label: 'Sites', value: String(new Set(jobs.map(j => j.customer)).size), icon: '⬡' },
-        ].map((s, i) => (
-          <div key={i} className="glass" style={{
-            flex: 1, padding: '12px', textAlign: 'center',
-            animation: `fade-up 0.4s ease ${i * 80}ms both`
-          }}>
-            <div style={{ fontSize: 16, marginBottom: 4 }}>{s.icon}</div>
-            <div className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-high)' }}>{s.value}</div>
-            <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>{s.label}</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, fontFamily: F, color: FG }}>
+      {/* Hero — today's progress (ring) */}
+      <div style={{
+        position: 'relative', overflow: 'hidden', borderRadius: 22, padding: 20, color: '#fff',
+        background: 'linear-gradient(135deg, #6366F1 0%, #8B7BFF 100%)',
+        boxShadow: '0 18px 40px -20px rgba(99,102,241,0.6)', animation: 'fade-up 0.4s ease both'
+      }}>
+        <div style={{ position: 'absolute', right: -42, top: -42, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,0.12)' }} />
+        <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.85 }}>Today's progress</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 10, position: 'relative' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: MONO, fontSize: 30, fontWeight: 700, letterSpacing: '-0.02em' }}>{done}<span style={{ fontSize: 16, opacity: 0.8 }}> / {total} job{total === 1 ? '' : 's'}</span></div>
+            <div style={{ fontSize: 13, opacity: 0.9, marginTop: 2 }}>{total ? `${total - done} remaining · on schedule` : 'Nothing scheduled today'}</div>
           </div>
-        ))}
+          <div style={{ position: 'relative', width: 72, height: 72, flex: 'none' }}>
+            <svg width="72" height="72" style={{ transform: 'rotate(-90deg)' }}>
+              <circle cx="36" cy="36" r="26" fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="8" />
+              <circle cx="36" cy="36" r="26" fill="none" stroke="#fff" strokeWidth="8" strokeLinecap="round" strokeDasharray={RC} strokeDashoffset={RC * (1 - pct / 100)} />
+            </svg>
+            <span style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', fontFamily: MONO, fontWeight: 700, fontSize: 15 }}>{pct}%</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 16, position: 'relative' }}>
+          {[['Hours', hoursTot > 0 ? hoursTot + 'h' : '—'], ['Sites', String(sites)], ['Jobs left', String(total - done)]].map(([k, v], i) => (
+            <div key={i} style={{ flex: 1, background: 'rgba(0,0,0,0.14)', borderRadius: 12, padding: '8px 10px' }}>
+              <div style={{ fontFamily: MONO, fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.04em', opacity: 0.7 }}>{k}</div>
+              <div style={{ fontWeight: 600, fontSize: 14, marginTop: 2 }}>{v}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Timeline */}
+      {/* Today's schedule */}
       <div>
-        <div className="label-sm" style={{ marginBottom: 10 }}>TODAY'S SCHEDULE</div>
+        <div style={lbl}>Today's schedule</div>
         {jobs.length === 0 && (
-          <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>
+          <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, padding: 26, textAlign: 'center', color: FG3, fontSize: 12 }}>
             No jobs assigned today — dispatched work appears here.
           </div>
         )}
-        {jobs.map((job, i) => (
-          <div key={i}
-            onClick={() => { setSelectedJob(job); setTab('job-detail'); }}
-            style={{
-              display: 'flex', gap: 12, padding: '14px 0',
-              borderBottom: '1px solid rgba(63,169,245,0.05)',
-              cursor: 'pointer', animation: `fade-up 0.4s ease ${(i + 3) * 80}ms both`
-            }}
-          >
-            {/* Timeline dot + line */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 20, paddingTop: 4 }}>
-              <div style={{
-                width: 10, height: 10, borderRadius: '50%',
-                border: `2px solid ${statusColors[job.status]}`,
-                background: job.status === 'completed' ? statusColors.completed : 'transparent',
-                boxShadow: job.status === 'active' ? `0 0 8px ${statusColors.active}` : 'none'
-              }} />
-              {i < jobs.length - 1 && <div style={{ width: 1, flex: 1, background: 'var(--border-subtle)', marginTop: 4 }} />}
-            </div>
-            {/* Job info */}
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)' }}>{job.time}</span>
-                {job.status === 'active' && (
-                  <span style={{
-                    fontSize: 9, fontWeight: 700, textTransform: 'uppercase',
-                    padding: '2px 6px', borderRadius: 3,
-                    background: 'rgba(63,169,245,0.12)', color: 'var(--brand)',
-                    letterSpacing: '0.04em'
-                  }}>CURRENT</span>
-                )}
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-high)', marginBottom: 2 }}>{job.customer}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-mid)', marginBottom: 4 }}>{job.desc}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 11, color: 'var(--text-low)' }}>⌖ {job.site}</span>
-                {job.status === 'upcoming' && (
-                  <button onClick={e => {
-                    e.stopPropagation();
-                    const dest = job.site || job.customer || '';
-                    if (!dest) { showToast('No site address on this job — ask dispatch', 'warn'); return; }
-                    window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest), '_blank');
-                  }} style={{
-                    marginLeft: 'auto', padding: '3px 10px',
-                    background: 'rgba(63,169,245,0.08)', border: '1px solid var(--border-subtle)',
-                    borderRadius: 4, color: 'var(--brand)', fontSize: 10,
-                    cursor: 'pointer', fontFamily: 'var(--font-body)'
-                  }}>Navigate →</button>
-                )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {jobs.map((job, i) => (
+            <div key={i} onClick={() => { setSelectedJob(job); setTab('job-detail'); }}
+              style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, padding: 14, cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'flex-start', animation: `fade-up 0.4s ease ${(i + 2) * 70}ms both` }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', marginTop: 4, flex: 'none',
+                border: `2px solid ${statusColors[job.status]}`, background: job.status === 'completed' ? OK : 'transparent',
+                boxShadow: job.status === 'active' ? `0 0 8px ${ACC}` : 'none' }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                  <span style={{ fontFamily: MONO, fontSize: 11, color: FG3 }}>{job.time}</span>
+                  {job.status === 'active' && <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, textTransform: 'uppercase', padding: '2px 7px', borderRadius: 100, background: 'rgba(99,102,241,0.16)', color: ACC_LT, letterSpacing: '0.04em' }}>Current</span>}
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{job.customer}</div>
+                <div style={{ fontSize: 12, color: FG2, marginTop: 1 }}>{job.desc}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
+                  {job.site && <span style={{ fontSize: 11, color: FG3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>⌖ {job.site}</span>}
+                  {job.status === 'upcoming' && (
+                    <button onClick={e => {
+                      e.stopPropagation();
+                      const dest = job.site || job.customer || '';
+                      if (!dest) { showToast('No site address on this job — ask dispatch', 'warn'); return; }
+                      window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest), '_blank');
+                    }} style={{ marginLeft: 'auto', padding: '4px 11px', background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 100, color: ACC_LT, fontSize: 10, cursor: 'pointer', fontFamily: F, flex: 'none' }}>Navigate →</button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Upcoming days — scheduled work ahead of time, tap any job for the overview */}
       <div>
-        <div className="label-sm" style={{ marginBottom: 10 }}>UPCOMING · NEXT 14 DAYS</div>
+        <div style={lbl}>Upcoming · next 14 days</div>
         {upcomingDays.length === 0 && (
-          <div className="glass" style={{ padding: 20, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>
+          <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, padding: 20, textAlign: 'center', color: FG3, fontSize: 12 }}>
             Nothing scheduled ahead yet — future jobs from the office appear here.
           </div>
         )}
         {upcomingDays.map(day => (
-          <div key={day.iso} style={{ marginBottom: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--brand)' }}>{fmtDay(day.iso)}</span>
-              <span style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }}></span>
-              <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{day.rows.length} job{day.rows.length === 1 ? '' : 's'}</span>
+          <div key={day.iso} style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
+              <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, color: ACC_LT }}>{fmtDay(day.iso)}</span>
+              <span style={{ flex: 1, height: 1, background: BORDER }}></span>
+              <span style={{ fontFamily: MONO, fontSize: 9, color: FG3 }}>{day.rows.length} job{day.rows.length === 1 ? '' : 's'}</span>
             </div>
-            {day.rows.map((job, i) => (
-              <div key={i} onClick={() => { setSelectedJob(job); setTab('job-detail'); }}
-                className="glass" style={{ padding: '10px 12px', borderRadius: 10, marginBottom: 6, cursor: 'pointer' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {day.rows.map((job, i) => (
+                <div key={i} onClick={() => { setSelectedJob(job); setTab('job-detail'); }}
+                  style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, padding: '11px 13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{job.customer}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.desc}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>{job.customer}</div>
+                    <div style={{ fontSize: 11, color: FG2, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{job.desc}</div>
                     {(job.site || job.details) && (
-                      <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: 10, color: FG3, marginTop: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {job.site ? `⌖ ${job.site}` : ''}{job.site && job.details ? ' · ' : ''}{job.details}
                       </div>
                     )}
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{job.time}</div>
-                    <div style={{ fontSize: 12, color: 'var(--brand)', marginTop: 4 }}>Overview →</div>
+                    <div style={{ fontFamily: MONO, fontSize: 10, color: FG3 }}>{job.time}</div>
+                    <div style={{ fontSize: 12, color: ACC_LT, marginTop: 4 }}>Overview →</div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Week preview — live counts from the shared calendar store */}
-      <GlassPanel>
-        <div className="label-sm" style={{ marginBottom: 8 }}>THIS WEEK</div>
+      {/* This week — live counts from the shared calendar store */}
+      <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 18, padding: 16 }}>
+        <div style={lbl}>This week</div>
         <div style={{ display: 'flex', gap: 6 }}>
           {['Mon','Tue','Wed','Thu','Fri'].map((d, i) => {
             const dayN = i + 1;
@@ -179,21 +181,18 @@ function TodayView({ setTab, setSelectedJob }) {
             const isNow = dayN === todayIdx;
             return (
               <div key={i} style={{
-                flex: 1, textAlign: 'center', padding: '8px 0',
-                borderRadius: 6,
-                background: isNow ? 'rgba(63,169,245,0.08)' : 'transparent',
-                border: isNow ? '1px solid var(--border-strong)' : '1px solid transparent'
+                flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 12,
+                background: isNow ? 'rgba(99,102,241,0.12)' : 'transparent',
+                border: isNow ? '1px solid rgba(99,102,241,0.4)' : '1px solid transparent'
               }}>
-                <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{d}</div>
-                <div className="mono" style={{ fontSize: 14, fontWeight: 600, color: isNow ? 'var(--brand)' : 'var(--text-high)', marginTop: 2 }}>
-                  {count}
-                </div>
-                <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 1 }}>jobs</div>
+                <div style={{ fontSize: 10, color: FG3 }}>{d}</div>
+                <div style={{ fontFamily: MONO, fontSize: 15, fontWeight: 600, color: isNow ? ACC_LT : FG, marginTop: 3 }}>{count}</div>
+                <div style={{ fontSize: 9, color: FG3, marginTop: 1 }}>jobs</div>
               </div>
             );
           })}
         </div>
-      </GlassPanel>
+      </div>
     </div>
   );
 }
