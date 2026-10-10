@@ -18,6 +18,7 @@ import './proto/mobile-ops5.jsx';
 import './proto/mobile-ops6.jsx';
 import './proto/image-slot.js';
 import './proto/mobile-finance.jsx';
+import './proto/mobile-money.jsx';
 import './proto/mobile-builders.jsx';
 import './proto/mobile-survey.jsx';
 

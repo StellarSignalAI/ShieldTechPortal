@@ -647,7 +647,7 @@ function MFinance({ onNav }) {
           <button key={t} onClick={() => setTab(t)} style={{ padding: '7px 14px', borderRadius: 9, fontSize: 12, fontWeight: tab === t ? 600 : 500, background: tab === t ? 'rgba(99,102,241,0.14)' : 'transparent', border: `1px solid ${tab === t ? 'var(--brand)' : 'var(--border-subtle)'}`, color: tab === t ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', flexShrink: 0 }}>{t}</button>
         ))}
       </div>
-      {tab === 'Overview' && <FinOverview go={setTab} />}
+      {tab === 'Overview' && (window.MoneyHome ? <MoneyHome go={setTab} /> : <FinOverview go={setTab} />)}
       {tab === 'AI Queue' && <MFinAIQueue />}
       {tab === 'Invoices' && <FinInvoices />}
       {tab === 'Recurring' && <FinRecurring />}

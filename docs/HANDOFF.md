@@ -131,6 +131,18 @@ fallbacks in `apps/tech/src/main.jsx`).
 - The Dial's Install step has a **Receipt** action (`window.openTechReceipt({jobRef,label})`)
   that opens the camera pre-tagged to the job.
 
+### 2e. Mobile portal — Money as a collections dial
+`packages/shared/proto/mobile-money.jsx` (`MoneyDial`, `MoneyHome`) is the Money tab's
+Overview (`MFinance` falls back to `FinOverview` if missing). One arc per customer who
+owes, sized by balance, colored by age (`--status-ok` current, `--status-warn` 1–30,
+`--status-critical` 31–60, `--disc-alarm` 60+), oldest debt first; the white marker on the
+track is where overdue ends. Turn/flick/tap to dial a customer in; the one card shows the
+oldest invoice with **Receive payment** (`openQboNew('payment')`), **Pay link**
+(`mSendPayLink`) and **Remind** (AR reminder → Approvals), plus that customer's invoices
+(tap → `FinInvoiceDetail`). Under it: collected this month / bills to pay / MRR, everyone
+who owes, and the next bills with **Pay** (`openQboNew('billpayment')`). Data is
+`useMergedInvoices` (portal + QuickBooks), `__shieldQBO.bills`, `mrrStore`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 
