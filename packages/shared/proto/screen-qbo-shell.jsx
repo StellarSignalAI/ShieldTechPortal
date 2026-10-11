@@ -403,7 +403,8 @@ function QboFinanceScreen() {
   const initial = (window.__qboParams && window.__qboParams.financeTab) || 'overview';
   const [page, setPage] = React.useState(initial);
   const [open, setOpen] = React.useState(() => { try { return JSON.parse(localStorage.getItem('st2:qbo-tree') || 'null') || { accounting: true, expenses: true, sales: true, customers: true }; } catch { return { accounting: true, sales: true }; } });
-  const [treeOn, setTreeOn] = React.useState(true);
+  const unified = !!window.__navUnified;
+  const [treeOn, setTreeOn] = React.useState(!unified);
   const [q, setQ] = React.useState(''); const [query, setQuery] = React.useState('');
   const [drawer, setDrawer] = React.useState(null); const [modal, setModal] = React.useState(null);
   const [selectedInv, setSelectedInv] = React.useState(null); const [invFilter, setInvFilter] = React.useState('All');
@@ -413,6 +414,9 @@ function QboFinanceScreen() {
   const [bmOpen, setBmOpen] = React.useState(false);
   React.useEffect(() => { const h = (e) => setDemoState(e.detail || 'live'); window.addEventListener('qbo-demo-state', h); return () => window.removeEventListener('qbo-demo-state', h); }, []);
   React.useEffect(() => { const h = (e) => { if (e.detail.screen === 'finance' && e.detail.params.financeTab) setPage(e.detail.params.financeTab); }; window.addEventListener('qbo-nav', h); return () => window.removeEventListener('qbo-nav', h); }, []);
+  /* Sidebar ↔ page: the unified sidebar is the only menu. */
+  React.useEffect(() => { const h = (e) => { if (e.detail.screen === 'finance' && e.detail.source !== 'screen' && e.detail.sub && e.detail.sub !== page) setPage(e.detail.sub); }; window.addEventListener('st2:subnav', h); return () => window.removeEventListener('st2:subnav', h); }, [page]);
+  React.useEffect(() => { if (window.navSubSet && (!window.__navSub || window.__navSub.screen !== 'finance' || window.__navSub.sub !== page)) window.navSubSet('finance', page, 'screen'); }, [page]);
   React.useEffect(() => { window.__financeSetModal = (m) => { setPage(m && m.type === 'new-estimate' ? 'estimates' : 'invoices'); setModal(m); }; return () => { if (window.__financeSetModal) delete window.__financeSetModal; }; }, []);
   React.useEffect(() => { try { localStorage.setItem('st2:qbo-tree', JSON.stringify(open)); } catch { /* noop */ } }, [open]);
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
@@ -473,7 +477,8 @@ function QboFinanceScreen() {
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', overflow: 'hidden', margin: '-8px -8px 0' }}>
       {/* top bar: company + global search + icons */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 14px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--card)', flexShrink: 0 }}>
-        <span style={{ fontSize: 12.5, fontWeight: 700 }}>ShieldTech Security</span>
+        <span style={{ fontSize: 12.5, fontWeight: 700 }}>ShieldTech Security{unified && <span style={{ color: 'var(--text-low)', fontWeight: 500 }}> · {qbTitle(page)}</span>}</span>
+        {unified && <span style={{ display: 'flex', gap: 4 }}>{[['overview', 'Home'], ['feed', 'Feed'], ['reports-center', 'Reports']].map(([id, l]) => <button key={id} onClick={() => go(id)} style={{ padding: '4px 10px', borderRadius: 14, border: '1px solid var(--border-subtle)', background: page === id ? 'var(--brand-tint-12)' : 'transparent', color: page === id ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{l}</button>)}<button onClick={bm} title="Bookmark" style={{ padding: '4px 8px', borderRadius: 14, border: '1px solid var(--border-subtle)', background: 'transparent', color: bookmarks.includes(page) ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11.5, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{bookmarks.includes(page) ? '★' : '☆'}</button></span>}
         <form onSubmit={e => { e.preventDefault(); setQuery(q); go('search'); }} style={{ flex: 1, maxWidth: 560, margin: '0 auto' }}><input value={q} onChange={e => setQ(e.target.value)} placeholder="⌕  Navigate or search for transactions, contacts, reports, and more" style={{ width: '100%', padding: '7px 12px', borderRadius: 20, border: '1px solid var(--border-strong)', background: 'var(--modal)', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} /></form>
         <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {window.QboNewButton && <QboNewButton />}
@@ -484,15 +489,15 @@ function QboFinanceScreen() {
         </span>
       </div>
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-        {/* left rail */}
-        <div style={{ width: 60, borderRight: '1px solid var(--border-subtle)', background: 'var(--card)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 4px', gap: 2, flexShrink: 0, position: 'relative' }}>
+        {/* left rail (hidden when the portal sidebar carries the Finance tree) */}
+        {!unified && <div style={{ width: 60, borderRight: '1px solid var(--border-subtle)', background: 'var(--card)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 4px', gap: 2, flexShrink: 0, position: 'relative' }}>
           {rail.map(([id, icon, label, fn]) => railBtn(id, icon, label, fn, id === page || (id === 'reports' && app === 'reports') || (id === 'apps' && treeOn)))}
           <div className="mono" style={{ fontSize: 7.5, letterSpacing: '0.12em', color: 'var(--text-low)', margin: '10px 0 4px' }}>PINNED</div>
           {QBO_APPS.slice(0, 3).map(a => railBtn(a.id, <span style={{ width: 20, height: 20, borderRadius: '50%', background: a.color, display: 'inline-block' }} />, a.label.split(' ')[0], () => go(a.pages[0][0]), app === a.id))}
           <div style={{ flex: 1 }} />
           {railBtn('customise', '⇅', 'Customise', () => go('branding'), page === 'branding')}
           {bmOpen && <div style={{ position: 'absolute', left: 64, top: 50, zIndex: 50, width: 260, background: 'var(--card)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.4)' }}><div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Bookmarks</div>{bookmarks.length === 0 && <div style={{ fontSize: 11.5, color: 'var(--text-low)', marginBottom: 8 }}>Add a bookmark to get started.</div>}{bookmarks.map(b => <button key={b} onClick={() => { go(b); setBmOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 12, padding: '4px 0', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>☆ {qbTitle(b)}</button>)}<button onClick={bm} style={{ marginTop: 6, background: 'none', border: 'none', color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0 }}>{bookmarks.includes(page) ? '− Remove this page' : '+ Bookmark current page'}</button></div>}
-        </div>
+        </div>}
         {/* ALL APPS tree */}
         {treeOn && (
           <div style={{ width: 196, borderRight: '1px solid var(--border-subtle)', background: 'var(--card)', overflowY: 'auto', padding: '10px 8px', flexShrink: 0 }}>

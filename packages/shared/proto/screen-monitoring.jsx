@@ -147,16 +147,22 @@ function monitorNodeType(t) {
   if (s.includes('switch')) return 'switch';
   if (s.includes('router') || s.includes('gateway') || s.includes('firewall')) return 'gateway';
   if (s.includes('access point') || s === 'ap' || s.includes('wifi') || s.includes('wireless')) return 'ap';
-  if (s.includes('access') || s.includes('reader') || s.includes('door')) return 'access';
-  if (s.includes('alarm') || s.includes('panel') || s.includes('intrusion')) return 'alarm';
+  /* Fire before intrusion ("fire alarm panel"), intercom before access ("door station"). */
+  if (s.includes('fire') || s.includes('smoke') || s.includes('heat det') || s.includes('pull station') || s.includes('facp') || s.includes('horn') || s.includes('strobe') || s.includes('sprinkler') || s.includes('duct det')) return 'fire';
+  if (s.includes('intercom') || s.includes('doorbell') || s.includes('door station') || s.includes('call box') || s.includes('entry panel') || s.includes('video phone')) return 'intercom';
+  if (s.includes('speaker') || s.includes('amplifier') || s.includes('paging') || s.includes('display') || s.includes('projector') || s.includes('audio') || s.includes('sound') || s === 'av' || s.startsWith('av ')) return 'av';
+  if (s.includes('patch') || s.includes('rack') || s.includes('cabinet') || s.includes('enclosure') || s.includes('cable') || s.includes('fiber') || s.includes('ups') || s.includes('pdu') || s.includes('media converter')) return 'cabling';
+  if (s.includes('access') || s.includes('reader') || s.includes('door') || s.includes('gate') || s.includes('turnstile') || s.includes('maglock') || s.includes('strike')) return 'access';
+  if (s.includes('alarm') || s.includes('panel') || s.includes('intrusion') || s.includes('keypad') || s.includes('motion') || s.includes('contact') || s.includes('siren') || s.includes('glass') || s.includes('sensor') || s.includes('pir')) return 'alarm';
   if (s.includes('server')) return 'server';
   return 'device';
 }
-const MONITOR_TYPE_ICONS = { gateway: '🛡', switch: '⊞', ap: '⊚', camera: '◉', access: '⊠', alarm: '⚠', nvr: '⊟', server: '▢', device: '▢' };
+const MONITOR_TYPE_ICONS = { gateway: '🛡', switch: '⊞', ap: '⊚', camera: '◉', access: '⊠', alarm: '⚠', fire: '△', intercom: '☏', av: '♫', cabling: '≣', nvr: '⊟', server: '▢', device: '▢' };
 const MONITOR_TYPE_COLORS = {
   gateway: 'var(--brand)', switch: 'var(--brand)', ap: '#a78bfa',
   camera: 'var(--status-ok)', access: 'var(--status-warn)', alarm: 'var(--status-critical)',
-  nvr: '#60a5fa', server: '#818cf8', device: '#94a3b8'
+  nvr: '#60a5fa', server: '#818cf8', device: '#94a3b8',
+  fire: 'var(--disc-fire)', intercom: 'var(--disc-access)', av: 'var(--text-mid)', cabling: 'var(--disc-cabling)'
 };
 
 /* ══════════════════════════════════════════════════════════════

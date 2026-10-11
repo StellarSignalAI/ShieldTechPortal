@@ -5,13 +5,14 @@
    true remote unlock need the site controller connected by ShieldTech; until
    then every action is a logged request the office fulfils. */
 
-const CU_KIND_LABEL = { gateway: 'Gateway', switch: 'Switch', ap: 'Wi-Fi', camera: 'Camera', access: 'Door', alarm: 'Alarm panel', nvr: 'Recorder', server: 'Server', device: 'Device' };
-const CU_KIND_GLYPH = { gateway: '⌂', switch: '⊞', ap: '◠', camera: '◉', access: '⊠', alarm: '◬', nvr: '⊟', server: '▤', device: '▢' };
+const CU_KIND_LABEL = { gateway: 'Gateway', switch: 'Switch', ap: 'Wi-Fi', camera: 'Camera', access: 'Door', alarm: 'Intrusion', fire: 'Fire alarm', intercom: 'Intercom', av: 'AV / paging', cabling: 'Rack / cabling', nvr: 'Recorder', server: 'Server', device: 'Device' };
+const CU_KIND_GLYPH = { gateway: '⌂', switch: '⊞', ap: '◠', camera: '◉', access: '⊠', alarm: '◬', fire: '△', intercom: '☏', av: '♫', cabling: '≣', nvr: '⊟', server: '▤', device: '▢' };
 function cuKind(a) {
   const s = String(a.type || '').toLowerCase();
   if (s.includes('cam')) return 'camera'; if (s.includes('nvr') || s.includes('record')) return 'nvr'; if (s.includes('switch')) return 'switch';
   if (s.includes('router') || s.includes('gateway') || s.includes('firewall')) return 'gateway'; if (s.includes('access point') || s === 'ap' || s.includes('wifi') || s.includes('wireless')) return 'ap';
-  if (s.includes('access') || s.includes('reader') || s.includes('door')) return 'access'; if (s.includes('alarm') || s.includes('panel') || s.includes('intrusion')) return 'alarm'; if (s.includes('server')) return 'server'; return 'device';
+  if (s.includes('fire') || s.includes('smoke') || s.includes('pull station') || s.includes('facp') || s.includes('horn') || s.includes('strobe')) return 'fire'; if (s.includes('intercom') || s.includes('doorbell') || s.includes('door station') || s.includes('call box')) return 'intercom'; if (s.includes('speaker') || s.includes('amplifier') || s.includes('paging') || s.includes('display') || s.includes('audio')) return 'av'; if (s.includes('patch') || s.includes('rack') || s.includes('cabinet') || s.includes('cable') || s.includes('fiber') || s.includes('ups') || s.includes('pdu')) return 'cabling';
+  if (s.includes('access') || s.includes('reader') || s.includes('door')) return 'access'; if (s.includes('alarm') || s.includes('panel') || s.includes('intrusion') || s.includes('keypad') || s.includes('motion') || s.includes('contact') || s.includes('siren') || s.includes('sensor')) return 'alarm'; if (s.includes('server')) return 'server'; return 'device';
 }
 const cuStatus = (a) => !a.status || a.status === 'online' ? 'online' : a.status === 'warning' ? 'warning' : 'offline';
 const cuDot = (s) => s === 'online' ? 'var(--status-ok)' : s === 'warning' ? 'var(--status-warn)' : s === 'offline' ? 'var(--status-critical)' : 'var(--text-low)';

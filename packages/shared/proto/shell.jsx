@@ -9,7 +9,7 @@ const NAV_GROUPS = [
   { id: 'custom-dashboard', icon: 'dashboard', label: 'My Dashboard', useSvg: true },
   { id: 'shieldtech-ai', icon: 'hermes', label: 'ShieldTech AI', useSvg: true }]
 },
-{ id: 'sell', label: 'SELL', collapsible: false, items: [
+{ id: 'sell', label: 'SELL', collapsible: true, items: [
   { id: 'crm', icon: 'pipeline', label: 'Bid Board', useSvg: true },
   { id: 'autobid', icon: 'proposals', label: 'Auto-Bid', useSvg: true, mobileOnly: true },
   { id: 'secret-weapon', icon: 'anomaly', label: 'Secret Weapon', useSvg: true, mobileOnly: true },
@@ -17,7 +17,7 @@ const NAV_GROUPS = [
   { id: 'studio', icon: 'topology', label: 'Design Studio', useSvg: true },
   { id: 'survey-cloud', icon: 'floorplan', label: 'Survey Cloud', useSvg: true, mobileOnly: true }]
 },
-{ id: 'deliver', label: 'DELIVER', collapsible: false, items: [
+{ id: 'deliver', label: 'DELIVER', collapsible: true, items: [
   { id: 'calendar', icon: 'calendar', label: 'Calendar & Copilot', useSvg: true },
   { id: 'copilot', icon: 'hermes', label: 'Scheduling Copilot', useSvg: true, mobileOnly: true },
   { id: 'dispatch', icon: 'dispatch', label: 'Dispatch & Fleet', useSvg: true },
@@ -27,8 +27,27 @@ const NAV_GROUPS = [
   { id: 'projects', icon: 'projects', label: 'Projects', useSvg: true },
   { id: 'plan-room', icon: 'floorplan', label: 'BlueShield Studio', useSvg: true }]
 },
-{ id: 'collect', label: 'COLLECT', collapsible: false, items: [
-  { id: 'finance', icon: 'finance', label: 'Finance Suite', useSvg: true },
+{ id: 'collect', label: 'MONEY', collapsible: true, items: [
+  /* The QuickBooks-pattern Finance suite: its pages are children of ONE sidebar
+     entry (no second rail inside the screen). `sub` is the finance page id. */
+  { id: 'finance', icon: 'finance', label: 'Finance (QuickBooks)', useSvg: true, children: [
+    { sub: 'overview', label: 'Home' },
+    { sub: 'bank-transactions', label: 'Bank transactions' },
+    { sub: 'receipts', label: 'Receipts' },
+    { sub: 'reconcile', label: 'Reconcile' },
+    { sub: 'accounts', label: 'Chart of accounts' },
+    { sub: 'expenses', label: 'Expenses' },
+    { sub: 'ap', label: 'Bills' },
+    { sub: 'vendors', label: 'Suppliers' },
+    { sub: 'sales-overview', label: 'Sales' },
+    { sub: 'invoices', label: 'Invoices' },
+    { sub: 'estimates', label: 'Estimates' },
+    { sub: 'customers', label: 'Customers' },
+    { sub: 'products', label: 'Products & services' },
+    { sub: 'payroll', label: 'Payroll' },
+    { sub: 'sales-tax', label: 'Sales tax' },
+    { sub: 'reports-center', label: 'Reports' },
+    { sub: 'settings', label: 'Settings' }] },
   { id: 'revops', icon: 'finance', label: 'Revenue Ops', useSvg: true },
   { id: 'invoices', icon: 'expenses', label: 'Invoices', useSvg: true, mobileOnly: true },
   { id: 'estimates', icon: 'proposals', label: 'Proposal Pipeline', useSvg: true, mobileOnly: true },
@@ -39,16 +58,31 @@ const NAV_GROUPS = [
   { id: 'rr-builder', icon: 'roi', label: 'RR Builder', useSvg: true, mobileOnly: true },
   { id: 'expenses', icon: 'expenses', label: 'Expenses & Receipts', useSvg: true, mobileOnly: true }]
 },
-{ id: 'care', label: 'CARE', collapsible: false, items: [
+{ id: 'os', label: 'SHIELDTECH OS', collapsible: true, items: [
+  /* Every low-voltage discipline the company installs and monitors, as children
+     of ONE entry. `sub` is the console app id. */
+  { id: 'cameras', icon: 'topology', label: 'Sites', useSvg: true, children: [
+    { sub: 'sites', label: 'All sites' },
+    { sub: 'network', label: 'Network' },
+    { sub: 'protect', label: 'Video (CCTV)' },
+    { sub: 'access', label: 'Access control' },
+    { sub: 'intrusion', label: 'Intrusion' },
+    { sub: 'fire', label: 'Fire alarm' },
+    { sub: 'intercom', label: 'Intercom & AV' },
+    { sub: 'cabling', label: 'Cabling & racks' },
+    { sub: 'alerts', label: 'Alerts' },
+    { sub: 'assets', label: 'Assets' },
+    { sub: 'settings', label: 'Controllers & settings' }] },
+  { id: 'assets', icon: 'assets', label: 'Assets', useSvg: true, mobileOnly: true }]
+},
+{ id: 'care', label: 'CARE', collapsible: true, items: [
   { id: 'customers-list', icon: 'customers', label: 'Customers', useSvg: true },
-  { id: 'cameras', icon: 'topology', label: 'ShieldTech OS', useSvg: true },
-  { id: 'assets', icon: 'assets', label: 'Assets', useSvg: true, mobileOnly: true },
   { id: 'helpdesk', icon: 'chat', label: 'Help Desk', useSvg: true },
   { id: 'incidents', icon: 'warroom', label: 'Incidents', useSvg: true, mobileOnly: true },
   { id: 'nps', icon: 'star', label: 'NPS & Feedback', useSvg: true, mobileOnly: true },
   { id: 'messages', icon: 'hermes', label: 'Messages', useSvg: true }]
 },
-{ id: 'admin', label: 'ADMIN', collapsible: false, items: [
+{ id: 'admin', label: 'ADMIN', collapsible: true, items: [
   { id: 'employees', icon: 'employees', label: 'Team & Skills', useSvg: true },
   { id: 'hr', icon: 'employees', label: 'HR Center', useSvg: true },
   { id: 'skills', icon: 'certs', label: 'Skills Matrix', useSvg: true, mobileOnly: true },
@@ -60,6 +94,19 @@ const NAV_GROUPS = [
   { id: 'portal-settings', icon: 'compliance', label: 'Portal Settings', useSvg: true }]
 }];
 
+/* ── Sub-navigation bus ──
+   A screen with children (Finance, ShieldTech OS) tells the sidebar which page
+   it is on, and the sidebar tells the screen which page to open — one source
+   of truth, no second menu inside the screen. */
+function navSubSet(screen, sub, source) {
+  window.__navSub = { screen, sub };
+  try { window.dispatchEvent(new CustomEvent('st2:subnav', { detail: { screen, sub, source: source || 'nav' } })); } catch { /* noop */ }
+}
+function useNavSub() {
+  const [v, setV] = React.useState(() => window.__navSub || null);
+  React.useEffect(() => { const h = (e) => setV({ screen: e.detail.screen, sub: e.detail.sub }); window.addEventListener('st2:subnav', h); return () => window.removeEventListener('st2:subnav', h); }, []);
+  return v;
+}
 
 /* Flat list for backward compat */
 const NAV_ITEMS = NAV_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, section: g.id })));
@@ -82,10 +129,14 @@ function ShieldLogo({ size = 32 }) {
 
 /* ── Nav Rail (Collapsible Groups) ── */
 function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
+  const navSub = useNavSub();
+  const [openItems, setOpenItems] = React.useState(() => ({ [current]: true }));
+  React.useEffect(() => { setOpenItems(o => o[current] ? o : { ...o, [current]: true }); }, [current]);
   const [openGroups, setOpenGroups] = React.useState(() => {
     // Auto-open the group containing the current screen
     const active = NAV_GROUPS.find((g) => g.items.some((i) => i.id === current));
-    const defaults = { overview: true };
+    const defaults = { home: true, sell: true, deliver: true, collect: true, os: true, care: true, admin: true };
+    try { Object.assign(defaults, JSON.parse(localStorage.getItem('st2:nav-groups') || '{}')); } catch { /* noop */ }
     if (active) defaults[active.id] = true;
     return defaults;
   });
@@ -99,8 +150,9 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
   }, [current]);
 
   const toggleGroup = (gid) => {
-    setOpenGroups((prev) => ({ ...prev, [gid]: !prev[gid] }));
+    setOpenGroups((prev) => { const n = { ...prev, [gid]: !prev[gid] }; try { localStorage.setItem('st2:nav-groups', JSON.stringify(n)); } catch { /* noop */ } return n; });
   };
+  const childCount = (items) => items.reduce((n, i) => n + 1 + ((i.children && openItems[i.id]) ? i.children.length : 0), 0);
 
   return (
     <nav style={{
@@ -178,14 +230,18 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
               {/* Group items — animate open/close */}
               <div style={{
                 overflow: 'hidden',
-                maxHeight: isOpen || collapsed ? `${itemCount * 36 + 4}px` : '0px',
+                maxHeight: isOpen || collapsed ? `${childCount(group.items) * 36 + 4}px` : '0px',
                 opacity: isOpen || collapsed ? 1 : 0,
                 transition: 'max-height 0.25s ease, opacity 0.2s ease'
               }}>
                 {group.items.map((item) => {
                   const active = current === item.id;
+                  const kids = item.children || null;
+                  const kidsOpen = kids && !collapsed && openItems[item.id];
+                  const activeSub = active && navSub && navSub.screen === item.id ? navSub.sub : null;
                   return (
-                    <button key={item.id} onClick={() => onNav(item.id)} title={item.label} style={{
+                    <React.Fragment key={item.id}>
+                    <button onClick={() => { if (kids) { setOpenItems(o => ({ ...o, [item.id]: active ? !o[item.id] : true })); if (!active) onNav(item.id, kids[0].sub); } else onNav(item.id); }} title={item.label} style={{
                       display: 'flex', alignItems: 'center', gap: 8,
                       width: '100%',
                       padding: collapsed ? '8px 0' : '6px 16px 6px 28px',
@@ -208,8 +264,20 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
                       }} />
                       }
                       {item.useSvg ? <Icon name={item.icon} size={14} color={active ? 'var(--brand)' : 'var(--text-mid)'} style={{ flexShrink: 0, width: 20, opacity: active ? 1 : 0.7 }} /> : <span style={{ fontSize: 13, width: 20, textAlign: 'center', flexShrink: 0, opacity: active ? 1 : 0.6 }}>{item.icon}</span>}
-                      {!collapsed && <span style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{item.label}</span>}
-                    </button>);
+                      {!collapsed && <span style={{ whiteSpace: 'nowrap', fontSize: 13, flex: 1 }}>{item.label}</span>}
+                      {!collapsed && kids && <span style={{ fontSize: 9, color: 'var(--text-low)', transition: 'transform 0.2s', transform: kidsOpen ? 'rotate(90deg)' : 'none' }}>▶</span>}
+                    </button>
+                    {kidsOpen && kids.map((k) => {
+                      const on = active && (activeSub === k.sub || (!activeSub && k === kids[0]));
+                      return (
+                        <button key={k.sub} onClick={() => onNav(item.id, k.sub)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '5px 16px 5px 52px', background: on ? 'rgba(var(--brand-rgb),0.08)' : 'transparent', border: 'none', cursor: 'pointer', color: on ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12.5, fontFamily: 'var(--font-body)', textAlign: 'left', position: 'relative', fontWeight: on ? 600 : 400 }}
+                          onMouseEnter={(e) => { if (!on) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)'; }}
+                          onMouseLeave={(e) => { if (!on) e.currentTarget.style.background = 'transparent'; }}>
+                          <span style={{ position: 'absolute', left: 36, top: '50%', width: 5, height: 5, borderRadius: '50%', transform: 'translateY(-50%)', background: on ? 'var(--brand)' : 'var(--border-strong)' }} />
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.label}</span>
+                        </button>);
+                    })}
+                    </React.Fragment>);
 
                 })}
               </div>
@@ -553,7 +621,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     dispatch: 'Dispatch Center', finance: 'Finance Suite', revops: 'Revenue Operations',
     timeline: 'Customer Timeline',
     approvals: 'Approvals Center',
-    cameras: 'ShieldTech OS', topology: 'ShieldTech OS',
+    cameras: 'ShieldTech OS', topology: 'ShieldTech OS', finance: 'Finance',
     certs: 'Certifications', tools: 'Engineering Tools',
     costing: 'Job Costing', audit: 'Audit Trail',
     warroom: 'ShieldTech OS', floorplan: 'ShieldTech OS', anomaly: 'ShieldTech OS',
@@ -667,4 +735,4 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
 
 }
 
-Object.assign(window, { ShieldLogo, NavRail, TopBar, AppShell, NAV_ITEMS, NAV_GROUPS });
+Object.assign(window, { ShieldLogo, NavRail, TopBar, AppShell, NAV_ITEMS, NAV_GROUPS, navSubSet, useNavSub });

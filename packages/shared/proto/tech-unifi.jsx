@@ -5,13 +5,14 @@
    the office as a ticket. Adopt = document a new device for this site. Door
    readers get a remote-unlock request that goes to the office log. */
 
-const TU_KIND_LABEL = { gateway: 'Gateway', switch: 'Switch', ap: 'Access point', camera: 'Camera', access: 'Door / reader', alarm: 'Alarm panel', nvr: 'Recorder', server: 'Server', device: 'Device' };
-const TU_KIND_GLYPH = { gateway: '⌂', switch: '⊞', ap: '◠', camera: '◉', access: '⊠', alarm: '◬', nvr: '⊟', server: '▤', device: '▢' };
+const TU_KIND_LABEL = { gateway: 'Gateway', switch: 'Switch', ap: 'Access point', camera: 'Camera', access: 'Door / reader', alarm: 'Intrusion', fire: 'Fire alarm', intercom: 'Intercom', av: 'AV / paging', cabling: 'Rack / cabling', nvr: 'Recorder', server: 'Server', device: 'Device' };
+const TU_KIND_GLYPH = { gateway: '⌂', switch: '⊞', ap: '◠', camera: '◉', access: '⊠', alarm: '◬', fire: '△', intercom: '☏', av: '♫', cabling: '≣', nvr: '⊟', server: '▤', device: '▢' };
 function tuKind(a) {
   const s = String(a.type || '').toLowerCase();
   if (s.includes('cam')) return 'camera'; if (s.includes('nvr') || s.includes('record')) return 'nvr'; if (s.includes('switch')) return 'switch';
   if (s.includes('router') || s.includes('gateway') || s.includes('firewall')) return 'gateway'; if (s.includes('access point') || s === 'ap' || s.includes('wifi') || s.includes('wireless')) return 'ap';
-  if (s.includes('access') || s.includes('reader') || s.includes('door') || s.includes('controller')) return 'access'; if (s.includes('alarm') || s.includes('panel') || s.includes('intrusion')) return 'alarm'; if (s.includes('server')) return 'server'; return 'device';
+  if (s.includes('fire') || s.includes('smoke') || s.includes('pull station') || s.includes('facp') || s.includes('horn') || s.includes('strobe')) return 'fire'; if (s.includes('intercom') || s.includes('doorbell') || s.includes('door station') || s.includes('call box')) return 'intercom'; if (s.includes('speaker') || s.includes('amplifier') || s.includes('paging') || s.includes('display') || s.includes('audio')) return 'av'; if (s.includes('patch') || s.includes('rack') || s.includes('cabinet') || s.includes('cable') || s.includes('fiber') || s.includes('ups') || s.includes('pdu')) return 'cabling';
+  if (s.includes('access') || s.includes('reader') || s.includes('door') || s.includes('controller')) return 'access'; if (s.includes('alarm') || s.includes('panel') || s.includes('intrusion') || s.includes('keypad') || s.includes('motion') || s.includes('contact') || s.includes('siren') || s.includes('sensor')) return 'alarm'; if (s.includes('server')) return 'server'; return 'device';
 }
 const tuStatus = (a) => !a.status || a.status === 'online' ? 'online' : a.status === 'warning' ? 'warning' : 'offline';
 const tuDotColor = (s) => s === 'online' ? 'var(--status-ok)' : s === 'warning' ? 'var(--status-warn)' : 'var(--status-critical)';
@@ -57,7 +58,7 @@ function TechDevicesView({ setTab }) {
   const setStatus = (d, s) => { patch(d.id, { status: s }); shieldToast(`${d.name} marked ${s}`, 'ok'); setSel(p => p ? { ...p, status: s, _s: s } : p); };
   const adopt = () => shieldModal({ kind: 'form', title: `Adopt device${cur ? ` · ${cur.site}` : ''}`, submitLabel: 'Adopt', successMsg: 'Device documented — the office console sees it now', fields: [
     { key: 'name', label: 'Device name', placeholder: 'e.g. CAM-07 (Rear dock)', required: true, full: true },
-    { key: 'type', label: 'Type', type: 'select', options: ['IP Camera', 'NVR', 'Network Switch', 'Gateway / Router', 'Access Point', 'Access Reader', 'Door Controller', 'Alarm Panel', 'Other'] },
+    { key: 'type', label: 'Type', type: 'select', options: ['IP Camera','NVR / DVR','Network Switch','Gateway / Router','Access Point','Access Reader','Access Panel','Door Controller','Alarm Panel','Keypad','Motion Sensor','Door Contact','Glassbreak Sensor','Siren','Fire Alarm Panel','Smoke Detector','Heat Detector','Pull Station','Horn / Strobe','Intercom / Door Station','Video Doorbell','Speaker / Paging','Amplifier','Display','Patch Panel','Rack / Cabinet','UPS / Power','Media Converter','Server','Other'] },
     ...(cur ? [] : [{ key: 'customer', label: 'Customer', required: true }, { key: 'site', label: 'Site' }]),
     { key: 'mfg', label: 'Make', placeholder: 'e.g. Axis' }, { key: 'model', label: 'Model' }, { key: 'serial', label: 'Serial / MAC' }, { key: 'ip', label: 'IP address', placeholder: '192.168.1.' },
     { key: 'room', label: 'Room / location' }, { key: 'switchPort', label: 'Switch port' }, { key: 'mount', label: 'Mount' }, { key: 'notes', label: 'Notes', full: true },

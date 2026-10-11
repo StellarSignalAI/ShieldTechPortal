@@ -356,7 +356,7 @@ function CreateAssetModal({ onClose, showToast }) {
   const bind = (k) => (e) => setF(prev => ({ ...prev, [k]: e.target.value }));
   const [assetType, setAssetType] = React.useState('IP Camera');
   const [step, setStep] = React.useState(1);
-  const types = ['IP Camera','NVR / DVR','Access Reader','Access Panel','Alarm Panel','Fire Panel','Network Switch','UPS / Power','Intercom','Other'];
+  const types = ['IP Camera','NVR / DVR','Network Switch','Gateway / Router','Access Point','Access Reader','Access Panel','Door Controller','Alarm Panel','Keypad','Motion Sensor','Door Contact','Glassbreak Sensor','Siren','Fire Alarm Panel','Smoke Detector','Heat Detector','Pull Station','Horn / Strobe','Intercom / Door Station','Video Doorbell','Speaker / Paging','Amplifier','Display','Patch Panel','Rack / Cabinet','UPS / Power','Media Converter','Server','Other'];
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9000 }}>

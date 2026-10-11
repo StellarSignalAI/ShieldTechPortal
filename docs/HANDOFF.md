@@ -343,6 +343,44 @@ ShieldTech's own data and tools.
   end-to-end needs a customer console address + API key (UniFi OS › Control Plane ›
   Integrations) entered in Settings › Controllers. SW cache → `shieldtech-v17`.
 
+### 2k. One sidebar (no inner rails) + every low-voltage discipline in ShieldTech OS
+- **Unified navigation** (`packages/shared/proto/shell.jsx`, `apps/portal/src/desktop.jsx`):
+  `NAV_GROUPS` now has HOME · SELL · DELIVER · MONEY · SHIELDTECH OS · CARE · ADMIN
+  (collapsible, state in `st2:nav-groups`). Items can carry `children` (`{sub, label}`):
+  **Finance (QuickBooks)** → Home, Bank transactions, Receipts, Reconcile, Chart of
+  accounts, Expenses, Bills, Suppliers, Sales, Invoices, Estimates, Customers, Products &
+  services, Payroll, Sales tax, Reports, Settings; **Sites** (ShieldTech OS) → All sites,
+  Network, Video (CCTV), Access control, Intrusion, Fire alarm, Intercom & AV, Cabling &
+  racks, Alerts, Assets, Controllers & settings. Sub-navigation bus: `navSubSet(screen,
+  sub, source)` + `st2:subnav` event + `window.__navSub`; `useNavSub()` highlights the
+  child; `handleNav(id, sub)` and hash routing `#/finance/invoices`, `#/cameras/fire`
+  (hashchange steers a mounted screen). `window.__navUnified = true` makes
+  `QboFinanceScreen` drop its rail + ALL APPS tree (top bar keeps company · page crumb,
+  Home/Feed/Reports pills, bookmark star, search, + New, sync, settings) and
+  `ShieldOSConsole` drop its app rail; both publish their page to the sidebar and follow
+  it.
+- **Every discipline** (`screen-unifi-console.jsx`): `monitorNodeType` (and the tech /
+  customer copies) now classify **fire** (FACP, smoke/heat, pull station, horn/strobe,
+  sprinkler), **intercom** (door station, doorbell, call box, entry panel), **av**
+  (speaker, amplifier, paging, display, projector), **cabling** (patch panel, rack,
+  cabinet, cable, fiber, UPS, PDU), **access** (+ gate, turnstile, maglock, strike) and
+  **alarm**=intrusion (+ keypad, motion, contact, siren, glassbreak, sensor). New pages:
+  `UcIntrusionPage` (panels with Arm/Disarm/Bypass requests → `intrusionLogStore`
+  'intrusionlogs', zones & sensors, history incl. live alarm events), `UcFirePage`
+  (panels & devices, **Inspections** on `fireInspectionStore` 'fireinspections' with
+  NFPA 72 cadence, due/overdue, Schedule → requested maintenance WO with a fire checklist),
+  `UcIntercomPage` (door stations, directory shared with Access users, AV & paging),
+  `UcCablingPage` (racks/panels/power, `PortMapView`, networks from `assetNetStore`).
+  Sites cards/table show Video · Doors · Intrusion · Fire · Network counts. Asset type
+  pickers (Assets, tech Devices/Assets) list the full low-voltage catalogue.
+- Verified with Playwright: sidebar parent → child navigation for Finance and OS, no
+  inner rails rendered, hash deep links both ways, in-screen tab changes keep the sidebar
+  in sync, Fire inspection modal, collapsed sidebar; no page errors.
+- **Not yet overhauled** (old layouts under the new skin): Bid Board, Proposals, Design
+  Studio, Calendar, Dispatch, Work Orders, Projects, BlueShield Studio, Revenue Ops,
+  Inventory & Purchasing, Recurring Revenue, Customers, Help Desk, Messages, Team, HR,
+  Users, Approvals, Documents, Portal Settings, and the mobile portal.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

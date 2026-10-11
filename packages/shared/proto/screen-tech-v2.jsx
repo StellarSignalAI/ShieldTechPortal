@@ -923,7 +923,7 @@ function TechAssetsView() {
     kind: 'form', title: 'New Configuration', submitLabel: 'Save & Sync',
     successMsg: 'Configuration saved — synced to the portal', fields: [
       { key: 'name', label: 'Device Name', placeholder: 'e.g. CAM-04 (Loading Dock)', required: true, full: true },
-      { key: 'type', label: 'Type', type: 'select', options: ['IP Camera','NVR','Network Switch','Access Reader','Alarm Panel','Access Point','Other'] },
+      { key: 'type', label: 'Type', type: 'select', options: ['IP Camera','NVR / DVR','Network Switch','Gateway / Router','Access Point','Access Reader','Access Panel','Door Controller','Alarm Panel','Keypad','Motion Sensor','Door Contact','Glassbreak Sensor','Siren','Fire Alarm Panel','Smoke Detector','Heat Detector','Pull Station','Horn / Strobe','Intercom / Door Station','Video Doorbell','Speaker / Paging','Amplifier','Display','Patch Panel','Rack / Cabinet','UPS / Power','Media Converter','Server','Other'] },
       { key: 'customer', label: 'Customer', placeholder: selectedCustomer || 'Customer name', required: !selectedCustomer },
       { key: 'mfg', label: 'Manufacturer', placeholder: 'e.g. Axis' },
       { key: 'model', label: 'Model', placeholder: 'e.g. P3265-V' },

@@ -22,9 +22,9 @@ const ucAgo = (t) => { if (!t) return '—'; const m = Math.max(0, Math.round((u
 const ucClock = (t) => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 const ucStatus = (a) => !a.status || a.status === 'online' ? 'online' : a.status === 'warning' ? 'warning' : 'offline';
 const ucKind = (a) => (typeof monitorNodeType === 'function' ? monitorNodeType(a.type) : 'device');
-const UC_KIND_LABEL = { gateway: 'Gateway', switch: 'Switch', ap: 'Access point', camera: 'Camera', access: 'Door / reader', alarm: 'Alarm panel', nvr: 'Recorder', server: 'Server', device: 'Device' };
-const UC_KIND_COLOR = { gateway: 'var(--brand)', switch: 'var(--brand)', ap: 'var(--disc-alarm)', camera: 'var(--disc-cctv)', access: 'var(--disc-access)', alarm: 'var(--disc-fire)', nvr: 'var(--brand)', server: 'var(--text-mid)', device: 'var(--text-low)' };
-const UC_KIND_GLYPH = { gateway: '⌂', switch: '⊞', ap: '◠', camera: '◉', access: '⊠', alarm: '◬', nvr: '⊟', server: '▤', device: '▢' };
+const UC_KIND_LABEL = { gateway: 'Gateway', switch: 'Switch', ap: 'Access point', camera: 'Camera', access: 'Door / reader', alarm: 'Intrusion', fire: 'Fire alarm', intercom: 'Intercom', av: 'AV / paging', cabling: 'Rack / cabling', nvr: 'Recorder', server: 'Server', device: 'Device' };
+const UC_KIND_COLOR = { gateway: 'var(--brand)', switch: 'var(--brand)', ap: 'var(--brand)', camera: 'var(--disc-cctv)', access: 'var(--disc-access)', alarm: 'var(--disc-alarm)', fire: 'var(--disc-fire)', intercom: 'var(--disc-access)', av: 'var(--text-mid)', cabling: 'var(--disc-cabling)', nvr: 'var(--brand)', server: 'var(--text-mid)', device: 'var(--text-low)' };
+const UC_KIND_GLYPH = { gateway: '⌂', switch: '⊞', ap: '◠', camera: '◉', access: '⊠', alarm: '◬', fire: '△', intercom: '☏', av: '♫', cabling: '≣', nvr: '⊟', server: '▤', device: '▢' };
 
 /* One site record per (customer, site) seen in the registry or on the customer card. */
 function useUcSites() {
@@ -46,7 +46,7 @@ function useUcSites() {
       const off = s.devices.length - on - warn;
       const openTickets = (tickets || []).filter(t => (t.customer === s.customer || t.company === s.customer) && !['resolved', 'closed'].includes(t.status)).length;
       const verdict = !s.devices.length ? 'empty' : off ? 'offline' : warn ? 'attention' : 'healthy';
-      return { ...s, on, warn, off, openTickets, verdict, cams: s.devices.filter(a => ucKind(a) === 'camera').length, doors: s.devices.filter(a => ucKind(a) === 'access').length, net: s.devices.filter(a => ['gateway', 'switch', 'ap'].includes(ucKind(a))).length };
+      return { ...s, on, warn, off, openTickets, verdict, cams: s.devices.filter(a => ucKind(a) === 'camera').length, doors: s.devices.filter(a => ucKind(a) === 'access').length, net: s.devices.filter(a => ['gateway', 'switch', 'ap'].includes(ucKind(a))).length, intrusion: s.devices.filter(a => ucKind(a) === 'alarm').length, fire: s.devices.filter(a => ucKind(a) === 'fire').length };
     }).sort((a, b) => a.customer.localeCompare(b.customer) || a.site.localeCompare(b.site));
   }, [custs, assets, tickets]);
 }
@@ -342,8 +342,8 @@ function UcSitesPage({ sites, onPick }) {
             <div key={s.id} onClick={() => onPick(s)} className="st-rowcard" style={{ background: 'var(--card)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 14, cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><UcDot s={s.verdict} /><span style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--text-high)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.site}</span>{s.openTickets > 0 && <span style={{ fontSize: 10.5, padding: '1px 6px', borderRadius: 10, background: 'var(--warn-tint-12)', color: 'var(--status-warn)' }}>{s.openTickets} open</span>}</div>
               <div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginTop: 2 }}>{s.customer}{s.address ? ` · ${s.address}` : ''}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginTop: 12 }}>
-                {[['Devices', `${s.on}/${s.devices.length}`], ['Cameras', s.cams], ['Doors', s.doors], ['Network', s.net]].map(([l, v]) => <div key={l}><div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-high)', fontVariantNumeric: 'tabular-nums' }}>{v}</div><div style={{ fontSize: 10, color: 'var(--text-low)' }}>{l}</div></div>)}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, marginTop: 12 }}>
+                {[['Devices', `${s.on}/${s.devices.length}`], ['Video', s.cams], ['Doors', s.doors], ['Intrusion', s.intrusion], ['Fire', s.fire], ['Network', s.net]].map(([l, v]) => <div key={l}><div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-high)', fontVariantNumeric: 'tabular-nums' }}>{v}</div><div style={{ fontSize: 10, color: 'var(--text-low)' }}>{l}</div></div>)}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 10.5, color: 'var(--text-low)' }}><span>ISP · not monitored</span><span>{s.verdict === 'offline' ? `${s.off} offline` : s.verdict === 'attention' ? `${s.warn} flagged` : s.verdict === 'empty' ? 'no devices' : 'healthy'}</span></div>
             </div>
@@ -353,7 +353,7 @@ function UcSitesPage({ sites, onPick }) {
         <UcCard pad={0} style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
           <UcTable rows={rows} onRow={onPick} cols={[
             { k: 'site', l: 'Site', render: r => <strong>{r.site}</strong> }, { k: 'customer', l: 'Customer', dim: true }, { k: 'verdict', l: 'Status', render: r => <UcStatusCell s={r.verdict} /> },
-            { k: 'devices', l: 'Devices', right: true, render: r => `${r.on} / ${r.devices.length}` }, { k: 'cams', l: 'Cameras', right: true }, { k: 'doors', l: 'Doors', right: true }, { k: 'net', l: 'Network', right: true },
+            { k: 'devices', l: 'Devices', right: true, render: r => `${r.on} / ${r.devices.length}` }, { k: 'cams', l: 'Video', right: true }, { k: 'doors', l: 'Doors', right: true }, { k: 'intrusion', l: 'Intrusion', right: true }, { k: 'fire', l: 'Fire', right: true }, { k: 'net', l: 'Network', right: true },
             { k: 'isp', l: 'ISP', dim: true, render: () => 'Not monitored' }, { k: 'openTickets', l: 'Open tickets', right: true },
           ]} />
         </UcCard>
@@ -635,6 +635,134 @@ function UcAccessPage({ assets, scope, onOpenAssets, live, go }) {
   );
 }
 
+
+/* ── Intrusion (alarm panels, keypads, zones) ── */
+const intrusionLogStore = createShieldStore('intrusionlogs', []);   // [{id, customer, site, panel, kind, by, at, note}]
+function UcIntrusionPage({ assets, scope, live, onOpenAssets }) {
+  const [tab, setTab] = React.useState('panels');
+  const [logs, setLogs] = useShieldStore(intrusionLogStore);
+  const all = assets.filter(a => ucKind(a) === 'alarm').map(a => ({ ...a, id: a.id || a.name, _s: ucStatus(a) }));
+  const isPanel = (a) => /panel|facp|control/i.test(String(a.type || a.name || ''));
+  const panels = all.filter(isPanel), zones = all.filter(a => !isPanel(a));
+  const myLogs = (logs || []).filter(l => !scope.customer || l.customer === scope.customer);
+  const liveAlarms = ucLiveEvents(live && live.events, scope).filter(e => e.kind === 'Alarm');
+  const req = (panel, kind) => shieldModal({ kind: 'form', title: `${kind === 'arm' ? 'Arm' : kind === 'disarm' ? 'Disarm' : 'Bypass zone on'} ${panel.name}`, submitLabel: 'Send request', fields: [{ key: 'note', label: 'Note for the monitoring desk', full: true, placeholder: kind === 'bypass' ? 'Zone and reason' : 'Reason / who asked' }], onSubmit: (v) => { setLogs(list => [{ id: genId('INT'), customer: panel.customer || scope.customer || '', site: panel.site || '', panel: panel.name, kind: `${kind}-request`, by: ucMe(), at: ucNow(), note: v.note || '' }, ...(list || [])]); shieldToast(`${kind} request logged for ${panel.name} — the panel receives it once its integration is connected`, 'ok'); } });
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <UcTabs value={tab} onChange={setTab} tabs={[{ id: 'panels', label: 'Panels', count: panels.length }, { id: 'zones', label: 'Zones & sensors', count: zones.length }, { id: 'history', label: 'History' }, { id: 'devices', label: 'All devices' }]} />
+      <div style={{ flex: 1, minHeight: 0, overflow: tab === 'devices' ? 'hidden' : 'auto' }}>
+        {tab === 'panels' && (!panels.length ? <UcCard><UcEmpty title="No intrusion panels documented" body="Alarm panels, keypads, motion sensors, contacts, glassbreaks and sirens recorded in Assets show here with arm state once the panel integration (Alarm.com, DSC, Honeywell, Bosch) is connected." cta="Open Assets" onCta={onOpenAssets} /></UcCard> : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}><UcTile label="Panels" value={panels.length} tone={panels.some(p => p._s !== 'online') ? 'warn' : 'ok'} /><UcTile label="Zones & sensors" value={zones.length} /><UcTile label="Armed state" value="—" sub="needs the panel integration" /><UcTile label="Alarms (7 days)" value={liveAlarms.length} tone={liveAlarms.length ? 'crit' : undefined} /></div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+              {panels.map(p => <div key={p.id} style={{ background: 'var(--card)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><UcDot s={p._s} /><span style={{ fontWeight: 600, fontSize: 13.5, flex: 1 }}>{p.name}</span><span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 10, background: 'var(--border-subtle)', color: 'var(--text-mid)', fontWeight: 600 }}>State unknown</span></div>
+                <div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginTop: 2 }}>{[p.mfg, p.model].filter(Boolean).join(' ')}{p.site ? ` · ${p.site}` : ''}{p.room ? ` · ${p.room}` : ''} · {zones.filter(z => z.site === p.site).length} zones at this site</div>
+                <div style={{ display: 'flex', gap: 6, marginTop: 12 }}><UcBtn small onClick={() => req(p, 'arm')}>Arm</UcBtn><UcBtn small kind="ghost" onClick={() => req(p, 'disarm')}>Disarm</UcBtn><UcBtn small kind="ghost" onClick={() => req(p, 'bypass')}>Bypass</UcBtn></div>
+              </div>)}
+            </div>
+          </div>))}
+        {tab === 'zones' && <UcCard pad={0}><UcTable rows={zones} empty={<UcEmpty title="No zones documented" body="Motion sensors, door contacts, glassbreaks, keypads and sirens recorded in Assets list here by site and room." cta="Open Assets" onCta={onOpenAssets} />} cols={[{ k: 'name', l: 'Zone / device', render: r => <strong>{r.name}</strong> }, { k: 'type', l: 'Type', dim: true }, { k: '_s', l: 'Status', render: r => <UcStatusCell s={r._s} /> }, { k: 'site', l: 'Site', dim: true, render: r => [r.site, r.room].filter(Boolean).join(' · ') || '—' }, { k: 'model', l: 'Model', dim: true, render: r => [r.mfg, r.model].filter(Boolean).join(' ') || '—' }]} /></UcCard>}
+        {tab === 'history' && <UcCard pad={0}>{!myLogs.length && !liveAlarms.length ? <UcEmpty title="No intrusion events" body="Arm / disarm / bypass requests and panel alarms land here." /> : [...liveAlarms.map(e => ({ id: 'l' + e.at, at: e.at, panel: e.who, kind: 'alarm', by: 'panel', note: '' })), ...myLogs].sort((a, b) => b.at - a.at).map(l => <div key={l.id} style={{ display: 'flex', gap: 12, padding: '9px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: 12.5 }}><span className="mono" style={{ color: 'var(--text-mid)', fontSize: 11.5, width: 120 }}>{new Date(l.at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span><span style={{ fontWeight: 600, width: 130 }}>{l.kind.replace(/-/g, ' ')}</span><span style={{ color: 'var(--text-mid)', flex: 1 }}>{l.panel} · {l.by}{l.note ? ` · ${l.note}` : ''}</span></div>)}</UcCard>}
+        {tab === 'devices' && <UcDeviceList assets={assets} kinds={['alarm']} scopeLabel={scope.site || scope.customer} onOpenAssets={onOpenAssets} />}
+      </div>
+    </div>
+  );
+}
+
+/* ── Fire alarm (panels, devices, inspections) ── */
+const fireInspectionStore = createShieldStore('fireinspections', []); // [{id, customer, site, kind, last, next, by, notes}]
+function UcFirePage({ assets, scope, sites, onOpenAssets }) {
+  const [tab, setTab] = React.useState('devices');
+  const [insp, setInsp] = useShieldStore(fireInspectionStore);
+  const [, setWos] = useShieldStore(workOrderStore);
+  const all = assets.filter(a => ucKind(a) === 'fire').map(a => ({ ...a, id: a.id || a.name, _s: ucStatus(a) }));
+  const facps = all.filter(a => /panel|facp|control/i.test(String(a.type || a.name || '')));
+  const mine = (insp || []).filter(i => !scope.customer || i.customer === scope.customer);
+  const today = new Date().toISOString().slice(0, 10);
+  const due = mine.filter(i => i.next && i.next <= today);
+  const add = () => shieldModal({ kind: 'form', title: 'Record / schedule inspection', submitLabel: 'Save', fields: [
+    { key: 'site', label: 'Site', type: sites && sites.length ? 'select' : 'text', options: (sites || []).map(s => `${s.customer} — ${s.site}`), required: true, full: true },
+    { key: 'kind', label: 'Type', type: 'select', options: ['Annual (NFPA 72)', 'Semi-annual', 'Quarterly', 'Monthly', 'Sprinkler / backflow'] },
+    { key: 'last', label: 'Last inspected', type: 'date' }, { key: 'next', label: 'Next due', type: 'date' }, { key: 'notes', label: 'Notes', full: true },
+  ], onSubmit: (v) => { const [customer, site] = String(v.site || '').split(' — '); setInsp(list => [{ id: genId('FI'), customer: customer || scope.customer || '', site: site || '', kind: v.kind || 'Annual (NFPA 72)', last: v.last || '', next: v.next || '', by: ucMe(), notes: v.notes || '', createdAt: ucNow() }, ...(list || [])]); } });
+  const schedule = (i) => { const id = 'WO-' + Date.now().toString(36).toUpperCase().slice(-5); setWos(prev => [{ id, customer: i.customer, site: i.site, type: 'Maintenance', scope: `${i.kind} fire alarm inspection`, status: 'requested', requestedBy: ucMe(), scheduled: i.next || today, tech: 'Unassigned', techId: '—', assignedTo: null, materials: [], checklist: ['Panel test', 'Device test (smoke/heat/pull)', 'Notification appliances', 'Monitoring signal test', 'Report & tags'], checkedItems: {}, createdAt: ucNow(), notes: 'Created from ShieldTech OS › Fire' }, ...(prev || [])]); shieldToast(`${id} queued for dispatch`, 'ok'); };
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <UcTabs value={tab} onChange={setTab} tabs={[{ id: 'devices', label: 'Panels & devices', count: all.length }, { id: 'inspections', label: 'Inspections', count: due.length || undefined }, { id: 'list', label: 'All devices' }]} />
+      <div style={{ flex: 1, minHeight: 0, overflow: tab === 'list' ? 'hidden' : 'auto' }}>
+        {tab === 'devices' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}><UcTile label="Fire panels" value={facps.length} tone={facps.some(p => p._s !== 'online') ? 'crit' : facps.length ? 'ok' : undefined} /><UcTile label="Initiating & notification devices" value={all.length - facps.length} /><UcTile label="Inspections due" value={due.length} tone={due.length ? 'crit' : 'ok'} sub={due.length ? 'schedule now' : 'nothing overdue'} /><UcTile label="Supervision" value="—" sub="panel signals arrive via the monitoring receiver" /></div>
+            {!all.length ? <UcCard><UcEmpty title="No fire alarm devices documented" body="Fire alarm control panels, smoke and heat detectors, pull stations and horn/strobes recorded in Assets show here. Trouble and alarm signals arrive once the panel's communicator is tied to the monitoring receiver." cta="Open Assets" onCta={onOpenAssets} /></UcCard> : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+                {facps.map(p => <div key={p.id} style={{ background: 'var(--card)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 14, borderLeft: '3px solid var(--disc-fire)' }}><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><UcDot s={p._s} /><span style={{ fontWeight: 600, fontSize: 13.5, flex: 1 }}>{p.name}</span><span style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>Normal · unverified</span></div><div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginTop: 2 }}>{[p.mfg, p.model].filter(Boolean).join(' ')}{p.site ? ` · ${p.site}` : ''} · {all.filter(d => d.site === p.site && d.id !== p.id).length} devices on this panel's site</div></div>)}
+                {!facps.length && <UcCard><div style={{ fontSize: 12.5, color: 'var(--text-mid)' }}>Devices are documented but no fire alarm control panel is. Add the FACP in Assets so inspections and signals have a home.</div></UcCard>}
+              </div>)}
+          </div>)}
+        {tab === 'inspections' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex' }}><span style={{ fontSize: 12.5, color: 'var(--text-mid)', flex: 1 }}>NFPA 72 cadence per site. Due or overdue rows can be sent to dispatch as a maintenance work order.</span><UcBtn onClick={add}>+ Inspection</UcBtn></div>
+            <UcCard pad={0}><UcTable rows={mine.sort((a, b) => String(a.next).localeCompare(String(b.next)))} empty={<UcEmpty title="No inspections recorded" body="Record the last inspection and its next due date per site; overdue ones surface on the Fire tiles and in Alerts." cta="Add inspection" onCta={add} />} cols={[
+              { k: 'site', l: 'Site', render: r => <strong>{r.site}</strong> }, { k: 'customer', l: 'Customer', dim: true }, { k: 'kind', l: 'Type' }, { k: 'last', l: 'Last', mono: true, dim: true, render: r => r.last || '—' }, { k: 'next', l: 'Next due', mono: true, render: r => <span style={{ color: r.next && r.next <= today ? 'var(--status-critical)' : 'var(--text-high)', fontWeight: r.next && r.next <= today ? 700 : 500 }}>{r.next || '—'}</span> },
+              { k: 'x', l: '', w: 170, render: r => <span style={{ display: 'flex', gap: 6 }}><UcBtn small kind="soft" onClick={() => schedule(r)}>Schedule</UcBtn><button onClick={() => setInsp(list => (list || []).filter(x => x.id !== r.id))} style={{ ...ucFont, background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 11.5 }}>Delete</button></span> },
+            ]} /></UcCard>
+          </div>)}
+        {tab === 'list' && <UcDeviceList assets={assets} kinds={['fire']} scopeLabel={scope.site || scope.customer} onOpenAssets={onOpenAssets} />}
+      </div>
+    </div>
+  );
+}
+
+/* ── Intercom & AV (door stations, paging, displays) ── */
+function UcIntercomPage({ assets, scope, onOpenAssets }) {
+  const [tab, setTab] = React.useState('stations');
+  const [users, setUsers] = useShieldStore(accessUserStore);
+  const stations = assets.filter(a => ucKind(a) === 'intercom').map(a => ({ ...a, id: a.id || a.name, _s: ucStatus(a) }));
+  const av = assets.filter(a => ucKind(a) === 'av').map(a => ({ ...a, id: a.id || a.name, _s: ucStatus(a) }));
+  const dir = (users || []).filter(u => !scope.customer || u.customer === scope.customer);
+  const addEntry = () => shieldModal({ kind: 'form', title: 'Directory entry', submitLabel: 'Add', fields: [{ key: 'name', label: 'Name / unit', required: true, full: true }, { key: 'group', label: 'Group', type: 'select', options: ['Tenant', 'Staff', 'Management', 'Delivery'] }, { key: 'phone', label: 'Phone / extension' }, { key: 'email', label: 'Email' }], onSubmit: (v) => setUsers(list => [{ id: genId('ACU'), customer: scope.customer || '', name: v.name, group: v.group || 'Tenant', cred: 'Intercom', pin: '', email: v.email || '', phone: v.phone || '', status: 'active', createdAt: ucNow() }, ...(list || [])]) });
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <UcTabs value={tab} onChange={setTab} tabs={[{ id: 'stations', label: 'Door stations', count: stations.length }, { id: 'directory', label: 'Directory', count: dir.length || undefined }, { id: 'av', label: 'AV & paging', count: av.length }]} />
+      <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+        {tab === 'stations' && (!stations.length ? <UcCard><UcEmpty title="No intercoms or door stations documented" body="Video doorbells, entry panels and call boxes recorded in Assets show here. Calls and two-way audio need the intercom platform connected (UniFi Talk / Access Intercom, 2N, Aiphone)." cta="Open Assets" onCta={onOpenAssets} /></UcCard> : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>{stations.map(d => <div key={d.id} style={{ background: 'var(--card)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 14 }}><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><UcDot s={d._s} /><span style={{ fontWeight: 600, fontSize: 13.5, flex: 1 }}>{d.name}</span>{d.live && <span style={{ fontSize: 9.5, fontWeight: 700, padding: '1px 5px', borderRadius: 6, background: 'var(--ok-tint-12)', color: 'var(--status-ok)' }}>LIVE</span>}</div><div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginTop: 2 }}>{[d.mfg, d.model].filter(Boolean).join(' ')}{d.site ? ` · ${d.site}` : ''}{d.room ? ` · ${d.room}` : ''}</div><div style={{ display: 'flex', gap: 6, marginTop: 12 }}><UcBtn small kind="soft" onClick={() => shieldToast('Live call view opens once the intercom platform is connected', 'info')}>Answer</UcBtn><UcBtn small kind="ghost" onClick={() => shieldToast('Snapshot needs the intercom platform connected', 'info')}>Snapshot</UcBtn></div></div>)}</div>))}
+        {tab === 'directory' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex' }}><span style={{ fontSize: 12.5, color: 'var(--text-mid)', flex: 1 }}>Who a visitor can call from the entry panel. Shares the Access user list.</span><UcBtn onClick={addEntry}>+ Entry</UcBtn></div>
+            <UcCard pad={0}><UcTable rows={dir} empty={<UcEmpty title="Directory is empty" body="Add tenants, staff and delivery contacts so the entry panel can ring them." cta="Add entry" onCta={addEntry} />} cols={[{ k: 'name', l: 'Name / unit', render: r => <strong>{r.name}</strong> }, { k: 'group', l: 'Group', dim: true }, { k: 'phone', l: 'Phone', mono: true, dim: true, render: r => r.phone || '—' }, { k: 'email', l: 'Email', dim: true }, { k: 'status', l: 'Status', render: r => <UcStatusCell s={r.status === 'active' ? 'online' : 'offline'} /> }]} /></UcCard>
+          </div>)}
+        {tab === 'av' && (!av.length ? <UcCard><UcEmpty title="No AV or paging devices documented" body="Speakers, amplifiers, paging gateways, displays and projectors recorded in Assets show here with status." cta="Open Assets" onCta={onOpenAssets} /></UcCard> : <UcCard pad={0}><UcTable rows={av} cols={[{ k: 'name', l: 'Device', render: r => <strong>{r.name}</strong> }, { k: 'type', l: 'Type', dim: true }, { k: '_s', l: 'Status', render: r => <UcStatusCell s={r._s} /> }, { k: 'site', l: 'Site', dim: true, render: r => [r.site, r.room].filter(Boolean).join(' · ') || '—' }, { k: 'model', l: 'Model', dim: true, render: r => [r.mfg, r.model].filter(Boolean).join(' ') || '—' }]} /></UcCard>)}
+      </div>
+    </div>
+  );
+}
+
+/* ── Cabling & racks (structured cabling, racks, power, port map, networks) ── */
+const ucNetStore = (typeof assetNetStore !== 'undefined') ? assetNetStore : createShieldStore('assetnets', []);
+function UcCablingPage({ assets, scope, onOpenAssets }) {
+  const [tab, setTab] = React.useState('racks');
+  const [nets] = useShieldStore(ucNetStore);
+  const racks = assets.filter(a => ucKind(a) === 'cabling').map(a => ({ ...a, id: a.id || a.name, _s: ucStatus(a) }));
+  const myNets = (nets || []).filter(n => !scope.customer || n.customer === scope.customer);
+  const runs = assets.filter(a => a.switchPort || a.cable).length;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <UcTabs value={tab} onChange={setTab} tabs={[{ id: 'racks', label: 'Racks & panels', count: racks.length }, { id: 'ports', label: 'Port map' }, { id: 'networks', label: 'Networks', count: myNets.length || undefined }]} />
+      <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+        {tab === 'racks' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}><UcTile label="Racks, panels, power" value={racks.length} /><UcTile label="Devices with a documented port or run" value={runs} sub={`of ${assets.length}`} /><UcTile label="Networks / VLANs" value={myNets.length} /><UcTile label="Cable certification" value="—" sub="attach test reports in Documents" /></div>
+            {!racks.length ? <UcCard><UcEmpty title="No racks or patch panels documented" body="Racks, cabinets, patch panels, UPS and PDUs recorded in Assets show here. Every device's switch port and cable run is on its device card." cta="Open Assets" onCta={onOpenAssets} /></UcCard> : <UcCard pad={0}><UcTable rows={racks} cols={[{ k: 'name', l: 'Rack / panel', render: r => <strong>{r.name}</strong> }, { k: 'type', l: 'Type', dim: true }, { k: '_s', l: 'Status', render: r => <UcStatusCell s={r._s} /> }, { k: 'site', l: 'Site', dim: true, render: r => [r.site, r.room].filter(Boolean).join(' · ') || '—' }, { k: 'model', l: 'Model', dim: true, render: r => [r.mfg, r.model].filter(Boolean).join(' ') || '—' }, { k: 'notes', l: 'Notes', dim: true }]} /></UcCard>}
+          </div>)}
+        {tab === 'ports' && (typeof PortMapView === 'function' ? <PortMapView showToast={(m) => shieldToast(m, 'info')} /> : null)}
+        {tab === 'networks' && <UcCard pad={0}><UcTable rows={myNets.map(n => ({ ...n, id: n.id || n.name }))} empty={<UcEmpty title="No networks documented" body="Subnets, VLANs and gateways per customer come from Assets › Networks." cta="Open Assets" onCta={onOpenAssets} />} cols={[{ k: 'name', l: 'Network', render: r => <strong>{r.name}</strong> }, { k: 'subnet', l: 'Subnet', mono: true }, { k: 'vlan', l: 'VLAN', mono: true, dim: true }, { k: 'gw', l: 'Gateway', mono: true, dim: true }, { k: 'type', l: 'Type', dim: true }, { k: 'notes', l: 'Notes', dim: true }]} /></UcCard>}
+      </div>
+    </div>
+  );
+}
+
 /* ── Alerts (every app's flagged state in one list; acknowledge + ticket) ── */
 function UcAlertsPage({ assets, scope, go }) {
   const [os, setOs] = useShieldStore(osConsoleStore);
@@ -704,11 +832,17 @@ function UcSettingsPage({ sites }) {
 
 /* ── The console ── */
 const UC_APPS = [
-  { id: 'sites', l: 'Sites', g: '⌂' }, { id: 'network', l: 'Network', g: '⊚' }, { id: 'protect', l: 'Protect', g: '◉' }, { id: 'access', l: 'Access', g: '⊠' },
-  { id: 'alerts', l: 'Alerts', g: '◬' }, { id: 'assets', l: 'Assets', g: '▤' }, { id: 'settings', l: 'Settings', g: '⚙' },
+  { id: 'sites', l: 'Sites', g: '⌂' }, { id: 'network', l: 'Network', g: '⊚' }, { id: 'protect', l: 'Video', g: '◉' }, { id: 'access', l: 'Access', g: '⊠' },
+  { id: 'intrusion', l: 'Intrusion', g: '◬' }, { id: 'fire', l: 'Fire', g: '△' }, { id: 'intercom', l: 'Intercom', g: '☏' }, { id: 'cabling', l: 'Cabling', g: '≣' },
+  { id: 'alerts', l: 'Alerts', g: '!' }, { id: 'assets', l: 'Assets', g: '▤' }, { id: 'settings', l: 'Settings', g: '⚙' },
 ];
 function ShieldOSConsole({ initial }) {
-  const [app, setApp] = React.useState(initial && UC_APPS.some(a => a.id === initial) ? initial : 'sites');
+  const unified = !!window.__navUnified;
+  const subInit = window.__navSub && window.__navSub.screen === 'cameras' ? window.__navSub.sub : null;
+  const [app, setApp] = React.useState((subInit && UC_APPS.some(a => a.id === subInit)) ? subInit : (initial && UC_APPS.some(a => a.id === initial) ? initial : 'sites'));
+  /* Sidebar ↔ app: the unified sidebar is the only menu. */
+  React.useEffect(() => { const h = (e) => { if (e.detail.screen === 'cameras' && e.detail.source !== 'screen' && e.detail.sub && e.detail.sub !== app && UC_APPS.some(a => a.id === e.detail.sub)) setApp(e.detail.sub); }; window.addEventListener('st2:subnav', h); return () => window.removeEventListener('st2:subnav', h); }, [app]);
+  React.useEffect(() => { if (window.navSubSet && (!window.__navSub || window.__navSub.screen !== 'cameras' || window.__navSub.sub !== app)) window.navSubSet('cameras', app, 'screen'); }, [app]);
   const [scope, setScope] = React.useState({ customer: null, site: null });
   const [pick, setPick] = React.useState(false);
   const [q, setQ] = React.useState('');
@@ -726,8 +860,8 @@ function ShieldOSConsole({ initial }) {
   const verdictOf = scope.site ? (scopedSites[0] || {}).verdict : scopedSites.some(s => s.verdict === 'offline') ? 'offline' : scopedSites.some(s => s.verdict === 'attention') ? 'attention' : scopedSites.length ? 'healthy' : 'empty';
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 76px)', margin: '-4px 0 0', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)' }}>
-      {/* App rail */}
-      <div style={{ width: 64, flexShrink: 0, background: 'var(--rail-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 0', gap: 2 }}>
+      {/* App rail (hidden when the portal sidebar carries the ShieldTech OS tree) */}
+      {!unified && <div style={{ width: 64, flexShrink: 0, background: 'var(--rail-bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 0', gap: 2 }}>
         <div style={{ width: 34, height: 34, borderRadius: 8, background: 'var(--brand)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, marginBottom: 10, letterSpacing: '-0.02em' }}>ST</div>
         {UC_APPS.map(a => (
           <button key={a.id} title={a.l} onClick={() => setApp(a.id)} style={{ ...ucFont, width: 56, padding: '8px 0 6px', borderRadius: 8, background: app === a.id ? 'rgba(255,255,255,0.08)' : 'transparent', border: 'none', color: app === a.id ? '#fff' : 'var(--rail-fg)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, position: 'relative' }}>
@@ -739,7 +873,7 @@ function ShieldOSConsole({ initial }) {
         ))}
         <div style={{ flex: 1 }} />
         <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{(window.__shieldUser || {}).initials || 'ST'}</div>
-      </div>
+      </div>}
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--card)', flexShrink: 0, position: 'relative' }}>
@@ -761,11 +895,15 @@ function ShieldOSConsole({ initial }) {
           <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-high)', letterSpacing: '-0.01em' }}>ShieldTech OS <span style={{ color: 'var(--text-low)', fontWeight: 500 }}>· {UC_APPS.find(a => a.id === app).l}</span></div>
           <button onClick={() => setApp('alerts')} title="Alerts" style={{ ...ucFont, position: 'relative', width: 32, height: 32, borderRadius: 6, background: 'var(--canvas)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', cursor: 'pointer', fontSize: 14 }}>◬{alertCount > 0 && <span style={{ position: 'absolute', top: -4, right: -4, minWidth: 16, height: 16, padding: '0 4px', borderRadius: 8, background: 'var(--status-critical)', color: '#fff', fontSize: 9.5, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{alertCount}</span>}</button>
         </div>
-        <div style={{ flex: 1, minHeight: 0, padding: 14, overflow: ['network', 'protect', 'access', 'assets'].includes(app) ? 'hidden' : 'auto' }} onClick={() => pick && setPick(false)}>
+        <div style={{ flex: 1, minHeight: 0, padding: 14, overflow: ['network', 'protect', 'access', 'assets', 'intrusion', 'fire', 'intercom', 'cabling'].includes(app) ? 'hidden' : 'auto' }} onClick={() => pick && setPick(false)}>
           {app === 'sites' && <UcSitesPage sites={scopedSites} onPick={(s) => go('sites', s)} />}
           {app === 'network' && <UcNetworkPage assets={assets} scope={scope} sites={scopedSites} go={go} onOpenAssets={onOpenAssets} live={live} />}
           {app === 'protect' && <UcProtectPage assets={assets} scope={scope} onOpenAssets={onOpenAssets} live={live} go={go} />}
           {app === 'access' && <UcAccessPage assets={assets} scope={scope} onOpenAssets={onOpenAssets} live={live} go={go} />}
+          {app === 'intrusion' && <UcIntrusionPage assets={assets} scope={scope} live={live} onOpenAssets={onOpenAssets} />}
+          {app === 'fire' && <UcFirePage assets={assets} scope={scope} sites={scopedSites} onOpenAssets={onOpenAssets} />}
+          {app === 'intercom' && <UcIntercomPage assets={assets} scope={scope} onOpenAssets={onOpenAssets} />}
+          {app === 'cabling' && <UcCablingPage assets={assets} scope={scope} onOpenAssets={onOpenAssets} />}
           {app === 'alerts' && <UcAlertsPage assets={assets} scope={scope} go={go} />}
           {app === 'assets' && <div style={{ height: '100%', overflow: 'auto' }}>{typeof AssetsScreen === 'function' ? <AssetsScreen /> : null}</div>}
           {app === 'settings' && <UcSettingsPage sites={sites} />}
@@ -777,6 +915,7 @@ function ShieldOSConsole({ initial }) {
 
 Object.assign(window, {
   ShieldOSConsole, UcDeviceList, UcSitesPage, UcNetworkPage, UcProtectPage, UcAccessPage, UcAlertsPage, UcSettingsPage,
+  UcIntrusionPage, UcFirePage, UcIntercomPage, UcCablingPage, intrusionLogStore, fireInspectionStore,
   UcBtn, UcToggle, UcTabs, UcCard, UcTile, UcEmpty, UcTable, UcDot, UcStatusCell, UcSearch, UcChips, UcDrawer, UcProp, UcDonut,
   accessUserStore, accessVisitorStore, accessPolicyStore, accessLogStore, alarmRuleStore, osConsoleStore, useUcSites,
   ucStatus, ucKind, ucAgo, UC_APPS, UC_KIND_LABEL, UC_KIND_COLOR, UC_KIND_GLYPH,
