@@ -39,14 +39,14 @@ function WorkOrderScreen() {
     </div>
   );
 
-  const statusColor = { scheduled: 'var(--brand)', 'in-progress': 'var(--status-warn)', completed: 'var(--status-ok)' };
+  const statusColor = { requested: 'var(--status-warn)', open: 'var(--brand)', scheduled: 'var(--brand)', 'in-progress': 'var(--status-warn)', completed: 'var(--status-ok)' };
   const updateWO = (id, patch) => setWorkOrders(prev => prev.map(w => w.id === id ? { ...w, ...patch } : w));
   const toggleTimer = () => { updateWO(wo.id, { timerRunning: !wo.timerRunning }); showToast(wo.timerRunning ? 'Timer paused' : 'Timer running', 'info'); };
 
   const advanceStatus = () => {
-    const next = wo.status === 'scheduled' ? 'in-progress' : 'completed';
-    updateWO(wo.id, { status: next, timerRunning: next === 'in-progress' });
-    showToast(next === 'completed' ? 'WO completed' : 'Job started', next === 'completed' ? 'ok' : 'info');
+    const next = (wo.status === 'requested' || wo.status === 'open') ? 'scheduled' : wo.status === 'scheduled' ? 'in-progress' : 'completed';
+    updateWO(wo.id, { status: next, timerRunning: next === 'in-progress', ...(next === 'scheduled' ? { acceptedAt: Date.now() } : {}) });
+    showToast(next === 'completed' ? 'WO completed' : next === 'scheduled' ? 'Request accepted — assign a tech and a date' : 'Job started', next === 'completed' ? 'ok' : 'info');
   };
 
   const toggleCheck = (i) => {
@@ -110,7 +110,7 @@ function WorkOrderScreen() {
     }
   };
 
-  const statusIdx = ['scheduled','in-progress','completed'].indexOf(wo.status);
+  const statusIdx = ['scheduled','in-progress','completed'].indexOf(wo.status === 'requested' || wo.status === 'open' ? 'scheduled' : wo.status);
 
   const sBtn = { fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', border: 'none', borderRadius: 6, padding: '5px 12px' };
 
@@ -151,7 +151,7 @@ function WorkOrderScreen() {
 
             {wo.status !== 'completed' && (
               <button onClick={advanceStatus} style={{ ...sBtn, color: 'var(--status-ok)', background: 'rgba(var(--ok-rgb),0.08)', border: '1px solid rgba(var(--ok-rgb),0.25)' }}>
-                {wo.status === 'scheduled' ? 'Start Job ▶' : 'Complete ✓'}
+                {(wo.status === 'requested' || wo.status === 'open') ? 'Accept & schedule' : wo.status === 'scheduled' ? 'Start Job ▶' : 'Complete ✓'}
               </button>
             )}
 

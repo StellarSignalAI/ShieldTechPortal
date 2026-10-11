@@ -260,6 +260,39 @@ ShieldTech's own data and tools.
   customer Sites / Devices / Access + unlock request — no page errors (sandbox only
   blocks fonts/tiles). Service worker cache → `shieldtech-v15`.
 
+### 2i. Customer app — pay, approve, book (build-order item 4)
+- `packages/shared/proto/customer-pay.jsx`, wired in `apps/customer/src/main.jsx`
+  (old views kept as fallback). Tabs now: … Access · **Book a visit** · Tickets ·
+  **Quotes** · Invoices … (`approvals` routes to Quotes).
+- **Company resolution** (`useCuCompany`): `profiles` has no company column, so the
+  signed-in customer's company is resolved from the registry — customer email /
+  billing email, a contact on the customer card (`contactsStore`), or the email
+  domain vs the customer website — re-run on every `shield:auth` and published on
+  `window.__shieldUser.company` so tickets, photos and the OS views agree.
+- **Invoices** (`CuInvoicesView`): `invoice_links` rows (customer RLS by email) merged
+  with `useMergedInvoices()` rows for the company; Balance due / Next due / Paid YTD /
+  Autopay tiles; Open · Paid · All; detail sheet with lines, Download PDF
+  (`__shieldPdf.exportDoc`), Ask a question. **Pay** opens the tokenized pay page
+  (`invoice-pay?token=`; Stripe when connected); an invoice without a link gets
+  "Pay online" → `approvalStore` PAY LINK REQUEST + billing ticket, and the office
+  sends the link with `__shieldPay.createLink`.
+- **Quotes** (`CuQuotesView`): `useMergedEstimates()` for the company; Approve & sign
+  (signature modal → `__shieldStorage` upload → `acceptEstimateToProject` → status
+  accepted + `approvalStore` QUOTE APPROVED + high-priority ticket), Decline (reason →
+  status rejected + ticket), Ask a question, PDF.
+- **Book a visit** (`CuRequestView`): Repair / Maintenance / Install / Survey, site
+  (from the registry), preferred day + window, scope, contact → `workOrderStore` row
+  with `status: 'requested'`, `requestedVia: 'customer-portal'` (shows in the tech
+  app request page and the portal Work Orders card, which now offers **Accept &
+  schedule** for `requested`/`open` rows) + a ticket. "Your visits" lists the
+  company's work orders.
+- **Home strip** (`CuHomeStrip`): Balance due · Quotes to approve · Next visit above
+  the dashboard; dashboard "Schedule service" opens Book a visit.
+- Phone layout: `.cp-main` / `.cp-header` / `.cp-tabs` / `.cp-two-col` media rules at
+  ≤640px. Verified with Playwright at 390px and 1200px: invoices → detail → pay link
+  request, quote → sign → approved (project created, approvals written), booking →
+  WO-… requested, home strip updates; no page errors. SW cache → `shieldtech-v16`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

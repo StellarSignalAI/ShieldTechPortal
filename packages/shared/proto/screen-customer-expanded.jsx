@@ -100,7 +100,7 @@ function CustomerDashboardView({ onNavigate }) {
           { label: 'A camera is offline', icon: '◉', action: () => onNavigate('new-ticket') },
           { label: 'I need footage', icon: '▶', action: () => onNavigate('new-ticket') },
           { label: 'Add access user', icon: '⊠', action: () => onNavigate('new-ticket') },
-          { label: 'Schedule service', icon: '⚙', action: () => onNavigate('new-ticket') },
+          { label: 'Schedule service', icon: '⚙', action: () => onNavigate(window.CuRequestView ? 'request' : 'new-ticket') },
           { label: 'Ask AI assistant', icon: '⟡', action: goAI },
         ].map((qa, i) => (
           <button key={i} onClick={qa.action} className="glass" style={{

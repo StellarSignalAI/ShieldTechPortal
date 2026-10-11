@@ -61,8 +61,9 @@ const CUST_TABS = [
   { id: 'photos', label: 'Photos', icon: '▣' },
   { id: 'footage', label: 'Footage', icon: '▸' },
   { id: 'access', label: 'Access', icon: '⎇' },
+  { id: 'request', label: 'Book a visit', icon: '⚙' },
   { id: 'tickets', label: 'Tickets', icon: '☰' },
-  { id: 'approvals', label: 'Approvals', icon: '✓' },
+  { id: 'quotes', label: 'Quotes', icon: '✓' },
   { id: 'invoices', label: 'Invoices', icon: '⊞' },
   { id: 'planner', label: 'Planner', icon: '⫼' },
   { id: 'compliance', label: 'Compliance', icon: '⧉' },
@@ -276,9 +277,13 @@ function CustomerPortalApp() {
   const tab = t.tab || 'dashboard';
   const setTab = (v) => { setTweak('tab', v); window.saveScreen('customer', v); };
   const [selectedTicket, setSelectedTicket] = useState(null);
+  /* Which customer is signed in (resolved from the registry; published on __shieldUser.company). */
+  const company = window.useCuCompany ? window.useCuCompany() : ((window.__shieldUser || {}).company || '');
 
   const screens = {
-    dashboard: () => <CustomerDashboardView onNavigate={(v) => setTab(v === 'ai-chat' ? 'ai' : v)} />,
+    dashboard: () => <React.Fragment>{window.CuHomeStrip && <window.CuHomeStrip company={company} go={setTab} />}<CustomerDashboardView onNavigate={(v) => setTab(v === 'ai-chat' ? 'ai' : v)} /></React.Fragment>,
+    quotes: () => window.CuQuotesView ? <window.CuQuotesView company={company} onBook={() => setTab('request')} /> : <CustApprovalsInboxView />,
+    request: () => window.CuRequestView ? <window.CuRequestView company={company} onDone={setTab} /> : <NewTicketView onNavigate={setTab} />,
     score: () => <CustSecurityScoreView />,
     sites: () => window.CuSitesView ? <window.CuSitesView onOpen={setTab} /> : <CustSitesView />,
     devices: () => window.CuDevicesView ? <window.CuDevicesView /> : <CustomerDevicesScreen />,
@@ -287,8 +292,8 @@ function CustomerPortalApp() {
     access: () => window.CuAccessView ? <window.CuAccessView /> : <CustAccessView />,
     tickets: () => <TicketListView onNavigate={setTab} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} />,
     'new-ticket': () => <NewTicketView onNavigate={setTab} />,
-    approvals: () => <CustApprovalsInboxView />,
-    invoices: () => <CustomerInvoicesScreen />,
+    approvals: () => window.CuQuotesView ? <window.CuQuotesView company={company} onBook={() => setTab('request')} /> : <CustApprovalsInboxView />,
+    invoices: () => window.CuInvoicesView ? <window.CuInvoicesView company={company} /> : <CustomerInvoicesScreen />,
     planner: () => <CustBudgetPlannerView />,
     compliance: () => <CustComplianceVaultView />,
     drill: () => <CustDrillView />,
@@ -299,7 +304,7 @@ function CustomerPortalApp() {
   };
 
   const Screen = screens[tab] || screens.dashboard;
-  const activeTab = ['new-ticket'].includes(tab) ? 'tickets' : tab;
+  const activeTab = ['new-ticket'].includes(tab) ? 'tickets' : tab === 'approvals' ? 'quotes' : tab;
 
   const { TweaksPanel, TweakSection, TweakSelect, ShieldToastHost } = window;
   const me = window.__shieldUser || {};
@@ -307,7 +312,7 @@ function CustomerPortalApp() {
   return (
     <div className="m-app-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--canvas)' }}>
       {/* Header */}
-      <header style={{
+      <header className="cp-header" style={{
         height: 56, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 32px', borderBottom: '1px solid var(--border-subtle)',
@@ -324,7 +329,7 @@ function CustomerPortalApp() {
       </header>
 
       {/* Tab bar */}
-      <div style={{
+      <div className="cp-tabs" style={{
         display: 'flex', gap: 0, padding: '0 32px', borderBottom: '1px solid var(--border-subtle)',
         background: 'var(--card)', flexShrink: 0, overflowX: 'auto', scrollbarWidth: 'thin'
       }}>
@@ -343,7 +348,16 @@ function CustomerPortalApp() {
       </div>
 
       {/* Content */}
-      <main style={{ flex: 1, overflow: 'auto', padding: '24px 32px' }}>
+      <style>{`
+        .cp-main { padding: 24px 32px; }
+        @media (max-width: 640px) {
+          .cp-main { padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)); }
+          .cp-two-col { grid-template-columns: minmax(0, 1fr) !important; }
+          .cp-header { padding: 0 14px !important; }
+          .cp-tabs { padding: 0 6px !important; }
+        }
+      `}</style>
+      <main className="cp-main" style={{ flex: 1, overflow: 'auto' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <Screen />
         </div>
@@ -355,14 +369,14 @@ function CustomerPortalApp() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         fontSize: 10, color: 'var(--text-low)', flexShrink: 0
       }}>
-        <span>{me.company || 'ShieldTech customer'}</span>
+        <span>{company || me.company || 'ShieldTech customer'}</span>
         <span>ShieldTech Unified Portal · ShieldTech AI {window.__shieldAIModel ? 'Online' : 'not configured'}</span>
       </footer>
 
       <TweaksPanel>
         <TweakSection label="Navigation" />
         <TweakSelect label="Tab" value={tab}
-          options={['dashboard','score','sites','devices','photos','footage','access','tickets','new-ticket','approvals','invoices','planner','compliance','drill','claims','remote','ai','reports']}
+          options={['dashboard','score','sites','devices','photos','footage','access','request','tickets','new-ticket','quotes','approvals','invoices','planner','compliance','drill','claims','remote','ai','reports']}
           onChange={(v) => setTab(v)} />
       </TweaksPanel>
       <ShieldToastHost />
