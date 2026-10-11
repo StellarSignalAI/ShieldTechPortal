@@ -108,9 +108,9 @@ function LoginScreen() {
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
       fontFamily: F, color: FG,
       background: `
-        radial-gradient(75% 48% at 50% -8%, #6E3AA6 0%, transparent 60%),
-        radial-gradient(60% 46% at 92% 100%, #84329E 0%, transparent 58%),
-        radial-gradient(52% 42% at 4% 86%, #3A2597 0%, transparent 60%),
+        radial-gradient(75% 48% at 50% -8%, rgba(63,169,245,0.55) 0%, transparent 60%),
+        radial-gradient(60% 46% at 92% 100%, rgba(25,227,236,0.32) 0%, transparent 58%),
+        radial-gradient(52% 42% at 4% 86%, rgba(26,114,196,0.55) 0%, transparent 60%),
         ${SCR}`,
     }}>
       {/* faint grid texture */}

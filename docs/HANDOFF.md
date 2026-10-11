@@ -571,6 +571,48 @@ ShieldTech's own data and tools.
   opens full-screen → close → row re-opens it; menu › Incidents chip opens Help Desk on
   the Incidents tab. All four apps build. Service worker cache `shieldtech-v25`.
 
+### 2s. Sales app — the CRM on the UniFi-pattern console
+- `packages/shared/proto/uc-ui.jsx` (NEW, loaded before the OS console in the portal and
+  before `sales-app.jsx` in the sales manifest): the UniFi vocabulary moved out of
+  `screen-unifi-console.jsx` so every app can use it — `UcBtn / UcToggle / UcTabs /
+  UcCard / UcTile / UcEmpty / UcTable / UcDot / UcStatusCell / UcSearch / UcChips /
+  UcDrawer / UcProp / UcDonut` — plus **`UcFrame`** (the unified screen frame, sized by
+  `--uf-h / --uf-m / --uf-r / --uf-b`), **`useUcSub`** (sidebar ↔ tabs bus with a
+  `navSubSet` fallback for apps without the portal shell), `useUcNavSub`, `useUcMobile`,
+  `ucMoney / ucMoneyK / ucDate / ucAgoDays`. The console file keeps the OS pages only.
+- `packages/shared/proto/sales-app.jsx` rewritten: **desktop = UniFi sidebar** (Dashboard ·
+  Pipeline › Board / List · Leads & Customers › Leads / Customers · Quotes & Proposals ·
+  Activities › Tasks / Activity log) + a 48px top bar; **phone = tab bar** with the same
+  frames filling the screen (`--uf-*` = 100% / 0 / 0 / none). `apps/sales/src/sales.css`
+  lifts `mobile.css`'s 460px body frame above 960px.
+  - **Pipeline**: tiles (open, forecast, won, win rate, needs attention), Board (kanban by
+    stage, cards show source chip / value / due / project / quiet-dot) and List (UniFi
+    table), source chips, search, **drawer** (stage + probability, last touch, move-to
+    stage buttons, Email accept link, Won → project, Mark lost with reason, Log activity,
+    AI follow-up email → send through `send-email`, Open in portal, Delete for manual
+    deals, properties, linked activity). Sources merged live: manual deals, **Bid Board
+    opportunities (`st2_opps`, same key as the portal)**, proposals, portal + QuickBooks
+    quotes, Auto-Bid. Stage overrides persist in `st2_sstages`.
+  - **Leads & Customers**: tiles, Leads / Customers / All tabs, table, drawer (+ Deal,
+    + Quote, Call / Email — both logged —, Follow up in 2 days, **Convert to customer**,
+    Delete for sales-app records, recent activity). New lead = `shieldModal` form →
+    `customerStore` (visible in the portal immediately).
+  - **Quotes & Proposals**: tiles, status chips, table, the same drawer; **New quote** is
+    a centered dialog with line items → `addEstimate` (+ optional accept-link email).
+  - **Activities & Tasks**: tiles (open, overdue, done 7d, touches 7d), Tasks (open /
+    overdue / done / all) and Activity log, toggle-done, remove; one `shieldModal` form
+    for task / call / meeting / email / note.
+  - **Dashboard**: tiles, **Needs attention** (overdue tasks, quotes sent 7+ days without a
+    decision, deals quiet 14+ days — each row jumps to the right screen), pipeline by
+    stage, activity leaderboard, recent activity.
+- Login screen backdrop: the purple radials are now brand blue / cyan.
+- Verified with Playwright (build in `--mode smoke` so the localhost auth bypass applies):
+  desktop 1366px — dashboard; pipeline → new deal → drawer → move to Qualified → log
+  activity → list tab; leads → new lead → drawer → convert to customer; quotes → new
+  quote with a line → row; tasks → log → toggle done. Phone 390px — all five screens
+  render with no overflow. Portal desktop + phone re-checked after the primitives moved.
+  All four apps build. Service worker cache `shieldtech-v26`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

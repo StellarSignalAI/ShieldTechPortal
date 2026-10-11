@@ -1,0 +1,15 @@
+/* ShieldTech Sales — the app is a real desktop console on wide screens
+   (UniFi-pattern sidebar + unified frames) and a phone app below 960px.
+   mobile.css pins <body> to a 460px device frame for the phone shells; lift
+   that on desktop so the sales console uses the whole window. */
+@media (min-width: 960px) {
+  body { max-width: none !important; border-left: none !important; border-right: none !important; box-shadow: none !important; }
+}
+.sa-rail button:hover { background: rgba(var(--brand-rgb), 0.04); }
+.sa-screen input, .sa-screen select, .sa-screen textarea { font-family: var(--font-body); }
+@media (max-width: 959px) {
+  .sa-screen input, .sa-screen select, .sa-screen textarea { font-size: 16px; } /* no iOS zoom-on-focus */
+  .sa-screen .uc-tile { flex: 1 1 calc(50% - 5px) !important; min-width: 0 !important; padding: 9px 12px !important; }
+  .sa-screen .uc-tile .uc-tile-v { font-size: 19px !important; margin-top: 2px !important; }
+  .sa-screen button { min-height: 32px; }
+}
