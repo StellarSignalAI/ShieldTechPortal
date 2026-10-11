@@ -146,7 +146,8 @@ function TechPresencePill() {
     const sync = () => setOnClock(readClock());
     const iv = setInterval(sync, 15000);
     window.addEventListener('storage', sync);
-    return () => { clearInterval(iv); window.removeEventListener('storage', sync); };
+    window.addEventListener('st2:timer', sync);
+    return () => { clearInterval(iv); window.removeEventListener('storage', sync); window.removeEventListener('st2:timer', sync); };
   }, []);
   const c = onClock ? 'var(--status-ok)' : 'var(--text-low)';
   return (
@@ -169,7 +170,7 @@ function TechShellV2({ tab, setTab, children }) {
   { id: 'photos', icon: 'cameras', label: 'Photos' },
   { id: 'time', icon: 'timesheets', label: 'Time' },
   { id: 'assets', icon: 'assets', label: 'Assets' },
-  { id: 'expenses', icon: 'receipt', label: 'Expenses' },
+  { id: 'expenses', icon: 'receipt', label: 'Receipts' },
   { id: 'ai', icon: 'hermes', label: 'AI' },
   { id: 'more', icon: 'settings', label: 'More' }];
 
@@ -296,16 +297,18 @@ function TechApp() {
   const tab = rawTab === 'job-detail' && !selectedJob ? 'today' : rawTab;
   const setTab = (v) => { setTweak('view', v); window.saveScreen('tech', v); };
 
+  /* Home is the Dial (tech-dial.jsx); the list view lives under More → All Jobs. */
+  const { TechDialHome, JobFlowView, TechClockView, TechReceiptsView } = window;
   const views = {
-    today: () => <TodayView setTab={setTab} setSelectedJob={setSelectedJob} />,
+    today: () => TechDialHome ? <TechDialHome setTab={setTab} setSelectedJob={setSelectedJob} /> : <TodayView setTab={setTab} setSelectedJob={setSelectedJob} />,
     photos: () => <TechPhotosView setTab={setTab} />,
     capture: () => <TechCaptureView setTab={setTab} />,
     punch: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><TechPunchView setTab={setTab} /></React.Fragment>,
     truck: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><TechTruckView /></React.Fragment>,
-    'job-detail': () => <JobDetailView job={selectedJob} setTab={setTab} />,
-    time: () => <TimeViewV2 />,
+    'job-detail': () => JobFlowView ? <JobFlowView job={selectedJob} setTab={setTab} /> : <JobDetailView job={selectedJob} setTab={setTab} />,
+    time: () => TechClockView ? <TechClockView /> : <TimeViewV2 />,
     assets: () => <TechAssetsView />,
-    expenses: () => <ExpenseView />,
+    expenses: () => TechReceiptsView ? <TechReceiptsView /> : <ExpenseView />,
     ai: () => <TechCopilotView />,
     route: () => <BackWrap setTab={setTab}><TechRouteView /></BackWrap>,
     voice: () => <BackWrap setTab={setTab}><TechVoiceView /></BackWrap>,

@@ -29,17 +29,23 @@ function FinanceAP({ setDrawer, setModal, showToast }) {
   const fmtD = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
   const [bills, setBills] = React.useState(DEMO_BILLS);
   const [vendors, setVendors] = React.useState(DEMO_VENDORS);
-  React.useEffect(() => {
+  const loadAP = React.useCallback(() => {
     const q = window.__shieldQBO; if (!q) return;
     q.bills(500).then(r => { if (r && r.ok && r.data && r.data.length) setBills(r.data.map(b => ({
       num: b.doc_number || ('BILL-' + b.qbo_id), vendor: b.vendor_name || 'Vendor', amount: Number(b.total) || 0,
       status: b.status === 'open' ? 'due' : (b.status || 'due'), due: fmtD(b.due_date), cat: 'Bill', is1099: false,
+      qbo: b, // the landing row — Pay posts a real BillPayment against it
     }))); });
     q.vendors(1000).then(r => { if (r && r.ok && r.data && r.data.length) setVendors(r.data.map(v => ({
       name: v.display_name || v.company_name || 'Vendor', balance: Number(v.balance) || 0, terms: '—',
       is1099: false, cat: '—', ytdSpend: 0,
     }))); });
   }, []);
+  React.useEffect(() => {
+    loadAP();
+    window.addEventListener('qbo:changed', loadAP);
+    return () => window.removeEventListener('qbo:changed', loadAP);
+  }, [loadAP]);
 
   return (
     <div style={{ maxWidth: 1400 }}>
@@ -67,7 +73,7 @@ function FinanceAP({ setDrawer, setModal, showToast }) {
                 <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: b.status==='overdue'?'var(--status-critical)':'var(--text-mid)' }}>{b.due}</td>
                 <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: b.is1099?'var(--status-warn)':'var(--text-low)' }}>{b.is1099?'Yes':'—'}</td>
                 <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
-                  {b.status !== 'paid' && <button onClick={()=>showToast(`${b.num} marked as paid`)} style={{ padding: '3px 8px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Pay</button>}
+                  {b.status !== 'paid' && <button onClick={()=>{ if (b.qbo && window.openQboNew) window.openQboNew('billpayment', { bill: b.qbo }); else showToast('Connect QuickBooks to pay bills from here'); }} style={{ padding: '3px 8px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Pay</button>}
                 </td>
               </tr>
             ))}</tbody>

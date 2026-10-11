@@ -81,6 +81,24 @@ export async function submitHours({ workDate, startAt, endAt, breakMinutes = 0, 
   return { ok: true, data };
 }
 
+/* Technician: edit one of my own entries while it is still a draft / rejected
+   (RLS blocks edits once approved/paid). Pass status:'submitted' to send a
+   single entry to the approval queue. */
+export async function updateEntry(id, patch = {}) {
+  if (!supabaseConfigured) return notConfigured;
+  const row = {};
+  if (patch.hours != null) row.hours = Math.round(Number(patch.hours) * 100) / 100;
+  ['work_date', 'start_at', 'end_at', 'break_minutes', 'job_ref', 'notes', 'status'].forEach(k => { if (patch[k] !== undefined) row[k] = patch[k]; });
+  if (patch.status === 'submitted') row.rejection_reason = null;
+  const { data, error } = await supabase.from('time_entries').update(row).eq('id', id).select().maybeSingle();
+  if (error) return { ok: false, error: error.message };
+  if (patch.status === 'submitted' && data) {
+    const { data: u } = await supabase.auth.getUser();
+    notifyTimeSubmitted(u?.user, { workDate: data.work_date, hours: data.hours, jobRef: data.job_ref, notes: data.notes });
+  }
+  return { ok: true, data };
+}
+
 /* Technician: delete one of my own entries (blocked by RLS once approved/paid). */
 export async function deleteEntry(id) {
   if (!supabaseConfigured) return notConfigured;
@@ -222,4 +240,4 @@ export async function unmarkWeekPaid(techId, weekStart, weekEnd) {
   return { ok: true };
 }
 
-window.__shieldTime = { myEntries, submitHours, deleteEntry, submitWeek, pendingEntries, laborLedger, setEntryStatus, ripplingSync, payrollData, setHourlyRate, markWeekPaid, unmarkWeekPaid };
+window.__shieldTime = { myEntries, submitHours, updateEntry, deleteEntry, submitWeek, pendingEntries, laborLedger, setEntryStatus, ripplingSync, payrollData, setHourlyRate, markWeekPaid, unmarkWeekPaid };

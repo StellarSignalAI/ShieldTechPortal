@@ -87,17 +87,24 @@ function MExpensesFull() {
     if (!(Number(cf.amount) > 0)) { showToast('Enter the amount', 'warn'); return; }
     const r = convertRow;
     await window.__shieldReceipts.convert(r.id, { vendor: cf.vendor, amount: cf.amount, category: cf.category });
-    mExpenseStore.set(prev => [{
+    const row = {
       id: genId('exp'), desc: (cf.vendor || 'Receipt') + (r.note ? ` — ${r.note}` : ''),
-      amount: Number(cf.amount), category: cf.category,
+      vendor: cf.vendor || null, amount: Number(cf.amount), category: cf.category,
       by: r.uploader_name || 'Field', date: (r.created_at || '').slice(0, 10) || new Date().toISOString().slice(0, 10),
-      status: 'approved', receipt_id: r.id,
-    }, ...(prev || [])]);
+      status: 'approved', receipt_id: r.id, job_ref: r.job_ref || null,
+    };
+    mExpenseStore.set(prev => [row, ...(prev || [])]);
     setConvertRow(null); setCf({ vendor: '', amount: '', category: 'Materials' });
     showToast('Receipt converted to a categorized expense ✓', 'ok');
     refreshInbox();
+    if (window.qboPostExpense) window.qboPostExpense(row); // books the Purchase in QuickBooks
   };
-  const act = (id, status) => { mExpenseStore.set(prev => prev.map(r => r.id === id ? { ...r, status } : r)); showToast(status === 'approved' ? 'Expense approved' : 'Expense rejected', 'ok'); };
+  const act = (id, status) => {
+    const row = (rows || []).find(r => r.id === id);
+    mExpenseStore.set(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+    showToast(status === 'approved' ? 'Expense approved' : 'Expense rejected', 'ok');
+    if (status === 'approved' && row && window.qboPostExpense) window.qboPostExpense({ ...row, status });
+  };
   const save = () => {
     if (!f.desc.trim() || !(Number(f.amount) > 0)) { showToast('Add a description and amount', 'warn'); return; }
     mExpenseStore.set(prev => [{ id: genId('exp'), desc: f.desc.trim(), amount: Number(f.amount), category: f.category, by: (window.__shieldUser || {}).name || 'You', date: new Date().toISOString().slice(0, 10), status: 'pending' }, ...(prev || [])]);

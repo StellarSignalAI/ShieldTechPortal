@@ -33,10 +33,15 @@ function FinanceProducts({ setModal, showToast }) {
     };
   };
   const [items, setItems] = React.useState(DEMO_PRODUCTS);
-  React.useEffect(() => {
+  const loadItems = React.useCallback(() => {
     const q = window.__shieldQBO; if (!q) return;
     q.items(1000).then(r => { if (r && r.ok && r.data && r.data.length) setItems(r.data.map(mapItem)); });
   }, []);
+  React.useEffect(() => {
+    loadItems();
+    window.addEventListener('qbo:changed', loadItems);
+    return () => window.removeEventListener('qbo:changed', loadItems);
+  }, [loadItems]);
 
   const cats = ['All', ...new Set(items.map(i => i.cat))];
   const filtered = catFilter === 'All' ? items : items.filter(i => i.cat === catFilter);
@@ -53,8 +58,8 @@ function FinanceProducts({ setModal, showToast }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => showToast('Import started')} style={{ padding: '5px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Import CSV</button>
-          <button onClick={() => setModal({ type: 'new-product' })} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Item</button>
+          <button onClick={() => window.openQboNew ? window.openQboNew('seed-services') : showToast('Not available')} style={{ padding: '5px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Add standard LV services</button>
+          <button onClick={() => window.openQboNew ? window.openQboNew('item') : setModal({ type: 'new-product' })} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Item</button>
         </div>
       </div>
       <GlassPanel style={{ padding: 0 }}>

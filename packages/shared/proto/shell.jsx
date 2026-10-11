@@ -29,6 +29,7 @@ const NAV_GROUPS = [
 },
 { id: 'collect', label: 'COLLECT', collapsible: false, items: [
   { id: 'finance', icon: 'finance', label: 'Finance Suite', useSvg: true },
+  { id: 'revops', icon: 'finance', label: 'Revenue Ops', useSvg: true },
   { id: 'invoices', icon: 'expenses', label: 'Invoices', useSvg: true, mobileOnly: true },
   { id: 'estimates', icon: 'proposals', label: 'Proposal Pipeline', useSvg: true, mobileOnly: true },
   { id: 'outbox', icon: 'chat', label: 'Email Outbox', useSvg: true, mobileOnly: true },
@@ -549,7 +550,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     'product-library': 'Product Library', 'service-plans': 'Service Plans',
     'custom-dashboard': 'My Dashboard',
     'customers-list': 'Customers',
-    dispatch: 'Dispatch Center', finance: 'Finance Suite',
+    dispatch: 'Dispatch Center', finance: 'Finance Suite', revops: 'Revenue Operations',
     timeline: 'Customer Timeline',
     approvals: 'Approvals Center',
     cameras: 'Monitoring Console', topology: 'Monitoring Console',

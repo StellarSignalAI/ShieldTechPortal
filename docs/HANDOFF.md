@@ -68,6 +68,81 @@ enables portal→QBO write-back.
 - Employees/payroll need the payroll scope (or MCP payroll re-auth) — otherwise everything
   else syncs on the accounting scope.
 
+### 2b. QuickBooks write engine ("+ New") — built, waits on the same creds
+`qbo-sync` now has a full transaction engine (`{direction:'push', entity, payload}`):
+**customer, vendor, item, invoice, estimate, payment (receive payment), purchase (expense),
+bill, billpayment**. Payloads are portal-shaped (names, not Intuit ids); the server
+finds-or-creates customers/vendors/items, resolves accounts by name → type, posts the
+record, mirrors it into the `qbo_*` landing tables and refreshes the invoice/bill balance.
+Already-paid invoices/bills are skipped, never double-posted.
+- Client: `window.__shieldQBO.{receivePayment, recordExpense, createBill, payBill,
+  createVendor, createCustomer, createItem, push, notConnected}` (`packages/shared/qbo.js`).
+- UI: one shared **+ New** menu + forms (`packages/shared/proto/qbo-new.jsx`,
+  `window.openQboNew(kind, prefill)`) used by the desktop Finance Suite header, the mobile
+  Money tab, invoice "Receive Payment", Bills "Pay", Expenses approvals (desktop +
+  mobile + receipt-inbox conversions → one `qboPostExpense`), Products "+ New Item" and
+  **Add standard LV services** (reviewable low-voltage service catalog; reuses existing
+  item names). Modal on desktop, `MSheet` on phones — no duplicate forms.
+- Stripe: `stripe-webhook` books the matching QuickBooks Payment server-side on a verified
+  `checkout.session.completed` (via the cron secret; no-op until QBO is connected).
+- Every form writes the shared stores first and reports honestly: "recorded in QuickBooks"
+  vs "saved here — QuickBooks isn't connected yet". **Nothing reaches QuickBooks until the
+  four `QBO_*` secrets in item 2 are set.** Landing tables currently hold only the July
+  MCP import (13 customers / 32 seed items / 82 invoices / 61 estimates; no bills, vendors,
+  payments, accounts) — the first real sync replaces that.
+- Real QBO today (via the Intuit MCP): 40 items, all Service type, mostly one-off job
+  names; A/R $185,852.63 with $94,657.63 overdue across 7 customers.
+
+### 2c. Technician app — the Dial (home) + execution flow
+`packages/shared/proto/tech-dial.jsx` replaces the tech home (`TechDialHome`) and job
+detail (`JobFlowView`); `apps/tech/src/main.jsx` falls back to the old `TodayView` /
+`JobDetailView` if the module is missing. The home is one instrument: a ticked bezel
+holding 6 AM–8 PM with every dispatched job (workOrderStore + jobStore, filtered to the
+signed-in tech, crew view when nothing is assigned) as a block colored by discipline
+(`--disc-*` tokens); a fixed needle; turn/flick/tap to dial a job in; one card with one
+action (Start → I'm on site → Begin work → Continue → Summary). Untimed work orders are
+packed into free slots and labeled "anytime". The flow is Arrive → Verify → Install →
+Test → Sign-off (labels adapt per WO type): fieldStatus, checklist + test ticks
+(`woCheckStore`), photos (`techcam` → capture), signature upload, `st2:timer` from "on
+site" to completion, then optional one-tap hours submission (`__shieldTime.submitHours`).
+Colors are tokens only — the color pass is a `colors.css` change.
+
+### 2d. Technician app — Clock (Time) + Receipts (Expenses)
+`packages/shared/proto/tech-money.jsx` replaces `TimeViewV2` / `ExpenseView` (both kept as
+fallbacks in `apps/tech/src/main.jsx`).
+- **Clock**: the one `st2:timer` the Dial runs, on a card with one action — Start (defaults
+  to the job under the needle; "Job…" picks any today-job / category / project / WO), Pause,
+  Resume, Stop → one note → draft or submitted `time_entries` row with real start/end.
+  Today is a strip on the Dial's 6 AM–8 PM track plus entry rows; Week is seven bars,
+  draft/submitted/approved counts and one "Submit week" button. Rejected entries surface at
+  the top with the office's reason and a "Fix & resubmit" path (new `__shieldTime.updateEntry`
+  in `time.js`; drafts can be edited/submitted singly). Paused time survives in the timer
+  (`pausedElapsed`); the Dial's helpers honor it and fire a `st2:timer` event on every write.
+- **Receipts**: camera first. Snap → `tmShrink` (≤1600px JPEG) → sheet with the photo,
+  big amount field, vendor/date/category/job/paid-with/note. If the `ai` edge function has
+  `OPENAI_API_KEY`, `tmScanReceipt` reads vendor/total/date/category/last4 off the image
+  (feature `extract`, vision) and pre-fills; otherwise the tech types the total. Duplicate
+  warning (same amount within 3 days). Sends to the office receipt inbox
+  (`__shieldReceipts.snap`, tagged with job + "PERSONAL CARD — reimburse" when applicable) —
+  the office converts → expense → QuickBooks, so nothing is entered twice. Mileage
+  (`TM_MILEAGE_RATE`, $0.70/mi) and no-receipt expenses go to `techExpenseStore` for approval.
+  One list merges receipts + expenses by day with thumbnails (signed URLs) and status;
+  totals: this month / with office / owed to you.
+- The Dial's Install step has a **Receipt** action (`window.openTechReceipt({jobRef,label})`)
+  that opens the camera pre-tagged to the job.
+
+### 2e. Mobile portal — Money as a collections dial
+`packages/shared/proto/mobile-money.jsx` (`MoneyDial`, `MoneyHome`) is the Money tab's
+Overview (`MFinance` falls back to `FinOverview` if missing). One arc per customer who
+owes, sized by balance, colored by age (`--status-ok` current, `--status-warn` 1–30,
+`--status-critical` 31–60, `--disc-alarm` 60+), oldest debt first; the white marker on the
+track is where overdue ends. Turn/flick/tap to dial a customer in; the one card shows the
+oldest invoice with **Receive payment** (`openQboNew('payment')`), **Pay link**
+(`mSendPayLink`) and **Remind** (AR reminder → Approvals), plus that customer's invoices
+(tap → `FinInvoiceDetail`). Under it: collected this month / bills to pay / MRR, everyone
+who owes, and the next bills with **Pay** (`openQboNew('billpayment')`). Data is
+`useMergedInvoices` (portal + QuickBooks), `__shieldQBO.bills`, `mrrStore`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

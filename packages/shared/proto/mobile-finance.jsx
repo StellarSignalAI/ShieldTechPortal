@@ -390,11 +390,12 @@ function FinInvoiceDetail({ inv, onClose, onEdit }) {
           {inv.status === 'draft' && <button onClick={() => { mSendPayLink(inv, { finalize: true }); onClose(); }} style={finBtnPrimary}>Finalize & Send</button>}
           {inv.status === 'pending' && <>
             <button onClick={() => mSendPayLink(inv)} style={finBtnSecondary}>⊛ {inv._raw && inv._raw.payLink ? 'Pay Link Active ✓ — resend' : 'Create & Email Pay Link'}</button>
-            <button onClick={() => { mUpdateInv(inv, { status: 'paid', balance: 0, days: 0, paidAt: Date.now() }); if (window.__shieldPay) window.__shieldPay.recordPaid(inv.num); showToast(`Payment recorded — ${inv.num} marked paid`, 'ok'); onClose(); }} style={finBtnSuccess}>Record Payment</button>
+            <button onClick={() => { onClose(); window.openQboNew('payment', { invoice: inv }); }} style={finBtnSuccess}>Receive Payment</button>
           </>}
           {inv.status === 'overdue' && <>
             <button onClick={() => { approvalStore.set(prev => [{ id: (prev || []).reduce((m, a) => Math.max(m, a.id), 0) + 1, kind: 'AR REMINDER', title: `${inv.customer} — ${inv.num} reminder (${inv.days}d overdue)`, amt: `$${inv.amount.toLocaleString()}`, sub: 'AI-drafted · review before sending', status: 'pending' }, ...(prev || [])]); showToast(`Reminder drafted for ${inv.num} → Approvals`, 'ok'); }} style={finBtnSecondary}>⟡ AI Draft Reminder</button>
             <button onClick={() => mSendPayLink(inv)} style={finBtnPrimary}>Send Payment Link</button>
+            <button onClick={() => { onClose(); window.openQboNew('payment', { invoice: inv }); }} style={finBtnSuccess}>Receive Payment</button>
           </>}
           <div style={{ display: 'flex', gap: 7 }}>
             {onEdit && <button onClick={onEdit} style={{ ...finBtnGhost, color: 'var(--brand)', borderColor: 'var(--border-strong)' }}>✎ Edit</button>}
@@ -533,29 +534,42 @@ function FinEstimates({ onNav }) {
   );
 }
 
-/* ── Bills / AP ── */
+/* ── Bills / AP — live QuickBooks bills; Pay posts a real BillPayment ── */
 function FinBills() {
-  const due = FIN_BILLS.filter(b => b.status !== 'paid').reduce((s, b) => s + b.amount, 0);
-  const overdue = FIN_BILLS.filter(b => b.status === 'overdue').reduce((s, b) => s + b.amount, 0);
+  const [bills, setBills] = React.useState(null);
+  const load = React.useCallback(() => {
+    const q = window.__shieldQBO; if (!q) { setBills([]); return; }
+    q.bills(500).then(r => setBills(r && r.ok ? (r.data || []) : []));
+  }, []);
+  React.useEffect(() => { load(); window.addEventListener('qbo:changed', load); return () => window.removeEventListener('qbo:changed', load); }, [load]);
+  const rows = bills || [];
+  const fmtD = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+  const due = rows.filter(b => Number(b.balance) > 0).reduce((s, b) => s + Number(b.balance), 0);
+  const overdue = rows.filter(b => b.status === 'overdue').reduce((s, b) => s + Number(b.balance), 0);
+  const st = (b) => b.status === 'open' ? 'due' : (b.status || 'due');
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <FinKpis items={[['TOTAL DUE', `$${(due / 1000).toFixed(1)}K`, null, 'var(--status-warn)'], ['OVERDUE', `$${(overdue / 1000).toFixed(1)}K`, null, overdue ? 'var(--status-critical)' : 'var(--text-low)']]} />
-      {FIN_BILLS.map(b => (
-        <div key={b.num} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${FIN_STATUS[b.status]}` }}>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button onClick={() => window.openQboNew('bill')} style={{ ...finBtnSecondary, flex: 1 }}>+ Enter bill</button>
+        <button onClick={() => window.openQboNew('purchase')} style={{ ...finBtnSecondary, flex: 1 }}>+ Expense</button>
+      </div>
+      {rows.map(b => (
+        <div key={b.qbo_id} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${FIN_STATUS[st(b)]}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{b.num}</span>
-            <MBadge>{b.category}</MBadge>
-            <MBadge color={FIN_STATUS[b.status]}>{b.status}</MBadge>
-            <span className="mono" style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: 'var(--text-high)' }}>${b.amount.toLocaleString()}</span>
+            <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{b.doc_number || ('BILL-' + b.qbo_id)}</span>
+            <MBadge color={FIN_STATUS[st(b)]}>{st(b)}</MBadge>
+            <span className="mono" style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: 'var(--text-high)' }}>${Number(b.balance > 0 ? b.balance : b.total).toLocaleString()}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', flex: 1 }}>{b.vendor}</span>
-            <span style={{ fontSize: 10, color: b.status === 'overdue' ? 'var(--status-critical)' : 'var(--text-low)' }}>due {b.due}</span>
-            {b.status !== 'paid' && <button onClick={() => showToast('Bill payments aren\'t wired up yet — pay from the desktop Finance Suite', 'warn')} style={{ padding: '4px 10px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Pay</button>}
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', flex: 1 }}>{b.vendor_name || 'Vendor'}</span>
+            <span style={{ fontSize: 10, color: b.status === 'overdue' ? 'var(--status-critical)' : 'var(--text-low)' }}>due {fmtD(b.due_date)}</span>
+            {Number(b.balance) > 0 && <button onClick={() => window.openQboNew('billpayment', { bill: b })} style={{ padding: '4px 10px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Pay</button>}
           </div>
         </div>
       ))}
-      {FIN_BILLS.length === 0 && <FinEmpty>No bills yet.</FinEmpty>}
+      {bills === null && <FinEmpty>Loading bills…</FinEmpty>}
+      {bills !== null && rows.length === 0 && <FinEmpty>No bills yet — enter one with + Enter bill, or connect QuickBooks and they appear after the first sync.</FinEmpty>}
     </div>
   );
 }
@@ -627,12 +641,13 @@ function MFinance({ onNav }) {
   const tabs = ['Overview', 'AI Queue', 'Invoices', 'Recurring', 'Proposals', 'Bills', 'Expenses', 'Sales Tax', 'Lending', 'Reports', 'More'];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2, margin: '0 -2px' }}>
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2, margin: '0 -2px', alignItems: 'center' }}>
+        {window.QboNewButton && <span style={{ flexShrink: 0 }}><QboNewButton compact /></span>}
         {tabs.map(t => (
           <button key={t} onClick={() => setTab(t)} style={{ padding: '7px 14px', borderRadius: 9, fontSize: 12, fontWeight: tab === t ? 600 : 500, background: tab === t ? 'rgba(99,102,241,0.14)' : 'transparent', border: `1px solid ${tab === t ? 'var(--brand)' : 'var(--border-subtle)'}`, color: tab === t ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', flexShrink: 0 }}>{t}</button>
         ))}
       </div>
-      {tab === 'Overview' && <FinOverview go={setTab} />}
+      {tab === 'Overview' && (window.MoneyHome ? <MoneyHome go={setTab} /> : <FinOverview go={setTab} />)}
       {tab === 'AI Queue' && <MFinAIQueue />}
       {tab === 'Invoices' && <FinInvoices />}
       {tab === 'Recurring' && <FinRecurring />}

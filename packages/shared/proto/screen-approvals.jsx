@@ -37,8 +37,11 @@ function ApprovalsScreen() {
 
   const resolve = (a, action) => {
     if (a.tag === 'expense' && a.expenseId) {
+      const row = (texpRows || []).find(x => x.id === a.expenseId);
       setTexpRows(prev => (prev || []).map(x => x.id === a.expenseId ? { ...x, status: action === 'approve' ? 'approved' : 'rejected' } : x));
       shieldToast(`${action === 'approve' ? 'Approved' : 'Rejected'}: ${a.title}`, action === 'approve' ? 'ok' : 'warn');
+      // Approved field expenses are booked in QuickBooks as a Purchase (once per row).
+      if (action === 'approve' && row && window.qboPostExpense) window.qboPostExpense({ ...row, status: 'approved' });
       return;
     }
     if (a.tag === 'timesheet' && a.entryId && window.__shieldTime) {

@@ -70,6 +70,7 @@ import './proto/screen-knowledge.jsx';
 
 /* V2 Upgrades */
 import './proto/screen-finance-v2.jsx';
+import './proto/screen-revops.jsx';
 import './proto/screen-finance-books.jsx';
 import './proto/screen-finance-payments.jsx';
 import './proto/screen-finance-extended.jsx';
@@ -77,6 +78,7 @@ import './proto/screen-qbo-core.jsx';
 import './proto/screen-qbo-finance.jsx';
 import './proto/screen-qbo-modules.jsx';
 import './proto/screen-qbo-admin.jsx';
+import './proto/qbo-new.jsx';
 import './proto/screen-branding-studio.jsx';
 import './proto/screen-dispatch-v2.jsx';
 import './proto/screen-proposal-v2.jsx';

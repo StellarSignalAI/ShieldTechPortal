@@ -30,14 +30,19 @@ function ExpenseApprovalScreen() {
   }, []);
   React.useEffect(() => { refreshInbox(); }, [refreshInbox]);
 
+  /* Approving books the expense in QuickBooks (one Purchase per row, never
+     twice — rows remember their qbo_id). Rejections stay local. */
   const setStatus = (id, status, verb) => {
+    const row = (expenses || []).find(e => e.id === id);
     dExpenseStore.set(prev => (prev || []).map(e => e.id === id ? { ...e, status } : e));
     shieldToast(`${verb} ${id}`, status === 'approved' ? 'ok' : 'warn');
+    if (status === 'approved' && row && window.qboPostExpense) window.qboPostExpense({ ...row, status });
   };
-  const approveAll = () => {
-    const n = (expenses || []).filter(e => e.status === 'pending').length;
+  const approveAll = async () => {
+    const pending = (expenses || []).filter(e => e.status === 'pending');
     dExpenseStore.set(prev => (prev || []).map(e => e.status === 'pending' ? { ...e, status: 'approved' } : e));
-    shieldToast(`Approved all ${n} pending expense${n === 1 ? '' : 's'}`, 'ok');
+    shieldToast(`Approved all ${pending.length} pending expense${pending.length === 1 ? '' : 's'}`, 'ok');
+    if (window.qboPostExpense) { let booked = 0; for (const row of pending) { const r = await window.qboPostExpense(row, { silent: true }); if (r && r.ok) booked++; } if (booked) shieldToast(`${booked} recorded in QuickBooks`, 'ok'); }
   };
   const uploadReceipt = async (e) => {
     const file = e.target.files && e.target.files[0];
@@ -51,13 +56,15 @@ function ExpenseApprovalScreen() {
     const c = convert;
     if (!(Number(c.amount) > 0)) { shieldToast('Enter the amount', 'warn'); return; }
     await window.__shieldReceipts.convert(c.row.id, { vendor: c.vendor, amount: c.amount, category: c.category });
-    dExpenseStore.set(prev => [{
+    const row = {
       id: genId('exp'), desc: (c.vendor || 'Receipt') + (c.row.note ? ` — ${c.row.note}` : ''),
-      amount: Number(c.amount), category: c.category,
+      vendor: c.vendor || null, amount: Number(c.amount), category: c.category,
       by: c.row.uploader_name || 'Field', date: (c.row.created_at || '').slice(0, 10),
-      status: 'approved', receipt_id: c.row.id,
-    }, ...(prev || [])]);
+      status: 'approved', receipt_id: c.row.id, job_ref: c.row.job_ref || null,
+    };
+    dExpenseStore.set(prev => [row, ...(prev || [])]);
     setConvert(null); shieldToast('Receipt converted to a categorized expense ✓', 'ok'); refreshInbox();
+    if (window.qboPostExpense) window.qboPostExpense(row);
   };
 
   const rows = expenses || [];
@@ -1021,4 +1028,4 @@ function SLAScreen() {
   );
 }
 
-Object.assign(window, { ExpenseApprovalScreen, TimesheetApprovalScreen, EmployeeScreen, ContractsScreen, SLAScreen });
+Object.assign(window, { ExpenseApprovalScreen, TimesheetApprovalScreen, EmployeeScreen, ContractsScreen, SLAScreen, dExpenseStore });

@@ -133,8 +133,44 @@ export async function pushDoc(kind, doc) {
   } catch (e) { return { ok: false, error: String(e) }; }
 }
 
+/* ── The "+ New" engine: create QuickBooks transactions from portal-shaped
+   payloads (names, not Intuit ids). The server resolves/creates customers,
+   vendors, items and accounts, posts the record, and mirrors it into the
+   qbo_* landing tables so every screen reflects it at once. Each returns
+   { ok, data } or { ok:false, connected?:false, error } — a 503 means the
+   Intuit credentials aren't set yet, which the UI reports as a setup step. */
+export async function push(entity, payload) {
+  if (!supabaseConfigured) return notConfigured;
+  try {
+    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/qbo-sync`, {
+      method: 'POST', headers: await fnHeaders(),
+      body: JSON.stringify({ direction: 'push', entity, payload }),
+    });
+    const body = await res.json().catch(() => ({ ok: false, error: `qbo-sync ${res.status}` }));
+    if (res.status === 503) return { ok: false, connected: false, error: body.error || 'QuickBooks not connected' };
+    return body;
+  } catch (e) { return { ok: false, error: String(e) }; }
+}
+/* Receive payment against an open invoice: { invoiceQboId | docNumber, amount, date, method, memo, reference } */
+export const receivePayment = (p) => push('payment', p);
+/* Expense (Purchase): { vendor, amount | lines, date, paymentType: Cash|Check|CreditCard, category, paidFrom, memo, reference } */
+export const recordExpense = (p) => push('purchase', p);
+/* Bill: { vendor, amount | lines, date, dueDate, docNumber, category, memo } */
+export const createBill = (p) => push('bill', p);
+/* Pay bill: { billQboId, amount, date, payType: Check|CreditCard, paidFrom, memo } */
+export const payBill = (p) => push('billpayment', p);
+/* Vendor / customer: { name, company, email, phone } */
+export const createVendor = (p) => push('vendor', p);
+export const createCustomer = (p) => push('customer', p);
+/* Product/service: { name, type: Service|NonInventory, price, description, taxable, incomeAccount } */
+export const createItem = (p) => push('item', p);
+
+/* True when a push failed only because the Intuit credentials aren't set. */
+export const notConnected = (r) => !!(r && r.ok === false && (r.connected === false || /not connected/i.test(String(r.error || ''))));
+
 window.__shieldQBO = {
   customers, items, invoices, estimates, employees, payslips,
   vendors, bills, purchases, payments, accounts,
   report, syncState, syncNow, hasData, qboStatus, pushDoc,
+  push, receivePayment, recordExpense, createBill, payBill, createVendor, createCustomer, createItem, notConnected,
 };

@@ -61,6 +61,11 @@ function FinanceScreen() {
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
   const activeArea = FINANCE_AREAS.find((a) => a.id === area) || FINANCE_AREAS[0];
+  /* The shared "+ New" menu routes Invoice/Estimate into this screen's builders. */
+  React.useEffect(() => {
+    window.__financeSetModal = (m) => { setArea(m && m.type === 'new-estimate' ? 'money-in' : 'money-in'); setTabRaw(m && m.type === 'new-estimate' ? 'estimates' : 'invoices'); setModal(m); };
+    return () => { if (window.__financeSetModal) delete window.__financeSetModal; };
+  }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0, height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
@@ -75,6 +80,7 @@ function FinanceScreen() {
           }}>{a.label}</button>
         ))}
         <span style={{ marginLeft: 'auto', paddingBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+          {window.QboNewButton && <QboNewButton />}
           <button onClick={() => {
             if (!window.__shieldQBO) { showToast('Backend not configured'); return; }
             showToast('Syncing with QuickBooks…');
@@ -487,21 +493,11 @@ function FinanceInvoices({ drawer, setDrawer, modal, setModal, selectedInv, setS
                 <button onClick={() => sendLink('Payment link ready')} style={{ width: '100%', padding: '9px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                   <span>⊛</span> Create Payment Link
                 </button>
-                <button onClick={async () => {
-                  const pay = window.__shieldPay;
-                  if (pay) { const r = await pay.recordPaid(dinv.num); if (r && !r.ok && r.error) showToast(`Pay page not updated: ${r.error}`, 'warn'); }
-                  setLocalStatus(dinv.num, 'paid');
-                  showToast(`${dinv.num} marked paid`, 'ok');
-                }} style={{ width: '100%', padding: '9px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Record Payment</button>
+                <button onClick={() => window.openQboNew('payment', { invoice: dinv })} style={{ width: '100%', padding: '9px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Receive Payment</button>
               </>}
               {dinv.status === 'overdue' && <>
                 <button onClick={() => sendLink('Payment link ready')} style={{ width: '100%', padding: '9px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send Payment Link</button>
-                <button onClick={async () => {
-                  const pay = window.__shieldPay;
-                  if (pay) { const r = await pay.recordPaid(dinv.num); if (r && !r.ok && r.error) showToast(`Pay page not updated: ${r.error}`, 'warn'); }
-                  setLocalStatus(dinv.num, 'paid');
-                  showToast(`${dinv.num} marked paid`, 'ok');
-                }} style={{ width: '100%', padding: '9px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Record Payment</button>
+                <button onClick={() => window.openQboNew('payment', { invoice: dinv })} style={{ width: '100%', padding: '9px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Receive Payment</button>
               </>}
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={() => { if (!window.__shieldPdf) { showToast('PDF module not loaded', 'warn'); return; } window.__shieldPdf.exportDoc({ kind: 'invoice', number: dinv.num, customer: dinv.customer, lineItems: dinv.lines || [], total: dinv.amount || 0 }); showToast(`${dinv.num} exported`, 'ok'); }} style={{ flex: 1, padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Download PDF</button>
