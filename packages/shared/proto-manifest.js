@@ -131,3 +131,4 @@ import './proto/screen-unifi-console.jsx';
 import './proto/screen-hubs.jsx';
 import './proto/screen-sell.jsx';
 import './proto/screen-deliver.jsx';
+import './proto/screen-care.jsx';

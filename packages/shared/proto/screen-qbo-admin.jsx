@@ -1,8 +1,10 @@
 /* QBO Handoff — Portal Settings, Team Plus (Payroll/Time/Contractors), Inventory Plus */
 
 /* ════ Portal Settings ════ */
-function PortalSettingsScreen() {
-  const [section, setSection] = React.useState((window.__qboParams && window.__qboParams.section) || 'users');
+function PortalSettingsScreen({ section: sectionProp, embedded }) {
+  const [sectionState, setSectionState] = React.useState((window.__qboParams && window.__qboParams.section) || 'users');
+  const section = sectionProp || sectionState;
+  const setSection = (id) => { if (embedded && window.navSubSet) window.navSubSet('portal-settings', id, 'nav'); else setSectionState(id); };
   const [toast, setToast] = React.useState(null);
   const me = window.__shieldUser || {};
   /* Real QuickBooks connection light (qbo-sync status endpoint) */
@@ -46,12 +48,12 @@ function PortalSettingsScreen() {
   );
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      {!embedded && <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <h2 className="display" style={{ fontSize: 20, fontWeight: 300, marginRight: 'auto' }}>Portal Settings</h2>
         <span style={{ fontSize: 10.5, color: 'var(--text-mid)', fontFamily: 'var(--font-mono)' }}>{me.name ? `Signed in as ${me.name}${me.role ? ' · ' + me.role : ''}` : 'Not signed in'}</span>
-      </div>
+      </div>}
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-        <GlassPanel style={{ width: 190, flexShrink: 0, padding: 8 }}>
+        {!embedded && <GlassPanel style={{ width: 190, flexShrink: 0, padding: 8 }}>
           {sections.map((s) => (
             <button key={s.id} onClick={() => setSection(s.id)} style={{
               display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', borderRadius: 7, border: 'none',
@@ -60,7 +62,7 @@ function PortalSettingsScreen() {
               cursor: 'pointer', fontFamily: 'var(--font-body)'
             }}>{s.label}</button>
           ))}
-        </GlassPanel>
+        </GlassPanel>}
         <div style={{ flex: 1, minWidth: 0 }}>
           {section === 'users' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

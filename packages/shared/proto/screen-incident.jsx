@@ -34,7 +34,7 @@ function IncidentScreen() {
   const resolveIncident = (id) => {
     setIncidents(prev => prev.map(i => {
       if (i.id !== id) return i;
-      const entry = { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), actor: 'John Mitchell', msg: `Incident resolved. Duration: ${fmtDuration(now - i.openedAt)}.`, type: 'mgmt' };
+      const entry = { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), actor: (window.__shieldUser && window.__shieldUser.name) || 'Staff', msg: `Incident resolved. Duration: ${fmtDuration(now - i.openedAt)}.`, type: 'mgmt' };
       return { ...i, status: 'resolved', timeline: [...(i.timeline || []), entry] };
     }));
     showToast('Incident resolved', 'ok');
@@ -52,7 +52,7 @@ function IncidentScreen() {
     if (!newEventText.trim() || !inc) return;
     const entry = {
       time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      actor: 'John Mitchell', msg: newEventText.trim(), type: 'user'
+      actor: (window.__shieldUser && window.__shieldUser.name) || 'Staff', msg: newEventText.trim(), type: 'user'
     };
     setIncidents(prev => prev.map(i => i.id === inc.id ? { ...i, timeline: [...(i.timeline || []), entry] } : i));
     setNewEventText('');
@@ -95,7 +95,7 @@ function IncidentScreen() {
   const autoEscAlert = inc && isAutoEscalate(inc);
 
   return (
-    <div style={{ display: 'flex', gap: 12, height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', gap: 12, height: 'var(--inc-h, calc(100vh - 76px))', overflow: 'hidden' }}>
       {/* Left: list */}
       <div className="glass" style={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

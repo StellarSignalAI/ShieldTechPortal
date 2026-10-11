@@ -88,7 +88,7 @@ function PortalMessagesScreen() {
   const active = threads.find(t => t.threadId === sel);
 
   return (
-    <div data-screen-label="Messages" style={{ display: 'flex', gap: 12, height: 'calc(100vh - 96px)', minHeight: 420 }}>
+    <div data-screen-label="Messages" style={{ display: 'flex', gap: 12, height: 'var(--msg-h, calc(100vh - 96px))', minHeight: 420 }}>
       <div className="glass" style={{ width: 300, flexShrink: 0, borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border-subtle)', fontSize: 14, fontWeight: 600 }}>Messages</div>
         <div style={{ overflowY: 'auto', flex: 1 }}>

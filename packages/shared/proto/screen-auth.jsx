@@ -144,7 +144,7 @@ const AU_ROLE_DEFAULT_RIGHTS = {
   Client: { portal: false, tech: false, customer: true, sales: false },
 };
 
-function UsersScreen() {
+function UsersScreen({ embedded }) {
   const configured = Boolean(window.__shieldSupabaseConfigured);
   const selfId = (window.__shieldUser && window.__shieldUser.id) || null;
   const [rows, setRows] = React.useState([]);
@@ -189,9 +189,9 @@ function UsersScreen() {
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ padding: embedded ? 0 : 24, maxWidth: 1100, margin: embedded ? 0 : '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div>
-        <h1 className="display" style={{ fontSize: 22, fontWeight: 300, color: 'var(--text-high)' }}>Users &amp; Invites</h1>
+        {!embedded && <h1 className="display" style={{ fontSize: 22, fontWeight: 300, color: 'var(--text-high)' }}>Users &amp; Invites</h1>}
         <div style={{ fontSize: 12, color: 'var(--text-low)', marginTop: 4 }}>
           shieldtechsolutions.com Google accounts sign in automatically. Everyone else must be invited here — they get a temporary password by email and set their own on first login.
         </div>

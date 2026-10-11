@@ -487,6 +487,35 @@ ShieldTech's own data and tools.
   geocode stub stamps lat/lng on both WO and project, Calendar + Copilot, Dispatch map /
   queue / fleet, Accept & schedule on a requested WO; no page errors.
 
+### 2p. CARE + ADMIN pass
+- `packages/shared/proto/screen-care.jsx` (loaded after screen-deliver; uses `DvFrame` /
+  `useDvSub` from it):
+  - **`CareCustomersScreen`** (`customers-list` / `nps`): tiles (customers, from
+    QuickBooks, open WOs, open tickets, AR), Directory · NPS & feedback, chips (active /
+    inactive / QuickBooks / portal-created), search, UniFi table (contact, sites, open
+    WOs, tickets, AR, source), row → the full `CustomerDetail` record inside the frame,
+    `CustomerCreateModal` for new. QuickBooks customers fold in like before.
+  - **`CareHelpdeskScreen`** (`helpdesk` / `incidents`): tiles (open, in progress, SLA at
+    risk, resolved 7d, incidents), Tickets · Incidents, status chips, search, table with
+    SLA countdown, `CaTicketDrawer` (status + priority, Start / Resolve / Escalate →
+    incident, assignment from the real roster, SLA + age tiles, thread with reply —
+    customer-portal tickets reply through `__shieldTickets`, Delete for internal
+    tickets), real new-ticket form (customer select, priority, assignee, tags, details).
+    Incidents tab embeds `IncidentScreen` (timeline actor is now the signed-in user).
+  - **`CareMessagesScreen`**, **`AdminTeamScreen`** (Team · Skills matrix),
+    **`AdminHRScreen`** (People · Payroll Center · Project labor · Hiring · Insights ·
+    Audit · Setup), **`AdminUsersScreen`**, **`AdminApprovalsScreen`** (Approvals ·
+    Timesheets · Payroll · Expenses & receipts), **`AdminDocumentsScreen`**,
+    **`AdminSettingsScreen`** (every settings section is a sidebar child; the inner
+    section menu is gone): `CaEngine` frames the existing engines and the sidebar drives
+    their tabs. `UsersScreen`, `DocumentsScreen` and `PortalSettingsScreen` take
+    `embedded` (hide their own headers / nav); `PortalSettingsScreen` takes `section`.
+- Sidebar children for Customers, Help Desk, Team & Skills, HR Center, Approvals and
+  Portal Settings; titles fixed (Help Desk, Approvals & Expenses, Users & Invites…).
+- Verified with Playwright: new ticket → drawer → reply → Start → Escalate opens the
+  Incidents tab with the incident; Customers directory → record; every ADMIN page and
+  settings section renders with fresh loads; no page errors.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

@@ -96,22 +96,48 @@ const NAV_GROUPS = [
   { id: 'assets', icon: 'assets', label: 'Assets', useSvg: true, mobileOnly: true }]
 },
 { id: 'care', label: 'CARE', collapsible: true, items: [
-  { id: 'customers-list', icon: 'customers', label: 'Customers', useSvg: true },
-  { id: 'helpdesk', icon: 'chat', label: 'Help Desk', useSvg: true },
+  { id: 'customers-list', icon: 'customers', label: 'Customers', useSvg: true, children: [
+    { sub: 'all', label: 'Directory' },
+    { sub: 'nps', label: 'NPS & feedback' }] },
+  { id: 'helpdesk', icon: 'chat', label: 'Help Desk', useSvg: true, children: [
+    { sub: 'tickets', label: 'Tickets' },
+    { sub: 'incidents', label: 'Incidents' }] },
   { id: 'incidents', icon: 'warroom', label: 'Incidents', useSvg: true, mobileOnly: true },
   { id: 'nps', icon: 'star', label: 'NPS & Feedback', useSvg: true, mobileOnly: true },
   { id: 'messages', icon: 'hermes', label: 'Messages', useSvg: true }]
 },
 { id: 'admin', label: 'ADMIN', collapsible: true, items: [
-  { id: 'employees', icon: 'employees', label: 'Team & Skills', useSvg: true },
-  { id: 'hr', icon: 'employees', label: 'HR Center', useSvg: true },
+  { id: 'employees', icon: 'employees', label: 'Team & Skills', useSvg: true, children: [
+    { sub: 'team', label: 'Team' },
+    { sub: 'skills', label: 'Skills matrix' }] },
+  { id: 'hr', icon: 'employees', label: 'HR Center', useSvg: true, children: [
+    { sub: 'people', label: 'People' },
+    { sub: 'paycenter', label: 'Payroll Center' },
+    { sub: 'projects', label: 'Project labor' },
+    { sub: 'hiring', label: 'Hiring & actions' },
+    { sub: 'insights', label: 'Insights' },
+    { sub: 'audit', label: 'Audit' },
+    { sub: 'setup', label: 'Setup' }] },
   { id: 'skills', icon: 'certs', label: 'Skills Matrix', useSvg: true, mobileOnly: true },
   { id: 'users', icon: 'credential', label: 'Users & Invites', useSvg: true },
-  { id: 'approvals', icon: 'check', label: 'Approvals & Expenses', useSvg: true },
+  { id: 'approvals', icon: 'check', label: 'Approvals & Expenses', useSvg: true, children: [
+    { sub: 'appr', label: 'Approvals' },
+    { sub: 'time', label: 'Timesheets' },
+    { sub: 'pay', label: 'Payroll' },
+    { sub: 'exp', label: 'Expenses & receipts' }] },
   { id: 'timesheets', icon: 'timesheets', label: 'Timesheets', useSvg: true, mobileOnly: true },
   { id: 'payroll', icon: 'finance', label: 'Payroll', useSvg: true, mobileOnly: true },
   { id: 'documents', icon: 'note', label: 'Documents', useSvg: true },
-  { id: 'portal-settings', icon: 'compliance', label: 'Portal Settings', useSvg: true }]
+  { id: 'portal-settings', icon: 'compliance', label: 'Portal Settings', useSvg: true, children: [
+    { sub: 'users', label: 'Users & roles' },
+    { sub: 'account', label: 'Account' },
+    { sub: 'billing', label: 'Billing' },
+    { sub: 'privacy', label: 'Privacy' },
+    { sub: 'fields', label: 'Custom fields' },
+    { sub: 'resolution', label: 'Resolution center' },
+    { sub: 'desktop', label: 'Desktop app' },
+    { sub: 'updates', label: "What's new" },
+    { sub: 'help', label: 'Help' }] }]
 }];
 
 /* ── Sub-navigation bus ──
@@ -632,6 +658,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
 /* ── App Shell ── */
 function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
   const titles = {
+    messages: 'Messages', users: 'Users & Invites', documents: 'Documents', 'portal-settings': 'Portal Settings', employees: 'Team & Skills', helpdesk: 'Help Desk', incidents: 'Help Desk', nps: 'Customers', skills: 'Team & Skills',
     dashboard: 'Mission Control', customer: 'Customer Portal',
     assets: 'Asset Management', 'shieldtech-ai': 'ShieldTech AI',
     crm: 'Bid Board', studio: 'Design Studio',
@@ -640,7 +667,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     'customers-list': 'Customers',
     dispatch: 'Dispatch & Fleet', finance: 'Finance Suite', revops: 'Revenue Operations',
     timeline: 'Customer Timeline',
-    approvals: 'Approvals Center',
+    approvals: 'Approvals & Expenses',
     cameras: 'ShieldTech OS', topology: 'ShieldTech OS', finance: 'Finance',
     certs: 'Certifications', tools: 'Engineering Tools',
     costing: 'Job Costing', audit: 'Audit Trail',
@@ -649,9 +676,9 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     hr: 'HR Center',
     projects: 'Projects', 'plan-room': 'BlueShield Studio', inventory: 'Inventory',
     reports: 'Reports & BI', proposals: 'Proposals',
-    employees: 'Team Management', contracts: 'Contracts', sla: 'SLA Dashboard',
+    employees: 'Team & Skills', contracts: 'Contracts', sla: 'SLA Dashboard',
     integrations: 'Integrations', marketing: 'Marketing',
-    documents: 'Documents & Attachments', 'portal-settings': 'Portal Settings',
+    documents: 'Documents', 'portal-settings': 'Portal Settings',
     health: 'Customer Health', forecast: 'Revenue Forecast',
     commissions: 'Commissions', compliance: 'Compliance Calendar',
     onboarding: 'Customer Onboarding', 'service-reports': 'Service Reports',
