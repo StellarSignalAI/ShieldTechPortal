@@ -51,6 +51,114 @@ function useUcSites() {
   }, [custs, assets, tickets]);
 }
 
+
+/* ── Live controller data (unifi-proxy → unifi_devices / unifi_events) ──
+   Polled every 30 s and on `uc:sync`. Degrades to empty when Supabase is not
+   configured, so everything below keeps rendering from the registry. */
+const UC_LIVE_TYPE = { gateway: 'Gateway / Router', switch: 'Network Switch', ap: 'Access Point', camera: 'IP Camera', nvr: 'NVR', door: 'Access Reader', hub: 'Door Controller', device: 'Device' };
+const ucFmtUptime = (s) => { if (!s && s !== 0) return ''; const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60); return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`; };
+function useUcLive(scope) {
+  const [state, setState] = React.useState({ devices: [], events: [], controllers: [], ok: false, at: 0 });
+  const load = React.useCallback(async () => {
+    const u = window.__shieldUniFi; if (!u || !u.configured) return;
+    const [d, e, c] = await Promise.all([u.devices({ customer: scope.customer || undefined }), u.events({ customer: scope.customer || undefined, since: Date.now() - 7 * 86400e3 }), u.controllers()]);
+    setState({ devices: (d && d.data) || [], events: (e && e.data) || [], controllers: (c && c.data) || [], ok: !!(d && d.ok), at: Date.now() });
+  }, [scope.customer]);
+  React.useEffect(() => { load(); const t = setInterval(load, 30000); window.addEventListener('uc:sync', load); return () => { clearInterval(t); window.removeEventListener('uc:sync', load); }; }, [load]);
+  return { ...state, reload: load };
+}
+/* Lay live controller devices over the registry: a live row that matches a documented
+   device (MAC, IP or name at the same customer) updates its status and facts; the rest
+   are shown as adopted-but-undocumented devices so nothing on the controller is hidden. */
+function ucMergeLive(assets, live) {
+  if (!live || !live.length) return assets;
+  const norm = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const used = new Set();
+  const out = assets.map(a => {
+    const m = live.find(d => !used.has(d.id) && norm(d.customer) === norm(a.customer) && ((d.mac && (norm(d.mac) === norm(a.mac) || norm(d.mac) === norm(a.serial))) || (d.ip && a.ip && d.ip === a.ip) || (d.name && norm(d.name) === norm(a.name))));
+    if (!m) return a;
+    used.add(m.id);
+    return { ...a, status: m.status, uptime: ucFmtUptime(m.uptime_s), firmware: m.firmware || a.firmware, ip: m.ip || a.ip, mac: m.mac || a.mac, model: a.model || m.model, clients: m.clients, live: true, liveId: m.remote_id, liveKind: m.kind, controllerId: m.controller_id, lastSeen: Date.parse(m.synced_at) || a.lastSeen, raw: m.raw };
+  });
+  live.filter(d => !used.has(d.id)).forEach(d => out.push({ id: 'live:' + d.id, customer: d.customer, site: d.site, room: '', name: d.name || d.model || 'Device', type: UC_LIVE_TYPE[d.kind] || 'Device', mfg: 'Ubiquiti', model: d.model || '', serial: d.mac || '', mac: d.mac || '', ip: d.ip || '', status: d.status, uptime: ucFmtUptime(d.uptime_s), firmware: d.firmware || '', clients: d.clients, live: true, undocumented: true, liveId: d.remote_id, liveKind: d.kind, controllerId: d.controller_id, lastSeen: Date.parse(d.synced_at) || 0, raw: d.raw }));
+  return out;
+}
+const UC_EVENT_LABEL = { 'door-open': 'Door opened', 'remote-unlock': 'Remote unlock', 'device-offline': 'Device offline', 'device-online': 'Back online', 'sync-error': 'Controller sync failed', alarm: 'Alarm' };
+const ucLiveEvents = (events, scope) => (events || []).filter(e => !scope.customer || e.customer === scope.customer).map(e => ({ at: Date.parse(e.at) || 0, kind: UC_EVENT_LABEL[e.kind] || e.kind, who: [e.subject, e.actor && e.actor !== 'controller' ? e.actor : null].filter(Boolean).join(' · '), s: e.result === 'denied' || e.kind === 'sync-error' || e.kind === 'device-offline' ? (e.kind === 'device-offline' ? 'offline' : 'warning') : 'online', c: e.kind === 'device-offline' || e.kind === 'sync-error' ? 'var(--status-critical)' : e.kind === 'device-online' ? 'var(--status-ok)' : 'var(--disc-access)', live: true }));
+
+/* Protect snapshot tile — refreshes every 15 s while mounted. */
+function UcSnapshot({ cam, hq }) {
+  const [img, setImg] = React.useState(null);
+  const [err, setErr] = React.useState(null);
+  React.useEffect(() => {
+    let alive = true; const u = window.__shieldUniFi;
+    if (!cam.live || !u || !u.configured || cam.liveKind !== 'camera') return;
+    const tick = async () => { const r = await u.snapshot(cam.controllerId, cam.liveId, hq); if (!alive) return; if (r && r.ok) { setImg(r.dataUrl); setErr(null); } else setErr((r && r.error) || 'no snapshot'); };
+    tick(); const t = setInterval(tick, 15000); return () => { alive = false; clearInterval(t); };
+  }, [cam.liveId, cam.controllerId, hq]);
+  if (img) return <img src={img} alt={cam.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />;
+  return <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: 11 }}><div style={{ fontSize: 22, marginBottom: 4 }}>◉</div>{cam._s === 'offline' ? 'Camera offline' : cam.live ? (err ? `Snapshot unavailable · ${err}` : 'Fetching snapshot…') : 'No stream · connect NVR'}</div>;
+}
+
+/* ── Controllers (Settings › Controllers) ── */
+function UcControllers({ sites, onSynced }) {
+  const u = window.__shieldUniFi;
+  const [rows, setRows] = React.useState([]);
+  const [busy, setBusy] = React.useState(null);
+  const [loaded, setLoaded] = React.useState(false);
+  const load = React.useCallback(async () => { if (!u || !u.configured) { setLoaded(true); return; } const r = await u.status(); setRows((r && r.controllers) || []); setLoaded(true); }, []);
+  React.useEffect(() => { load(); }, [load]);
+  const customers = [...new Set((sites || []).map(s => s.customer))];
+  const edit = (c) => shieldModal({ kind: 'form', title: c ? `Edit ${c.label || c.host}` : 'Connect a controller', submitLabel: c ? 'Save' : 'Connect', fields: [
+    { key: 'customer', label: 'Customer', type: customers.length ? 'select' : 'text', options: customers, placeholder: c && c.customer, required: !c },
+    { key: 'site', label: 'Site', placeholder: (c && c.site) || 'Main site' },
+    { key: 'label', label: 'Label', placeholder: (c && c.label) || 'e.g. Main office UDM Pro' },
+    { key: 'kind', label: 'Connection', type: 'select', options: ['console', 'site-manager'] },
+    { key: 'host', label: 'Console address', placeholder: (c && c.host) || 'https://console.customer.com (or leave for Site Manager)', full: true },
+    { key: 'site_id', label: 'Network site id (optional)', placeholder: (c && c.site_id) || 'default' },
+    { key: 'api_key', label: c ? 'API key (leave blank to keep)' : 'API key', placeholder: 'From UniFi OS › Control Plane › Integrations', full: true, required: !c },
+  ], onSubmit: async (v) => {
+    const rec = { id: c && c.id, customer: v.customer || (c && c.customer), site: v.site || (c && c.site) || 'Main site', label: v.label || (c && c.label) || '', kind: v.kind || (c && c.kind) || 'console', host: v.host || (c && c.host) || (v.kind === 'site-manager' ? 'https://api.ui.com' : ''), site_id: v.site_id || (c && c.site_id) || '', api_key: v.api_key || undefined };
+    if (!rec.host && rec.kind !== 'site-manager') { shieldToast('Enter the console address', 'warn'); return; }
+    const r = await u.save(rec);
+    if (!r || !r.ok) { shieldToast(`Could not save: ${(r && r.error) || 'unknown error'}`, 'warn'); return; }
+    shieldToast('Controller saved — testing…', 'ok'); await load();
+    const t = await u.test(r.controller.id); shieldToast(t && t.ok ? `Reached ${rec.label || rec.host}: ${t.devices} devices` : `Saved, but not reachable yet: ${(t && t.error) || 'unknown'}`, t && t.ok ? 'ok' : 'warn');
+    if (t && t.ok) { await u.sync(r.controller.id); await load(); window.dispatchEvent(new CustomEvent('uc:sync')); }
+  } });
+  const act = async (c, what) => {
+    setBusy(c.id + what);
+    if (what === 'test') { const r = await u.test(c.id); shieldToast(r && r.ok ? `Reached ${c.label || c.host}: ${r.devices} devices · WAN ${r.health && r.health.wan}` : `Not reachable: ${(r && r.error) || 'unknown'}`, r && r.ok ? 'ok' : 'warn'); }
+    if (what === 'sync') { const r = await u.sync(c.id); shieldToast(r && r.ok ? `Synced ${r.devices} devices` : `Sync failed: ${(r && r.error) || 'unknown'}`, r && r.ok ? 'ok' : 'warn'); window.dispatchEvent(new CustomEvent('uc:sync')); onSynced && onSynced(); }
+    if (what === 'toggle') { await u.save({ id: c.id, customer: c.customer, site: c.site, label: c.label, kind: c.kind, host: c.host, site_id: c.site_id, enabled: !c.enabled }); }
+    if (what === 'remove') { if (!window.confirm(`Remove ${c.label || c.host}? Its live devices disappear from the console.`)) { setBusy(null); return; } await u.remove(c.id); window.dispatchEvent(new CustomEvent('uc:sync')); }
+    await load(); setBusy(null);
+  };
+  if (!u || !u.configured) return <UcCard title="Controllers"><div style={{ fontSize: 12.5, color: 'var(--text-mid)', lineHeight: 1.6 }}>Controller connections need the Supabase backend configured for this app. Once it is, UniFi consoles and Site Manager keys are added here and devices, snapshots and door events arrive live.</div></UcCard>;
+  return (
+    <UcCard title={`Controllers · ${rows.length}`} action={<UcBtn small onClick={() => edit(null)}>+ Connect controller</UcBtn>} pad={0}>
+      {!loaded && <div style={{ padding: 16, fontSize: 12, color: 'var(--text-mid)' }}>Loading…</div>}
+      {loaded && !rows.length && <UcEmpty title="No controllers connected" body="Add a customer's UniFi OS console (Network, Protect and Access integration APIs) or a Site Manager API key. The key is stored on the backend only; the console reads devices, health, snapshots and door events from it every 5 minutes." cta="Connect controller" onCta={() => edit(null)} />}
+      {rows.map((c, i) => { const h = c.health || {}; return (
+        <div key={c.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, padding: '12px 16px', borderTop: i ? '1px solid var(--border-subtle)' : 'none', alignItems: 'center' }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}><UcDot s={!c.enabled ? 'none' : c.last_error ? 'offline' : c.last_sync ? 'online' : 'warning'} /><span style={{ fontWeight: 600, fontSize: 13.5 }}>{c.label || c.host}</span><span style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 10, background: 'var(--brand-tint-12)', color: 'var(--brand)', fontWeight: 600 }}>{c.kind === 'site-manager' ? 'Site Manager' : 'Console'}</span>{!c.enabled && <span style={{ fontSize: 10.5, color: 'var(--text-low)' }}>paused</span>}</div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginTop: 2 }}>{c.customer} · {c.site} · <span className="mono">{c.host}</span></div>
+            <div style={{ fontSize: 11.5, color: c.last_error ? 'var(--status-critical)' : 'var(--text-mid)', marginTop: 3 }}>{c.last_error ? `Error: ${c.last_error}` : c.last_sync ? `Synced ${ucAgo(Date.parse(c.last_sync))} · ${h.devices || 0} devices${h.cameras != null ? ` · ${h.cameras} cameras` : ''}${h.doors != null ? ` · ${h.doors} doors` : ''}${h.wan ? ` · WAN ${h.wan}` : ''}${h.clients ? ` · ${h.clients} clients` : ''}${h.partial ? ` · partial: ${h.partial.join('; ')}` : ''}` : 'Never synced'}</div>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <UcBtn small kind="ghost" disabled={busy === c.id + 'test'} onClick={() => act(c, 'test')}>Test</UcBtn>
+            <UcBtn small kind="soft" disabled={busy === c.id + 'sync'} onClick={() => act(c, 'sync')}>Sync now</UcBtn>
+            <UcBtn small kind="ghost" onClick={() => edit(c)}>Edit</UcBtn>
+            <UcBtn small kind="ghost" onClick={() => act(c, 'toggle')}>{c.enabled ? 'Pause' : 'Resume'}</UcBtn>
+            <UcBtn small kind="danger" onClick={() => act(c, 'remove')}>Remove</UcBtn>
+          </div>
+        </div>); })}
+      <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--text-low)', lineHeight: 1.5 }}>Console connections need a certificate the backend trusts (UniFi OS › Console settings lets you install one) and a route from the internet. Site Manager keys work out of the box but cannot unlock doors or pull snapshots.</div>
+    </UcCard>
+  );
+}
+
 /* ── Primitives (UniFi console vocabulary) ── */
 const ucFont = { fontFamily: 'var(--font-body)' };
 function UcBtn({ children, onClick, kind = 'primary', small, style, disabled }) {
@@ -173,7 +281,7 @@ function UcDeviceList({ assets, kinds, scopeLabel, onOpenAssets }) {
             { k: 'ip', l: 'IP address', mono: true, dim: true },
             { k: 'site', l: 'Site', dim: true, render: r => [r.site, r.room].filter(Boolean).join(' · ') || '—' },
             { k: 'customer', l: 'Customer', dim: true },
-            { k: 'uptime', l: 'Uptime', dim: true, render: r => r.uptime || 'Not monitored' },
+            { k: 'uptime', l: 'Uptime', dim: true, render: r => r.live ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ fontSize: 9.5, fontWeight: 700, padding: '1px 5px', borderRadius: 6, background: 'var(--ok-tint-12)', color: 'var(--status-ok)' }}>LIVE</span>{r.uptime || '—'}</span> : (r.uptime || 'Not monitored') },
             { k: 'lastSeen', l: 'Last change', dim: true, render: r => r.lastSeen ? ucAgo(r.lastSeen) : '—' },
           ]} />
         </UcCard>
@@ -182,13 +290,16 @@ function UcDeviceList({ assets, kinds, scopeLabel, onOpenAssets }) {
         <UcDrawer title={cur.name || cur.model || 'Device'} sub={`${UC_KIND_LABEL[cur._k]} · ${cur.customer || ''}`} onClose={() => setSel(null)}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}><UcStatusCell s={cur._s} /><span style={{ flex: 1 }} /><span style={{ fontSize: 11, color: 'var(--text-low)' }}>{cur.lastSeen ? `changed ${ucAgo(cur.lastSeen)}` : ''}</span></div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-            <UcBtn small kind="soft" onClick={() => shieldToast('Locate flashes the device LED once it is adopted on a controller — not connected yet', 'info')}>Locate</UcBtn>
-            <UcBtn small kind="soft" onClick={() => shieldToast('Restart is sent to the controller when one is connected — logged as a request', 'info')}>Restart</UcBtn>
+            {cur.live && cur.liveKind === 'door' && <UcBtn small onClick={async () => { const r = await window.__shieldUniFi.unlock(cur.controllerId, cur.liveId, ucMe()); shieldToast(r && r.ok ? `${cur.name} unlocked` : `Unlock failed: ${(r && r.error) || 'unknown'}`, r && r.ok ? 'ok' : 'warn'); window.dispatchEvent(new CustomEvent('uc:sync')); }}>Unlock</UcBtn>}
+            <UcBtn small kind="soft" onClick={() => shieldToast(cur.live ? 'Locate is not exposed by the UniFi integration API yet — use the controller UI' : 'Locate flashes the device LED once it is adopted on a controller — not connected yet', 'info')}>Locate</UcBtn>
+            <UcBtn small kind="soft" onClick={() => shieldToast(cur.live ? 'Restart is not exposed by the UniFi integration API yet — use the controller UI' : 'Restart is sent to the controller when one is connected — logged as a request', 'info')}>Restart</UcBtn>
             {cur._s !== 'online' && <UcBtn small kind="ghost" onClick={() => setStatus(cur, 'online')}>Mark online</UcBtn>}
             {cur._s !== 'warning' && <UcBtn small kind="ghost" onClick={() => setStatus(cur, 'warning')}>Flag attention</UcBtn>}
             {cur._s !== 'offline' && <UcBtn small kind="danger" onClick={() => setStatus(cur, 'offline')}>Mark offline</UcBtn>}
           </div>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-mid)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '6px 0 2px' }}>Overview</div>
+          {cur.live && <UcProp k="Source" v={cur.undocumented ? 'Controller (not in Assets yet)' : 'Controller + Assets'} />}
+          {cur.clients != null && <UcProp k="Clients" v={String(cur.clients)} />}
           <UcProp k="Model" v={[cur.mfg, cur.model].filter(Boolean).join(' ')} />
           <UcProp k="IP address" v={cur.ip} />
           <UcProp k="MAC / serial" v={cur.mac || cur.serial} />
@@ -197,7 +308,7 @@ function UcDeviceList({ assets, kinds, scopeLabel, onOpenAssets }) {
           <UcProp k="Mount / cable" v={[cur.mount, cur.cable, cur.switchPort && `port ${cur.switchPort}`].filter(Boolean).join(' · ')} />
           <UcProp k="Tag" v={cur.tag} />
           {cur.notes && <div style={{ fontSize: 12, color: 'var(--text-mid)', marginTop: 10, lineHeight: 1.5 }}>{cur.notes}</div>}
-          <div style={{ marginTop: 14 }}><UcBtn small kind="ghost" onClick={onOpenAssets}>Open in Assets</UcBtn></div>
+          <div style={{ marginTop: 14, display: 'flex', gap: 6 }}>{cur.undocumented ? <UcBtn small kind="soft" onClick={() => { assetStore.set(list => [{ id: genId('CFG'), status: cur.status, customer: cur.customer, site: cur.site, room: '', name: cur.name, type: cur.type, mfg: 'Ubiquiti', model: cur.model, serial: cur.mac, ip: cur.ip, mac: cur.mac, firmware: cur.firmware, fwUpdate: false, mount: '', cable: '', switchPort: '', notes: 'Adopted from the controller', lastSeen: ucNow() }, ...(list || [])]); shieldToast(`${cur.name} documented in Assets`, 'ok'); }}>Add to Assets</UcBtn> : <UcBtn small kind="ghost" onClick={onOpenAssets}>Open in Assets</UcBtn>}</div>
         </UcDrawer>
       )}
     </div>
@@ -252,13 +363,18 @@ function UcSitesPage({ sites, onPick }) {
 }
 
 /* ── Network app ── */
-function UcNetworkPage({ assets, scope, sites, go, onOpenAssets }) {
+function UcNetworkPage({ assets, scope, sites, go, onOpenAssets, live }) {
   const [tab, setTab] = React.useState('dashboard');
   const [logs] = useShieldStore(accessLogStore);
+  const ctrls = ((live && live.controllers) || []).filter(c => c.enabled && (!scope.customer || c.customer === scope.customer) && (!scope.site || c.site === scope.site));
+  const wan = ctrls.map(c => (c.health || {}).wan).filter(Boolean);
+  const wanVal = !ctrls.length ? '—' : wan.every(w => w === 'ok') ? 'Up' : wan.some(w => w === 'ok') ? 'Degraded' : wan.some(w => w === 'down') ? 'Down' : '—';
+  const clients = ctrls.reduce((n, c) => n + (Number((c.health || {}).clients) || 0), 0);
+  const liveEv = ucLiveEvents(live && live.events, scope).slice(0, 10).map(e => ({ at: e.at, t: `${e.kind}: ${e.who}`, s: e.s }));
   const on = assets.filter(a => ucStatus(a) === 'online').length, warn = assets.filter(a => ucStatus(a) === 'warning').length, off = assets.length - on - warn;
   const byKind = Object.keys(UC_KIND_LABEL).map(k => ({ k, l: UC_KIND_LABEL[k], v: assets.filter(a => ucKind(a) === k).length, c: UC_KIND_COLOR[k] })).filter(p => p.v);
   const flagged = assets.filter(a => ucStatus(a) !== 'online');
-  const recent = [...flagged.map(a => ({ at: a.lastSeen || 0, t: `${a.name || a.model} ${ucStatus(a) === 'offline' ? 'went offline' : 'needs attention'}`, s: ucStatus(a) })), ...(logs || []).filter(l => !scope.customer || l.customer === scope.customer).slice(0, 10).map(l => ({ at: l.at, t: `${l.door}: ${l.kind} by ${l.user}`, s: l.result === 'denied' ? 'warning' : 'online' }))].sort((a, b) => b.at - a.at).slice(0, 12);
+  const recent = [...liveEv, ...flagged.map(a => ({ at: a.lastSeen || 0, t: `${a.name || a.model} ${ucStatus(a) === 'offline' ? 'went offline' : 'needs attention'}`, s: ucStatus(a) })), ...(logs || []).filter(l => !scope.customer || l.customer === scope.customer).slice(0, 10).map(l => ({ at: l.at, t: `${l.door}: ${l.kind} by ${l.user}`, s: l.result === 'denied' ? 'warning' : 'online' }))].sort((a, b) => b.at - a.at).slice(0, 12);
   const exp = assets.length ? Math.round(on / assets.length * 100) : null;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -267,9 +383,9 @@ function UcNetworkPage({ assets, scope, sites, go, onOpenAssets }) {
         {tab === 'dashboard' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <UcTile label="Internet" value="—" sub="WAN health needs a gateway adopted" />
+              <UcTile label="Internet" value={wanVal} tone={wanVal === 'Up' ? 'ok' : wanVal === 'Degraded' ? 'warn' : wanVal === 'Down' ? 'crit' : undefined} sub={ctrls.length ? [...new Set(ctrls.map(c => (c.health || {}).isp).filter(Boolean))].join(', ') || `${ctrls.length} controller${ctrls.length === 1 ? '' : 's'} connected` : 'WAN health needs a controller connected'} />
               <UcTile label="Devices" value={`${on} / ${assets.length}`} tone={off ? 'crit' : warn ? 'warn' : 'ok'} sub={off ? `${off} offline` : warn ? `${warn} flagged` : 'all online'} />
-              <UcTile label="Clients" value="—" sub="client list needs a controller" />
+              <UcTile label="Clients" value={ctrls.length && clients ? clients : '—'} sub={ctrls.length ? 'reported by the controller' : 'client list needs a controller'} />
               <UcTile label="Experience" value={exp == null ? '—' : `${exp}%`} tone={exp == null ? undefined : exp >= 95 ? 'ok' : exp >= 80 ? 'warn' : 'crit'} sub="share of devices reporting online" />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 12 }}>
@@ -294,7 +410,7 @@ function UcNetworkPage({ assets, scope, sites, go, onOpenAssets }) {
         {tab === 'devices' && <UcDeviceList assets={assets} scopeLabel={scope.site || scope.customer} onOpenAssets={onOpenAssets} />}
         {tab === 'clients' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <UcCard><UcEmpty title="Client list needs a gateway or controller" body="Wired and wireless clients, their experience score and which switch port or access point they sit on come from the site's controller. Adopt the gateway in Settings › Integrations to see them here. Until then, discovery scans show what a collector can see." /></UcCard>
+            <UcCard><UcEmpty title={ctrls.length ? `${clients || 'No'} clients reported by the controller` : 'Client list needs a gateway or controller'} body={ctrls.length ? 'The controller reports the client count; the per-client list (experience score, port, access point) arrives when the per-client sync is enabled on the backend.' : "Wired and wireless clients, their experience score and which switch port or access point they sit on come from the site's controller. Connect it in Settings › Controllers to see them here. Until then, discovery scans show what a collector can see."} cta={ctrls.length ? undefined : 'Connect controller'} onCta={() => go('settings')} /></UcCard>
             {typeof NetworkDiscoveryView === 'function' && <NetworkDiscoveryView showToast={(m) => shieldToast(m, 'info')} />}
           </div>
         )}
@@ -318,7 +434,7 @@ function UcNetworkPage({ assets, scope, sites, go, onOpenAssets }) {
 }
 
 /* ── Protect app ── */
-function UcProtectPage({ assets, scope, onOpenAssets }) {
+function UcProtectPage({ assets, scope, onOpenAssets, live, go }) {
   const [tab, setTab] = React.useState('live');
   const [layout, setLayout] = React.useState(4);
   const [focus, setFocus] = React.useState(null);
@@ -335,7 +451,9 @@ function UcProtectPage({ assets, scope, onOpenAssets }) {
     ...assets.filter(a => ucStatus(a) !== 'online' && a.lastSeen).map(a => ({ at: a.lastSeen, kind: ucStatus(a) === 'offline' ? 'Device offline' : 'Attention', who: a.name || a.model, c: ucStatus(a) === 'offline' ? 'var(--status-critical)' : 'var(--status-warn)' })),
     ...(logs || []).filter(l => !scope.customer || l.customer === scope.customer).map(l => ({ at: l.at, kind: l.kind === 'remote-unlock' ? 'Remote unlock' : l.kind, who: `${l.door} · ${l.user}`, c: 'var(--disc-access)' })),
     ...myPhotos.filter(p => p.ts || p.at).map(p => ({ at: p.ts || p.at, kind: 'Site photo', who: p.label || p.wo || 'Tech photo', c: 'var(--disc-cctv)' })),
+    ...ucLiveEvents(live && live.events, scope),
   ].sort((a, b) => b.at - a.at);
+  const liveCams = cams.filter(c => c.live).length;
   const today = events.filter(e => e.at >= dayStart.getTime());
   const myRules = (rules || []).filter(r => !scope.customer || r.customer === scope.customer);
   const addRule = () => shieldModal({ kind: 'form', title: 'New alarm', submitLabel: 'Create alarm', successMsg: 'Alarm created', fields: [
@@ -363,13 +481,13 @@ function UcProtectPage({ assets, scope, onOpenAssets }) {
                 <UcChips options={[{ id: 1, l: '1' }, { id: 4, l: '4' }, { id: 9, l: '9' }, { id: 16, l: '16' }]} value={focus ? 1 : layout} onChange={(v) => { setFocus(null); setLayout(v); }} />
                 <span style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{cams.filter(c => c._s === 'online').length} online · {cams.filter(c => c._s !== 'online').length} flagged</span>
                 <div style={{ flex: 1 }} />
-                <UcBtn small kind="ghost" onClick={() => shieldToast('Live streams arrive once the site NVR is connected in Settings › Integrations', 'info')}>Connect NVR</UcBtn>
+                {liveCams ? <span style={{ fontSize: 11.5, color: 'var(--status-ok)', fontWeight: 600 }}>{liveCams} live · snapshots every 15 s</span> : <UcBtn small kind="ghost" onClick={() => go && go('settings')}>Connect NVR</UcBtn>}
               </div>
               {!cams.length ? <UcCard><UcEmpty title="No cameras to view" body="Cameras documented in Assets appear here as tiles. Live video needs the site recorder connected." cta="Open Assets" onCta={onOpenAssets} /></UcCard> : (
                 <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 8, flex: 1, minHeight: 0, alignContent: 'start' }}>
                   {shown.map(c => (
                     <div key={c.id} onClick={() => setFocus(focus === c.id ? null : c.id)} style={{ position: 'relative', aspectRatio: '16 / 9', background: '#0b0d11', borderRadius: 6, border: `1px solid ${c._s === 'offline' ? 'var(--status-critical)' : 'var(--border-subtle)'}`, overflow: 'hidden', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: 11 }}><div style={{ fontSize: 22, marginBottom: 4 }}>◉</div>{c._s === 'offline' ? 'Camera offline' : 'No stream · connect NVR'}</div>
+                      <UcSnapshot cam={c} hq={!!focus} />
                       <div style={{ position: 'absolute', left: 8, bottom: 6, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}><UcDot s={c._s} size={6} />{c.name}{c.site ? <span style={{ opacity: 0.7 }}> · {c.site}</span> : null}</div>
                       <div className="mono" style={{ position: 'absolute', right: 8, top: 6, fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>{ucClock(ucNow())}</div>
                     </div>
@@ -386,7 +504,7 @@ function UcProtectPage({ assets, scope, onOpenAssets }) {
                 {today.map((e, i) => { const d = new Date(e.at); const x = (d.getHours() * 60 + d.getMinutes()) / 1440 * 100; return <div key={i} title={`${ucClock(e.at)} ${e.kind} — ${e.who}`} style={{ position: 'absolute', left: `${x}%`, top: 22, width: 4, height: 26, borderRadius: 2, background: e.c }} />; })}
                 <div style={{ position: 'absolute', left: `${(new Date().getHours() * 60 + new Date().getMinutes()) / 1440 * 100}%`, top: 0, bottom: 0, borderLeft: '2px solid var(--brand)' }} />
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 8 }}>Recorded video and motion segments fill this strip once the NVR is connected. Markers now: device changes, door events and tech photos.</div>
+              <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 8 }}>{liveCams ? 'Markers: controller door events, device changes, tech photos. Recorded-video segments arrive with the Protect events feed.' : 'Recorded video and motion segments fill this strip once the NVR is connected. Markers now: device changes, door events and tech photos.'}</div>
             </UcCard>
             <UcCard title="Events" pad={0}>
               {!events.length ? <UcEmpty title="No events yet" body="Door unlocks, device status changes and site photos land here with a time." /> : events.slice(0, 60).map((e, i) => <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 16px', borderBottom: '1px solid var(--border-subtle)', fontSize: 12.5 }}><span className="mono" style={{ width: 120, color: 'var(--text-mid)', fontSize: 11.5 }}>{new Date(e.at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span><span style={{ width: 8, height: 8, borderRadius: 2, background: e.c }} /><span style={{ fontWeight: 600, width: 130 }}>{e.kind}</span><span style={{ color: 'var(--text-mid)', flex: 1 }}>{e.who}</span></div>)}
@@ -396,7 +514,7 @@ function UcProtectPage({ assets, scope, onOpenAssets }) {
         {tab === 'detections' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <UcChips options={detOpts} value={det} onChange={setDet} />
-            <UcCard><UcEmpty title="Smart detections need an AI recorder on site" body="Person, vehicle, package, line-crossing, loitering, face and plate detections come from the site NVR once it is connected. Known people and vehicles of interest are managed per customer." cta="Connect NVR" onCta={() => shieldToast('Add the site recorder in Settings › Integrations', 'info')} /></UcCard>
+            <UcCard><UcEmpty title={liveCams ? 'Smart detections are not in the Protect integration feed yet' : 'Smart detections need an AI recorder on site'} body={liveCams ? 'The recorder is connected and snapshots flow. Person, vehicle, package and plate detections are the next feed to wire from Protect; until then use the recorder UI for detection search.' : 'Person, vehicle, package, line-crossing, loitering, face and plate detections come from the site NVR once it is connected. Known people and vehicles of interest are managed per customer.'} cta={liveCams ? undefined : 'Connect NVR'} onCta={() => go && go('settings')} /></UcCard>
             <UcCard title={`Site photos · ${myPhotos.length}`} action={<span style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>evidence captured by techs</span>}>
               {!myPhotos.length ? <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>No photos yet for this scope.</div> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>{myPhotos.slice(0, 24).map(p => <div key={p.id} style={{ aspectRatio: '4 / 3', borderRadius: 6, overflow: 'hidden', background: 'var(--canvas)', border: '1px solid var(--border-subtle)', position: 'relative' }}>{p.url || p.src || p.dataUrl ? <img src={p.url || p.src || p.dataUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : null}<span style={{ position: 'absolute', left: 6, bottom: 4, fontSize: 10, color: '#fff', textShadow: '0 1px 2px #000' }}>{p.label || p.wo || ''}</span></div>)}</div>}
             </UcCard>
@@ -424,7 +542,7 @@ function UcProtectPage({ assets, scope, onOpenAssets }) {
 }
 
 /* ── Access app ── */
-function UcAccessPage({ assets, scope, onOpenAssets }) {
+function UcAccessPage({ assets, scope, onOpenAssets, live, go }) {
   const [tab, setTab] = React.useState('doors');
   const [users, setUsers] = useShieldStore(accessUserStore);
   const [visitors, setVisitors] = useShieldStore(accessVisitorStore);
@@ -435,7 +553,19 @@ function UcAccessPage({ assets, scope, onOpenAssets }) {
   const doors = assets.filter(a => ucKind(a) === 'access').map(a => ({ ...a, id: a.id || a.name, _s: ucStatus(a) }));
   const locks = (os || {}).locks || {};
   const log = (door, kind, result = 'granted', user = ucMe()) => setLogs(list => [{ id: genId('ACL'), customer: door.customer || scope.customer || '', site: door.site || '', door: door.name, user, kind, result, at: ucNow() }, ...(list || [])].slice(0, 2000));
-  const setLock = (door, state) => { setOs(o => ({ ...(o || {}), locks: { ...((o || {}).locks || {}), [door.id]: state } })); log(door, state === 'unlocked' ? 'remote-unlock' : state === 'open' ? 'keep-open' : 'lock'); shieldToast(state === 'unlocked' ? `${door.name} unlocked for 5 seconds — the controller receives this once connected` : state === 'open' ? `${door.name} held open` : `${door.name} locked`, 'ok'); if (state === 'unlocked') setTimeout(() => setOs(o => ({ ...(o || {}), locks: { ...((o || {}).locks || {}), [door.id]: 'locked' } })), 5000); };
+  const setLock = async (door, state) => {
+    if (state === 'unlocked' && door.live && door.liveKind === 'door' && window.__shieldUniFi) {
+      const r = await window.__shieldUniFi.unlock(door.controllerId, door.liveId, ucMe());
+      if (!r || !r.ok) { shieldToast(`Unlock failed at the controller: ${(r && r.error) || 'unknown'}`, 'warn'); log(door, 'remote-unlock', 'denied'); return; }
+      log(door, 'remote-unlock'); shieldToast(`${door.name} unlocked at the controller`, 'ok'); window.dispatchEvent(new CustomEvent('uc:sync'));
+    } else {
+      log(door, state === 'unlocked' ? 'remote-unlock' : state === 'open' ? 'keep-open' : 'lock');
+      shieldToast(state === 'unlocked' ? `${door.name} unlocked for 5 seconds — the controller receives this once connected` : state === 'open' ? `${door.name} held open` : `${door.name} locked`, 'ok');
+    }
+    setOs(o => ({ ...(o || {}), locks: { ...((o || {}).locks || {}), [door.id]: state } }));
+    if (state === 'unlocked') setTimeout(() => setOs(o => ({ ...(o || {}), locks: { ...((o || {}).locks || {}), [door.id]: 'locked' } })), 5000);
+  };
+  const liveLogs = ucLiveEvents(live && live.events, scope).filter(e => e.kind === 'Door opened' || e.kind === 'Remote unlock').map((e, i) => ({ id: 'live-' + i, at: e.at, door: e.who.split(' · ')[0], site: '', user: e.who.split(' · ')[1] || 'controller', kind: e.kind.toLowerCase(), result: e.s === 'warning' ? 'denied' : 'granted', live: true }));
   const addUser = () => shieldModal({ kind: 'form', title: 'New user', submitLabel: 'Add user', successMsg: 'User added', fields: [
     { key: 'name', label: 'Name', required: true, full: true }, { key: 'group', label: 'Group', type: 'select', options: ['Staff', 'Management', 'Cleaning', 'Contractor', 'Security'] },
     { key: 'cred', label: 'Credential', type: 'select', options: ['Mobile (app)', 'NFC card', 'PIN', 'Mobile + card', 'Face'] }, { key: 'pin', label: 'PIN (optional)' }, { key: 'email', label: 'Email' },
@@ -458,7 +588,7 @@ function UcAccessPage({ assets, scope, onOpenAssets }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
             {doors.map(d => { const st = locks[d.id] || 'locked'; return (
               <div key={d.id} style={{ background: 'var(--card)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><UcDot s={d._s} /><span style={{ fontWeight: 600, fontSize: 13.5, flex: 1 }}>{d.name}</span><span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 10, background: st === 'locked' ? 'var(--ok-tint-12)' : 'var(--warn-tint-12)', color: st === 'locked' ? 'var(--status-ok)' : 'var(--status-warn)', fontWeight: 600 }}>{st === 'locked' ? 'Locked' : st === 'open' ? 'Held open' : 'Unlocked'}</span></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><UcDot s={d._s} /><span style={{ fontWeight: 600, fontSize: 13.5, flex: 1 }}>{d.name}</span>{d.live && <span style={{ fontSize: 9.5, fontWeight: 700, padding: '1px 5px', borderRadius: 6, background: 'var(--ok-tint-12)', color: 'var(--status-ok)' }}>LIVE</span>}<span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 10, background: st === 'locked' ? 'var(--ok-tint-12)' : 'var(--warn-tint-12)', color: st === 'locked' ? 'var(--status-ok)' : 'var(--status-warn)', fontWeight: 600 }}>{st === 'locked' ? (d.raw && d.raw.locked === false ? 'Unlocked' : 'Locked') : st === 'open' ? 'Held open' : 'Unlocked'}</span></div>
                 <div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginTop: 2 }}>{[d.site, d.room].filter(Boolean).join(' · ') || d.customer}{d.model ? ` · ${d.model}` : ''}</div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
                   <UcBtn small onClick={() => setLock(d, 'unlocked')} disabled={d._s === 'offline'}>Unlock</UcBtn>
@@ -495,7 +625,7 @@ function UcAccessPage({ assets, scope, onOpenAssets }) {
             ]} /></UcCard>
           </div>)}
         {tab === 'logs' && (
-          <UcCard pad={0}><UcTable rows={myLogs.slice(0, 300)} empty={<UcEmpty title="No access events" body="Remote unlocks, hold-opens and (once the controller is connected) every badge, PIN and denied attempt list here." />} cols={[
+          <UcCard pad={0}><UcTable rows={[...liveLogs, ...myLogs].sort((a, b) => b.at - a.at).slice(0, 300)} empty={<UcEmpty title="No access events" body="Remote unlocks, hold-opens and (once the controller is connected) every badge, PIN and denied attempt list here." cta="Connect controller" onCta={() => go && go('settings')} />} cols={[
             { k: 'at', l: 'Time', mono: true, dim: true, render: r => new Date(r.at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) }, { k: 'door', l: 'Door', render: r => <strong>{r.door}</strong> }, { k: 'site', l: 'Site', dim: true }, { k: 'user', l: 'User' }, { k: 'kind', l: 'Event', dim: true },
             { k: 'result', l: 'Result', render: r => <UcStatusCell s={r.result === 'denied' ? 'warning' : 'online'} /> },
           ]} /></UcCard>)}
@@ -538,7 +668,7 @@ function UcAlertsPage({ assets, scope, go }) {
 }
 
 /* ── Settings ── */
-function UcSettingsPage() {
+function UcSettingsPage({ sites }) {
   const [os, setOs] = useShieldStore(osConsoleStore);
   const [prefs, setPrefs] = useShieldStore(userPrefsStore);
   const n = (os || {}).notify || {};
@@ -558,13 +688,10 @@ function UcSettingsPage() {
           <UcToggle value={!!n.digest} onChange={(v) => setN('digest', v)} label="Daily site digest" />
         </div>
       </UcCard>
-      <UcCard title="Integrations">
-        <div style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, marginBottom: 10 }}>Connect a customer's controller so devices, clients, streams and door events arrive live instead of from the registry. Keys stay on the office backend; this only records where the controller lives.</div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <input value={(os || {}).unifiHost || ''} onChange={e => setOs(o => ({ ...(o || {}), unifiHost: e.target.value }))} placeholder="Site Manager host or console address" style={{ ...ucFont, flex: 1, padding: '7px 10px', background: 'var(--canvas)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12.5, outline: 'none' }} />
-          <UcBtn onClick={() => shieldToast((os || {}).unifiHost ? 'Saved. Ask the office to add the controller API key on the backend to go live.' : 'Enter the controller address first', 'info')}>Save</UcBtn>
-        </div>
-        <div style={{ marginTop: 12 }}><UcToggle value={!!(os || {}).isp} onChange={(v) => { setOs(o => ({ ...(o || {}), isp: v })); if (v) shieldToast('ISP monitoring starts once a gateway reports in', 'info'); }} label="ISP monitor (latency, uptime, packet loss)" /></div>
+      <div style={{ gridColumn: '1 / -1' }}><UcControllers sites={sites} /></div>
+      <UcCard title="Monitoring">
+        <UcToggle value={!!(os || {}).isp} onChange={(v) => { setOs(o => ({ ...(o || {}), isp: v })); if (v) shieldToast('ISP figures come from the controller health on each sync', 'info'); }} label="ISP monitor (WAN state, ISP name from the controller)" />
+        <div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginTop: 10, lineHeight: 1.6 }}>Controllers sync every 5 minutes on the backend and whenever you press Sync now. Device offline/online transitions, door openings and remote unlocks become events on the Protect timeline and the Access log.</div>
       </UcCard>
       <UcCard title="About">
         <UcProp k="Console" v="ShieldTech OS" />
@@ -587,7 +714,9 @@ function ShieldOSConsole({ initial }) {
   const [q, setQ] = React.useState('');
   const sites = useUcSites();
   const [allAssets] = useShieldStore(assetStore);
-  const assets = (allAssets || []).filter(a => (!scope.customer || a.customer === scope.customer) && (!scope.site || (a.site || 'Main site') === scope.site));
+  const live = useUcLive(scope);
+  const merged = React.useMemo(() => ucMergeLive(allAssets || [], live.devices), [allAssets, live.devices]);
+  const assets = merged.filter(a => (!scope.customer || a.customer === scope.customer) && (!scope.site || (a.site || 'Main site') === scope.site));
   const scopedSites = sites.filter(s => (!scope.customer || s.customer === scope.customer) && (!scope.site || s.site === scope.site));
   const alertCount = assets.filter(a => ucStatus(a) !== 'online').length;
   const go = (id, site) => { if (site) setScope({ customer: site.customer, site: site.site }); setApp(id === 'sites' && site ? 'network' : id); };
@@ -627,19 +756,19 @@ function ShieldOSConsole({ initial }) {
                   </div>))}
               </div>)}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>{assets.filter(a => ucStatus(a) === 'online').length} online · {alertCount} flagged · {scopedSites.length} {scopedSites.length === 1 ? 'site' : 'sites'}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>{assets.filter(a => ucStatus(a) === 'online').length} online · {alertCount} flagged · {scopedSites.length} {scopedSites.length === 1 ? 'site' : 'sites'}{live.devices.length ? <span style={{ color: 'var(--status-ok)' }}> · {assets.filter(a => a.live).length} live</span> : null}</div>
           <div style={{ flex: 1 }} />
           <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-high)', letterSpacing: '-0.01em' }}>ShieldTech OS <span style={{ color: 'var(--text-low)', fontWeight: 500 }}>· {UC_APPS.find(a => a.id === app).l}</span></div>
           <button onClick={() => setApp('alerts')} title="Alerts" style={{ ...ucFont, position: 'relative', width: 32, height: 32, borderRadius: 6, background: 'var(--canvas)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', cursor: 'pointer', fontSize: 14 }}>◬{alertCount > 0 && <span style={{ position: 'absolute', top: -4, right: -4, minWidth: 16, height: 16, padding: '0 4px', borderRadius: 8, background: 'var(--status-critical)', color: '#fff', fontSize: 9.5, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{alertCount}</span>}</button>
         </div>
         <div style={{ flex: 1, minHeight: 0, padding: 14, overflow: ['network', 'protect', 'access', 'assets'].includes(app) ? 'hidden' : 'auto' }} onClick={() => pick && setPick(false)}>
           {app === 'sites' && <UcSitesPage sites={scopedSites} onPick={(s) => go('sites', s)} />}
-          {app === 'network' && <UcNetworkPage assets={assets} scope={scope} sites={scopedSites} go={go} onOpenAssets={onOpenAssets} />}
-          {app === 'protect' && <UcProtectPage assets={assets} scope={scope} onOpenAssets={onOpenAssets} />}
-          {app === 'access' && <UcAccessPage assets={assets} scope={scope} onOpenAssets={onOpenAssets} />}
+          {app === 'network' && <UcNetworkPage assets={assets} scope={scope} sites={scopedSites} go={go} onOpenAssets={onOpenAssets} live={live} />}
+          {app === 'protect' && <UcProtectPage assets={assets} scope={scope} onOpenAssets={onOpenAssets} live={live} go={go} />}
+          {app === 'access' && <UcAccessPage assets={assets} scope={scope} onOpenAssets={onOpenAssets} live={live} go={go} />}
           {app === 'alerts' && <UcAlertsPage assets={assets} scope={scope} go={go} />}
           {app === 'assets' && <div style={{ height: '100%', overflow: 'auto' }}>{typeof AssetsScreen === 'function' ? <AssetsScreen /> : null}</div>}
-          {app === 'settings' && <UcSettingsPage />}
+          {app === 'settings' && <UcSettingsPage sites={sites} />}
         </div>
       </div>
     </div>
@@ -651,4 +780,5 @@ Object.assign(window, {
   UcBtn, UcToggle, UcTabs, UcCard, UcTile, UcEmpty, UcTable, UcDot, UcStatusCell, UcSearch, UcChips, UcDrawer, UcProp, UcDonut,
   accessUserStore, accessVisitorStore, accessPolicyStore, accessLogStore, alarmRuleStore, osConsoleStore, useUcSites,
   ucStatus, ucKind, ucAgo, UC_APPS, UC_KIND_LABEL, UC_KIND_COLOR, UC_KIND_GLYPH,
+  useUcLive, ucMergeLive, ucLiveEvents, UcSnapshot, UcControllers, UC_LIVE_TYPE, UC_EVENT_LABEL,
 });

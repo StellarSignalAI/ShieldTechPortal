@@ -293,6 +293,56 @@ ShieldTech's own data and tools.
   request, quote → sign → approved (project created, approvals written), booking →
   WO-… requested, home strip updates; no page errors. SW cache → `shieldtech-v16`.
 
+### 2j. Controller connection — UniFi consoles feed ShieldTech OS live
+- **Backend** (deployed to `dzfkgvyndodearolypvn`): migration `0038_unifi.sql` — tables
+  `unifi_controllers` (per customer site: kind `console` | `site-manager`, host,
+  site_id, **api_key** readable only by the service role; staff get a column-scoped
+  grant + RLS; `unifi_controllers_public` is a security-invoker view without the key),
+  `unifi_devices` (normalized gateway/switch/ap/camera/nvr/door rows, staff read),
+  `unifi_events` (door-open, remote-unlock, device-offline/online, sync-error), and a
+  pg_cron job `shieldtech-unifi-sync` every 5 min → `invoke_lead_function('unifi-proxy',
+  {"action":"sync-all"})`. Note: the MCP `apply_migration` call times out past a few
+  statements; the file is the source of truth and was applied in pieces.
+- **Edge function** `supabase/functions/unifi-proxy/index.ts` (deployed, `verify_jwt`
+  off — it checks the Admin/Staff/Manager session or `x-cron-secret` itself): actions
+  `status`, `save`, `remove`, `test`, `sync`, `sync-all`, `unlock`, `snapshot`.
+  `site-manager` kind talks to https://api.ui.com (`/v1/hosts`, `/v1/devices`, with an
+  `/ea/devices` fallback) → hosts + adopted devices + WAN/ISP health. `console` kind
+  talks to a UniFi OS console directly: Network Integration API
+  (`/proxy/network/integration/v1/sites|devices|clients|info`), Protect Integration API
+  (`/proxy/protect/integration/v1/cameras|nvrs`, `/cameras/{id}/snapshot`), Access
+  Developer API (`/proxy/access/api/v1/developer/doors`, `PUT /doors/{id}/unlock`,
+  `POST /system/logs` topic door_openings). Partial failures are kept per app in
+  `health.partial`; a console must present a trusted certificate and be reachable
+  (self-signed → TLS error recorded on the row). Site Manager keys cannot unlock or
+  snapshot. Offline/online transitions and door logs become `unifi_events`
+  (de-duped by the Access log id).
+- **Client** `packages/shared/unifi.js` → `window.__shieldUniFi` { status, save, remove,
+  test, sync, unlock, snapshot, devices, events, controllers, configured } — imported
+  by portal and tech.
+- **Console** (`screen-unifi-console.jsx`): `useUcLive(scope)` polls devices/events/
+  controllers every 30 s and on `uc:sync`; `ucMergeLive` lays live rows over the
+  registry (match by MAC/serial, IP or name per customer → status, uptime, firmware,
+  clients, `live: true`; unmatched controller devices show as adopted-but-undocumented
+  with **Add to Assets**). Devices table shows a LIVE chip + uptime; drawer gets a
+  real **Unlock** for live doors. Network dashboard: Internet tile from controller
+  `health.wan`/`isp`, Clients from `health.clients`, recent activity includes live
+  events. Protect: `UcSnapshot` refreshes a live camera's snapshot every 15 s
+  (HQ when focused); timeline/alarm history include live events. Access: Unlock on a
+  live door calls the controller (logged both sides), Logs merge live door openings.
+  Settings › **Controllers** (`UcControllers`): connect (customer, site, label,
+  console | Site Manager, address, site id, API key), Test, Sync now, Edit, Pause,
+  Remove; saving runs a test and first sync automatically.
+- **Still to do for live**: per-client list (Network clients endpoint is paged; only the
+  count is used), Protect smart-detection events (`/proxy/protect/integration/v1/
+  events` not wired), door hold-open via API, customer-app live reads (needs a
+  per-customer read policy on `unifi_devices`).
+- Verified: Playwright with a stubbed `__shieldUniFi` — live chips, WAN/ISP/clients
+  tiles, snapshot image rendered, Access Unlock → controller call + event, Add to
+  Assets wrote the registry, Controllers card with Test/Sync; no page errors. Real
+  end-to-end needs a customer console address + API key (UniFi OS › Control Plane ›
+  Integrations) entered in Settings › Controllers. SW cache → `shieldtech-v17`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

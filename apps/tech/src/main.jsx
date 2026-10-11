@@ -24,6 +24,7 @@ import '@shared/supabase.js';
 import '@shared/auth.js';
 import '@shared/passkey.js';
 import '@shared/ai.js';
+import '@shared/unifi.js';
 import '@shared/time.js';
 import '@shared/camera.js';
 import '@shared/storage.js';
