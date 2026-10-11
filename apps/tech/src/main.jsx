@@ -165,7 +165,15 @@ function TechPresencePill() {
 
 /* Extended shell with 7 tabs */
 function TechShellV2({ tab, setTab, children }) {
-  const tabs = [
+  /* Field-service convention: Home · Schedule · Timesheet · Search · More.
+     Photos, Assets, Receipts, AI and every other ShieldTech tool live one tap
+     away in More (and in Search's shortcuts). */
+  const tabs = window.TechHomeView ? [
+  { id: 'today', icon: 'grid-2', label: 'Home' },
+  { id: 'schedule', icon: 'calendar', label: 'Schedule' },
+  { id: 'time', icon: 'timesheets', label: 'Timesheet' },
+  { id: 'search', icon: 'search', label: 'Search' },
+  { id: 'more', icon: 'settings', label: 'More' }] : [
   { id: 'today', icon: 'grid-2', label: 'Today' },
   { id: 'photos', icon: 'cameras', label: 'Photos' },
   { id: 'time', icon: 'timesheets', label: 'Time' },
@@ -298,18 +306,21 @@ function TechApp() {
   const setTab = (v) => { setTweak('view', v); window.saveScreen('tech', v); };
 
   /* Home is the Dial (tech-dial.jsx); the list view lives under More → All Jobs. */
-  const { TechDialHome, JobFlowView, TechClockView, TechReceiptsView } = window;
+  const { TechDialHome, JobFlowView, TechClockView, TechReceiptsView, TechHomeView, TechScheduleView, TechSearchView, TechMoreView, TechJobView } = window;
+  const back = (to) => <button onClick={() => setTab(to || 'more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button>;
   const views = {
-    today: () => TechDialHome ? <TechDialHome setTab={setTab} setSelectedJob={setSelectedJob} /> : <TodayView setTab={setTab} setSelectedJob={setSelectedJob} />,
-    photos: () => <TechPhotosView setTab={setTab} />,
+    today: () => TechHomeView ? <TechHomeView setTab={setTab} setSelectedJob={setSelectedJob} /> : TechDialHome ? <TechDialHome setTab={setTab} setSelectedJob={setSelectedJob} /> : <TodayView setTab={setTab} setSelectedJob={setSelectedJob} />,
+    schedule: () => TechScheduleView ? <TechScheduleView setTab={setTab} setSelectedJob={setSelectedJob} /> : <TodayView setTab={setTab} setSelectedJob={setSelectedJob} />,
+    search: () => TechSearchView ? <TechSearchView setTab={setTab} setSelectedJob={setSelectedJob} /> : <MoreMenu setTab={setTab} />,
+    photos: () => <React.Fragment>{TechHomeView && back('more')}<TechPhotosView setTab={setTab} /></React.Fragment>,
     capture: () => <TechCaptureView setTab={setTab} />,
     punch: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><TechPunchView setTab={setTab} /></React.Fragment>,
     truck: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><TechTruckView /></React.Fragment>,
-    'job-detail': () => JobFlowView ? <JobFlowView job={selectedJob} setTab={setTab} /> : <JobDetailView job={selectedJob} setTab={setTab} />,
+    'job-detail': () => TechJobView ? <TechJobView job={selectedJob} setTab={setTab} /> : JobFlowView ? <JobFlowView job={selectedJob} setTab={setTab} /> : <JobDetailView job={selectedJob} setTab={setTab} />,
     time: () => TechClockView ? <TechClockView /> : <TimeViewV2 />,
-    assets: () => <TechAssetsView />,
-    expenses: () => TechReceiptsView ? <TechReceiptsView /> : <ExpenseView />,
-    ai: () => <TechCopilotView />,
+    assets: () => <React.Fragment>{TechHomeView && back('more')}<TechAssetsView /></React.Fragment>,
+    expenses: () => <React.Fragment>{TechHomeView && back('more')}{TechReceiptsView ? <TechReceiptsView /> : <ExpenseView />}</React.Fragment>,
+    ai: () => <React.Fragment>{TechHomeView && back('more')}<TechCopilotView /></React.Fragment>,
     route: () => <BackWrap setTab={setTab}><TechRouteView /></BackWrap>,
     voice: () => <BackWrap setTab={setTab}><TechVoiceView /></BackWrap>,
     scanner: () => <BackWrap setTab={setTab}><TechScannerView /></BackWrap>,
@@ -320,7 +331,7 @@ function TechApp() {
     skills: () => <BackWrap setTab={setTab}><TechSkillTreeView /></BackWrap>,
     toolbox: () => <BackWrap setTab={setTab}><TechToolboxView /></BackWrap>,
     messages: () => <BackWrap setTab={setTab}>{window.TechMessagesView ? <window.TechMessagesView /> : null}</BackWrap>,
-    more: () => <MoreMenu setTab={setTab} />,
+    more: () => TechMoreView ? <TechMoreView setTab={setTab} /> : <MoreMenu setTab={setTab} />,
     vehicle: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><VehicleInspectionView /></React.Fragment>,
     parts: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><PartsRequestView /></React.Fragment>,
     resources: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><ResourcesView /></React.Fragment>,
@@ -328,14 +339,16 @@ function TechApp() {
   };
 
   const ViewFn = views[tab] || views.today;
-  const mainTab = ['today', 'photos', 'time', 'assets', 'expenses', 'ai', 'more'].includes(tab) ? tab : tab === 'capture' ? 'photos' : ['vehicle', 'parts', 'resources', 'jobs', 'punch', 'truck', 'route', 'voice', 'scanner', 'ar', 'sync', 'upsell', 'safety', 'skills', 'toolbox', 'messages'].includes(tab) ? 'more' : 'today';
+  const mainTab = TechHomeView
+    ? (['today', 'schedule', 'time', 'search', 'more'].includes(tab) ? tab : tab === 'job-detail' ? 'today' : 'more')
+    : (['today', 'photos', 'time', 'assets', 'expenses', 'ai', 'more'].includes(tab) ? tab : tab === 'capture' ? 'photos' : ['vehicle', 'parts', 'resources', 'jobs', 'punch', 'truck', 'route', 'voice', 'scanner', 'ar', 'sync', 'upsell', 'safety', 'skills', 'toolbox', 'messages'].includes(tab) ? 'more' : 'today');
 
   const { TweaksPanel, TweakSection, TweakSelect, ShieldToastHost } = window;
 
   return (
     <TechShellV2 tab={mainTab} setTab={setTab}>
           <ViewFn />
-          {tab !== 'capture' && ['today', 'photos'].includes(mainTab) && (
+          {tab !== 'capture' && (TechHomeView ? tab === 'photos' : ['today', 'photos'].includes(mainTab)) && (
             <button onClick={() => setTab('capture')} title="Open camera" style={{
               position: 'fixed', bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))', right: 'max(16px, calc(50% - 199px))',
               width: 54, height: 54, borderRadius: '50%', zIndex: 500,
@@ -349,7 +362,7 @@ function TechApp() {
           <TweaksPanel>
             <TweakSection label="Navigation" />
             <TweakSelect label="Tab" value={tab}
-        options={['today', 'photos', 'capture', 'punch', 'truck', 'route', 'voice', 'scanner', 'ar', 'sync', 'upsell', 'safety', 'skills', 'toolbox', 'job-detail', 'time', 'expenses', 'ai', 'more', 'vehicle', 'parts', 'resources']}
+        options={['today', 'schedule', 'search', 'photos', 'capture', 'punch', 'truck', 'route', 'voice', 'scanner', 'ar', 'sync', 'upsell', 'safety', 'skills', 'toolbox', 'job-detail', 'time', 'expenses', 'ai', 'more', 'vehicle', 'parts', 'resources']}
         onChange={(v) => setTab(v)} />
           </TweaksPanel>
           <ShieldToastHost />

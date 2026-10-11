@@ -143,6 +143,31 @@ oldest invoice with **Receive payment** (`openQboNew('payment')`), **Pay link**
 who owes, and the next bills with **Pay** (`openQboNew('billpayment')`). Data is
 `useMergedInvoices` (portal + QuickBooks), `__shieldQBO.bills`, `mrrStore`.
 
+### 2f. Field-service shell (tech app) + QuickBooks-pattern Finance home (portal)
+Patterned on the workforce apps and QuickBooks Online screens in Mobbin, built with
+ShieldTech's own data and tools.
+- **Tech app** (`packages/shared/proto/tech-field.jsx`, wired in `apps/tech/src/main.jsx`;
+  every previous view stays as fallback): tabs **Home · Schedule · Timesheet · Search · More**.
+  Home = greeting, live map of today's sites (`__shieldLiveMap` + `__shieldLiveMap.L`; site
+  addresses geocoded once via OpenStreetMap Nominatim, cached in `st2:geo`), "N visits worth
+  $X · N complete", the next visit with its one action, later today, this week, a **+** FAB
+  (request a job → `workOrderStore` status `requested`, snap receipt, log time, photo,
+  message dispatch). Schedule = Day (today = the Dial) / List / Map with a week strip.
+  Search = jobs, customers, devices, invoices. More = every tool grouped. Job page
+  (`TechJobView`) = status pill, "WO for Customer for $value", address + directions, start,
+  primary action + "…" sheet (pause, alarm on test, navigate, call, photo, receipt, message,
+  AI), tabs **Job / Flow / Notes / Money** — Flow embeds `JobFlowView` (`embedded` prop),
+  Notes persist to `woNotesStore` ('wonotes'), Money lists the customer's invoices/quotes and
+  can ask the office to invoice (Approvals row `INVOICE REQUEST`).
+- **Portal Finance home** (`packages/shared/proto/screen-qbo-home.jsx`, `QboGlance`,
+  used by the Finance Suite Overview tab with `FinanceOverview` as fallback): app pills,
+  Business feed (QBO connection, overdue AR, to-review, bills due, open quotes), Create
+  actions (→ `openQboNew`), "Business at a glance" widgets (P&L with period select,
+  Expenses donut by category, Smart suggestions, Bank accounts, Cash flow in-minus-out by
+  month, Sales, AR aging donut), Sales & Get Paid quick actions (Money in), Customer Hub
+  funnel. All from merged invoices, QBO bills/purchases mirror, `techExpenseStore`,
+  `mrrStore`, `projectStore`, `npsStore`, receipts inbox.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

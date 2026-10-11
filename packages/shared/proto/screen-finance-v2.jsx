@@ -108,7 +108,7 @@ function FinanceScreen() {
       {/* Tab Content (state-gated for loading/empty/error/stale/denied demos) */}
       <div style={{ flex: 1, overflow: 'auto' }}>
         <StateGate state={demoState} label={(activeArea.tabs.find(t => t.id === tab) || {}).label || 'records'}>
-          {tab === 'overview' && <FinanceOverview onNav={setTab} />}
+          {tab === 'overview' && (window.QboGlance ? <QboGlance onNav={setTab} /> : <FinanceOverview onNav={setTab} />)}
           {tab === 'invoices' && <FinanceInvoicesPlus drawer={drawer} setDrawer={setDrawer} modal={modal} setModal={setModal} selectedInv={selectedInv} setSelectedInv={setSelectedInv} invFilter={invFilter} setInvFilter={setInvFilter} showToast={showToast} />}
           {tab === 'recurring' && <FinanceRecurring showToast={showToast} />}
           {tab === 'estimates' && <NIFinanceEstimates setModal={setModal} showToast={showToast} />}

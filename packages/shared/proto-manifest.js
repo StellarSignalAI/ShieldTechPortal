@@ -79,6 +79,7 @@ import './proto/screen-qbo-finance.jsx';
 import './proto/screen-qbo-modules.jsx';
 import './proto/screen-qbo-admin.jsx';
 import './proto/qbo-new.jsx';
+import './proto/screen-qbo-home.jsx';
 import './proto/screen-branding-studio.jsx';
 import './proto/screen-dispatch-v2.jsx';
 import './proto/screen-proposal-v2.jsx';

@@ -47,4 +47,5 @@ export function mountLiveMap(el, { center = [39.95, -75.16], zoom = 12 } = {}) {
   };
 }
 
-window.__shieldLiveMap = { mount: mountLiveMap };
+/* `L` is exposed so vendored screens can drop their own pins on a mounted map. */
+window.__shieldLiveMap = { mount: mountLiveMap, L };

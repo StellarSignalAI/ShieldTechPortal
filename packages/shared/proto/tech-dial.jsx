@@ -410,7 +410,7 @@ const TD_TESTS = {
   Maintenance: ['All devices verified after service', 'Firmware / settings confirmed', 'Customer walkthrough done'],
   Survey:      ['Every area photographed', 'Device counts and locations recorded', 'Customer questions captured'],
 };
-function JobFlowView({ job: raw, setTab }) {
+function JobFlowView({ job: raw, setTab, embedded }) {
   if (!raw) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <button onClick={() => setTab('today')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, textAlign: 'left' }}>← Back to Today</button>
@@ -607,13 +607,15 @@ function JobFlowView({ job: raw, setTab }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, color: 'var(--text-high)' }}>
-      <button onClick={() => setTab('today')} style={{ background: 'none', border: 'none', color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, textAlign: 'left' }}>← Today</button>
+      {!embedded && <button onClick={() => setTab('today')} style={{ background: 'none', border: 'none', color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, textAlign: 'left' }}>← Today</button>}
       {/* header + segmented progress */}
       <div>
-        <div className="mono" style={{ fontSize: 10.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: c, fontWeight: 600 }}>{TD_DISC[disc].label}{woId ? ` · ${woId}` : ''}{job.field ? ` · ${TD_FIELD_LABEL[job.field]}` : ''}</div>
-        <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', marginTop: 4, lineHeight: 1.1 }}>{job.customer}</div>
-        <div style={{ fontSize: 13, color: 'var(--text-mid)', marginTop: 3 }}>{job.desc}{(job.field === 'in-progress' || job.field === 'on-site') && elapsed > 0 ? ` · ${tdDur(elapsed / 60000)} on site` : ''}</div>
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${steps.length}, 1fr)`, gap: 4, marginTop: 12 }}>
+        {!embedded && <React.Fragment>
+          <div className="mono" style={{ fontSize: 10.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: c, fontWeight: 600 }}>{TD_DISC[disc].label}{woId ? ` · ${woId}` : ''}{job.field ? ` · ${TD_FIELD_LABEL[job.field]}` : ''}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', marginTop: 4, lineHeight: 1.1 }}>{job.customer}</div>
+          <div style={{ fontSize: 13, color: 'var(--text-mid)', marginTop: 3 }}>{job.desc}{(job.field === 'in-progress' || job.field === 'on-site') && elapsed > 0 ? ` · ${tdDur(elapsed / 60000)} on site` : ''}</div>
+        </React.Fragment>}
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${steps.length}, 1fr)`, gap: 4, marginTop: embedded ? 0 : 12 }}>
           {steps.map((s, i) => { const on = i === step && !finished, past = i < step || finished || job.done; return (
             <button key={s} onClick={() => i <= derived && setStep(i)} style={{ background: 'none', border: 'none', padding: 0, cursor: i <= derived ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>
               <div style={{ height: 4, borderRadius: 2, background: past || on ? c : 'var(--border-strong)', opacity: on ? 1 : past ? 0.6 : 1, boxShadow: on ? `0 0 8px ${c}` : 'none' }} />

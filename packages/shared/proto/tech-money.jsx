@@ -597,4 +597,4 @@ function TechReceiptsView() {
   );
 }
 
-Object.assign(window, { TechClockView, TechReceiptsView, openTechReceipt, useTechTimer, tmTimerStart, tmTimerPause, tmTimerClear, tmScanReceipt, tmShrink, TM_MILEAGE_RATE });
+Object.assign(window, { TechClockView, TechReceiptsView, openTechReceipt, useTechTimer, useMyTime, tmTimerStart, tmTimerPause, tmTimerClear, tmScanReceipt, tmShrink, TM_MILEAGE_RATE, tmClock, tmHours, tmMoney, tmMonday, tmIso, tmInput, tmLbl, TM_CATS });
