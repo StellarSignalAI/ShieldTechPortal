@@ -89,13 +89,13 @@ function KnowledgeScreen() {
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)', marginBottom: 8 }}>Knowledge Base</div>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
-            style={{ width: '100%', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, padding: '5px 10px', color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' }} />
+            style={{ width: '100%', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, padding: '5px 10px', color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' }} />
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '6px 0' }}>
           {categories.map(c => (
             <button key={c.id} onClick={() => setCategory(c.id)} style={{
               display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px',
-              background: category === c.id ? 'rgba(99,102,241,0.08)' : 'transparent',
+              background: category === c.id ? 'rgba(var(--brand-rgb),0.08)' : 'transparent',
               border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)',
               color: category === c.id ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12,
               borderLeft: `2px solid ${category === c.id ? 'var(--brand)' : 'transparent'}`,
@@ -103,7 +103,7 @@ function KnowledgeScreen() {
             }}>
               <span style={{ fontSize: 11, opacity: 0.7 }}>{c.icon}</span>
               <span>{c.label}</span>
-              <span className="mono" style={{ marginLeft: 'auto', fontSize: 9, color: 'var(--text-low)', background: 'rgba(99,102,241,0.08)', padding: '1px 5px', borderRadius: 100 }}>{c.id === 'all' ? articles.length : articles.filter(a => a.category === c.id).length}</span>
+              <span className="mono" style={{ marginLeft: 'auto', fontSize: 9, color: 'var(--text-low)', background: 'rgba(var(--brand-rgb),0.08)', padding: '1px 5px', borderRadius: 100 }}>{c.id === 'all' ? articles.length : articles.filter(a => a.category === c.id).length}</span>
             </button>
           ))}
         </div>
@@ -114,7 +114,7 @@ function KnowledgeScreen() {
             { key: 'readTime', label: 'Read Time', placeholder: '5 min' },
             { key: 'tags', label: 'Tags', placeholder: 'axis, ip, camera', full: true },
             { key: 'content', label: 'Content', type: 'textarea', placeholder: 'Write the article…', required: true }
-          ] })} style={{ width: '100%', padding: '7px 0', fontSize: 11, fontWeight: 600, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Article</button>
+          ] })} style={{ width: '100%', padding: '7px 0', fontSize: 11, fontWeight: 600, color: 'var(--brand)', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Article</button>
         </div>
       </div>
 
@@ -143,7 +143,7 @@ function KnowledgeScreen() {
                 <span style={{ fontSize: 10, color: 'var(--text-low)' }}>{a.views} views</span>
               </div>
               <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap' }}>
-                {a.tags.map(t => <span key={t} style={{ fontSize: 9, color: 'var(--text-low)', background: 'rgba(99,102,241,0.06)', padding: '1px 6px', borderRadius: 4 }}>#{t}</span>)}
+                {a.tags.map(t => <span key={t} style={{ fontSize: 9, color: 'var(--text-low)', background: 'rgba(var(--brand-rgb),0.06)', padding: '1px 6px', borderRadius: 4 }}>#{t}</span>)}
               </div>
             </div>
           );
@@ -166,8 +166,8 @@ function KnowledgeScreen() {
             {renderContent(sel.content)}
           </div>
           <div style={{ padding: '10px 20px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 8, flexShrink: 0 }}>
-            <button onClick={() => shieldToast('Editing “' + sel.title + '”', 'info')} style={{ padding: '6px 14px', fontSize: 11, fontWeight: 600, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit</button>
-            <button onClick={() => shieldToast('Share link copied to clipboard', 'ok')} style={{ padding: '6px 14px', fontSize: 11, color: 'var(--text-mid)', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Share Link</button>
+            <button onClick={() => shieldToast('Editing “' + sel.title + '”', 'info')} style={{ padding: '6px 14px', fontSize: 11, fontWeight: 600, color: 'var(--brand)', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Edit</button>
+            <button onClick={() => shieldToast('Share link copied to clipboard', 'ok')} style={{ padding: '6px 14px', fontSize: 11, color: 'var(--text-mid)', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Share Link</button>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 4, alignItems: 'center' }}>
               <span style={{ fontSize: 11, color: 'var(--text-low)' }}>Helpful?</span>
               {['👍', '👎'].map(e => <button key={e} onClick={() => shieldToast('Thanks for your feedback!', 'ok')} style={{ background: 'none', border: '1px solid var(--border-subtle)', borderRadius: 5, padding: '3px 8px', cursor: 'pointer', fontSize: 13 }}>{e}</button>)}

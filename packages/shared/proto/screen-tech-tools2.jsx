@@ -30,7 +30,7 @@ function TechSyncView() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ fontSize: 16, fontWeight: 500 }}>Sync Queue</div>
       {/* Connection banner */}
-      <div className="glass" style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', border: `1px solid ${online ? 'rgba(52,211,153,0.3)' : 'rgba(251,191,36,0.3)'}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div className="glass" style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', border: `1px solid ${online ? 'rgba(var(--ok-rgb),0.3)' : 'rgba(var(--warn-rgb),0.3)'}`, display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ width: 9, height: 9, borderRadius: '50%', background: online ? 'var(--status-ok)' : 'var(--status-warn)', animation: online ? 'pulse-online 3s infinite' : 'none' }}></span>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: online ? 'var(--status-ok)' : 'var(--status-warn)' }}>{online ? 'Connected' : 'No signal — offline mode'}</div>
@@ -42,14 +42,14 @@ function TechSyncView() {
         ? <div className="glass" style={{ padding: 22, textAlign: 'center', fontSize: 12, color: 'var(--text-low)', borderRadius: 'var(--radius-md)' }}>Queue empty — offline captures appear here until they sync.</div>
         : <div className="glass" style={{ padding: 4, borderRadius: 'var(--radius-md)' }}>
         {items.map(item => (
-          <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.05)', opacity: item.state === 'synced' ? 0.55 : 1, transition: 'opacity 0.3s' }}>
+          <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)', opacity: item.state === 'synced' ? 0.55 : 1, transition: 'opacity 0.3s' }}>
             <Icon name={kindIcon[item.kind]} size={16} color={item.state === 'synced' ? 'var(--status-ok)' : 'var(--text-mid)'} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 12, color: 'var(--text-high)' }}>{item.label}</div>
               <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{item.size}</div>
             </div>
-            {item.state === 'queued' && <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--status-warn)', background: 'rgba(251,191,36,0.08)', borderRadius: 8, padding: '2px 8px' }}>QUEUED</span>}
-            {item.state === 'syncing' && <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--brand)', background: 'rgba(99,102,241,0.1)', borderRadius: 8, padding: '2px 8px' }}>SYNCING…</span>}
+            {item.state === 'queued' && <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--status-warn)', background: 'rgba(var(--warn-rgb),0.08)', borderRadius: 8, padding: '2px 8px' }}>QUEUED</span>}
+            {item.state === 'syncing' && <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--brand)', background: 'rgba(var(--brand-rgb),0.1)', borderRadius: 8, padding: '2px 8px' }}>SYNCING…</span>}
             {item.state === 'synced' && <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--status-ok)' }}>✓ SYNCED</span>}
           </div>
         ))}
@@ -85,9 +85,9 @@ function TechUpsellView() {
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-mid)', lineHeight: 1.5, marginBottom: 8 }}>{o.evidence}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', borderRadius: 8, padding: '2px 8px' }}>{o.src.toUpperCase()}</span>
+              <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.06em', color: 'var(--brand)', background: 'rgba(var(--brand-rgb),0.08)', borderRadius: 8, padding: '2px 8px' }}>{o.src.toUpperCase()}</span>
               <span style={{ fontSize: 9, color: o.conf === 'High' ? 'var(--status-ok)' : 'var(--text-low)' }}>{o.conf} confidence</span>
-              <button disabled={isSent} onClick={() => send(o)} style={{ marginLeft: 'auto', padding: '6px 13px', background: isSent ? 'transparent' : 'rgba(99,102,241,0.1)', border: `1px solid ${isSent ? 'var(--border-subtle)' : 'var(--border-strong)'}`, borderRadius: 7, color: isSent ? 'var(--text-low)' : 'var(--brand)', fontSize: 10, fontWeight: 700, cursor: isSent ? 'default' : 'pointer', fontFamily: 'var(--font-body)' }}>{isSent ? '✓ Sent to office' : 'Send to office →'}</button>
+              <button disabled={isSent} onClick={() => send(o)} style={{ marginLeft: 'auto', padding: '6px 13px', background: isSent ? 'transparent' : 'rgba(var(--brand-rgb),0.1)', border: `1px solid ${isSent ? 'var(--border-subtle)' : 'var(--border-strong)'}`, borderRadius: 7, color: isSent ? 'var(--text-low)' : 'var(--brand)', fontSize: 10, fontWeight: 700, cursor: isSent ? 'default' : 'pointer', fontFamily: 'var(--font-body)' }}>{isSent ? '✓ Sent to office' : 'Send to office →'}</button>
             </div>
           </div>
         );
@@ -115,7 +115,7 @@ function TechSafetyView() {
       <div className="glass" style={{ padding: 22, borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
         <div style={{ position: 'relative', width: 130, height: 130, margin: '0 auto' }}>
           <svg width="130" height="130" style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx="65" cy="65" r={R} fill="none" stroke="rgba(99,102,241,0.1)" strokeWidth="7" />
+            <circle cx="65" cy="65" r={R} fill="none" stroke="rgba(var(--brand-rgb),0.1)" strokeWidth="7" />
             <circle cx="65" cy="65" r={R} fill="none" stroke={urgent ? 'var(--status-critical)' : 'var(--status-ok)'} strokeWidth="7" strokeLinecap="round"
               strokeDasharray={C} strokeDashoffset={C * (1 - pct)} style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.3s' }} />
           </svg>
@@ -140,7 +140,7 @@ function TechSafetyView() {
             () => sendIt(null), { timeout: 3000 });
           else sendIt(null);
         }}
-          style={{ marginTop: 16, padding: '12px 42px', background: 'linear-gradient(135deg, var(--status-ok), #1f9e6e)', border: 'none', borderRadius: 24, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 6px 20px rgba(52,211,153,0.3)' }}>I'm OK ✓</button>
+          style={{ marginTop: 16, padding: '12px 42px', background: 'linear-gradient(135deg, var(--status-ok), #1f9e6e)', border: 'none', borderRadius: 24, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 6px 20px rgba(var(--ok-rgb),0.3)' }}>I'm OK ✓</button>
         <div style={{ marginTop: 10, fontSize: 9, color: 'var(--text-low)' }}>Timer auto-sets when a lone-work geofence is entered</div>
       </div>
       {/* Escalation ladder */}
@@ -178,7 +178,7 @@ function TechSafetyView() {
           () => sendIt(null), { timeout: 3000 });
         else sendIt(null);
       }}
-        style={{ padding: '13px 0', background: escalated ? 'rgba(244,63,94,0.2)' : 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.4)', borderRadius: 10, color: 'var(--status-critical)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+        style={{ padding: '13px 0', background: escalated ? 'rgba(var(--critical-rgb),0.2)' : 'rgba(var(--critical-rgb),0.1)', border: '1px solid rgba(var(--critical-rgb),0.4)', borderRadius: 10, color: 'var(--status-critical)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
         {escalated ? '🚨 ALERT ACTIVE — dispatch responding' : 'Emergency — alert dispatch now'}
       </button>
     </div>
@@ -205,7 +205,7 @@ function TechSkillTreeView() {
               <span style={{ fontSize: 13, fontWeight: 600 }}>Field Tech</span>
               <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>0 XP</span>
             </div>
-            <div style={{ height: 6, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
+            <div style={{ height: 6, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden' }}>
               <div style={{ width: '0%', height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, var(--brand-pressed), var(--brand))' }}></div>
             </div>
             <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 3 }}>Earn XP from documented installs, certs & toolbox talks</div>
@@ -229,7 +229,7 @@ function TechSkillTreeView() {
       {leaderboard.length > 0 && <div className="glass" style={{ padding: 14, borderRadius: 'var(--radius-md)' }}>
         <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 8 }}>Team</div>
         {leaderboard.map((p, i) => (
-          <div key={p.n} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px', borderRadius: 6, background: p.me ? 'rgba(99,102,241,0.08)' : 'transparent' }}>
+          <div key={p.n} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px', borderRadius: 6, background: p.me ? 'rgba(var(--brand-rgb),0.08)' : 'transparent' }}>
             <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? '#FBBF24' : 'var(--text-low)', width: 18 }}>{i + 1}</span>
             <span style={{ fontSize: 12, color: p.me ? 'var(--brand)' : 'var(--text-mid)', fontWeight: p.me ? 600 : 400 }}>{p.n}{p.me ? ' (you)' : ''}</span>
             <span className="mono" style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-mid)' }}>{p.xp.toLocaleString()}</span>

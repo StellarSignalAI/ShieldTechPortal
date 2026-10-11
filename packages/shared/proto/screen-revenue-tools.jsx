@@ -41,7 +41,7 @@ function MarginXRayScreen() {
         {withMargin.map(j => {
           const mC = j.margin >= 30 ? 'var(--status-ok)' : j.margin >= 20 ? 'var(--status-warn)' : 'var(--status-critical)';
           return (
-            <div key={j.id} style={{ padding: '10px 14px', borderRadius: 9, background: 'rgba(5,7,10,0.4)', border: `1px solid ${j.creep ? 'rgba(251,191,36,0.25)' : 'var(--border-subtle)'}`, marginBottom: 8 }}>
+            <div key={j.id} style={{ padding: '10px 14px', borderRadius: 9, background: 'rgba(var(--canvas-rgb),0.4)', border: `1px solid ${j.creep ? 'rgba(var(--warn-rgb),0.25)' : 'var(--border-subtle)'}`, marginBottom: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span className="mono" style={{ fontSize: 10, color: 'var(--brand)', width: 64 }}>{j.id}</span>
                 <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', flex: 1 }}>{j.customer} <span style={{ color: 'var(--text-low)', fontWeight: 400 }}>· {j.type}</span></span>
@@ -50,7 +50,7 @@ function MarginXRayScreen() {
                 <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: mC, width: 48, textAlign: 'right' }}>{j.margin}%</span>
               </div>
               {/* margin bar vs target */}
-              <div style={{ position: 'relative', height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.07)', marginTop: 8 }}>
+              <div style={{ position: 'relative', height: 5, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.07)', marginTop: 8 }}>
                 <div style={{ width: `${Math.min(j.margin, 60) / 60 * 100}%`, height: '100%', borderRadius: 3, background: mC }}></div>
                 <div style={{ position: 'absolute', left: `${35 / 60 * 100}%`, top: -3, bottom: -3, width: 2, background: 'rgba(255,255,255,0.35)' }} title="35% target"></div>
               </div>
@@ -64,7 +64,7 @@ function MarginXRayScreen() {
         <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 12 }}>Suggested Price Book Fixes</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
           {fixes.map(f => (
-            <div key={f.id} style={{ padding: '12px 14px', borderRadius: 9, background: 'rgba(5,7,10,0.4)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div key={f.id} style={{ padding: '12px 14px', borderRadius: 9, background: 'rgba(var(--canvas-rgb),0.4)', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{f.title}</span>
                 <span className="mono" style={{ fontSize: 10, color: 'var(--status-ok)' }}>{f.impact}</span>
@@ -72,7 +72,7 @@ function MarginXRayScreen() {
               <div style={{ fontSize: 10, color: 'var(--text-mid)', lineHeight: 1.5, flex: 1 }}>{f.detail}</div>
               {fixed.includes(f.id)
                 ? <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--status-ok)' }}>✓ Applied to Price Book</span>
-                : <button onClick={() => { setFixed(x => [...x, f.id]); showToast('Price Book updated', 'ok'); }} style={{ alignSelf: 'flex-start', padding: '5px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Apply fix</button>}
+                : <button onClick={() => { setFixed(x => [...x, f.id]); showToast('Price Book updated', 'ok'); }} style={{ alignSelf: 'flex-start', padding: '5px 14px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Apply fix</button>}
             </div>
           ))}
         </div>
@@ -115,7 +115,7 @@ function RRBuilderScreen() {
           </div>
         )}
         {candidates.map(c => (
-          <div key={c.name} style={{ padding: '12px 14px', borderRadius: 9, background: 'rgba(5,7,10,0.4)', border: '1px solid var(--border-subtle)', marginBottom: 8 }}>
+          <div key={c.name} style={{ padding: '12px 14px', borderRadius: 9, background: 'rgba(var(--canvas-rgb),0.4)', border: '1px solid var(--border-subtle)', marginBottom: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{c.name}</div>
@@ -132,9 +132,9 @@ function RRBuilderScreen() {
                     queueEmail({ to: '', customer: c.name, subject: `Monitoring plan proposal — ${c.plan} ($${c.proposedMrr}/mo)`,
                       body: `Hi ${c.name},\n\nBased on your recent service history (${c.incidents} incidents, ${c.visits} visits, $${c.tmSpend.toLocaleString()} T&M), we recommend moving to our ${c.plan} plan at $${c.proposedMrr}/mo.\n\n${c.hook}\n\n— ShieldTech Solutions`, kind: 'pitch' });
                     setPitched(x => [...x, c.name]); showToast(`Pitch for ${c.name} queued in your outbox`, 'ok');
-                  }} style={{ padding: '7px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', width: 110 }}>Generate pitch</button>}
+                  }} style={{ padding: '7px 14px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', width: 110 }}>Generate pitch</button>}
             </div>
-            <div style={{ marginTop: 8, padding: '7px 11px', borderRadius: 7, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-mid)' }}>
+            <div style={{ marginTop: 8, padding: '7px 11px', borderRadius: 7, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-mid)' }}>
               <span style={{ color: 'var(--brand)', fontWeight: 600 }}>ShieldTech AI angle:</span> {c.hook}
             </div>
           </div>

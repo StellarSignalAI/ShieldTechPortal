@@ -40,7 +40,7 @@ function SV2Estimate({ project, update, onNav }) {
 
         <MSection title="Hardware & labor — auto from plan">
           {e.bom.map(b => (
-            <div key={b.sku} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '6px 2px', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+            <div key={b.sku} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '6px 2px', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
               <span className="mono" style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--brand)', width: 22, flexShrink: 0 }}>{b.qty}</span>
               <span style={{ fontSize: 11.5, color: 'var(--text-mid)', flex: 1, minWidth: 0 }}>{b.desc}</span>
               <span className="mono" style={{ fontSize: 11, color: 'var(--text-high)', flexShrink: 0 }}>{money(b.qty * b.unit)}</span>
@@ -54,14 +54,14 @@ function SV2Estimate({ project, update, onNav }) {
 
         <MSection title="Extras & T&M">
           {e.extras.map(x => (
-            <div key={x.id} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '6px 2px', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+            <div key={x.id} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '6px 2px', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
               <span className="mono" style={{ fontSize: 11.5, fontWeight: 700, color: '#c084fc', width: 30, flexShrink: 0 }}>{x.qty}×</span>
               <span style={{ fontSize: 11.5, color: 'var(--text-mid)', flex: 1 }}>{x.desc}</span>
               <span className="mono" style={{ fontSize: 11, color: 'var(--text-high)' }}>{money(x.qty * x.unit)}</span>
             </div>
           ))}
           {(est.tm || []).map(x => (
-            <div key={x.id} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '6px 2px', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+            <div key={x.id} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '6px 2px', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
               <span className="mono" style={{ fontSize: 11.5, fontWeight: 700, color: '#FBBF24', width: 30, flexShrink: 0 }}>{x.hrs}h</span>
               <span style={{ fontSize: 11.5, color: 'var(--text-mid)', flex: 1 }}>{x.desc}</span>
               <span className="mono" style={{ fontSize: 11, color: 'var(--text-high)' }}>{money(x.hrs * (x.rate || SS_RATE))}</span>
@@ -91,7 +91,7 @@ function SV2Estimate({ project, update, onNav }) {
 
         <div style={{ display: 'flex', gap: 7 }}>
           {[['⎙ PDF', 'Estimate PDF exported with logo & terms'], ['⤓ XLS', 'Estimate exported as spreadsheet'], ['→ Customer', 'Estimate sent — status set to “sent”']].map(([lbl, msg], i) => (
-            <button key={lbl} onClick={() => { showToast(msg, 'ok'); if (i === 2) setEst({ status: 'sent' }); }} style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: i === 2 ? 'none' : '1px solid var(--border-subtle)', background: i === 2 ? 'linear-gradient(135deg, var(--brand), var(--brand-pressed))' : 'rgba(99,102,241,0.06)', color: i === 2 ? '#fff' : 'var(--brand)', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{lbl}</button>
+            <button key={lbl} onClick={() => { showToast(msg, 'ok'); if (i === 2) setEst({ status: 'sent' }); }} style={{ flex: 1, padding: '11px 0', borderRadius: 10, border: i === 2 ? 'none' : '1px solid var(--border-subtle)', background: i === 2 ? 'linear-gradient(135deg, var(--brand), var(--brand-pressed))' : 'rgba(var(--brand-rgb),0.06)', color: i === 2 ? '#fff' : 'var(--brand)', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{lbl}</button>
           ))}
         </div>
       </>}
@@ -122,7 +122,7 @@ function SV2Estimate({ project, update, onNav }) {
           <div key={s.room} className="glass" style={{ padding: '12px 14px', borderRadius: 12 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-high)', marginBottom: 6 }}>{s.room}</div>
             {s.tasks.map((tk, ti) => (
-              <div key={ti} style={{ display: 'flex', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', alignItems: 'baseline' }}>
+              <div key={ti} style={{ display: 'flex', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)', alignItems: 'baseline' }}>
                 <span style={{ color: 'var(--brand)', fontSize: 10, flexShrink: 0 }}>▸</span>
                 <span style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{tk}</span>
               </div>
@@ -136,7 +136,7 @@ function SV2Estimate({ project, update, onNav }) {
         {(project.aiNotes || []).length > 0 && (
           <MSection title="ShieldTech AI voice notes">
             {(project.aiNotes || []).map(n => (
-              <div key={n.id} style={{ display: 'flex', gap: 8, padding: '6px 2px', borderBottom: '1px solid rgba(99,102,241,0.05)', alignItems: 'baseline' }}>
+              <div key={n.id} style={{ display: 'flex', gap: 8, padding: '6px 2px', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)', alignItems: 'baseline' }}>
                 <span style={{ fontSize: 9, color: '#c084fc', fontWeight: 700, flexShrink: 0 }}>{n.room}</span>
                 <span style={{ fontSize: 11, color: 'var(--text-mid)', fontStyle: 'italic' }}>“{n.text}”</span>
               </div>

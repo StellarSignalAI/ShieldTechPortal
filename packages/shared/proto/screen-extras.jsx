@@ -36,7 +36,7 @@ function NetworkTopologyView() {
         <svg width="100%" height="420" viewBox="0 0 760 420" style={{ display: 'block' }}>
           <defs>
             <pattern id="topoGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(99,102,241,0.04)" strokeWidth="0.5"/>
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(var(--brand-rgb),0.04)" strokeWidth="0.5"/>
             </pattern>
           </defs>
           <rect width="760" height="420" fill="url(#topoGrid)" />
@@ -45,18 +45,18 @@ function NetworkTopologyView() {
             const from = nodes.find(n => n.id === l.from);
             const to = nodes.find(n => n.id === l.to);
             const isDown = to.status === 'offline';
-            return <line key={i} x1={from.x} y1={from.y + 16} x2={to.x} y2={to.y - 16} stroke={isDown ? 'var(--status-critical)' : 'rgba(99,102,241,0.2)'} strokeWidth={isDown ? 1.5 : 1} strokeDasharray={isDown ? '4 3' : 'none'} />;
+            return <line key={i} x1={from.x} y1={from.y + 16} x2={to.x} y2={to.y - 16} stroke={isDown ? 'var(--status-critical)' : 'rgba(var(--brand-rgb),0.2)'} strokeWidth={isDown ? 1.5 : 1} strokeDasharray={isDown ? '4 3' : 'none'} />;
           })}
           {/* Nodes */}
           {nodes.map((n, i) => (
             <g key={i} transform={`translate(${n.x}, ${n.y})`} style={{ cursor: 'pointer' }}>
-              <rect x="-28" y="-14" width="56" height="28" rx="6" fill="rgba(10,14,20,0.8)" stroke={statusColor(n)} strokeWidth="1" />
+              <rect x="-28" y="-14" width="56" height="28" rx="6" fill="rgba(var(--card-rgb),0.8)" stroke={statusColor(n)} strokeWidth="1" />
               <text y="1" textAnchor="middle" fill={statusColor(n)} fontSize="14" dominantBaseline="central">{typeIcons[n.type]}</text>
               <text y="24" textAnchor="middle" fill="var(--text-mid)" fontSize="8" fontFamily="var(--font-mono)">{n.label}</text>
               {n.ip && <text y="33" textAnchor="middle" fill="var(--text-low)" fontSize="7" fontFamily="var(--font-mono)">{n.ip}</text>}
               {n.poe && (
                 <g transform="translate(-20, -26)">
-                  <rect width="40" height="6" rx="2" fill="rgba(99,102,241,0.08)" />
+                  <rect width="40" height="6" rx="2" fill="rgba(var(--brand-rgb),0.08)" />
                   <rect width={40 * (n.poe.used / n.poe.total)} height="6" rx="2" fill={n.poe.used/n.poe.total > 0.85 ? 'var(--status-warn)' : 'var(--brand)'} />
                   <text x="44" y="5" fill="var(--text-low)" fontSize="6" fontFamily="var(--font-mono)">{n.poe.used}W/{n.poe.total}W</text>
                 </g>
@@ -89,13 +89,13 @@ function CameraGridView() {
         {cameras.map((cam, i) => (
           <div key={i} className="glass" style={{
             padding: 0, overflow: 'hidden', cursor: 'pointer',
-            borderColor: cam.status === 'offline' ? 'rgba(244,63,94,0.3)' : 'var(--border-subtle)',
+            borderColor: cam.status === 'offline' ? 'rgba(var(--critical-rgb),0.3)' : 'var(--border-subtle)',
             transition: 'border-color 0.2s'
           }}>
             {/* Simulated camera feed */}
             <div style={{
-              height: 100, background: cam.status === 'offline' ? 'rgba(244,63,94,0.05)' :
-                'linear-gradient(135deg, rgba(10,14,20,0.9), rgba(17,23,33,0.8))',
+              height: 100, background: cam.status === 'offline' ? 'rgba(var(--critical-rgb),0.05)' :
+                'linear-gradient(135deg, rgba(var(--card-rgb),0.9), rgba(17,23,33,0.8))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               position: 'relative', overflow: 'hidden'
             }}>
@@ -107,7 +107,7 @@ function CameraGridView() {
               ) : (
                 <>
                   {/* Scan lines effect */}
-                  <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(99,102,241,0.02) 2px, rgba(99,102,241,0.02) 4px)', pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(var(--brand-rgb),0.02) 2px, rgba(var(--brand-rgb),0.02) 4px)', pointerEvents: 'none' }} />
                   <span style={{ fontSize: 28, opacity: 0.15 }}>◉</span>
                   {/* REC indicator */}
                   <div style={{ position: 'absolute', top: 6, left: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -185,16 +185,16 @@ function JobCostingView() {
             {jobs.map((j, i) => {
               const variance = j.actCost - j.estCost;
               return (
-                <tr key={i} style={{ transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.04)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--brand)' }}>{j.id}</td>
-                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{j.customer}</td>
-                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{j.type}</td>
-                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right' }}>${j.estCost.toLocaleString()}</td>
-                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', color: j.actCost > j.estCost ? 'var(--status-critical)' : 'var(--text-high)' }}>${j.actCost.toLocaleString()}</td>
-                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, textAlign: 'right', color: variance > 0 ? 'var(--status-critical)' : 'var(--status-ok)' }}>{variance > 0 ? '+' : ''}{variance >= 0 ? '$' : '-$'}{Math.abs(variance).toLocaleString()}</td>
-                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', color: 'var(--text-mid)' }}>{j.estHours}h</td>
-                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', color: j.actHours > j.estHours ? 'var(--status-warn)' : 'var(--text-high)' }}>{j.actHours}h</td>
-                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', fontWeight: 600, color: j.margin >= 25 ? 'var(--status-ok)' : j.margin >= 15 ? 'var(--status-warn)' : 'var(--status-critical)' }}>{j.margin}%</td>
+                <tr key={i} style={{ transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, color: 'var(--brand)' }}>{j.id}</td>
+                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12 }}>{j.customer}</td>
+                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{j.type}</td>
+                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right' }}>${j.estCost.toLocaleString()}</td>
+                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right', color: j.actCost > j.estCost ? 'var(--status-critical)' : 'var(--text-high)' }}>${j.actCost.toLocaleString()}</td>
+                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, textAlign: 'right', color: variance > 0 ? 'var(--status-critical)' : 'var(--status-ok)' }}>{variance > 0 ? '+' : ''}{variance >= 0 ? '$' : '-$'}{Math.abs(variance).toLocaleString()}</td>
+                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right', color: 'var(--text-mid)' }}>{j.estHours}h</td>
+                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right', color: j.actHours > j.estHours ? 'var(--status-warn)' : 'var(--text-high)' }}>{j.actHours}h</td>
+                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right', fontWeight: 600, color: j.margin >= 25 ? 'var(--status-ok)' : j.margin >= 15 ? 'var(--status-warn)' : 'var(--status-critical)' }}>{j.margin}%</td>
                 </tr>
               );
             })}
@@ -308,7 +308,7 @@ function PoECalculatorView() {
     setAddOpen(false);
   };
 
-  const inputStyle = { padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inputStyle = { padding: '6px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
 
   return (
     <div style={{ position: 'relative' }}>
@@ -316,7 +316,7 @@ function PoECalculatorView() {
         <SectionHeader title="PoE Budget Calculator" icon="bolt" />
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={() => showToast('Design exported to Design Studio')} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>↗ Export to Design Studio</button>
-          <button onClick={() => showToast('PDF generated')} style={{ padding: '5px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export PDF</button>
+          <button onClick={() => showToast('PDF generated')} style={{ padding: '5px 14px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export PDF</button>
         </div>
       </div>
 
@@ -330,7 +330,7 @@ function PoECalculatorView() {
               {brands.map(b => (
                 <button key={b} onClick={() => { setSelectedBrand(b); const first = switchDB.find(s => s.brand === b); if (first) setSelectedSwitch(first); }} style={{
                   padding: '5px 12px', borderRadius: 5, fontSize: 11, fontWeight: selectedBrand === b ? 600 : 400,
-                  background: selectedBrand === b ? 'rgba(99,102,241,0.12)' : 'transparent',
+                  background: selectedBrand === b ? 'rgba(var(--brand-rgb),0.12)' : 'transparent',
                   border: `1px solid ${selectedBrand === b ? 'var(--brand)' : 'var(--border-subtle)'}`,
                   color: selectedBrand === b ? 'var(--brand)' : 'var(--text-mid)',
                   cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -341,7 +341,7 @@ function PoECalculatorView() {
               {brandSwitches.map(sw => (
                 <button key={sw.model} onClick={() => setSelectedSwitch(sw)} style={{
                   padding: '8px 12px', borderRadius: 6, textAlign: 'left',
-                  background: selectedSwitch?.model === sw.model ? 'rgba(99,102,241,0.08)' : 'transparent',
+                  background: selectedSwitch?.model === sw.model ? 'rgba(var(--brand-rgb),0.08)' : 'transparent',
                   border: `1px solid ${selectedSwitch?.model === sw.model ? 'var(--brand)' : 'var(--border-subtle)'}`,
                   cursor: 'pointer', fontFamily: 'var(--font-body)', minWidth: 140
                 }}>
@@ -372,27 +372,27 @@ function PoECalculatorView() {
               </thead>
               <tbody>
                 {devices.map((d, i) => (
-                  <tr key={i} style={{ transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, fontWeight: 500 }}>{d.device.name}</td>
-                    <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{d.device.vendor}</td>
-                    <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right' }}>
+                  <tr key={i} style={{ transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, fontWeight: 500 }}>{d.device.name}</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-low)' }}>{d.device.vendor}</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                        <button onClick={() => updateQty(i, -1)} style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
+                        <button onClick={() => updateQty(i, -1)} style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
                         <span className="mono" style={{ fontSize: 13, fontWeight: 600, width: 20, textAlign: 'center' }}>{d.qty}</span>
-                        <button onClick={() => updateQty(i, 1)} style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                        <button onClick={() => updateQty(i, 1)} style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
                       </div>
                     </td>
-                    <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right' }}>{d.device.watts}W</td>
-                    <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, textAlign: 'right', color: 'var(--text-low)' }}>{d.device.cls}</td>
-                    <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', fontWeight: 600, color: 'var(--brand)' }}>{(d.device.watts * d.qty).toFixed(1)}W</td>
-                    <td style={{ padding: '8px 6px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right' }}>
+                    <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right' }}>{d.device.watts}W</td>
+                    <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, textAlign: 'right', color: 'var(--text-low)' }}>{d.device.cls}</td>
+                    <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right', fontWeight: 600, color: 'var(--brand)' }}>{(d.device.watts * d.qty).toFixed(1)}W</td>
+                    <td style={{ padding: '8px 6px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right' }}>
                       <button onClick={() => removeDevice(i)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 12, cursor: 'pointer' }}
                         onMouseEnter={e => e.currentTarget.style.color = 'var(--status-critical)'}
                         onMouseLeave={e => e.currentTarget.style.color = 'var(--text-low)'}>✕</button>
                     </td>
                   </tr>
                 ))}
-                <tr style={{ background: 'rgba(99,102,241,0.02)' }}>
+                <tr style={{ background: 'rgba(var(--brand-rgb),0.02)' }}>
                   <td colSpan="2" style={{ padding: '10px 12px', fontSize: 13, fontWeight: 600, borderTop: '1px solid var(--border-subtle)' }}>Total</td>
                   <td className="mono" style={{ padding: '10px 12px', fontSize: 12, fontWeight: 600, textAlign: 'right', borderTop: '1px solid var(--border-subtle)' }}>{totalPorts} ports</td>
                   <td colSpan="2" style={{ borderTop: '1px solid var(--border-subtle)' }}></td>
@@ -435,7 +435,7 @@ function PoECalculatorView() {
               <span className="mono" style={{ fontSize: 16, fontWeight: 600 }}>{totalPorts} / {selectedSwitch?.ports || 0}</span>
               <span style={{ fontSize: 10, color: portHeadroom >= 0 ? 'var(--status-ok)' : 'var(--status-critical)' }}>{portHeadroom >= 0 ? `${portHeadroom} available` : `${Math.abs(portHeadroom)} over!`}</span>
             </div>
-            <div style={{ height: 6, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
+            <div style={{ height: 6, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden' }}>
               <div style={{ width: `${Math.min(100, selectedSwitch ? (totalPorts / selectedSwitch.ports) * 100 : 0)}%`, height: '100%', borderRadius: 3, background: portHeadroom >= 0 ? 'var(--brand)' : 'var(--status-critical)', transition: 'width 0.3s' }} />
             </div>
           </GlassPanel>
@@ -459,12 +459,12 @@ function PoECalculatorView() {
             <GlassPanel style={{ borderLeft: '3px solid var(--status-ok)', padding: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--status-ok)', marginBottom: 3 }}>✦ Recommended</div>
               <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>{recommended.model} — {recommended.ports}p · {recommended.budget}W · ${recommended.price}</div>
-              <button onClick={() => setSelectedSwitch(recommended)} style={{ marginTop: 6, padding: '4px 10px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Use This Switch</button>
+              <button onClick={() => setSelectedSwitch(recommended)} style={{ marginTop: 6, padding: '4px 10px', background: 'rgba(var(--ok-rgb),0.08)', border: '1px solid rgba(var(--ok-rgb),0.2)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Use This Switch</button>
             </GlassPanel>
           )}
 
           {/* Export */}
-          <button onClick={() => showToast('PoE design added to Design Studio project')} style={{ width: '100%', padding: '10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          <button onClick={() => showToast('PoE design added to Design Studio project')} style={{ width: '100%', padding: '10px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
             ↗ Send to Design Studio
           </button>
         </div>
@@ -483,7 +483,7 @@ function PoECalculatorView() {
               {deviceDB.map(cat => (
                 <button key={cat.cat} onClick={() => setAddCat(cat.cat)} style={{
                   flex: 1, padding: '8px', fontSize: 11, fontWeight: addCat === cat.cat ? 600 : 400,
-                  background: addCat === cat.cat ? 'rgba(99,102,241,0.08)' : 'transparent',
+                  background: addCat === cat.cat ? 'rgba(var(--brand-rgb),0.08)' : 'transparent',
                   border: 'none', borderBottom: addCat === cat.cat ? '2px solid var(--brand)' : '2px solid transparent',
                   color: addCat === cat.cat ? 'var(--brand)' : 'var(--text-mid)',
                   cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -498,7 +498,7 @@ function PoECalculatorView() {
                   background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)',
                   textAlign: 'left', transition: 'background 0.1s'
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.06)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{item.name}</div>
@@ -573,12 +573,12 @@ function CertificationsView() {
         {certs.map((t, i) => (
           <GlassPanel key={i}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(99,102,241,0.1)', color: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{t.initials}</div>
+              <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(var(--brand-rgb),0.1)', color: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{t.initials}</div>
               <span style={{ fontSize: 14, fontWeight: 500 }}>{t.tech}</span>
               <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)', marginLeft: 'auto' }}>{t.certs.length} active</span>
             </div>
             {t.certs.map((c, j) => (
-              <div key={j} onClick={() => openCert(c, t.tech)} className="st-clickrow" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', margin: '0 -8px', borderRadius: 6, borderBottom: j < t.certs.length - 1 ? '1px solid rgba(99,102,241,0.04)' : 'none' }}>
+              <div key={j} onClick={() => openCert(c, t.tech)} className="st-clickrow" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', margin: '0 -8px', borderRadius: 6, borderBottom: j < t.certs.length - 1 ? '1px solid rgba(var(--brand-rgb),0.04)' : 'none' }}>
                 <StatusDot status={c.status === 'ok' ? 'online' : c.status === 'warn' ? 'warning' : 'critical'} size={6} />
                 <span style={{ flex: 1, fontSize: 13, color: 'var(--text-high)' }}>{c.name}</span>
                 <span className="mono" style={{ fontSize: 11, color: c.days < 30 ? 'var(--status-critical)' : c.days < 60 ? 'var(--status-warn)' : 'var(--text-low)' }}>
@@ -624,9 +624,9 @@ function AuditTrailView() {
       <SectionHeader title="Audit Trail" icon="eye" actionLabel="Export" action={exportLog} />
       <GlassPanel style={{ padding: 0 }}>
         <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', gap: 8 }}>
-          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search audit log…" style={{ flex: 1, padding: '6px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search audit log…" style={{ flex: 1, padding: '6px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
           {['All','Admin','Tech','Customer','System'].map(f => (
-            <button key={f} onClick={() => setRoleFilter(f)} style={{ padding: '4px 8px', fontSize: 10, borderRadius: 4, background: f === roleFilter ? 'rgba(99,102,241,0.1)' : 'transparent', border: '1px solid var(--border-subtle)', color: f === roleFilter ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{f}</button>
+            <button key={f} onClick={() => setRoleFilter(f)} style={{ padding: '4px 8px', fontSize: 10, borderRadius: 4, background: f === roleFilter ? 'rgba(var(--brand-rgb),0.1)' : 'transparent', border: '1px solid var(--border-subtle)', color: f === roleFilter ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{f}</button>
           ))}
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -639,13 +639,13 @@ function AuditTrailView() {
           </thead>
           <tbody>
             {filtered.map((l, i) => (
-              <tr key={i} style={{ transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.04)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{l.time}</td>
-                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, fontWeight: 500 }}>{l.user}</td>
-                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={l.role === 'Admin' ? 'info' : l.role === 'Tech' ? 'online' : l.role === 'Customer' ? 'warm' : 'offline'} label={l.role} /></td>
-                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-high)' }}>{l.action}</td>
-                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{l.target}</td>
-                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{l.ip}</td>
+              <tr key={i} style={{ transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-low)' }}>{l.time}</td>
+                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, fontWeight: 500 }}>{l.user}</td>
+                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><StatusBadge status={l.role === 'Admin' ? 'info' : l.role === 'Tech' ? 'online' : l.role === 'Customer' ? 'warm' : 'offline'} label={l.role} /></td>
+                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, color: 'var(--text-high)' }}>{l.action}</td>
+                <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, color: 'var(--text-mid)' }}>{l.target}</td>
+                <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, color: 'var(--text-low)' }}>{l.ip}</td>
               </tr>
             ))}
           </tbody>

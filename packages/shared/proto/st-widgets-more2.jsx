@@ -12,7 +12,7 @@ function m2Avatar(t, sz = 24) {
 /* ─────────── Threat Level (animated security posture) ─────────── */
 const M2_LEVELS = [
   { label: 'LOW', color: '#34D399' },
-  { label: 'GUARDED', color: '#6366F1' },
+  { label: 'GUARDED', color: 'var(--brand)' },
   { label: 'ELEVATED', color: '#FBBF24' },
   { label: 'HIGH', color: '#FB923C' },
   { label: 'SEVERE', color: '#F43F5E' },
@@ -297,7 +297,7 @@ function WOnCall({ size }) {
   const cur = M2_TEAM[dow % M2_TEAM.length];
   const next = M2_TEAM[(dow + 1) % M2_TEAM.length];
   const week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const accent = '#6366F1';
+  const accent = 'var(--brand)';
   return (
     <WCard size={size} accent={accent} title="On-Call" glyph="phone"
       sub={size !== 'small' ? 'duty rotation' : null}>
@@ -359,7 +359,7 @@ registerWidget('uptime',    { label: 'Device Uptime Wall',cat: 'Inventive', acce
 registerWidget('kudos',     { label: 'Team Kudos',        cat: 'Inventive', accent: '#FCD34D', glyph: 'star',        sizes: ['small', 'medium', 'large'], render: s => <WKudos size={s} /> });
 registerWidget('certs',     { label: 'Cert Expiry',       cat: 'Inventive', accent: '#FBBF24', glyph: 'certs',       sizes: ['small', 'medium', 'large'], render: s => <WCerts size={s} /> });
 registerWidget('powerhour', { label: 'Install Heatmap',   cat: 'Inventive', accent: '#c084fc', glyph: 'bolt',        sizes: ['small', 'medium', 'large'], render: s => <WPowerHour size={s} /> });
-registerWidget('oncall',    { label: 'On-Call Rotation',  cat: 'Inventive', accent: '#6366F1', glyph: 'phone',       sizes: ['small', 'medium', 'large'], render: s => <WOnCall size={s} /> });
+registerWidget('oncall',    { label: 'On-Call Rotation',  cat: 'Inventive', accent: 'var(--brand)', glyph: 'phone',       sizes: ['small', 'medium', 'large'], render: s => <WOnCall size={s} /> });
 
 /* Extend the gallery/picker order with all the new widgets */
 window.ST_ORDER = [

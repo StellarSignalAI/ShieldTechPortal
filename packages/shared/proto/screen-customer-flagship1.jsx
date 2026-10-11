@@ -13,7 +13,7 @@ function CustSecurityScoreView() {
         <GlassPanel style={{ padding: 24, textAlign: 'center' }}>
           <div style={{ position: 'relative', width: 150, height: 150, margin: '0 auto' }}>
             <svg width="150" height="150" style={{ transform: 'rotate(-90deg)' }}>
-              <circle cx="75" cy="75" r={R} fill="none" stroke="rgba(99,102,241,0.1)" strokeWidth="9" />
+              <circle cx="75" cy="75" r={R} fill="none" stroke="rgba(var(--brand-rgb),0.1)" strokeWidth="9" />
               <circle cx="75" cy="75" r={R} fill="none" stroke="var(--status-ok)" strokeWidth="9" strokeLinecap="round"
                 strokeDasharray={C} strokeDashoffset={C * (1 - total / 100)} style={{ transition: 'stroke-dashoffset 1.2s ease' }} />
             </svg>
@@ -34,7 +34,7 @@ function CustSecurityScoreView() {
                 <span style={{ fontSize: 12, color: 'var(--text-high)' }}>{c.name}</span>
                 <span className="mono" style={{ fontSize: 11, fontWeight: 600, color: c.score >= 90 ? 'var(--status-ok)' : c.score >= 80 ? 'var(--brand)' : 'var(--status-warn)' }}>{c.score}</span>
               </div>
-              <div style={{ height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
+              <div style={{ height: 5, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden' }}>
                 <div style={{ width: `${c.score}%`, height: '100%', borderRadius: 3, background: c.score >= 90 ? 'var(--status-ok)' : c.score >= 80 ? 'var(--brand)' : 'var(--status-warn)' }}></div>
               </div>
               <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 2 }}>{c.note}</div>
@@ -75,12 +75,12 @@ function CustFootageFinderView() {
         <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 10 }}>Describe what you're looking for</div>
         <div style={{ display: 'flex', gap: 8 }}>
           <input value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && q && search(q)} placeholder='e.g. "white van in the parking lot Tuesday afternoon"'
-            style={{ flex: 1, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '11px 14px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+            style={{ flex: 1, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '11px 14px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
           <button onClick={() => q && search(q)} style={{ padding: '0 22px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Search</button>
         </div>
         <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
           {samples.map(s => (
-            <button key={s} onClick={() => search(s)} style={{ padding: '4px 11px', borderRadius: 12, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>"{s}"</button>
+            <button key={s} onClick={() => search(s)} style={{ padding: '4px 11px', borderRadius: 12, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>"{s}"</button>
           ))}
         </div>
       </GlassPanel>
@@ -110,7 +110,7 @@ function CustFootageFinderView() {
                     <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-high)' }}>{r.cam}</div>
                     <div className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{r.t}</div>
                   </div>
-                  <button onClick={() => showToast("Clip export isn't wired up yet — request the footage and we'll send it", 'warn')} style={{ padding: '5px 12px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export</button>
+                  <button onClick={() => showToast("Clip export isn't wired up yet — request the footage and we'll send it", 'warn')} style={{ padding: '5px 12px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export</button>
                 </div>
               </GlassPanel>
             ))}
@@ -149,7 +149,7 @@ function CustConciergeView() {
         )}
         {thread.map((m, i) => (
           <div key={i} style={{ alignSelf: m.from === 'me' ? 'flex-end' : 'flex-start', maxWidth: '70%' }}>
-            <div style={{ padding: '10px 14px', borderRadius: m.from === 'me' ? '12px 12px 3px 12px' : '12px 12px 12px 3px', background: m.from === 'me' ? 'rgba(99,102,241,0.14)' : 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)', fontSize: 13, color: 'var(--text-high)', lineHeight: 1.5 }}>{m.text}</div>
+            <div style={{ padding: '10px 14px', borderRadius: m.from === 'me' ? '12px 12px 3px 12px' : '12px 12px 12px 3px', background: m.from === 'me' ? 'rgba(var(--brand-rgb),0.14)' : 'rgba(var(--canvas-rgb),0.55)', border: '1px solid var(--border-subtle)', fontSize: 13, color: 'var(--text-high)', lineHeight: 1.5 }}>{m.text}</div>
             {m.card && (
               <div className="glass" style={{ marginTop: 6, padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border-strong)' }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{m.card.title}</div>
@@ -162,12 +162,12 @@ function CustConciergeView() {
       </div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
         {['Book a maintenance visit', 'Bypass rear zone tonight', 'Why did my alarm go off Saturday?'].map(s => (
-          <button key={s} onClick={() => send(s)} style={{ padding: '5px 12px', borderRadius: 12, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s}</button>
+          <button key={s} onClick={() => send(s)} style={{ padding: '5px 12px', borderRadius: 12, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s}</button>
         ))}
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Ask — or tell me to do something…"
-          style={{ flex: 1, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+          style={{ flex: 1, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={() => send()} style={{ padding: '0 20px', background: 'var(--brand)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>↑</button>
       </div>
     </div>
@@ -199,22 +199,22 @@ function CustAccessView() {
       <GlassPanel style={{ padding: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)' }}>Badges</span>
-          <button onClick={async () => { const rec = await accessTicket('Issue new badge', 'Customer requested a new badge/credential from the portal.', 'medium'); if (rec) showToast(`Badge request ${rec.ref} sent — we'll program it and confirm`, 'ok'); }} style={{ padding: '5px 13px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Issue badge</button>
+          <button onClick={async () => { const rec = await accessTicket('Issue new badge', 'Customer requested a new badge/credential from the portal.', 'medium'); if (rec) showToast(`Badge request ${rec.ref} sent — we'll program it and confirm`, 'ok'); }} style={{ padding: '5px 13px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Issue badge</button>
         </div>
         {badges.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-low)', padding: '18px 0', textAlign: 'center' }}>No badges yet — issued credentials for your team appear here.</div>}
         {badges.map(b => (
-          <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+          <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
             <Icon name="credential" size={17} color={b.status === 'active' ? 'var(--brand)' : b.status === 'dormant' ? 'var(--status-warn)' : 'var(--text-low)'} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, color: b.status === 'revoked' ? 'var(--text-low)' : 'var(--text-high)', textDecoration: b.status === 'revoked' ? 'line-through' : 'none' }}>{b.name}</div>
               <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{b.role} · last used {b.last}</div>
             </div>
-            {b.status === 'dormant' && <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--status-warn)', background: 'rgba(251,191,36,0.08)', borderRadius: 8, padding: '2px 8px' }}>DORMANT</span>}
+            {b.status === 'dormant' && <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--status-warn)', background: 'rgba(var(--warn-rgb),0.08)', borderRadius: 8, padding: '2px 8px' }}>DORMANT</span>}
             {b.status === 'revoked'
               ? <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-low)' }}>REVOKED</span>
               : b.status === 'revoke-requested'
               ? <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--status-warn)' }}>REVOCATION REQUESTED</span>
-              : <button onClick={() => revoke(b.id)} style={{ padding: '4px 11px', background: 'transparent', border: '1px solid rgba(244,63,94,0.25)', borderRadius: 5, color: 'var(--status-critical)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Revoke</button>}
+              : <button onClick={() => revoke(b.id)} style={{ padding: '4px 11px', background: 'transparent', border: '1px solid rgba(var(--critical-rgb),0.25)', borderRadius: 5, color: 'var(--status-critical)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Revoke</button>}
           </div>
         ))}
       </GlassPanel>
@@ -222,13 +222,13 @@ function CustAccessView() {
         <GlassPanel style={{ padding: 20 }}>
           <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 10 }}>Visitor pass</div>
           <div style={{ fontSize: 11, color: 'var(--text-mid)', marginBottom: 10 }}>Generate a one-day QR pass — works on the front reader, auto-expires at 6 PM.</div>
-          <button onClick={async () => { const rec = await accessTicket('Visitor pass request', 'Customer requested a one-day visitor pass from the portal.', 'medium'); if (rec) showToast(`Visitor pass request ${rec.ref} sent — we'll set it up and confirm`, 'ok'); }} style={{ width: '100%', padding: '9px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create visitor pass</button>
+          <button onClick={async () => { const rec = await accessTicket('Visitor pass request', 'Customer requested a one-day visitor pass from the portal.', 'medium'); if (rec) showToast(`Visitor pass request ${rec.ref} sent — we'll set it up and confirm`, 'ok'); }} style={{ width: '100%', padding: '9px 0', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create visitor pass</button>
         </GlassPanel>
         <GlassPanel style={{ padding: 20, flex: 1 }}>
           <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 10 }}>Today's entries</div>
           {entries.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)', padding: '10px 0', textAlign: 'center' }}>No entries logged today.</div>}
           {entries.map(([t, who, where], i) => (
-            <div key={i} style={{ display: 'flex', gap: 10, padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+            <div key={i} style={{ display: 'flex', gap: 10, padding: '6px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
               <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', width: 56, flexShrink: 0 }}>{t}</span>
               <span style={{ fontSize: 11, color: 'var(--text-high)', flex: 1 }}>{who}</span>
               <span style={{ fontSize: 10, color: 'var(--text-low)' }}>{where}</span>
@@ -261,7 +261,7 @@ function CustComplianceVaultView() {
       <GlassPanel style={{ padding: 0 }}>
         {docs.length === 0 && <div style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12 }}>No compliance documents yet — certificates, inspections and attestations filed by ShieldTech appear here.</div>}
         {docs.map((d, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 20px', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 20px', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
             <Icon name="proposals" size={16} color={d.status === 'expiring' ? 'var(--status-warn)' : 'var(--text-mid)'} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, color: 'var(--text-high)' }}>{d.name}</div>
@@ -270,7 +270,7 @@ function CustComplianceVaultView() {
             <button onClick={() => {
               if (d.url && window.__shieldStorage) window.__shieldStorage.openFile(d.url);
               else showToast('No file attached to this document yet', 'warn');
-            }} style={{ padding: '4px 12px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View</button>
+            }} style={{ padding: '4px 12px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View</button>
           </div>
         ))}
       </GlassPanel>

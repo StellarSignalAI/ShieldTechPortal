@@ -45,7 +45,7 @@ function CRMScreen() {
                 {/* Stage header */}
                 <div style={{
                   padding: '8px 12px', borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)',
+                  background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -178,7 +178,7 @@ function CRMScreen() {
 
           <div style={{
             marginTop: 12, padding: 10, borderRadius: 6,
-            background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)'
+            background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)'
           }}>
             <div className="label-sm" style={{ marginBottom: 4 }}>RECOMMENDED NEXT ACTION</div>
             <p style={{ fontSize: 12, color: 'var(--text-high)', lineHeight: 1.4 }}>
@@ -204,7 +204,7 @@ function CRMScreen() {
           ].map((a, i) => (
             <div key={i} style={{
               display: 'flex', gap: 10, padding: '8px 0',
-              borderBottom: '1px solid rgba(99,102,241,0.04)'
+              borderBottom: '1px solid rgba(var(--brand-rgb),0.04)'
             }}>
               <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', width: 50, flexShrink: 0, paddingTop: 2 }}>{a.date}</span>
               <StatusDot status={a.type === 'ok' ? 'online' : 'info'} size={6} />
@@ -227,11 +227,11 @@ function CRMScreen() {
             { step: 4, label: 'Proposal follow-up', status: 'scheduled', date: 'Jun 7', open: null },
             { step: 5, label: 'Decision check-in', status: 'scheduled', date: 'Jun 12', open: null },
           ].map((s, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.03)' }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.03)' }}>
               <div style={{
                 width: 18, height: 18, borderRadius: '50%', fontSize: 9, fontWeight: 700,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: s.status === 'sent' ? 'rgba(52,211,153,0.12)' : 'rgba(99,102,241,0.06)',
+                background: s.status === 'sent' ? 'rgba(var(--ok-rgb),0.12)' : 'rgba(var(--brand-rgb),0.06)',
                 color: s.status === 'sent' ? 'var(--status-ok)' : 'var(--text-low)',
                 fontFamily: 'var(--font-mono)'
               }}>{s.status === 'sent' ? '✓' : s.step}</div>
@@ -263,7 +263,7 @@ function CRMScreen() {
           {['Q2 2026', 'Q3 2026'].map((q, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0' }}>
               <span style={{ fontSize: 11, color: 'var(--text-mid)', width: 60 }}>{q}</span>
-              <div style={{ flex: 1, height: 6, background: 'rgba(99,102,241,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ flex: 1, height: 6, background: 'rgba(var(--brand-rgb),0.08)', borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{ width: i === 0 ? '78%' : '35%', height: '100%', background: 'var(--brand)', borderRadius: 3 }} />
               </div>
               <span className="mono" style={{ fontSize: 11, color: 'var(--text-high)' }}>{i === 0 ? '$486K' : '$134K'}</span>

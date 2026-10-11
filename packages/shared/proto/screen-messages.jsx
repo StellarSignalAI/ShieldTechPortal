@@ -69,7 +69,7 @@ function ChatThread({ threadId, title, subtitle, emptyHint }) {
       </div>
       <div style={{ padding: 10, borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 8, flexShrink: 0 }}>
         <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-          placeholder="Type a message…" style={{ flex: 1, padding: '10px 14px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+          placeholder="Type a message…" style={{ flex: 1, padding: '10px 14px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={send} disabled={sending || !text.trim()} style={{ padding: '0 18px', background: 'var(--brand)', border: 'none', borderRadius: 10, color: '#04121F', fontSize: 13, fontWeight: 700, cursor: text.trim() ? 'pointer' : 'default', opacity: text.trim() ? 1 : 0.5, fontFamily: 'var(--font-body)' }}>Send</button>
       </div>
     </div>
@@ -94,7 +94,7 @@ function PortalMessagesScreen() {
         <div style={{ overflowY: 'auto', flex: 1 }}>
           {threads.length === 0 && <div style={{ padding: 18, fontSize: 12, color: 'var(--text-low)', lineHeight: 1.5 }}>No conversations yet. Field techs' messages land here, and you can reply from any technician's card on the Dispatch map.</div>}
           {threads.map(t => (
-            <button key={t.threadId} onClick={() => setSel(t.threadId)} style={{ display: 'flex', width: '100%', gap: 10, alignItems: 'center', padding: '11px 14px', background: sel === t.threadId ? 'rgba(99,102,241,0.1)' : 'none', border: 'none', borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+            <button key={t.threadId} onClick={() => setSel(t.threadId)} style={{ display: 'flex', width: '100%', gap: 10, alignItems: 'center', padding: '11px 14px', background: sel === t.threadId ? 'rgba(var(--brand-rgb),0.1)' : 'none', border: 'none', borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name || 'Technician'}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-low)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.last}</div>

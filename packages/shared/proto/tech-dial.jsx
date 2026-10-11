@@ -35,7 +35,7 @@ const TD_DISC = {
   access:  { label: 'Access Control',     token: '--disc-access',  fb: '#19E3EC' },
   cctv:    { label: 'CCTV',               token: '--disc-cctv',    fb: '#1E80F0' },
   cabling: { label: 'Structured Cabling', token: '--disc-cabling', fb: '#27E39A' },
-  general: { label: 'Service',            token: '--brand',        fb: '#6366F1' },
+  general: { label: 'Service',            token: '--brand',        fb: 'var(--brand)' },
 };
 function techDiscipline(job) {
   const t = [job.desc, job.scope, job._wo && job._wo.type, job._wo && job._wo.scope, job._cal && job._cal.type, job._cal && job._cal.title].filter(Boolean).join(' ').toLowerCase();

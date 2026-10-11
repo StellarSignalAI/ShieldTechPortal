@@ -55,17 +55,17 @@ function MonitoringConsole() {
           {custDropdown && (
             <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, width: 300, background: 'var(--modal)', border: '1px solid var(--border-strong)', borderRadius: 8, zIndex: 100, boxShadow: '0 12px 40px rgba(0,0,0,0.5)', padding: '6px 0', maxHeight: 300, overflow: 'auto' }}>
               <div style={{ padding: '4px 12px 8px' }}>
-                <input value={custSearch} onChange={e => setCustSearch(e.target.value)} placeholder="Search customers..." autoFocus style={{ width: '100%', padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+                <input value={custSearch} onChange={e => setCustSearch(e.target.value)} placeholder="Search customers..." autoFocus style={{ width: '100%', padding: '6px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
               </div>
               {customers.map(c => (
                 <button key={c.id} onClick={() => { setSelectedCustomer(c.id); setCustDropdown(false); }} style={{
                   display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '7px 14px',
-                  background: c.id === selectedCustomer ? 'rgba(99,102,241,0.08)' : 'none',
+                  background: c.id === selectedCustomer ? 'rgba(var(--brand-rgb),0.08)' : 'none',
                   border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left',
                   borderLeft: c.id === selectedCustomer ? '2px solid var(--brand)' : '2px solid transparent'
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
-                onMouseLeave={e => e.currentTarget.style.background = c.id === selectedCustomer ? 'rgba(99,102,241,0.08)' : 'none'}>
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.06)'}
+                onMouseLeave={e => e.currentTarget.style.background = c.id === selectedCustomer ? 'rgba(var(--brand-rgb),0.08)' : 'none'}>
                   <div style={{ width: 7, height: 7, borderRadius: '50%', background: c.status === 'healthy' ? 'var(--status-ok)' : c.status === 'warning' ? 'var(--status-warn)' : 'var(--status-critical)' }} />
                   <span style={{ flex: 1, fontSize: 12, color: 'var(--text-high)' }}>{c.name}</span>
                   <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{c.sites} sites · {c.devices} dev</span>
@@ -81,7 +81,7 @@ function MonitoringConsole() {
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px',
               borderRadius: '6px 6px 0 0', fontSize: 11, fontWeight: activeTab === tab.id ? 600 : 400,
-              background: activeTab === tab.id ? 'rgba(99,102,241,0.1)' : 'transparent',
+              background: activeTab === tab.id ? 'rgba(var(--brand-rgb),0.1)' : 'transparent',
               border: 'none', borderBottom: activeTab === tab.id ? '2px solid var(--brand)' : '2px solid transparent',
               color: activeTab === tab.id ? 'var(--brand)' : 'var(--text-mid)',
               cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap'
@@ -132,7 +132,7 @@ function MonitorEmpty({ title, body, cta }) {
         <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-high)', marginBottom: 6 }}>{title}</div>
         <div style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, marginBottom: cta ? 14 : 0 }}>{body}</div>
         {cta && (
-          <button onClick={() => { if (window.__shieldNav) window.__shieldNav('assets'); }} style={{ padding: '6px 16px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{cta}</button>
+          <button onClick={() => { if (window.__shieldNav) window.__shieldNav('assets'); }} style={{ padding: '6px 16px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{cta}</button>
         )}
       </div>
     </div>
@@ -248,7 +248,7 @@ function TopologyView({ customer, assets, showToast }) {
         {/* View toggle */}
         <div style={{ padding: '0 14px 10px', display: 'flex', gap: 0, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border-subtle)', margin: '0 12px 10px' }}>
           {[{id:'topology',l:'Map'},{id:'infrastructure',l:'Infrastructure'}].map(v => (
-            <button key={v.id} onClick={() => setViewMode(v.id)} style={{ flex: 1, padding: '5px', fontSize: 10, fontWeight: 500, background: viewMode===v.id?'rgba(99,102,241,0.12)':'transparent', border: 'none', color: viewMode===v.id?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{v.l}</button>
+            <button key={v.id} onClick={() => setViewMode(v.id)} style={{ flex: 1, padding: '5px', fontSize: 10, fontWeight: 500, background: viewMode===v.id?'rgba(var(--brand-rgb),0.12)':'transparent', border: 'none', color: viewMode===v.id?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{v.l}</button>
           ))}
         </div>
 
@@ -289,13 +289,13 @@ function TopologyView({ customer, assets, showToast }) {
 
       {/* ── Topology Canvas or Infrastructure Table ── */}
       {viewMode === 'topology' ? (
-      <div style={{ position: 'relative', overflow: 'hidden', background: '#0C0A14' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--card)' }}>
         {/* Grid background */}
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(99,102,241,0.03) 0%, transparent 70%)' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(var(--brand-rgb),0.03) 0%, transparent 70%)' }}>
           <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
             <defs>
               <pattern id="topoGridV2" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(99,102,241,0.04)" strokeWidth="0.5"/>
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(var(--brand-rgb),0.04)" strokeWidth="0.5"/>
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#topoGridV2)" />
@@ -331,19 +331,19 @@ function TopologyView({ customer, assets, showToast }) {
                 )}
                 <div style={{
                   width: '100%', height: '100%', borderRadius: size > 36 ? 12 : 8,
-                  background: isSelected ? 'rgba(99,102,241,0.15)' : 'rgba(10,14,20,0.85)',
+                  background: isSelected ? 'rgba(var(--brand-rgb),0.15)' : 'rgba(var(--card-rgb),0.85)',
                   border: `1.5px solid ${node.status === 'offline' ? 'var(--status-critical)' : (MONITOR_TYPE_COLORS[node.type] || 'var(--border-subtle)')}`,
                   backdropFilter: 'blur(8px)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: size > 36 ? 18 : size > 30 ? 14 : 12,
-                  boxShadow: isSelected ? `0 0 20px rgba(99,102,241,0.3)` : '0 2px 8px rgba(0,0,0,0.4)',
+                  boxShadow: isSelected ? `0 0 20px rgba(var(--brand-rgb),0.3)` : '0 2px 8px rgba(0,0,0,0.4)',
                   position: 'relative'
                 }}>
                   {node.icon}
                   <div style={{
                     position: 'absolute', bottom: -2, right: -2, width: 8, height: 8, borderRadius: '50%',
                     background: node.status === 'online' ? 'var(--status-ok)' : node.status === 'offline' ? 'var(--status-critical)' : 'var(--status-warn)',
-                    border: '2px solid #0C0A14'
+                    border: '2px solid var(--card)'
                   }} />
                 </div>
                 <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: 3, textAlign: 'center', whiteSpace: 'nowrap' }}>
@@ -376,7 +376,7 @@ function TopologyView({ customer, assets, showToast }) {
             { label: 'Offline', value: offlineCount, color: offlineCount ? 'var(--status-critical)' : 'var(--text-low)' },
             { label: 'Sites', value: sites.length, color: 'var(--brand)' },
           ].map((s, i) => (
-            <div key={i} style={{ flex: 1, padding: '8px 12px', borderRadius: 6, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
+            <div key={i} style={{ flex: 1, padding: '8px 12px', borderRadius: 6, background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
               <div className="mono" style={{ fontSize: 16, fontWeight: 600, color: s.color }}>{s.value}</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>{s.label}</div>
             </div>
@@ -402,23 +402,23 @@ function TopologyView({ customer, assets, showToast }) {
                 {visibleNodes.map(node => (
                   <tr key={node.id} style={{ transition: 'background 0.15s', cursor: 'pointer' }}
                     onClick={() => setSelectedNode(selectedNode === node.id ? null : node.id)}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.03)'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.03)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                       <StatusDot status={node.status === 'online' ? 'online' : node.status === 'warning' ? 'warning' : 'critical'} size={7} pulse={node.status==='online'} />
                     </td>
-                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                       <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)' }}>{node.label}</div>
                     </td>
-                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{node.model || '—'}</td>
-                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
-                      <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 3, background: 'rgba(99,102,241,0.06)', color: 'var(--text-mid)', textTransform: 'capitalize' }}>{node.type}</span>
+                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{node.model || '—'}</td>
+                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
+                      <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 3, background: 'rgba(var(--brand-rgb),0.06)', color: 'var(--text-mid)', textTransform: 'capitalize' }}>{node.type}</span>
                     </td>
-                    <td className="mono" style={{ padding: '7px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{node.ip || '—'}</td>
-                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{node.site || '—'}{node.room ? ` · ${node.room}` : ''}</td>
-                    <td className="mono" style={{ padding: '7px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{node.uptime != null ? `${node.uptime}%` : '—'}</td>
-                    <td style={{ padding: '7px 6px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
-                      <button onClick={(e) => { e.stopPropagation(); if (window.__shieldNav) window.__shieldNav('assets'); }} style={{ padding: '2px 6px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--brand)', fontSize: 8, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>⚙ Open in Assets</button>
+                    <td className="mono" style={{ padding: '7px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, color: 'var(--text-low)' }}>{node.ip || '—'}</td>
+                    <td style={{ padding: '7px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, color: 'var(--text-low)' }}>{node.site || '—'}{node.room ? ` · ${node.room}` : ''}</td>
+                    <td className="mono" style={{ padding: '7px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, color: 'var(--text-low)' }}>{node.uptime != null ? `${node.uptime}%` : '—'}</td>
+                    <td style={{ padding: '7px 6px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
+                      <button onClick={(e) => { e.stopPropagation(); if (window.__shieldNav) window.__shieldNav('assets'); }} style={{ padding: '2px 6px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--brand)', fontSize: 8, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>⚙ Open in Assets</button>
                     </td>
                   </tr>
                 ))}
@@ -456,7 +456,7 @@ function TopologyNodeDetail({ node, onClose, showToast }) {
           {node.uptime != null && <div><div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase' }}>Uptime</div><div className="mono" style={{ fontSize: 10, color: 'var(--status-ok)' }}>{node.uptime}%</div></div>}
         </div>
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-          <button onClick={() => { if (window.__shieldNav) window.__shieldNav('assets'); }} style={{ padding: '4px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⚙ Open in Asset Management</button>
+          <button onClick={() => { if (window.__shieldNav) window.__shieldNav('assets'); }} style={{ padding: '4px 10px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⚙ Open in Asset Management</button>
           <button onClick={() => showToast("Remote restart isn't wired up yet — no device connection")} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Restart</button>
           <button onClick={() => showToast("Ping isn't wired up yet — no device connection")} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Ping</button>
         </div>
@@ -547,7 +547,7 @@ function MonitorCameraGrid({ customer, assets, showToast }) {
           {[2,3,4,6].map(g => (
             <button key={g} onClick={() => setGridSize(g)} style={{
               width: 26, height: 26, borderRadius: 4, fontSize: 10,
-              background: gridSize === g ? 'rgba(99,102,241,0.12)' : 'transparent',
+              background: gridSize === g ? 'rgba(var(--brand-rgb),0.12)' : 'transparent',
               border: `1px solid ${gridSize === g ? 'var(--brand)' : 'var(--border-subtle)'}`,
               color: gridSize === g ? 'var(--brand)' : 'var(--text-low)',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -559,12 +559,12 @@ function MonitorCameraGrid({ customer, assets, showToast }) {
         {cameras.map(cam => (
           <div key={cam.id} onClick={() => setSelectedCam(cam)} className="glass" style={{
             padding: 0, overflow: 'hidden', cursor: 'pointer',
-            borderColor: cam.status === 'offline' ? 'rgba(244,63,94,0.3)' : selectedCam?.id === cam.id ? 'var(--brand)' : 'var(--border-subtle)',
+            borderColor: cam.status === 'offline' ? 'rgba(var(--critical-rgb),0.3)' : selectedCam?.id === cam.id ? 'var(--brand)' : 'var(--border-subtle)',
             transition: 'border-color 0.2s'
           }}>
             <div style={{
               height: gridSize <= 3 ? 120 : 90,
-              background: cam.status === 'offline' ? 'rgba(244,63,94,0.05)' : 'linear-gradient(135deg, rgba(10,14,20,0.9), rgba(17,23,33,0.8))',
+              background: cam.status === 'offline' ? 'rgba(var(--critical-rgb),0.05)' : 'linear-gradient(135deg, rgba(var(--card-rgb),0.9), rgba(17,23,33,0.8))',
               display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden'
             }}>
               <div style={{ textAlign: 'center' }}>
@@ -680,7 +680,7 @@ function MonitorAlerts({ customer, assets, showToast }) {
         {['all','critical','high'].map(f => (
           <button key={f} onClick={() => setAlertFilter(f)} style={{
             padding: '4px 12px', borderRadius: 5, fontSize: 10, textTransform: 'capitalize',
-            background: alertFilter === f ? 'rgba(99,102,241,0.1)' : 'transparent',
+            background: alertFilter === f ? 'rgba(var(--brand-rgb),0.1)' : 'transparent',
             border: `1px solid ${alertFilter === f ? 'var(--brand)' : 'var(--border-subtle)'}`,
             color: alertFilter === f ? 'var(--brand)' : 'var(--text-low)',
             cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -705,11 +705,11 @@ function MonitorAlerts({ customer, assets, showToast }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                   <StatusBadge status={alert.severity === 'critical' ? 'critical' : 'warning'} label={alert.severity} />
                   <span style={{ fontSize: 13, fontWeight: 600 }}>{alert.title}</span>
-                  {acked.has(alert.id) && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(52,211,153,0.08)', color: 'var(--status-ok)', border: '1px solid rgba(52,211,153,0.15)' }}>ACK</span>}
+                  {acked.has(alert.id) && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(var(--ok-rgb),0.08)', color: 'var(--status-ok)', border: '1px solid rgba(var(--ok-rgb),0.15)' }}>ACK</span>}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.5, marginBottom: 6 }}>{alert.detail}</div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  {!acked.has(alert.id) && <button onClick={() => { setAcked(prev => new Set([...prev, alert.id])); showToast(`Acknowledged: ${alert.title}`); }} style={{ padding: '4px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Acknowledge</button>}
+                  {!acked.has(alert.id) && <button onClick={() => { setAcked(prev => new Set([...prev, alert.id])); showToast(`Acknowledged: ${alert.title}`); }} style={{ padding: '4px 10px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Acknowledge</button>}
                   <button onClick={() => showToast("Ticket creation from alerts isn't wired up yet — open Helpdesk to create one")} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Ticket</button>
                   <button onClick={() => showToast("Tech assignment from alerts isn't wired up yet — use Dispatch")} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Assign Tech</button>
                 </div>

@@ -11,7 +11,7 @@ const PB_BLOCK_TYPES = [
   ['signature', 'Signature Block'],
 ];
 const pbLabel = (t) => (PB_BLOCK_TYPES.find(b => b[0] === t) || [t, t])[1];
-const mbInput = { width: '100%', padding: '10px 12px', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
+const mbInput = { width: '100%', padding: '10px 12px', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
 const mbLabel = { fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-low)', marginBottom: 5, display: 'block' };
 
 /* ════════════ PROPOSALS LIST ════════════ */
@@ -108,12 +108,12 @@ function MProposalBuilder({ id, onClose, onNav }) {
       {draft.blocks.map((b, i) => (
         <div key={b.id} className="glass" style={{ borderRadius: 12, overflow: 'hidden' }}>
           <div onClick={() => setOpenBlk(openBlk === b.id ? null : b.id)} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '11px 13px', cursor: 'pointer' }}>
-            <span style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(99,102,241,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{i + 1}</span>
+            <span style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(var(--brand-rgb),0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{i + 1}</span>
             <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{pbLabel(b.type)}{b.type === 'pricing' ? <span className="mono" style={{ color: 'var(--text-low)', fontWeight: 400, fontSize: 11 }}> · ${proposalValue([b]).toLocaleString()}</span> : ''}</span>
             <div style={{ display: 'flex', gap: 3, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
               <button onClick={() => move(b.id, -1)} disabled={i === 0} style={mbIcon(i === 0)}>↑</button>
               <button onClick={() => move(b.id, 1)} disabled={i === draft.blocks.length - 1} style={mbIcon(i === draft.blocks.length - 1)}>↓</button>
-              {b.type !== 'cover' && <button onClick={() => remove(b.id)} style={{ ...mbIcon(false), color: 'var(--status-critical)', borderColor: 'rgba(244,63,94,0.3)' }}>✕</button>}
+              {b.type !== 'cover' && <button onClick={() => remove(b.id)} style={{ ...mbIcon(false), color: 'var(--status-critical)', borderColor: 'rgba(var(--critical-rgb),0.3)' }}>✕</button>}
               <span style={{ color: 'var(--text-low)', fontSize: 14, marginLeft: 2, transform: openBlk === b.id ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}>›</span>
             </div>
           </div>
@@ -121,11 +121,11 @@ function MProposalBuilder({ id, onClose, onNav }) {
         </div>
       ))}
 
-      <button onClick={() => setAddOpen(true)} style={{ padding: '11px 0', background: 'rgba(99,102,241,0.06)', border: '1px dashed var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add section</button>
+      <button onClick={() => setAddOpen(true)} style={{ padding: '11px 0', background: 'rgba(var(--brand-rgb),0.06)', border: '1px dashed var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add section</button>
 
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={() => setPreview(true)} style={{ flex: 1, padding: '12px 0', background: 'transparent', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Preview</button>
-        <button onClick={() => save(false)} style={{ flex: 1, padding: '12px 0', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save</button>
+        <button onClick={() => save(false)} style={{ flex: 1, padding: '12px 0', background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save</button>
         <button onClick={() => save(true)} style={{ flex: 1.4, padding: '12px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save & Send</button>
       </div>
 
@@ -165,10 +165,10 @@ function PBBlockEditor({ block, update }) {
         {items.map((it, i) => (
           <div key={i} style={{ display: 'flex', gap: 7 }}>
             <input value={it} onChange={e => update({ items: items.map((x, k) => k === i ? e.target.value : x) })} style={{ ...mbInput, flex: 1 }} />
-            <button onClick={() => update({ items: items.filter((_, k) => k !== i) })} style={{ ...mbIcon(false), color: 'var(--status-critical)', borderColor: 'rgba(244,63,94,0.3)', flexShrink: 0 }}>✕</button>
+            <button onClick={() => update({ items: items.filter((_, k) => k !== i) })} style={{ ...mbIcon(false), color: 'var(--status-critical)', borderColor: 'rgba(var(--critical-rgb),0.3)', flexShrink: 0 }}>✕</button>
           </div>
         ))}
-        <button onClick={() => update({ items: [...items, 'New item'] })} style={{ padding: '8px 0', background: 'rgba(99,102,241,0.05)', border: '1px dashed var(--border-subtle)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add item</button>
+        <button onClick={() => update({ items: [...items, 'New item'] })} style={{ padding: '8px 0', background: 'rgba(var(--brand-rgb),0.05)', border: '1px dashed var(--border-subtle)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add item</button>
       </div>
     );
   }
@@ -182,7 +182,7 @@ function PBBlockEditor({ block, update }) {
           <div key={i} className="glass" style={{ padding: '9px 10px', borderRadius: 9, display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ display: 'flex', gap: 6 }}>
               <input value={it.desc} onChange={e => setItem(i, { desc: e.target.value })} placeholder="Description" style={{ ...mbInput, flex: 1, padding: '7px 9px', fontSize: 12 }} />
-              <button onClick={() => update({ items: items.filter((_, k) => k !== i) })} style={{ ...mbIcon(false), color: 'var(--status-critical)', borderColor: 'rgba(244,63,94,0.3)', flexShrink: 0 }}>✕</button>
+              <button onClick={() => update({ items: items.filter((_, k) => k !== i) })} style={{ ...mbIcon(false), color: 'var(--status-critical)', borderColor: 'rgba(var(--critical-rgb),0.3)', flexShrink: 0 }}>✕</button>
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <span style={{ fontSize: 10, color: 'var(--text-low)' }}>Qty</span>
@@ -193,7 +193,7 @@ function PBBlockEditor({ block, update }) {
             </div>
           </div>
         ))}
-        <button onClick={() => update({ items: [...items, { desc: 'New line item', qty: 1, rate: 0 }] })} style={{ padding: '8px 0', background: 'rgba(99,102,241,0.05)', border: '1px dashed var(--border-subtle)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add line</button>
+        <button onClick={() => update({ items: [...items, { desc: 'New line item', qty: 1, rate: 0 }] })} style={{ padding: '8px 0', background: 'rgba(var(--brand-rgb),0.05)', border: '1px dashed var(--border-subtle)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add line</button>
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 2px 0', borderTop: '1px solid var(--border-subtle)' }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Total</span>
           <span className="mono" style={{ fontSize: 15, fontWeight: 700, color: 'var(--status-ok)' }}>${total.toLocaleString()}</span>

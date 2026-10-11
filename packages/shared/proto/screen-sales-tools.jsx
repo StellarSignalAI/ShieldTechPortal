@@ -61,7 +61,7 @@ function SiteSurveyTool() {
                 </div>
               ))}
             </div>
-            {room.notes && <div style={{ fontSize: 11, color: 'var(--text-mid)', fontStyle: 'italic', padding: '6px 0', borderTop: '1px solid rgba(99,102,241,0.04)' }}>▤ {room.notes}</div>}
+            {room.notes && <div style={{ fontSize: 11, color: 'var(--text-mid)', fontStyle: 'italic', padding: '6px 0', borderTop: '1px solid rgba(var(--brand-rgb),0.04)' }}>▤ {room.notes}</div>}
           </GlassPanel>
         ))}
         <button onClick={() => { setRooms(prev => [...prev, { id: Date.now(), name: `Room ${rooms.length+1}`, cameras: 0, accessPts: 0, readers: 0, ceilingH: 9, mountType: 'Ceiling', conduit: true, existingEquip: 'None', notes: '', photos: 0 }]); }} style={{ padding: '10px', border: '2px dashed var(--border-subtle)', borderRadius: 8, background: 'transparent', color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Room</button>
@@ -95,7 +95,7 @@ function CableCalculator() {
   const removeRun = (id) => setRuns(prev => prev.filter(r => r.id !== id));
   const updateRun = (id, field, val) => setRuns(prev => prev.map(r => r.id === id ? { ...r, [field]: val } : r));
 
-  const inputStyle = { padding: '5px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inputStyle = { padding: '5px 8px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' };
 
   return (
     <div>
@@ -106,7 +106,7 @@ function CableCalculator() {
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           <ShieldAIEstimateBtn label="AI: Estimate Runs" onClick={() => showToast("This tool isn't wired to AI yet")} />
-          <button onClick={() => showToast("BOM export isn't wired up yet")} style={{ padding: '6px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export BOM</button>
+          <button onClick={() => showToast("BOM export isn't wired up yet")} style={{ padding: '6px 14px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export BOM</button>
         </div>
       </div>
 
@@ -129,18 +129,18 @@ function CableCalculator() {
           <tbody>
             {runs.map(r => (
               <tr key={r.id}>
-                <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><input value={r.from} onChange={e => updateRun(r.id,'from',e.target.value)} style={{...inputStyle, width: 100}} /></td>
-                <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><input value={r.to} onChange={e => updateRun(r.id,'to',e.target.value)} style={{...inputStyle, width: 120}} /></td>
-                <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><input value={r.from} onChange={e => updateRun(r.id,'from',e.target.value)} style={{...inputStyle, width: 100}} /></td>
+                <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><input value={r.to} onChange={e => updateRun(r.id,'to',e.target.value)} style={{...inputStyle, width: 120}} /></td>
+                <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                   <select value={r.type} onChange={e => updateRun(r.id,'type',e.target.value)} style={{...inputStyle, width: 90}}>
                     {Object.keys(cableTypes).map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </td>
-                <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right' }}><input type="number" value={r.distance} onChange={e => updateRun(r.id,'distance',parseInt(e.target.value)||0)} style={{...inputStyle, width: 60, textAlign: 'right'}} /></td>
-                <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right' }}><input type="number" value={r.qty} onChange={e => updateRun(r.id,'qty',parseInt(e.target.value)||1)} style={{...inputStyle, width: 40, textAlign: 'right'}} /></td>
-                <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right', fontSize: 11 }}>{(r.distance*r.qty).toLocaleString()} ft</td>
-                <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right', fontSize: 11, color: 'var(--status-ok)' }}>${(r.distance*r.qty*(cableTypes[r.type]||0.18)).toFixed(0)}</td>
-                <td style={{ padding: '6px 6px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><button onClick={() => removeRun(r.id)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>✕</button></td>
+                <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right' }}><input type="number" value={r.distance} onChange={e => updateRun(r.id,'distance',parseInt(e.target.value)||0)} style={{...inputStyle, width: 60, textAlign: 'right'}} /></td>
+                <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right' }}><input type="number" value={r.qty} onChange={e => updateRun(r.id,'qty',parseInt(e.target.value)||1)} style={{...inputStyle, width: 40, textAlign: 'right'}} /></td>
+                <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right', fontSize: 11 }}>{(r.distance*r.qty).toLocaleString()} ft</td>
+                <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right', fontSize: 11, color: 'var(--status-ok)' }}>${(r.distance*r.qty*(cableTypes[r.type]||0.18)).toFixed(0)}</td>
+                <td style={{ padding: '6px 6px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><button onClick={() => removeRun(r.id)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>✕</button></td>
               </tr>
             ))}
           </tbody>
@@ -178,7 +178,7 @@ function BandwidthCalculator() {
   const totalBandwidth = cameras.reduce((s, c) => s + getBitrate(c) * c.qty, 0);
   const dailyGB = (totalBandwidth * 3600 * 24 * (motionPct / 100)) / 8 / 1000;
   const totalStorageTB = (dailyGB * retentionDays / 1000).toFixed(1);
-  const inputStyle = { padding: '5px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inputStyle = { padding: '5px 8px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' };
 
   return (
     <div>
@@ -210,27 +210,27 @@ function BandwidthCalculator() {
             <tbody>
               {cameras.map(c => (
                 <tr key={c.id}>
-                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, fontWeight: 500 }}>{c.name}</td>
-                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, fontWeight: 500 }}>{c.name}</td>
+                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                     <select value={c.resolution} onChange={e => setCameras(prev => prev.map(x => x.id===c.id?{...x,resolution:e.target.value}:x))} style={{...inputStyle, width: 60}}>
                       {['1MP','2MP','4MP','5MP','8MP'].map(r => <option key={r}>{r}</option>)}
                     </select>
                   </td>
-                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                     <select value={c.fps} onChange={e => setCameras(prev => prev.map(x => x.id===c.id?{...x,fps:parseInt(e.target.value)}:x))} style={{...inputStyle, width: 50}}>
                       {[10,15,20,25,30].map(f => <option key={f}>{f}</option>)}
                     </select>
                   </td>
-                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                     <select value={c.codec} onChange={e => setCameras(prev => prev.map(x => x.id===c.id?{...x,codec:e.target.value}:x))} style={{...inputStyle, width: 60}}>
                       {['H.264','H.265'].map(co => <option key={co}>{co}</option>)}
                     </select>
                   </td>
-                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right' }}>
+                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right' }}>
                     <input type="number" value={c.qty} onChange={e => setCameras(prev => prev.map(x => x.id===c.id?{...x,qty:parseInt(e.target.value)||1}:x))} style={{...inputStyle, width: 40, textAlign: 'right'}} />
                   </td>
-                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right', fontSize: 11, color: 'var(--brand)' }}>{(getBitrate(c)*c.qty).toFixed(1)} Mbps</td>
-                  <td style={{ padding: '6px 6px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><button onClick={() => setCameras(prev => prev.filter(x => x.id!==c.id))} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>✕</button></td>
+                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right', fontSize: 11, color: 'var(--brand)' }}>{(getBitrate(c)*c.qty).toFixed(1)} Mbps</td>
+                  <td style={{ padding: '6px 6px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><button onClick={() => setCameras(prev => prev.filter(x => x.id!==c.id))} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>✕</button></td>
                 </tr>
               ))}
             </tbody>
@@ -245,7 +245,7 @@ function BandwidthCalculator() {
             <div className="label-sm" style={{ marginBottom: 6 }}>RETENTION</div>
             <div style={{ display: 'flex', gap: 4 }}>
               {[14,30,60,90].map(d => (
-                <button key={d} onClick={() => setRetentionDays(d)} style={{ flex: 1, padding: '6px', borderRadius: 4, fontSize: 11, background: retentionDays===d?'rgba(99,102,241,0.12)':'transparent', border: `1px solid ${retentionDays===d?'var(--brand)':'var(--border-subtle)'}`, color: retentionDays===d?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{d}d</button>
+                <button key={d} onClick={() => setRetentionDays(d)} style={{ flex: 1, padding: '6px', borderRadius: 4, fontSize: 11, background: retentionDays===d?'rgba(var(--brand-rgb),0.12)':'transparent', border: `1px solid ${retentionDays===d?'var(--brand)':'var(--border-subtle)'}`, color: retentionDays===d?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{d}d</button>
               ))}
             </div>
           </GlassPanel>
@@ -324,11 +324,11 @@ function LaborEstimator() {
             <tbody>
               {items.map(item => (
                 <tr key={item.id}>
-                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{item.type}</td>
-                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right', fontSize: 12 }}>{item.qty}</td>
-                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right', fontSize: 12 }}>{item.hoursEach}h</td>
-                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right', fontSize: 12, color: 'var(--brand)' }}>{(item.qty * item.hoursEach).toFixed(1)}h</td>
-                  <td style={{ padding: '6px 6px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><button onClick={() => setItems(prev => prev.filter(x => x.id!==item.id))} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>✕</button></td>
+                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12 }}>{item.type}</td>
+                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right', fontSize: 12 }}>{item.qty}</td>
+                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right', fontSize: 12 }}>{item.hoursEach}h</td>
+                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right', fontSize: 12, color: 'var(--brand)' }}>{(item.qty * item.hoursEach).toFixed(1)}h</td>
+                  <td style={{ padding: '6px 6px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><button onClick={() => setItems(prev => prev.filter(x => x.id!==item.id))} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>✕</button></td>
                 </tr>
               ))}
             </tbody>
@@ -339,13 +339,13 @@ function LaborEstimator() {
           <GlassPanel>
             <div className="label-sm" style={{ marginBottom: 6 }}>BUILDING TYPE</div>
             {[{id:'new',l:'New Construction',m:'0.8x'},{id:'retrofit',l:'Retrofit',m:'1.0x'},{id:'historic',l:'Historic/Difficult',m:'1.3x'}].map(b => (
-              <button key={b.id} onClick={() => setBuildingType(b.id)} style={{ display: 'block', width: '100%', padding: '5px 8px', marginBottom: 3, borderRadius: 4, fontSize: 11, textAlign: 'left', background: buildingType===b.id?'rgba(99,102,241,0.1)':'transparent', border: `1px solid ${buildingType===b.id?'var(--brand)':'var(--border-subtle)'}`, color: buildingType===b.id?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{b.l} <span className="mono" style={{ float: 'right', fontSize: 9, color: 'var(--text-low)' }}>{b.m}</span></button>
+              <button key={b.id} onClick={() => setBuildingType(b.id)} style={{ display: 'block', width: '100%', padding: '5px 8px', marginBottom: 3, borderRadius: 4, fontSize: 11, textAlign: 'left', background: buildingType===b.id?'rgba(var(--brand-rgb),0.1)':'transparent', border: `1px solid ${buildingType===b.id?'var(--brand)':'var(--border-subtle)'}`, color: buildingType===b.id?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{b.l} <span className="mono" style={{ float: 'right', fontSize: 9, color: 'var(--text-low)' }}>{b.m}</span></button>
             ))}
           </GlassPanel>
           <GlassPanel>
             <div className="label-sm" style={{ marginBottom: 6 }}>CEILING ACCESS</div>
             {[{id:'drop',l:'Drop Ceiling',m:'1.0x'},{id:'hard',l:'Hard/Concrete',m:'1.4x'},{id:'open',l:'Open/Exposed',m:'0.9x'}].map(c => (
-              <button key={c.id} onClick={() => setCeilingAccess(c.id)} style={{ display: 'block', width: '100%', padding: '5px 8px', marginBottom: 3, borderRadius: 4, fontSize: 11, textAlign: 'left', background: ceilingAccess===c.id?'rgba(99,102,241,0.1)':'transparent', border: `1px solid ${ceilingAccess===c.id?'var(--brand)':'var(--border-subtle)'}`, color: ceilingAccess===c.id?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c.l} <span className="mono" style={{ float: 'right', fontSize: 9, color: 'var(--text-low)' }}>{c.m}</span></button>
+              <button key={c.id} onClick={() => setCeilingAccess(c.id)} style={{ display: 'block', width: '100%', padding: '5px 8px', marginBottom: 3, borderRadius: 4, fontSize: 11, textAlign: 'left', background: ceilingAccess===c.id?'rgba(var(--brand-rgb),0.1)':'transparent', border: `1px solid ${ceilingAccess===c.id?'var(--brand)':'var(--border-subtle)'}`, color: ceilingAccess===c.id?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c.l} <span className="mono" style={{ float: 'right', fontSize: 9, color: 'var(--text-low)' }}>{c.m}</span></button>
             ))}
           </GlassPanel>
           <GlassPanel>
@@ -390,7 +390,7 @@ function CompetitiveComparison() {
         <div className="label-sm" style={{ marginBottom: 6 }}>COMPARE AGAINST</div>
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
           {competitors.map(c => (
-            <button key={c} onClick={() => setCompetitor(c)} style={{ padding: '4px 12px', borderRadius: 5, fontSize: 11, background: competitor===c?'rgba(99,102,241,0.12)':'transparent', border: `1px solid ${competitor===c?'var(--brand)':'var(--border-subtle)'}`, color: competitor===c?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
+            <button key={c} onClick={() => setCompetitor(c)} style={{ padding: '4px 12px', borderRadius: 5, fontSize: 11, background: competitor===c?'rgba(var(--brand-rgb),0.12)':'transparent', border: `1px solid ${competitor===c?'var(--brand)':'var(--border-subtle)'}`, color: competitor===c?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
           ))}
         </div>
       </div>
@@ -459,11 +459,11 @@ function RMRCalculator() {
             <tbody>
               {services.map(sv => (
                 <tr key={sv.id}>
-                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{sv.name}</td>
-                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right', fontSize: 11 }}>${sv.monthly}</td>
-                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right', fontSize: 11 }}>{sv.qty}</td>
-                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', textAlign: 'right', fontSize: 11, color: 'var(--brand)' }}>${(sv.monthly*sv.qty).toLocaleString()}/mo</td>
-                  <td style={{ padding: '6px 6px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><button onClick={() => setServices(prev => prev.filter(x => x.id!==sv.id))} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>✕</button></td>
+                  <td style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12 }}>{sv.name}</td>
+                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right', fontSize: 11 }}>${sv.monthly}</td>
+                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right', fontSize: 11 }}>{sv.qty}</td>
+                  <td className="mono" style={{ padding: '6px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', textAlign: 'right', fontSize: 11, color: 'var(--brand)' }}>${(sv.monthly*sv.qty).toLocaleString()}/mo</td>
+                  <td style={{ padding: '6px 6px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><button onClick={() => setServices(prev => prev.filter(x => x.id!==sv.id))} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>✕</button></td>
                 </tr>
               ))}
             </tbody>
@@ -477,7 +477,7 @@ function RMRCalculator() {
           <GlassPanel>
             <div className="label-sm" style={{ marginBottom: 6 }}>CONTRACT TERM</div>
             {[1,2,3,5].map(y => (
-              <button key={y} onClick={() => setContractYears(y)} style={{ display: 'block', width: '100%', padding: '5px 8px', marginBottom: 3, borderRadius: 4, fontSize: 11, textAlign: 'left', background: contractYears===y?'rgba(99,102,241,0.1)':'transparent', border: `1px solid ${contractYears===y?'var(--brand)':'var(--border-subtle)'}`, color: contractYears===y?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{y} Year{y>1?'s':''}</button>
+              <button key={y} onClick={() => setContractYears(y)} style={{ display: 'block', width: '100%', padding: '5px 8px', marginBottom: 3, borderRadius: 4, fontSize: 11, textAlign: 'left', background: contractYears===y?'rgba(var(--brand-rgb),0.1)':'transparent', border: `1px solid ${contractYears===y?'var(--brand)':'var(--border-subtle)'}`, color: contractYears===y?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{y} Year{y>1?'s':''}</button>
             ))}
           </GlassPanel>
           <GlassPanel>
@@ -504,7 +504,7 @@ function RMRCalculator() {
 function ShieldAIEstimateBtn({ label, onClick }) {
   return (
     <button onClick={onClick} style={{
-      padding: '6px 14px', background: 'rgba(99,102,241,0.06)',
+      padding: '6px 14px', background: 'rgba(var(--brand-rgb),0.06)',
       border: '1px solid var(--border-strong)', borderRadius: 6,
       color: 'var(--brand)', fontSize: 11, cursor: 'pointer',
       fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4

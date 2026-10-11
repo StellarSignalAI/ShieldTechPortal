@@ -13,12 +13,12 @@ function LoginScreen() {
   const configured = Boolean(window.__shieldSupabaseConfigured && window.__shieldAuth);
 
   // ── Design tokens (hardcoded so the credential page is identical across apps/themes)
-  const F = "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  const F = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
   const MONO = "'Geist Mono', ui-monospace, SFMono-Regular, monospace";
-  const SCR = '#060410', CARD = '#0C0A14';
+  const SCR = 'var(--canvas)', CARD = 'var(--card)';
   const BORDER = 'rgba(255,255,255,0.08)', BORDER_STRONG = 'rgba(255,255,255,0.16)';
   const FG = '#FAFAFB', FG2 = '#A1A0A6', FG3 = '#656365';
-  const ACCENT = '#6366F1', ACCENT_HOVER = '#7D7CF5', ACCENT_GLOW = 'rgba(99,102,241,0.55)';
+  const ACCENT = 'var(--brand)', ACCENT_HOVER = 'var(--brand-hover)', ACCENT_GLOW = 'rgba(var(--brand-rgb),0.55)';
 
   const toast = (msg, type) => {
     setNote({ msg, type: type || 'ok' });
@@ -92,7 +92,7 @@ function LoginScreen() {
     fontSize: 14, fontFamily: F, outline: 'none',
     transition: 'border-color 0.16s ease, box-shadow 0.16s ease',
   };
-  const onInFocus = (e) => { e.target.style.borderColor = ACCENT; e.target.style.boxShadow = `0 0 0 3px rgba(99,102,241,0.18)`; };
+  const onInFocus = (e) => { e.target.style.borderColor = ACCENT; e.target.style.boxShadow = `0 0 0 3px rgba(var(--brand-rgb),0.18)`; };
   const onInBlur = (e) => { e.target.style.borderColor = BORDER_STRONG; e.target.style.boxShadow = 'none'; };
   const secondaryBtn = {
     width: '100%', padding: '12px', background: 'rgba(255,255,255,0.04)',
@@ -126,7 +126,7 @@ function LoginScreen() {
         position: 'relative', zIndex: 2, width: 'min(400px, 100%)',
         background: CARD, border: `1px solid ${BORDER}`, borderRadius: 24,
         padding: '40px clamp(22px, 7vw, 36px)',
-        boxShadow: '0 0 70px -24px rgba(99,102,241,0.35), 0 30px 60px -18px rgba(0,0,0,0.7)',
+        boxShadow: '0 0 70px -24px rgba(var(--brand-rgb),0.35), 0 30px 60px -18px rgba(0,0,0,0.7)',
         animation: 'fade-up 0.6s ease both',
       }}>
         {/* Top sheen */}
@@ -210,8 +210,8 @@ function LoginScreen() {
           {note && (
             <div style={{
               padding: '10px 12px', borderRadius: 12, fontSize: 12, lineHeight: 1.4, textAlign: 'center',
-              background: note.type === 'error' ? 'rgba(244,63,94,0.10)' : note.type === 'warn' ? 'rgba(251,191,36,0.10)' : 'rgba(99,102,241,0.12)',
-              border: `1px solid ${note.type === 'error' ? 'rgba(244,63,94,0.3)' : note.type === 'warn' ? 'rgba(251,191,36,0.3)' : 'rgba(99,102,241,0.3)'}`,
+              background: note.type === 'error' ? 'rgba(var(--critical-rgb),0.10)' : note.type === 'warn' ? 'rgba(var(--warn-rgb),0.10)' : 'rgba(var(--brand-rgb),0.12)',
+              border: `1px solid ${note.type === 'error' ? 'rgba(var(--critical-rgb),0.3)' : note.type === 'warn' ? 'rgba(var(--warn-rgb),0.3)' : 'rgba(var(--brand-rgb),0.3)'}`,
               color: note.type === 'error' ? '#FF6B6B' : note.type === 'warn' ? '#FBBF24' : FG,
             }}>{note.msg}</div>
           )}

@@ -205,6 +205,61 @@ ShieldTech's own data and tools.
   `__shieldEmail` (`tjMail`). Wired in `apps/tech/src/main.jsx` as tabs quotes, invoices,
   doc-view, new-quote, new-invoice, request, health with a `ctx` state.
 
+### 2h. Ubiquiti pass — UniFi-pattern skin, fonts and the ShieldTech OS console
+- **Skin + type (every app)** — `packages/shared/styles/tokens/*`: Inter replaces Geist
+  (the open stand-in for the UniFi console typeface; Geist Mono stays for data), one
+  action blue (`--brand` #3B8BFF dark / #006FFF light) on neutral charcoal or white
+  surfaces, flat UniFi status colours, 8px card radius, no grain/glow (`effects.css`
+  keeps the `--glow-*` names so nothing breaks). New alpha tokens: `--brand-rgb`,
+  `--ok-rgb`, `--warn-rgb`, `--critical-rgb`, `--canvas-rgb`, `--card-rgb`, plus
+  `--rail-bg`/`--rail-fg` for the console rail. ~2,250 hard-coded indigo / status /
+  near-black values across 140 files were swept onto those tokens (only canvas `ctx.*`
+  and `data:` URIs keep literals). Default appearance is now **System** (UniFi follows
+  the OS); Light and Dark remain in the avatar menu and in ShieldTech OS › Settings.
+  `theme-color` metas and font links updated in all four `index.html`.
+- **Portal — ShieldTech OS** (`packages/shared/proto/screen-unifi-console.jsx`,
+  `ShieldOSConsole`; `MonitoringHubScreen` renders it when loaded and keeps the tabbed
+  console as fallback; sidebar entry renamed "ShieldTech OS"): the UniFi OS layout —
+  dark app rail (Sites · Network · Protect · Access · Alerts · Assets · Settings), site
+  selector (All sites → customer → site, with health dot and online/flagged counts),
+  underline tabs per app, dense tables with a properties drawer. **Sites** = Site
+  Manager (tiles, grid/list of every customer·site with verdict, devices, cameras,
+  doors, network, open tickets; ISP honestly "not monitored"). **Network**: Dashboard
+  (Internet / Devices / Clients / Experience tiles, devices-by-type donut, recent
+  activity, sites in scope), Topology (`TopologyView`), Devices (`UcDeviceList`:
+  search, kind chips, table, drawer with Locate/Restart (honest toasts) and Mark
+  online / Flag attention / Mark offline → `assetStore`), Clients (empty state +
+  `NetworkDiscoveryView`), Insights (`PortMapView`, `CVECenter`, `FleetHealthPanel`),
+  Settings (Microsoft docs, BitLocker, password rotation). **Protect**: Live view
+  (camera sidebar, 1/4/9/16 layouts, tiles say "No stream · connect NVR"), Timeline
+  (24h strip with markers from device changes, door events and tech photos + event
+  list), Find anything (detection chips + honest NVR note + site photos as evidence),
+  Devices (cameras + recorders), Alarm manager (`alarmRuleStore` 'alarmrules':
+  trigger/scope/schedule/action with enable toggle + history). **Access**: Doors
+  (Unlock → 5-second unlocked state + `accessLogStore` entry, Hold open, Log),
+  Users (`accessUserStore`), Visitors (`accessVisitorStore`, time-boxed PIN),
+  Policies (`accessPolicyStore`), Logs, Devices. **Alerts**: flagged devices with
+  Acknowledge (`osConsoleStore.acked`), Create ticket → `ticketStore` (help desk
+  shape), Dispatch. **Settings**: appearance, notification toggles, controller
+  address + ISP monitor toggle (honest: keys live on the backend), About.
+- **Tech app — Devices** (`packages/shared/proto/tech-unifi.jsx`, `TechDevicesView`,
+  More › Work › Devices, tab `devices`): site picker (registry sites + today's WO
+  customers, remembered in `st2:tech-site`), kind chips, flat list with status dot and
+  IP, **+ Adopt** documents a device for the site, device sheet with Mark online /
+  Flag attention / Mark offline, Edit details, Photos, Send to office (ticket), Copy IP,
+  and **Unlock door** for readers (logs to `accessLogStore`).
+- **Customer app** (`packages/shared/proto/customer-unifi.jsx`, `CuSitesView`,
+  `CuDevicesView`, `CuAccessView`; wired in `apps/customer/src/main.jsx` with the old
+  views as fallback): Sites (per-site health cards scoped to `__shieldUser.company`,
+  Request a change → ticket), Devices (status list + Report a problem → ticket),
+  Access (doors with **Request unlock** → `accessLogStore` pending entry + urgent
+  ticket via `__shieldTickets`, people with access, recent door activity, then the
+  existing badge / visitor tools). Header and tab bar now use `--card`.
+- Verified: all four builds green; Playwright walk of every ShieldTech OS app and tab
+  (light + dark), device drawer, door unlock → log, alert → ticket, tech Devices + sheet,
+  customer Sites / Devices / Access + unlock request — no page errors (sandbox only
+  blocks fonts/tiles). Service worker cache → `shieldtech-v15`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

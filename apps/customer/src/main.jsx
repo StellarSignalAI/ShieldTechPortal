@@ -280,11 +280,11 @@ function CustomerPortalApp() {
   const screens = {
     dashboard: () => <CustomerDashboardView onNavigate={(v) => setTab(v === 'ai-chat' ? 'ai' : v)} />,
     score: () => <CustSecurityScoreView />,
-    sites: () => <CustSitesView />,
-    devices: () => <CustomerDevicesScreen />,
+    sites: () => window.CuSitesView ? <window.CuSitesView onOpen={setTab} /> : <CustSitesView />,
+    devices: () => window.CuDevicesView ? <window.CuDevicesView /> : <CustomerDevicesScreen />,
     photos: () => <CustomerPhotosScreen />,
     footage: () => <CustFootageFinderView />,
-    access: () => <CustAccessView />,
+    access: () => window.CuAccessView ? <window.CuAccessView /> : <CustAccessView />,
     tickets: () => <TicketListView onNavigate={setTab} selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} />,
     'new-ticket': () => <NewTicketView onNavigate={setTab} />,
     approvals: () => <CustApprovalsInboxView />,
@@ -311,7 +311,7 @@ function CustomerPortalApp() {
         height: 56, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 32px', borderBottom: '1px solid var(--border-subtle)',
-        background: 'rgba(10,14,20,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)'
+        background: 'var(--card)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <img src="uploads/ShieldTech Logo Transparent MK3.png" alt="ShieldTech" style={{ height: 26, objectFit: 'contain' }} />
@@ -319,14 +319,14 @@ function CustomerPortalApp() {
           <span style={{ fontSize: 13, color: 'var(--text-mid)' }}>Customer Portal</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #1E6FB0, #3FA9F5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, color: '#fff' }}>{me.initials || '·'}</div>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, color: '#fff' }}>{me.initials || '·'}</div>
         </div>
       </header>
 
       {/* Tab bar */}
       <div style={{
         display: 'flex', gap: 0, padding: '0 32px', borderBottom: '1px solid var(--border-subtle)',
-        background: 'rgba(10,14,20,0.6)', flexShrink: 0, overflowX: 'auto', scrollbarWidth: 'thin'
+        background: 'var(--card)', flexShrink: 0, overflowX: 'auto', scrollbarWidth: 'thin'
       }}>
         {CUST_TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{

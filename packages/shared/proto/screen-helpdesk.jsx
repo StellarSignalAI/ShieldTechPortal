@@ -49,7 +49,7 @@ function HelpdeskScreen() {
     { id: 'KW', name: 'Kevin White' }, { id: 'DP', name: 'Diana Patel' }, { id: 'TG', name: 'Tony Garcia' }
   ];
 
-  const priorityColors = { critical: '#F43F5E', high: '#FBBF24', medium: '#6366F1', low: 'var(--text-low)' };
+  const priorityColors = { critical: '#F43F5E', high: '#FBBF24', medium: 'var(--brand)', low: 'var(--text-low)' };
   const statusColors = { open: 'var(--status-critical)', 'in-progress': 'var(--status-warn)', resolved: 'var(--status-ok)' };
 
   const filtered = tickets.filter(t =>
@@ -156,7 +156,7 @@ function HelpdeskScreen() {
             <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', lineHeight: 1.4 }}>{s.label}</div>
           </div>
         ))}
-        <button onClick={() => setShowNewModal(true)} style={{ padding: '0 20px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>+ New Ticket</button>
+        <button onClick={() => setShowNewModal(true)} style={{ padding: '0 20px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>+ New Ticket</button>
       </div>
 
       {/* Main split */}
@@ -181,19 +181,19 @@ function HelpdeskScreen() {
               return (
                 <div key={t.id} onClick={() => setSelectedId(t.id)} style={{
                   padding: '12px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border-subtle)',
-                  background: selectedId === t.id ? 'rgba(99,102,241,0.06)' : 'transparent',
+                  background: selectedId === t.id ? 'rgba(var(--brand-rgb),0.06)' : 'transparent',
                   borderLeft: `3px solid ${selectedId === t.id ? priorityColors[t.priority] : 'transparent'}`, transition: 'all 0.15s'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: priorityColors[t.priority], flexShrink: 0, boxShadow: t.priority === 'critical' ? `0 0 6px ${priorityColors[t.priority]}` : 'none' }} />
                     <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{t.id}</span>
                     <span style={{ marginLeft: 'auto', fontSize: 10, color: statusColors[t.status], background: `${statusColors[t.status]}15`, padding: '1px 7px', borderRadius: 100 }}>{t.status}</span>
-                    {slaRisk && <span style={{ fontSize: 9, color: 'var(--status-warn)', background: 'rgba(251,191,36,0.12)', padding: '1px 5px', borderRadius: 4 }}>⚠ SLA</span>}
+                    {slaRisk && <span style={{ fontSize: 9, color: 'var(--status-warn)', background: 'rgba(var(--warn-rgb),0.12)', padding: '1px 5px', borderRadius: 4 }}>⚠ SLA</span>}
                   </div>
                   <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', marginBottom: 3, lineHeight: 1.3 }}>{t.subject}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: t.status !== 'resolved' ? 5 : 0 }}>{t.customer} · {t.assignee || 'Unassigned'}</div>
                   {t.status !== 'resolved' && (
-                    <div style={{ height: 3, background: 'rgba(99,102,241,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ height: 3, background: 'rgba(var(--brand-rgb),0.08)', borderRadius: 2, overflow: 'hidden' }}>
                       <div style={{ width: `${slaPct}%`, height: '100%', borderRadius: 2, background: slaPct > 50 ? 'var(--status-ok)' : slaPct > 20 ? 'var(--status-warn)' : 'var(--status-critical)', transition: 'width 0.4s ease' }} />
                     </div>
                   )}
@@ -215,7 +215,7 @@ function HelpdeskScreen() {
 
                 {/* Assign dropdown */}
                 <select value={tk.assignee || ''} onChange={e => assignTech(tk.id, e.target.value)}
-                  style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, padding: '3px 8px', cursor: 'pointer', fontFamily: 'var(--font-body)', outline: 'none' }}>
+                  style={{ background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, padding: '3px 8px', cursor: 'pointer', fontFamily: 'var(--font-body)', outline: 'none' }}>
                   <option value="">Unassigned</option>
                   {techs.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
@@ -223,7 +223,7 @@ function HelpdeskScreen() {
                 {/* SLA */}
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 10, color: 'var(--text-low)' }}>SLA</span>
-                  <div style={{ width: 80, height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
+                  <div style={{ width: 80, height: 5, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden' }}>
                     <div style={{ width: `${getSLAPct(tk)}%`, height: '100%', borderRadius: 3, background: getSLAPct(tk) > 50 ? 'var(--status-ok)' : getSLAPct(tk) > 20 ? 'var(--status-warn)' : 'var(--status-critical)' }} />
                   </div>
                   <span className="mono" style={{ fontSize: 11, color: parseFloat(getSLARemaining(tk)) < 1 ? 'var(--status-critical)' : parseFloat(getSLARemaining(tk)) < 2 ? 'var(--status-warn)' : 'var(--status-ok)', fontWeight: 600 }}>
@@ -234,8 +234,8 @@ function HelpdeskScreen() {
               <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-high)', marginBottom: 4 }}>{tk.subject}</div>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 11, color: 'var(--text-low)' }}>{tk.customer} · {tk.contact}</span>
-                {tk.relatedAsset && <span style={{ fontSize: 10, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', padding: '2px 8px', borderRadius: 4 }}>▢ {tk.relatedAsset}</span>}
-                {tk.tags.map(tag => <span key={tag} style={{ fontSize: 9, color: 'var(--text-low)', background: 'rgba(99,102,241,0.06)', padding: '1px 6px', borderRadius: 4 }}>#{tag}</span>)}
+                {tk.relatedAsset && <span style={{ fontSize: 10, color: 'var(--brand)', background: 'rgba(var(--brand-rgb),0.08)', padding: '2px 8px', borderRadius: 4 }}>▢ {tk.relatedAsset}</span>}
+                {tk.tags.map(tag => <span key={tag} style={{ fontSize: 9, color: 'var(--text-low)', background: 'rgba(var(--brand-rgb),0.06)', padding: '1px 6px', borderRadius: 4 }}>#{tag}</span>)}
               </div>
             </div>
 
@@ -243,23 +243,23 @@ function HelpdeskScreen() {
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
               {tk.thread.map((msg, i) => (
                 <div key={i} style={{ display: 'flex', gap: 10, opacity: msg.system ? 0.5 : 1 }}>
-                  {!msg.system && <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(99,102,241,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--brand)', flexShrink: 0, border: '1px solid var(--border-strong)' }}>{msg.from.split(' ').map(w => w[0]).join('').slice(0, 2)}</div>}
+                  {!msg.system && <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(var(--brand-rgb),0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--brand)', flexShrink: 0, border: '1px solid var(--border-strong)' }}>{msg.from.split(' ').map(w => w[0]).join('').slice(0, 2)}</div>}
                   {msg.system && <div style={{ width: 30, flexShrink: 0, display: 'flex', justifyContent: 'center', paddingTop: 6 }}><div style={{ width: 1, height: '100%', background: 'var(--border-subtle)' }} /></div>}
                   <div style={{ flex: 1 }}>
                     {!msg.system && <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}><span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{msg.from}</span><span style={{ fontSize: 10, color: 'var(--text-low)' }}>{msg.time}</span></div>}
-                    <div style={{ fontSize: msg.system ? 10 : 13, color: msg.system ? 'var(--text-low)' : 'var(--text-mid)', lineHeight: 1.55, fontStyle: msg.system ? 'italic' : 'normal', background: msg.system ? 'transparent' : 'rgba(99,102,241,0.03)', border: msg.system ? 'none' : '1px solid var(--border-subtle)', borderRadius: msg.system ? 0 : 8, padding: msg.system ? 0 : '8px 12px' }}>{msg.msg}</div>
+                    <div style={{ fontSize: msg.system ? 10 : 13, color: msg.system ? 'var(--text-low)' : 'var(--text-mid)', lineHeight: 1.55, fontStyle: msg.system ? 'italic' : 'normal', background: msg.system ? 'transparent' : 'rgba(var(--brand-rgb),0.03)', border: msg.system ? 'none' : '1px solid var(--border-subtle)', borderRadius: msg.system ? 0 : 8, padding: msg.system ? 0 : '8px 12px' }}>{msg.msg}</div>
                   </div>
                 </div>
               ))}
 
               {tk.aiSuggestion && (
-                <div style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '12px 14px' }}>
+                <div style={{ background: 'rgba(var(--brand-rgb),0.05)', border: '1px solid var(--border-strong)', borderRadius: 8, padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: 'var(--brand)', fontWeight: 700 }}>AI</div>
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(var(--brand-rgb),0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: 'var(--brand)', fontWeight: 700 }}>AI</div>
                     <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--brand)' }}>ShieldTech AI Suggested Resolution</span>
                   </div>
                   <p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.55, margin: 0 }}>{tk.aiSuggestion}</p>
-                  <button onClick={() => setReplyText(tk.aiSuggestion)} style={{ marginTop: 8, fontSize: 11, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, padding: '4px 10px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Use as Reply</button>
+                  <button onClick={() => setReplyText(tk.aiSuggestion)} style={{ marginTop: 8, fontSize: 11, color: 'var(--brand)', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, padding: '4px 10px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Use as Reply</button>
                 </div>
               )}
             </div>
@@ -269,12 +269,12 @@ function HelpdeskScreen() {
               <textarea value={replyText} onChange={e => setReplyText(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) sendReply(); }}
                 placeholder="Type a reply… (⌘Enter to send)"
-                style={{ width: '100%', height: 68, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 12, padding: '10px 12px', resize: 'none', fontFamily: 'var(--font-body)', outline: 'none', lineHeight: 1.5 }} />
+                style={{ width: '100%', height: 68, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 12, padding: '10px 12px', resize: 'none', fontFamily: 'var(--font-body)', outline: 'none', lineHeight: 1.5 }} />
               <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                <button onClick={sendReply} disabled={!replyText.trim()} style={{ flex: 1, padding: '7px 0', background: replyText.trim() ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.04)', border: '1px solid var(--border-strong)', borderRadius: 6, color: replyText.trim() ? 'var(--brand)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: replyText.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>Send Reply</button>
-                {tk.status !== 'resolved' && <button onClick={() => changeStatus(tk.id, 'resolved')} style={{ padding: '7px 14px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Resolve ✓</button>}
-                {tk.status === 'open' && <button onClick={() => changeStatus(tk.id, 'in-progress')} style={{ padding: '7px 14px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)', borderRadius: 6, color: 'var(--status-warn)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Start</button>}
-                {tk.status !== 'resolved' && tk.priority !== 'low' && <button onClick={() => escalateToIncident(tk)} style={{ padding: '7px 14px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Escalate →</button>}
+                <button onClick={sendReply} disabled={!replyText.trim()} style={{ flex: 1, padding: '7px 0', background: replyText.trim() ? 'rgba(var(--brand-rgb),0.1)' : 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-strong)', borderRadius: 6, color: replyText.trim() ? 'var(--brand)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: replyText.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>Send Reply</button>
+                {tk.status !== 'resolved' && <button onClick={() => changeStatus(tk.id, 'resolved')} style={{ padding: '7px 14px', background: 'rgba(var(--ok-rgb),0.08)', border: '1px solid rgba(var(--ok-rgb),0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Resolve ✓</button>}
+                {tk.status === 'open' && <button onClick={() => changeStatus(tk.id, 'in-progress')} style={{ padding: '7px 14px', background: 'rgba(var(--warn-rgb),0.06)', border: '1px solid rgba(var(--warn-rgb),0.15)', borderRadius: 6, color: 'var(--status-warn)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Start</button>}
+                {tk.status !== 'resolved' && tk.priority !== 'low' && <button onClick={() => escalateToIncident(tk)} style={{ padding: '7px 14px', background: 'rgba(var(--critical-rgb),0.06)', border: '1px solid rgba(var(--critical-rgb),0.15)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Escalate →</button>}
               </div>
             </div>
           </div>
@@ -321,19 +321,19 @@ function NewTicketModal({ techs, onClose, onCreate }) {
           <div key={f.key} style={{ marginBottom: 12 }}>
             <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 4 }}>{f.label}</div>
             <input value={form[f.key]} onChange={e => set(f.key, e.target.value)} placeholder={f.ph}
-              style={{ width: '100%', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+              style={{ width: '100%', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
           </div>
         ))}
         <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 4 }}>Priority</div>
-            <select value={form.priority} onChange={e => set('priority', e.target.value)} style={{ width: '100%', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+            <select value={form.priority} onChange={e => set('priority', e.target.value)} style={{ width: '100%', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
               {['critical','high','medium','low'].map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase()+p.slice(1)}</option>)}
             </select>
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 4 }}>Assign To</div>
-            <select value={form.assignee} onChange={e => set('assignee', e.target.value)} style={{ width: '100%', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+            <select value={form.assignee} onChange={e => set('assignee', e.target.value)} style={{ width: '100%', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
               <option value="">Unassigned</option>
               {techs.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
@@ -341,7 +341,7 @@ function NewTicketModal({ techs, onClose, onCreate }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={onClose} style={{ flex: 1, padding: '9px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-low)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-          <button onClick={submit} disabled={!form.customer || !form.subject} style={{ flex: 2, padding: '9px 0', background: form.customer && form.subject ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.04)', border: `1px solid ${form.customer && form.subject ? 'var(--border-strong)' : 'var(--border-subtle)'}`, borderRadius: 7, color: form.customer && form.subject ? 'var(--brand)' : 'var(--text-low)', fontSize: 12, fontWeight: 600, cursor: form.customer && form.subject ? 'pointer' : 'default', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>Create Ticket</button>
+          <button onClick={submit} disabled={!form.customer || !form.subject} style={{ flex: 2, padding: '9px 0', background: form.customer && form.subject ? 'rgba(var(--brand-rgb),0.12)' : 'rgba(var(--brand-rgb),0.04)', border: `1px solid ${form.customer && form.subject ? 'var(--border-strong)' : 'var(--border-subtle)'}`, borderRadius: 7, color: form.customer && form.subject ? 'var(--brand)' : 'var(--text-low)', fontSize: 12, fontWeight: 600, cursor: form.customer && form.subject ? 'pointer' : 'default', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>Create Ticket</button>
         </div>
       </div>
     </>

@@ -15,14 +15,14 @@ function BrIsoView({ opp, state }) {
   const H = 14; // wall height
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <Card style={{ padding: 0, overflow: 'hidden', background: 'radial-gradient(circle at 50% 0%, rgba(99,102,241,0.07), transparent 60%), #080D18' }}>
+      <Card style={{ padding: 0, overflow: 'hidden', background: 'radial-gradient(circle at 50% 0%, rgba(var(--brand-rgb),0.07), transparent 60%), #080D18' }}>
         <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <Icon name="building" size={15} color="var(--brand)" />
           <span style={{ font: '700 13px/1 var(--font-display)', color: 'var(--text-high)' }}>Digital site model</span>
           <span style={{ font: '500 11px/1 var(--font-body)', color: 'var(--text-low)' }}>— survey-grade · field-verified dimensions · BM-1 EL 100.00'</span>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {counts.filter(c => c.devices > 0).map(c => (
-              <span key={c.trade} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 999, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', font: '600 10.5px/1 var(--font-mono)', color: BR_TRADE_COLOR[c.trade] || '#7DD3FC' }}>
+              <span key={c.trade} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 999, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', font: '600 10.5px/1 var(--font-mono)', color: BR_TRADE_COLOR[c.trade] || '#7DD3FC' }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: BR_TRADE_COLOR[c.trade] || '#7DD3FC' }} />{c.devices} {c.trade}
               </span>
             ))}
@@ -32,8 +32,8 @@ function BrIsoView({ opp, state }) {
           {/* ground grid */}
           {[0, 20, 40, 60, 80, 100].map(g => (
             <React.Fragment key={g}>
-              <polyline points={`${P(g, 0, 0)} ${P(g, 80, 0)}`} fill="none" stroke="rgba(99,102,241,0.07)" strokeWidth="0.2" />
-              <polyline points={`${P(0, g * 0.8, 0)} ${P(100, g * 0.8, 0)}`} fill="none" stroke="rgba(99,102,241,0.07)" strokeWidth="0.2" />
+              <polyline points={`${P(g, 0, 0)} ${P(g, 80, 0)}`} fill="none" stroke="rgba(var(--brand-rgb),0.07)" strokeWidth="0.2" />
+              <polyline points={`${P(0, g * 0.8, 0)} ${P(100, g * 0.8, 0)}`} fill="none" stroke="rgba(var(--brand-rgb),0.07)" strokeWidth="0.2" />
             </React.Fragment>
           ))}
           {/* column grid bubbles on the slab */}
@@ -48,7 +48,7 @@ function BrIsoView({ opp, state }) {
             );
           })}
           {/* building slab */}
-          <polygon points={`${P(2, 2, 0)} ${P(98, 2, 0)} ${P(98, 78, 0)} ${P(2, 78, 0)}`} fill="rgba(99,102,241,0.05)" stroke="rgba(125,211,252,0.4)" strokeWidth="0.3" />
+          <polygon points={`${P(2, 2, 0)} ${P(98, 2, 0)} ${P(98, 78, 0)} ${P(2, 78, 0)}`} fill="rgba(var(--brand-rgb),0.05)" stroke="rgba(125,211,252,0.4)" strokeWidth="0.3" />
           {/* rooms as extruded blocks */}
           {plan.rooms.map((r, i) => {
             const x2 = r.x + r.w, y2 = r.y + r.h;
@@ -99,7 +99,7 @@ function BrIsoView({ opp, state }) {
             return (
               <g>
                 <path d={`M ${p.X} ${p.Y} l 1.3 0 l -1.3 1.3 Z`} fill="#FCD34D" />
-                <text x={p.X + 2} y={p.Y + 1} fontSize="1.4" fill="rgba(251,191,36,0.8)" fontFamily="var(--font-mono)">BM-1 EL 100.00'</text>
+                <text x={p.X + 2} y={p.Y + 1} fontSize="1.4" fill="rgba(var(--warn-rgb),0.8)" fontFamily="var(--font-mono)">BM-1 EL 100.00'</text>
               </g>
             );
           })()}
@@ -149,21 +149,21 @@ function BrAgentReplay({ opp, onClose }) {
     <div className="sw-fade" style={{ position: 'fixed', inset: 0, zIndex: 170, background: 'rgba(4,7,13,0.88)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{ width: 'min(640px, 100%)', maxHeight: '86vh', display: 'flex', flexDirection: 'column', borderRadius: 'var(--radius-lg)', background: '#0A0F1A', border: '1px solid var(--border-strong)', overflow: 'hidden', boxShadow: '0 30px 80px -20px rgba(0,0,0,0.8)' }}>
         <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(99,102,241,0.14)', border: '1px solid var(--border-strong)' }}><Icon name="sparkles" size={14} color="var(--brand)" /></span>
+          <span style={{ width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(var(--brand-rgb),0.14)', border: '1px solid var(--border-strong)' }}><Icon name="sparkles" size={14} color="var(--brand)" /></span>
           <div style={{ flex: 1 }}>
             <div style={{ font: '700 13px/1 var(--font-display)', color: 'var(--text-high)' }}>How SHIELDTECH AI built this bid</div>
             <div style={{ font: '500 10px/1 var(--font-mono)', color: 'var(--text-low)', letterSpacing: '0.08em', marginTop: 4 }}>OVERNIGHT RUN · {new Date(window.SW.TODAY + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase()} · 3M 11S TOTAL</div>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}><Icon name="x" size={16} color="var(--text-low)" /></button>
         </div>
-        <div style={{ height: 3, background: 'rgba(99,102,241,0.1)' }}>
+        <div style={{ height: 3, background: 'rgba(var(--brand-rgb),0.1)' }}>
           <div style={{ width: (n / steps.length) * 100 + '%', height: '100%', background: 'linear-gradient(90deg, var(--brand), var(--status-ok))', transition: 'width 0.5s ease' }} />
         </div>
         <div className="sw-scroll" style={{ padding: '14px 18px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, minHeight: 320 }}>
           {steps.slice(0, n).map((s, i) => (
             <div key={i} className="sw-up" style={{ display: 'flex', gap: 11, padding: '8px 4px', alignItems: 'flex-start' }}>
               <span style={{ font: '500 10.5px/1.7 var(--font-mono)', color: 'var(--text-low)', flexShrink: 0 }}>{s.t}</span>
-              <span style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)' }}><Icon name={s.icon} size={12} color={i === steps.length - 1 ? 'var(--status-ok)' : 'var(--brand)'} /></span>
+              <span style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)' }}><Icon name={s.icon} size={12} color={i === steps.length - 1 ? 'var(--status-ok)' : 'var(--brand)'} /></span>
               <span style={{ font: '400 12.5px/1.55 var(--font-body)', color: i === n - 1 ? 'var(--text-high)' : 'var(--text-mid)' }}>{s.txt}</span>
             </div>
           ))}
@@ -174,7 +174,7 @@ function BrAgentReplay({ opp, onClose }) {
             </div>
           )}
           {n >= steps.length && (
-            <div className="sw-up" style={{ marginTop: 8, padding: '12px 14px', borderRadius: 10, background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.3)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="sw-up" style={{ marginTop: 8, padding: '12px 14px', borderRadius: 10, background: 'rgba(var(--ok-rgb),0.06)', border: '1px solid rgba(var(--ok-rgb),0.3)', display: 'flex', alignItems: 'center', gap: 10 }}>
               <Icon name="checkCircle" size={16} color="var(--status-ok)" />
               <span style={{ font: '600 12.5px/1.4 var(--font-body)', color: 'var(--text-high)' }}>Bid fully assembled — every decision below is waiting for your approval in the Review deck.</span>
             </div>

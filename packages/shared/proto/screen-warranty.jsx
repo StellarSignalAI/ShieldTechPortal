@@ -47,9 +47,9 @@ function WarrantyScreen() {
   };
 
   const statusStyle = {
-    active:   { color: 'var(--status-ok)',       bg: 'rgba(52,211,153,0.12)',   label: 'Active' },
-    expiring: { color: 'var(--status-warn)',      bg: 'rgba(251,191,36,0.12)',   label: 'Expiring' },
-    expired:  { color: 'var(--status-critical)',  bg: 'rgba(244,63,94,0.1)',     label: 'Expired' },
+    active:   { color: 'var(--status-ok)',       bg: 'rgba(var(--ok-rgb),0.12)',   label: 'Active' },
+    expiring: { color: 'var(--status-warn)',      bg: 'rgba(var(--warn-rgb),0.12)',   label: 'Expiring' },
+    expired:  { color: 'var(--status-critical)',  bg: 'rgba(var(--critical-rgb),0.1)',     label: 'Expired' },
   };
 
   return (
@@ -72,19 +72,19 @@ function WarrantyScreen() {
 
       {/* Filter bar */}
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-        <div style={{ display: 'flex', background: 'rgba(99,102,241,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)', gap: 2 }}>
+        <div style={{ display: 'flex', background: 'rgba(var(--brand-rgb),0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)', gap: 2 }}>
           {['all','active','expiring','expired'].map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
               padding: '4px 14px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer',
-              background: filter === f ? 'rgba(99,102,241,0.18)' : 'transparent',
+              background: filter === f ? 'rgba(var(--brand-rgb),0.18)' : 'transparent',
               color: filter === f ? 'var(--brand)' : 'var(--text-low)',
               fontWeight: filter === f ? 600 : 400, transition: 'all 0.15s', textTransform: 'capitalize'
             }}>{f}</button>
           ))}
         </div>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search assets or customers…"
-          style={{ flex: 1, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '7px 14px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
-        <button onClick={() => shieldToast('Exporting warranty report to CSV', 'ok')} style={{ padding: '7px 16px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export Report</button>
+          style={{ flex: 1, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '7px 14px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        <button onClick={() => shieldToast('Exporting warranty report to CSV', 'ok')} style={{ padding: '7px 16px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export Report</button>
       </div>
 
       {/* Asset grid */}
@@ -102,7 +102,7 @@ function WarrantyScreen() {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <div>
-                    <div style={{ fontSize: 10, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', padding: '1px 7px', borderRadius: 4, display: 'inline-block', marginBottom: 4 }}>{a.type}</div>
+                    <div style={{ fontSize: 10, color: 'var(--brand)', background: 'rgba(var(--brand-rgb),0.08)', padding: '1px 7px', borderRadius: 4, display: 'inline-block', marginBottom: 4 }}>{a.type}</div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{a.name}</div>
                   </div>
                   <span style={{ fontSize: 9, fontWeight: 700, color: ss.color, background: ss.bg, padding: '2px 8px', borderRadius: 100, textTransform: 'uppercase', whiteSpace: 'nowrap', marginLeft: 8 }}>{ss.label}</span>
@@ -119,7 +119,7 @@ function WarrantyScreen() {
                       {a.daysLeft < 0 ? `Expired ${Math.abs(a.daysLeft)}d ago` : `${a.daysLeft}d remaining`}
                     </span>
                   </div>
-                  <div style={{ height: 5, background: 'rgba(99,102,241,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: 5, background: 'rgba(var(--brand-rgb),0.08)', borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{ width: `${a.pct}%`, height: '100%', borderRadius: 3, background: a.status === 'expired' ? 'var(--status-critical)' : a.status === 'expiring' ? 'var(--status-warn)' : 'var(--status-ok)', transition: 'width 0.5s ease' }} />
                   </div>
                   <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 2 }}>Expires {a.warrantyEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
@@ -127,12 +127,12 @@ function WarrantyScreen() {
 
                 <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                   {a.status === 'expired' && (
-                    <button onClick={() => shieldToast('Extended warranty quote drafted for ' + a.customer + ' — ' + a.name, 'ok')} style={{ flex: 1, padding: '5px 0', fontSize: 10, fontWeight: 600, color: 'var(--status-critical)', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 5, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                    <button onClick={() => shieldToast('Extended warranty quote drafted for ' + a.customer + ' — ' + a.name, 'ok')} style={{ flex: 1, padding: '5px 0', fontSize: 10, fontWeight: 600, color: 'var(--status-critical)', background: 'rgba(var(--critical-rgb),0.08)', border: '1px solid rgba(var(--critical-rgb),0.2)', borderRadius: 5, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                       Upsell Extended Warranty
                     </button>
                   )}
                   {a.status === 'expiring' && (
-                    <button onClick={() => shieldToast('Renewal sent to ' + a.customer + ' — ' + a.name)} style={{ flex: 1, padding: '5px 0', fontSize: 10, fontWeight: 600, color: 'var(--status-warn)', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 5, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                    <button onClick={() => shieldToast('Renewal sent to ' + a.customer + ' — ' + a.name)} style={{ flex: 1, padding: '5px 0', fontSize: 10, fontWeight: 600, color: 'var(--status-warn)', background: 'rgba(var(--warn-rgb),0.08)', border: '1px solid rgba(var(--warn-rgb),0.2)', borderRadius: 5, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                       Renew Warranty
                     </button>
                   )}

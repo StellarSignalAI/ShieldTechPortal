@@ -9,7 +9,7 @@ const SS_WALL_H = 9; /* ft */
 function SSVRWorld({ floor, theme }) {
   const dark = theme !== 'paper';
   const wallBg = dark ? 'linear-gradient(180deg, rgba(23,37,52,0.96), rgba(13,22,33,0.98))' : 'linear-gradient(180deg, #dfe7ee, #c9d4de)';
-  const wallEdge = dark ? 'rgba(99,102,241,0.55)' : 'rgba(30,58,95,0.6)';
+  const wallEdge = dark ? 'rgba(var(--brand-rgb),0.55)' : 'rgba(30,58,95,0.6)';
   const b = ssBounds(floor.rooms || []);
   const doorsFor = (roomId, edge) => (floor.doors || []).filter(d => d.room === roomId && d.edge === edge);
   return (
@@ -21,7 +21,7 @@ function SSVRWorld({ floor, theme }) {
         transform: `translate3d(${(b.x1 - 20) * SSV}px, 0px, ${(b.y1 - 20) * SSV}px) rotateX(90deg)`,
         transformOrigin: '0 0',
         background: dark
-          ? 'repeating-linear-gradient(0deg, rgba(99,102,241,0.12) 0 2px, transparent 2px 80px), repeating-linear-gradient(90deg, rgba(99,102,241,0.10) 0 2px, transparent 2px 80px), #060d16'
+          ? 'repeating-linear-gradient(0deg, rgba(var(--brand-rgb),0.12) 0 2px, transparent 2px 80px), repeating-linear-gradient(90deg, rgba(var(--brand-rgb),0.10) 0 2px, transparent 2px 80px), #060d16'
           : 'repeating-linear-gradient(0deg, rgba(30,58,95,0.15) 0 2px, transparent 2px 80px), repeating-linear-gradient(90deg, rgba(30,58,95,0.12) 0 2px, transparent 2px 80px), #e8ece9',
         backfaceVisibility: 'visible',
       }}></div>
@@ -42,7 +42,7 @@ function SSVRWorld({ floor, theme }) {
             backfaceVisibility: 'visible', opacity: 0.96,
           }}>
             {/* room name stencil */}
-            {i === 0 && <div style={{ position: 'absolute', left: '50%', top: '30%', transform: 'translateX(-50%) scaleX(-1)', fontSize: 26, fontWeight: 800, letterSpacing: '0.2em', color: dark ? 'rgba(99,102,241,0.25)' : 'rgba(30,58,95,0.25)', whiteSpace: 'nowrap', fontFamily: 'var(--font-body)' }}>{r.name.toUpperCase()}</div>}
+            {i === 0 && <div style={{ position: 'absolute', left: '50%', top: '30%', transform: 'translateX(-50%) scaleX(-1)', fontSize: 26, fontWeight: 800, letterSpacing: '0.2em', color: dark ? 'rgba(var(--brand-rgb),0.25)' : 'rgba(30,58,95,0.25)', whiteSpace: 'nowrap', fontFamily: 'var(--font-body)' }}>{r.name.toUpperCase()}</div>}
             {/* door / window openings */}
             {doorsFor(r.id, i).map(d => {
               const left = Math.max(0, (d.t * L - d.w / 2)) * SSV, w = d.w * SSV;
@@ -51,7 +51,7 @@ function SSVRWorld({ floor, theme }) {
                   <div style={{ position: 'absolute', right: 10, top: '48%', width: 14, height: 5, borderRadius: 3, background: wallEdge }}></div>
                 </div>
               ) : (
-                <div key={d.id} style={{ position: 'absolute', left, top: '28%', width: w, height: '38%', background: dark ? 'linear-gradient(160deg, rgba(90,160,220,0.30), rgba(40,80,130,0.35))' : 'linear-gradient(160deg, rgba(160,200,240,0.8), rgba(110,150,200,0.7))', border: `2px solid ${wallEdge}`, boxShadow: dark ? '0 0 26px rgba(99,102,241,0.25)' : 'none' }}></div>
+                <div key={d.id} style={{ position: 'absolute', left, top: '28%', width: w, height: '38%', background: dark ? 'linear-gradient(160deg, rgba(90,160,220,0.30), rgba(40,80,130,0.35))' : 'linear-gradient(160deg, rgba(160,200,240,0.8), rgba(110,150,200,0.7))', border: `2px solid ${wallEdge}`, boxShadow: dark ? '0 0 26px rgba(var(--brand-rgb),0.25)' : 'none' }}></div>
               );
             })}
           </div>
@@ -102,7 +102,7 @@ function SSVRMap({ floor, cam }) {
   const mx = p => (p[0] - b.x1) * sc + 6, my = p => (p[1] - b.y1) * sc + 6;
   return (
     <svg width={W} height={H} style={{ display: 'block' }}>
-      {(floor.rooms || []).map(r => <polygon key={r.id} points={r.poly.map(p => `${mx(p)},${my(p)}`).join(' ')} fill="rgba(99,102,241,0.10)" stroke="rgba(99,102,241,0.6)" strokeWidth="1"></polygon>)}
+      {(floor.rooms || []).map(r => <polygon key={r.id} points={r.poly.map(p => `${mx(p)},${my(p)}`).join(' ')} fill="rgba(var(--brand-rgb),0.10)" stroke="rgba(var(--brand-rgb),0.6)" strokeWidth="1"></polygon>)}
       <g transform={`translate(${mx([cam.x, cam.z])},${my([cam.x, cam.z])}) rotate(${cam.yaw * 180 / Math.PI})`}>
         <path d="M0,-7 L4,3 L0,1 L-4,3 Z" fill="#34D399"></path>
       </g>
@@ -194,8 +194,8 @@ function SSVR({ project, floorIdx, onFloorIdx, onPlaceDevice, onClose }) {
       </div>
       {/* crosshair */}
       <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 18, height: 18, pointerEvents: 'none', opacity: 0.8 }}>
-        <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1.5, background: 'rgba(99,102,241,0.9)', transform: 'translateX(-50%)' }}></div>
-        <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 1.5, background: 'rgba(99,102,241,0.9)', transform: 'translateY(-50%)' }}></div>
+        <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1.5, background: 'rgba(var(--brand-rgb),0.9)', transform: 'translateX(-50%)' }}></div>
+        <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 1.5, background: 'rgba(var(--brand-rgb),0.9)', transform: 'translateY(-50%)' }}></div>
       </div>
     </div>
   );
@@ -219,11 +219,11 @@ function SSVR({ project, floorIdx, onFloorIdx, onPlaceDevice, onClose }) {
         {/* wrapped pano strip ×2 for seamless scroll */}
         <div style={{ position: 'absolute', top: 0, bottom: 0, left: -px, width: W3 * 2, display: 'flex' }}>
           {[0, 1].map(k => (
-            <div key={k} style={{ width: W3, height: '100%', flexShrink: 0, background: `linear-gradient(180deg, hsl(${hue},30%,${dark ? 8 : 78}%) 0%, hsl(${hue},34%,${dark ? 14 : 66}%) 40%, hsl(${hue},20%,${dark ? 6 : 50}%) 62%, hsl(${hue},15%,${dark ? 10 : 58}%) 100%), repeating-linear-gradient(90deg, rgba(99,102,241,0.05) 0 2px, transparent 2px 240px)`, position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '58%', left: 0, right: 0, height: 2, background: 'rgba(99,102,241,0.3)' }}></div>
+            <div key={k} style={{ width: W3, height: '100%', flexShrink: 0, background: `linear-gradient(180deg, hsl(${hue},30%,${dark ? 8 : 78}%) 0%, hsl(${hue},34%,${dark ? 14 : 66}%) 40%, hsl(${hue},20%,${dark ? 6 : 50}%) 62%, hsl(${hue},15%,${dark ? 10 : 58}%) 100%), repeating-linear-gradient(90deg, rgba(var(--brand-rgb),0.05) 0 2px, transparent 2px 240px)`, position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '58%', left: 0, right: 0, height: 2, background: 'rgba(var(--brand-rgb),0.3)' }}></div>
               {/* fake architectural features around the sphere */}
               {[8, 26, 47, 63, 82].map((l, fi) => (
-                <div key={fi} style={{ position: 'absolute', left: `${l}%`, top: '30%', bottom: '38%', width: fi % 2 ? 90 : 46, background: fi % 2 ? `linear-gradient(160deg, rgba(90,160,220,${dark ? 0.16 : 0.5}), rgba(40,80,130,${dark ? 0.2 : 0.4}))` : `rgba(99,102,241,${dark ? 0.08 : 0.25})`, border: '2px solid rgba(99,102,241,0.35)' }}></div>
+                <div key={fi} style={{ position: 'absolute', left: `${l}%`, top: '30%', bottom: '38%', width: fi % 2 ? 90 : 46, background: fi % 2 ? `linear-gradient(160deg, rgba(90,160,220,${dark ? 0.16 : 0.5}), rgba(40,80,130,${dark ? 0.2 : 0.4}))` : `rgba(var(--brand-rgb),${dark ? 0.08 : 0.25})`, border: '2px solid rgba(var(--brand-rgb),0.35)' }}></div>
               ))}
               {devicesHere.map((v, di) => {
                 const d = ssDev(v.type);
@@ -240,7 +240,7 @@ function SSVR({ project, floorIdx, onFloorIdx, onPlaceDevice, onClose }) {
         <div style={{ position: 'absolute', top: 14, left: '50%', transform: 'translateX(-50%)', padding: '6px 16px', borderRadius: 20, background: 'rgba(4,10,16,0.8)', border: '1px solid var(--border-strong)', fontSize: 11, fontWeight: 700, color: 'var(--text-high)', whiteSpace: 'nowrap' }}>360° · {room ? room.name : '—'} <span className="mono" style={{ color: 'var(--text-low)', fontWeight: 400 }}>drag to look around</span></div>
         <div style={{ position: 'absolute', bottom: 86, left: 0, right: 0, display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap', padding: '0 14px' }}>
           {rooms.map((r, i) => (
-            <button key={r.id} onClick={() => { setPanoRoom(i); setPanoX(0); }} style={{ padding: '6px 12px', borderRadius: 16, border: '1px solid', borderColor: i === panoRoom ? 'var(--border-strong)' : 'var(--border-subtle)', background: i === panoRoom ? 'rgba(99,102,241,0.18)' : 'rgba(4,10,16,0.6)', color: i === panoRoom ? 'var(--brand)' : 'var(--text-mid)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{r.name}</button>
+            <button key={r.id} onClick={() => { setPanoRoom(i); setPanoX(0); }} style={{ padding: '6px 12px', borderRadius: 16, border: '1px solid', borderColor: i === panoRoom ? 'var(--border-strong)' : 'var(--border-subtle)', background: i === panoRoom ? 'rgba(var(--brand-rgb),0.18)' : 'rgba(4,10,16,0.6)', color: i === panoRoom ? 'var(--brand)' : 'var(--text-mid)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{r.name}</button>
           ))}
         </div>
       </div>
@@ -253,7 +253,7 @@ function SSVR({ project, floorIdx, onFloorIdx, onPlaceDevice, onClose }) {
       <div style={{ position: 'absolute', inset: 0, display: 'flex', gap: mode === 'stereo' ? 6 : 0, padding: mode === 'stereo' ? '46px 8px 150px' : 0, touchAction: 'none' }}>
         {mode === 'pano' ? pano() : mode === 'stereo' ? [viewport(0, '50%'), viewport(1, '50%')] : viewport(0, '100%')}
       </div>
-      {mode === 'stereo' && <div style={{ position: 'absolute', top: 46, bottom: 150, left: '50%', width: 2, background: 'rgba(99,102,241,0.25)', transform: 'translateX(-1px)', pointerEvents: 'none' }}></div>}
+      {mode === 'stereo' && <div style={{ position: 'absolute', top: 46, bottom: 150, left: '50%', width: 2, background: 'rgba(var(--brand-rgb),0.25)', transform: 'translateX(-1px)', pointerEvents: 'none' }}></div>}
 
       {/* top chrome */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: 'linear-gradient(180deg, rgba(2,5,10,0.85), transparent)', zIndex: 3 }}>
@@ -266,7 +266,7 @@ function SSVR({ project, floorIdx, onFloorIdx, onPlaceDevice, onClose }) {
         )}
         <div style={{ display: 'flex', borderRadius: 9, overflow: 'hidden', border: '1px solid var(--border-strong)' }}>
           {[['walk', 'Walk'], ['stereo', 'Headset'], ['pano', '360°']].map(([id, lb]) => (
-            <button key={id} onClick={() => setMode(id)} style={{ padding: '7px 11px', border: 'none', background: mode === id ? 'rgba(99,102,241,0.25)' : 'rgba(4,10,16,0.7)', color: mode === id ? '#fff' : 'var(--text-mid)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{lb}</button>
+            <button key={id} onClick={() => setMode(id)} style={{ padding: '7px 11px', border: 'none', background: mode === id ? 'rgba(var(--brand-rgb),0.25)' : 'rgba(4,10,16,0.7)', color: mode === id ? '#fff' : 'var(--text-mid)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{lb}</button>
           ))}
         </div>
       </div>
@@ -283,12 +283,12 @@ function SSVR({ project, floorIdx, onFloorIdx, onPlaceDevice, onClose }) {
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '10px 14px calc(16px + env(safe-area-inset-bottom, 0px))', display: 'flex', alignItems: 'flex-end', gap: 10, zIndex: 3, background: 'linear-gradient(0deg, rgba(2,5,10,0.8), transparent)' }}>
           {/* joystick */}
           <div data-ss-joy ref={joyRef} onPointerDown={joyDown} onPointerMove={e => joyMove(e)} onPointerUp={joyUp} onPointerLeave={joyUp}
-            style={{ width: 96, height: 96, borderRadius: '50%', border: '1.5px solid rgba(99,102,241,0.45)', background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, rgba(99,102,241,0.03) 70%)', position: 'relative', flexShrink: 0, touchAction: 'none' }}>
-            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 34, height: 34, borderRadius: '50%', background: 'rgba(99,102,241,0.35)', border: '1.5px solid var(--brand)', boxShadow: '0 0 14px rgba(99,102,241,0.4)' }}></div>
+            style={{ width: 96, height: 96, borderRadius: '50%', border: '1.5px solid rgba(var(--brand-rgb),0.45)', background: 'radial-gradient(circle, rgba(var(--brand-rgb),0.12) 0%, rgba(var(--brand-rgb),0.03) 70%)', position: 'relative', flexShrink: 0, touchAction: 'none' }}>
+            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 34, height: 34, borderRadius: '50%', background: 'rgba(var(--brand-rgb),0.35)', border: '1.5px solid var(--brand)', boxShadow: '0 0 14px rgba(var(--brand-rgb),0.4)' }}></div>
             <span style={{ position: 'absolute', left: '50%', bottom: -16, transform: 'translateX(-50%)', fontSize: 8, color: 'var(--text-low)', whiteSpace: 'nowrap' }}>MOVE</span>
           </div>
           <div style={{ flex: 1, textAlign: 'center', fontSize: 9.5, color: 'rgba(160,190,215,0.65)', paddingBottom: 8 }}>drag view to look · joystick to walk</div>
-          <button onClick={() => setPalette(p => !p)} style={{ padding: '12px 16px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0, boxShadow: '0 4px 18px rgba(99,102,241,0.35)' }}>＋ Device</button>
+          <button onClick={() => setPalette(p => !p)} style={{ padding: '12px 16px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0, boxShadow: '0 4px 18px rgba(var(--brand-rgb),0.35)' }}>＋ Device</button>
         </div>
       )}
 

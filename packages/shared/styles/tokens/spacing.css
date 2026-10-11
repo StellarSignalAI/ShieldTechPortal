@@ -8,7 +8,7 @@
   --space-2xl: 48px;
 
   --radius-sm: 6px;    /* buttons, chips */
-  --radius-md: 10px;   /* cards, panels */
-  --radius-lg: 16px;   /* modals, feature cards */
+  --radius-md: 8px;    /* cards, panels — UniFi console radius */
+  --radius-lg: 12px;   /* modals, feature cards */
   --radius-xl: 24px;   /* pill containers */
 }

@@ -11,7 +11,7 @@ function BrandingStudio({ showToast: parentToast }) {
         {[{id:'kit',label:'Brand Kit'},{id:'invoice',label:'Invoice Templates'},{id:'estimate',label:'Estimate Templates'},{id:'proposal',label:'Proposal Templates'}].map(t => (
           <button key={t.id} onClick={() => setView(t.id)} style={{
             padding: '6px 14px', borderRadius: 6, fontSize: 11, fontWeight: view===t.id?600:400,
-            background: view===t.id?'rgba(99,102,241,0.12)':'transparent',
+            background: view===t.id?'rgba(var(--brand-rgb),0.12)':'transparent',
             border: `1px solid ${view===t.id?'var(--brand)':'var(--border-subtle)'}`,
             color: view===t.id?'var(--brand)':'var(--text-mid)',
             cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -35,8 +35,8 @@ function BrandKit({ showToast }) {
   // templates read the same record, so Save here changes those too.
   const [brand, setBrand] = useShieldStore(brandStore);
   const [logo, setLogo] = React.useState('shield');
-  const [primaryColor, setPrimaryColor] = React.useState(brand.primaryColor || '#6366F1');
-  const [secondaryColor, setSecondaryColor] = React.useState(brand.secondaryColor || '#0C0A14');
+  const [primaryColor, setPrimaryColor] = React.useState(brand.primaryColor || 'var(--brand)');
+  const [secondaryColor, setSecondaryColor] = React.useState(brand.secondaryColor || 'var(--card)');
   const [font, setFont] = React.useState(brand.font || 'Montserrat');
   const [footer, setFooter] = React.useState(brand.footer || 'Thank you for your business. Payment due upon receipt unless terms specified. Make checks payable to ShieldTech Solutions LLC. For questions, contact billing@shieldtechsolutions.com.');
   const saveKit = () => {
@@ -78,7 +78,7 @@ function BrandKit({ showToast }) {
         <GlassPanel>
           <div className="label-sm" style={{ marginBottom: 12 }}>LOGO</div>
           <div style={{ display: 'flex', gap: 14 }}>
-            <div style={{ width: 120, height: 80, borderRadius: 8, border: '2px dashed var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(99,102,241,0.03)' }} onClick={() => showToast('Custom logo upload isn\'t wired up yet — the ShieldTech emblem is used')}>
+            <div style={{ width: 120, height: 80, borderRadius: 8, border: '2px dashed var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(var(--brand-rgb),0.03)' }} onClick={() => showToast('Custom logo upload isn\'t wired up yet — the ShieldTech emblem is used')}>
               <ShieldLogo size={40} />
             </div>
             <div style={{ flex: 1 }}>
@@ -91,7 +91,7 @@ function BrandKit({ showToast }) {
               <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                 <Segmented options={['Left','Center','Right']} defaultValue="Left"
                   btnStyle={{ padding: '3px 8px', borderRadius: 3, fontSize: 9 }}
-                  activeStyle={{ background: 'rgba(99,102,241,0.1)', border: '1px solid var(--brand)', color: 'var(--brand)' }}
+                  activeStyle={{ background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--brand)', color: 'var(--brand)' }}
                   idleStyle={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-low)' }} />
               </div>
             </div>
@@ -116,7 +116,7 @@ function BrandKit({ showToast }) {
             ))}
           </div>
           <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
-            {['#6366F1','#4F4CC7','#0D2137','#F43F5E','#34D399','#8B5CF6'].map(c => (
+            {['var(--brand)','var(--brand-pressed)','#0D2137','#F43F5E','#34D399','#8B5CF6'].map(c => (
               <div key={c} onClick={() => setPrimaryColor(c)} style={{ width: 24, height: 24, borderRadius: 4, background: c, cursor: 'pointer', border: primaryColor===c?'2px solid #fff':'2px solid transparent' }} />
             ))}
           </div>
@@ -127,7 +127,7 @@ function BrandKit({ showToast }) {
           <div className="label-sm" style={{ marginBottom: 12 }}>TYPOGRAPHY</div>
           <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
             {['Montserrat','Inter','Georgia','Helvetica'].map(f => (
-              <button key={f} onClick={() => setFont(f)} style={{ padding: '6px 12px', borderRadius: 5, fontSize: 12, background: font===f?'rgba(99,102,241,0.1)':'transparent', border: `1px solid ${font===f?'var(--brand)':'var(--border-subtle)'}`, color: font===f?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: f }}>{f}</button>
+              <button key={f} onClick={() => setFont(f)} style={{ padding: '6px 12px', borderRadius: 5, fontSize: 12, background: font===f?'rgba(var(--brand-rgb),0.1)':'transparent', border: `1px solid ${font===f?'var(--brand)':'var(--border-subtle)'}`, color: font===f?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: f }}>{f}</button>
             ))}
           </div>
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Heading: {font} · Body: IBM Plex Sans · Mono: JetBrains Mono</div>
@@ -141,7 +141,7 @@ function BrandKit({ showToast }) {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[{l:'Company',v:brand.company || '—'},{l:'Address',v:brand.address || '—'},{l:'Phone',v:brand.phone || '—'},{l:'Email',v:brand.email || '—'},{l:'License',v:brand.license || '—'}].map((f,i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                 <span style={{ fontSize: 11, color: 'var(--text-low)' }}>{f.l}</span>
                 <span style={{ fontSize: 11, color: 'var(--text-mid)' }}>{f.v}</span>
               </div>
@@ -153,7 +153,7 @@ function BrandKit({ showToast }) {
       {/* Default Footer & Terms */}
       <GlassPanel>
         <div className="label-sm" style={{ marginBottom: 8 }}>DEFAULT FOOTER & PAYMENT INSTRUCTIONS</div>
-        <textarea value={footer} onChange={(e) => setFooter(e.target.value)} style={{ width: '100%', minHeight: 60, padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
+        <textarea value={footer} onChange={(e) => setFooter(e.target.value)} style={{ width: '100%', minHeight: 60, padding: '8px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
       </GlassPanel>
     </div>
   );
@@ -168,7 +168,7 @@ function TemplateEditor({ docType, showToast }) {
   const [editorTab, setEditorTab] = React.useState('design');
   const [layout, setLayout] = React.useState(saved.layout || 'modern');
   const [logoPos, setLogoPos] = React.useState(saved.logoPos || 'left');
-  const [accentColor, setAccentColor] = React.useState(saved.accentColor || '#6366F1');
+  const [accentColor, setAccentColor] = React.useState(saved.accentColor || 'var(--brand)');
   const [headerFont, setHeaderFont] = React.useState(saved.headerFont || 'Montserrat');
   const [showPO, setShowPO] = React.useState(saved.showPO != null ? saved.showPO : true);
   const [showTerms, setShowTerms] = React.useState(saved.showTerms != null ? saved.showTerms : true);
@@ -217,12 +217,12 @@ function TemplateEditor({ docType, showToast }) {
             <div key={i} onClick={() => setActiveTemplate(i)} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '7px 10px', borderRadius: 5, marginBottom: 3, cursor: 'pointer',
-              background: activeTemplate===i?'rgba(99,102,241,0.08)':'transparent',
+              background: activeTemplate===i?'rgba(var(--brand-rgb),0.08)':'transparent',
               border: `1px solid ${activeTemplate===i?'var(--brand)':'transparent'}`
             }}>
               <span style={{ fontSize: 12, color: activeTemplate===i?'var(--brand)':'var(--text-mid)' }}>{t.name}</span>
               <div style={{ display: 'flex', gap: 3 }}>
-                {activeTemplate===i && <span style={{ fontSize: 9, color: 'var(--status-ok)', padding: '1px 6px', borderRadius: 3, background: 'rgba(52,211,153,0.08)' }}>Default</span>}
+                {activeTemplate===i && <span style={{ fontSize: 9, color: 'var(--status-ok)', padding: '1px 6px', borderRadius: 3, background: 'rgba(var(--ok-rgb),0.08)' }}>Default</span>}
                 <button onClick={(e) => { e.stopPropagation(); showToast('Multiple template variants aren\'t supported yet'); }} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>⊕</button>
               </div>
             </div>
@@ -235,7 +235,7 @@ function TemplateEditor({ docType, showToast }) {
           {['design','content','emails'].map(t => (
             <button key={t} onClick={() => setEditorTab(t)} style={{
               flex: 1, padding: '6px', borderRadius: 5, fontSize: 11, fontWeight: editorTab===t?600:400,
-              background: editorTab===t?'rgba(99,102,241,0.12)':'transparent',
+              background: editorTab===t?'rgba(var(--brand-rgb),0.12)':'transparent',
               border: `1px solid ${editorTab===t?'var(--brand)':'var(--border-subtle)'}`,
               color: editorTab===t?'var(--brand)':'var(--text-mid)',
               cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize'
@@ -249,20 +249,20 @@ function TemplateEditor({ docType, showToast }) {
             <div className="label-sm" style={{ marginBottom: 8 }}>LAYOUT STYLE</div>
             <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
               {['modern','classic','minimal'].map(l => (
-                <button key={l} onClick={() => setLayout(l)} style={{ flex: 1, padding: '6px', borderRadius: 5, fontSize: 10, background: layout===l?'rgba(99,102,241,0.1)':'transparent', border: `1px solid ${layout===l?'var(--brand)':'var(--border-subtle)'}`, color: layout===l?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{l}</button>
+                <button key={l} onClick={() => setLayout(l)} style={{ flex: 1, padding: '6px', borderRadius: 5, fontSize: 10, background: layout===l?'rgba(var(--brand-rgb),0.1)':'transparent', border: `1px solid ${layout===l?'var(--brand)':'var(--border-subtle)'}`, color: layout===l?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{l}</button>
               ))}
             </div>
 
             <div className="label-sm" style={{ marginBottom: 8 }}>LOGO PLACEMENT</div>
             <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
               {['left','center','right'].map(p => (
-                <button key={p} onClick={() => setLogoPos(p)} style={{ flex: 1, padding: '5px', borderRadius: 4, fontSize: 10, background: logoPos===p?'rgba(99,102,241,0.1)':'transparent', border: `1px solid ${logoPos===p?'var(--brand)':'var(--border-subtle)'}`, color: logoPos===p?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{p}</button>
+                <button key={p} onClick={() => setLogoPos(p)} style={{ flex: 1, padding: '5px', borderRadius: 4, fontSize: 10, background: logoPos===p?'rgba(var(--brand-rgb),0.1)':'transparent', border: `1px solid ${logoPos===p?'var(--brand)':'var(--border-subtle)'}`, color: logoPos===p?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{p}</button>
               ))}
             </div>
 
             <div className="label-sm" style={{ marginBottom: 8 }}>ACCENT COLOR</div>
             <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-              {['#6366F1','#4F4CC7','#8B5CF6','#F43F5E','#FBBF24','#34D399'].map(c => (
+              {['var(--brand)','var(--brand-pressed)','#8B5CF6','#F43F5E','#FBBF24','#34D399'].map(c => (
                 <div key={c} onClick={() => setAccentColor(c)} style={{ width: 24, height: 24, borderRadius: 4, background: c, cursor: 'pointer', border: accentColor===c?'2px solid #fff':'2px solid transparent' }} />
               ))}
             </div>
@@ -270,7 +270,7 @@ function TemplateEditor({ docType, showToast }) {
             <div className="label-sm" style={{ marginBottom: 8 }}>HEADING FONT</div>
             <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
               {['Montserrat','Georgia','Helvetica'].map(f => (
-                <button key={f} onClick={() => setHeaderFont(f)} style={{ padding: '4px 10px', borderRadius: 4, fontSize: 10, background: headerFont===f?'rgba(99,102,241,0.1)':'transparent', border: `1px solid ${headerFont===f?'var(--brand)':'var(--border-subtle)'}`, color: headerFont===f?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: f }}>{f}</button>
+                <button key={f} onClick={() => setHeaderFont(f)} style={{ padding: '4px 10px', borderRadius: 4, fontSize: 10, background: headerFont===f?'rgba(var(--brand-rgb),0.1)':'transparent', border: `1px solid ${headerFont===f?'var(--brand)':'var(--border-subtle)'}`, color: headerFont===f?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: f }}>{f}</button>
               ))}
             </div>
 
@@ -278,7 +278,7 @@ function TemplateEditor({ docType, showToast }) {
             <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
               <Segmented options={['Filled','Bordered','Minimal']} defaultValue="Filled"
                 btnStyle={{ flex: 1, padding: '4px', borderRadius: 4, fontSize: 10 }}
-                activeStyle={{ background: 'rgba(99,102,241,0.1)', border: '1px solid var(--brand)', color: 'var(--brand)' }}
+                activeStyle={{ background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--brand)', color: 'var(--brand)' }}
                 idleStyle={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-low)' }} />
             </div>
 
@@ -292,7 +292,7 @@ function TemplateEditor({ docType, showToast }) {
           <GlassPanel style={{ padding: 14 }}>
             <div className="label-sm" style={{ marginBottom: 8 }}>HEADER FIELDS</div>
             {[{l:'PO Number',v:showPO,s:setShowPO},{l:'Terms',v:showTerms,s:setShowTerms},{l:'Sales Rep',v:showSalesRep,s:setShowSalesRep},{l:'Signature Block',v:showSig,s:setShowSig}].map((f,i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{f.l}</span>
                 <div onClick={() => f.s(!f.v)} style={{ width: 28, height: 14, borderRadius: 7, background: f.v?'var(--brand)':'rgba(92,111,134,0.3)', position: 'relative', cursor: 'pointer' }}>
                   <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: f.v?16:2, transition: 'left 0.2s' }} />
@@ -313,12 +313,12 @@ function TemplateEditor({ docType, showToast }) {
             <div className="label-sm" style={{ marginBottom: 8, marginTop: 14 }}>PRICING DISPLAY</div>
             <div style={{ display: 'flex', gap: 4 }}>
               {['itemized','by-system','lump-sum'].map(m => (
-                <button key={m} onClick={() => setPricingMode(m)} style={{ flex: 1, padding: '5px', borderRadius: 4, fontSize: 10, background: pricingMode===m?'rgba(99,102,241,0.1)':'transparent', border: `1px solid ${pricingMode===m?'var(--brand)':'var(--border-subtle)'}`, color: pricingMode===m?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{m.replace('-',' ')}</button>
+                <button key={m} onClick={() => setPricingMode(m)} style={{ flex: 1, padding: '5px', borderRadius: 4, fontSize: 10, background: pricingMode===m?'rgba(var(--brand-rgb),0.1)':'transparent', border: `1px solid ${pricingMode===m?'var(--brand)':'var(--border-subtle)'}`, color: pricingMode===m?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{m.replace('-',' ')}</button>
               ))}
             </div>
 
             <div className="label-sm" style={{ marginBottom: 6, marginTop: 14 }}>CUSTOM MESSAGE</div>
-            <textarea defaultValue="Thank you for choosing ShieldTech Solutions for your security needs." style={{ width: '100%', minHeight: 50, padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
+            <textarea defaultValue="Thank you for choosing ShieldTech Solutions for your security needs." style={{ width: '100%', minHeight: 50, padding: '6px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
           </GlassPanel>
         )}
 
@@ -326,15 +326,15 @@ function TemplateEditor({ docType, showToast }) {
         {editorTab === 'emails' && (
           <GlassPanel style={{ padding: 14 }}>
             <div className="label-sm" style={{ marginBottom: 8 }}>EMAIL SUBJECT</div>
-            <input value={emailSubject} onChange={e => setEmailSubject(e.target.value)} style={{ width: '100%', padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', marginBottom: 12 }} />
+            <input value={emailSubject} onChange={e => setEmailSubject(e.target.value)} style={{ width: '100%', padding: '7px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', marginBottom: 12 }} />
 
             <div className="label-sm" style={{ marginBottom: 8 }}>EMAIL BODY</div>
-            <textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} style={{ width: '100%', minHeight: 120, padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', lineHeight: 1.6, marginBottom: 10 }} />
+            <textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} style={{ width: '100%', minHeight: 120, padding: '8px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', lineHeight: 1.6, marginBottom: 10 }} />
 
             <div className="label-sm" style={{ marginBottom: 6 }}>MERGE TOKENS</div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 }}>
               {['{customer}','{amount}','{due_date}','{link}','{invoice_num}','{company}'].map(t => (
-                <span key={t} className="mono" style={{ padding: '2px 8px', borderRadius: 3, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', fontSize: 9, color: 'var(--brand)', cursor: 'pointer' }} onClick={() => { try { navigator.clipboard.writeText(t); showToast(`Copied: ${t}`); } catch { showToast('Copy failed'); } }}>{t}</span>
+                <span key={t} className="mono" style={{ padding: '2px 8px', borderRadius: 3, background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', fontSize: 9, color: 'var(--brand)', cursor: 'pointer' }} onClick={() => { try { navigator.clipboard.writeText(t); showToast(`Copied: ${t}`); } catch { showToast('Copy failed'); } }}>{t}</span>
               ))}
             </div>
 
@@ -346,9 +346,9 @@ function TemplateEditor({ docType, showToast }) {
             </div>
 
             <div className="label-sm" style={{ marginBottom: 6, marginTop: 10 }}>REMINDER EMAIL</div>
-            <textarea defaultValue={`Hi {customer},\n\nThis is a friendly reminder that {invoice_num} for {amount} is due on {due_date}.\n\nPay online: {link}\n\nThank you,\nShieldTech Solutions`} style={{ width: '100%', minHeight: 80, padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', lineHeight: 1.5 }} />
+            <textarea defaultValue={`Hi {customer},\n\nThis is a friendly reminder that {invoice_num} for {amount} is due on {due_date}.\n\nPay online: {link}\n\nThank you,\nShieldTech Solutions`} style={{ width: '100%', minHeight: 80, padding: '6px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical', lineHeight: 1.5 }} />
 
-            <button onClick={sendTestEmail} style={{ width: '100%', marginTop: 10, padding: '8px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✉ Send Test Email</button>
+            <button onClick={sendTestEmail} style={{ width: '100%', marginTop: 10, padding: '8px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✉ Send Test Email</button>
           </GlassPanel>
         )}
 

@@ -94,7 +94,7 @@ function CustomerScreen() {
                 Your access control system firmware is due for an update. Newer firmware includes enhanced encryption protocols.
               </p>
               <button onClick={() => shieldToast('Opening firmware update details…', 'info')} style={{
-                background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)',
+                background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)',
                 borderRadius: 6, padding: '6px 16px', color: 'var(--brand)',
                 fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)'
               }}>Learn More</button>
@@ -113,10 +113,10 @@ function CustomerScreen() {
               <div key={i} style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '10px 12px', borderRadius: 'var(--radius-sm)',
-                background: 'rgba(5,7,10,0.4)', border: '1px solid var(--border-subtle)',
+                background: 'rgba(var(--canvas-rgb),0.4)', border: '1px solid var(--border-subtle)',
                 transition: 'border-color 0.2s'
               }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(99,102,241,0.2)'}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(var(--brand-rgb),0.2)'}
               onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
               >
                 <span style={{ fontSize: 18, opacity: 0.7 }}>{d.logo}</span>
@@ -140,7 +140,7 @@ function CustomerScreen() {
             {events.map((ev, i) => (
               <div key={i} style={{
                 display: 'flex', gap: 12, padding: '12px 0',
-                borderBottom: i < events.length - 1 ? '1px solid rgba(99,102,241,0.05)' : 'none'
+                borderBottom: i < events.length - 1 ? '1px solid rgba(var(--brand-rgb),0.05)' : 'none'
               }}>
                 <div style={{ width: 20, display: 'flex', justifyContent: 'center', paddingTop: 2 }}>
                   <StatusDot status={ev.type === 'ok' ? 'online' : ev.type === 'warn' ? 'warning' : 'info'} size={7} />

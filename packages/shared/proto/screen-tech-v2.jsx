@@ -143,7 +143,7 @@ function TimeViewV2() {
       <GlassPanel style={{
         textAlign: 'center', padding: '20px 16px',
         borderTop: running ? '2px solid var(--brand)' : '2px solid var(--text-low)',
-        boxShadow: running ? '0 -4px 20px -8px rgba(99,102,241,0.2)' : 'none'
+        boxShadow: running ? '0 -4px 20px -8px rgba(var(--brand-rgb),0.2)' : 'none'
       }}>
         {/* Timer display */}
         <div className="mono" style={{
@@ -157,7 +157,7 @@ function TimeViewV2() {
         <div style={{ display: 'flex', gap: 6, marginBottom: 12, width: '100%' }}>
           <select value={activeProject} onChange={e => setActiveProject(e.target.value)} style={{
             flex: '1.4 1 0', minWidth: 0, width: '100%', textOverflow: 'ellipsis',
-            padding: '5px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
+            padding: '5px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)',
             borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none'
           }}>
             {projectGroups.map(g => (
@@ -168,7 +168,7 @@ function TimeViewV2() {
           </select>
           <select value={activeTask} onChange={e => setActiveTask(e.target.value)} style={{
             flex: '1 1 0', minWidth: 0, width: '100%', textOverflow: 'ellipsis',
-            padding: '5px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
+            padding: '5px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)',
             borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none'
           }}>
             {(tasks[activeProject] || tasks.default).map(t => <option key={t} value={t} style={{ background: 'var(--card)' }}>{t}</option>)}
@@ -185,7 +185,7 @@ function TimeViewV2() {
             {['on-site','travel','admin'].map(tag => (
               <button key={tag} onClick={() => setActiveTag(tag)} style={{
                 padding: '2px 8px', borderRadius: 100, fontSize: 9,
-                background: tag === activeTag ? 'rgba(99,102,241,0.1)' : 'transparent',
+                background: tag === activeTag ? 'rgba(var(--brand-rgb),0.1)' : 'transparent',
                 border: '1px solid var(--border-subtle)',
                 color: tag === activeTag ? 'var(--brand)' : 'var(--text-low)',
                 cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'uppercase'
@@ -209,11 +209,11 @@ function TimeViewV2() {
             }
           }} style={{
             width: 56, height: 56, borderRadius: '50%',
-            background: running ? 'rgba(244,63,94,0.12)' : 'rgba(52,211,153,0.12)',
+            background: running ? 'rgba(var(--critical-rgb),0.12)' : 'rgba(var(--ok-rgb),0.12)',
             border: `2px solid ${running ? 'var(--status-critical)' : 'var(--status-ok)'}`,
             color: running ? 'var(--status-critical)' : 'var(--status-ok)',
             fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: running ? '0 0 16px -4px rgba(244,63,94,0.2)' : '0 0 16px -4px rgba(52,211,153,0.2)'
+            boxShadow: running ? '0 0 16px -4px rgba(var(--critical-rgb),0.2)' : '0 0 16px -4px rgba(var(--ok-rgb),0.2)'
           }}>{running ? '⏸' : '▶'}</button>
           {running && (
             <button onClick={() => {
@@ -223,13 +223,13 @@ function TimeViewV2() {
               else { setElapsed(0); clearTimer(); showToast('Timer under a minute — entry not saved'); }
             }} style={{
               width: 44, height: 44, borderRadius: '50%', alignSelf: 'center',
-              background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)',
+              background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)',
               color: 'var(--text-mid)', fontSize: 14, cursor: 'pointer'
             }}>⏹</button>
           )}
           <button onClick={() => setManualEntryOpen(true)} style={{
             width: 44, height: 44, borderRadius: '50%', alignSelf: 'center',
-            background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)',
+            background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)',
             color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: 'var(--font-body)', fontWeight: 600
@@ -248,7 +248,7 @@ function TimeViewV2() {
         {[{id:'today',label:'Today'},{id:'week',label:'Week'},{id:'pay-period',label:'Pay Period'}].map(v => (
           <button key={v.id} onClick={() => setViewMode(v.id)} style={{
             flex: 1, padding: '6px', fontSize: 11, fontWeight: 500,
-            background: viewMode === v.id ? 'rgba(99,102,241,0.12)' : 'transparent',
+            background: viewMode === v.id ? 'rgba(var(--brand-rgb),0.12)' : 'transparent',
             border: 'none', color: viewMode === v.id ? 'var(--brand)' : 'var(--text-low)',
             cursor: 'pointer', fontFamily: 'var(--font-body)'
           }}>{v.label}</button>
@@ -264,7 +264,7 @@ function TimeViewV2() {
             <span>{(todayEntries.filter(e => e.workDate === todayKey).reduce((s, e) => s + e.dur, 0) / 3600).toFixed(1)}h total</span>
           </div>
           {loadError && (
-            <div style={{ padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', fontSize: 11, color: 'var(--status-warn)' }}>
+            <div style={{ padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: 'rgba(var(--warn-rgb),0.06)', border: '1px solid rgba(var(--warn-rgb),0.25)', fontSize: 11, color: 'var(--status-warn)' }}>
               ⚠ Couldn't load your entries ({loadError}) — <span onClick={refreshEntries} style={{ textDecoration: 'underline', cursor: 'pointer' }}>retry</span>
             </div>
           )}
@@ -276,7 +276,7 @@ function TimeViewV2() {
           {todayEntries.map((e, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0',
-              borderBottom: '1px solid rgba(99,102,241,0.05)',
+              borderBottom: '1px solid rgba(var(--brand-rgb),0.05)',
               opacity: e.active ? 1 : 0.8
             }}>
               <div style={{
@@ -287,16 +287,16 @@ function TimeViewV2() {
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 13, fontWeight: e.active ? 600 : 400, color: 'var(--text-high)' }}>{e.project}</span>
-                  {e.active && <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--brand)', background: 'rgba(99,102,241,0.1)', padding: '1px 5px', borderRadius: 3, textTransform: 'uppercase' }}>LIVE</span>}
+                  {e.active && <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--brand)', background: 'rgba(var(--brand-rgb),0.1)', padding: '1px 5px', borderRadius: 3, textTransform: 'uppercase' }}>LIVE</span>}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{e.task}</div>
                 <div style={{ display: 'flex', gap: 4, marginTop: 3 }}>
                   {e.tags.map(t => (
-                    <span key={t} style={{ fontSize: 8, padding: '1px 5px', borderRadius: 3, background: t === 'rejected' ? 'rgba(244,63,94,0.12)' : 'rgba(99,102,241,0.06)', color: t === 'rejected' ? 'var(--status-critical)' : 'var(--text-low)', textTransform: 'uppercase' }}>{t}</span>
+                    <span key={t} style={{ fontSize: 8, padding: '1px 5px', borderRadius: 3, background: t === 'rejected' ? 'rgba(var(--critical-rgb),0.12)' : 'rgba(var(--brand-rgb),0.06)', color: t === 'rejected' ? 'var(--status-critical)' : 'var(--text-low)', textTransform: 'uppercase' }}>{t}</span>
                   ))}
                 </div>
                 {e.status === 'rejected' && e.rejection && (
-                  <div style={{ marginTop: 4, padding: '5px 8px', borderRadius: 5, background: 'rgba(244,63,94,0.07)', border: '1px solid rgba(244,63,94,0.2)', fontSize: 10.5, color: 'var(--status-critical)', lineHeight: 1.4 }}>
+                  <div style={{ marginTop: 4, padding: '5px 8px', borderRadius: 5, background: 'rgba(var(--critical-rgb),0.07)', border: '1px solid rgba(var(--critical-rgb),0.2)', fontSize: 10.5, color: 'var(--status-critical)', lineHeight: 1.4 }}>
                     Office: {e.rejection} — delete this entry and resubmit corrected time.
                   </div>
                 )}
@@ -336,15 +336,15 @@ function TimeViewV2() {
             </thead>
             <tbody>
               {weekData.map((d, i) => (
-                <tr key={i} style={{ background: i === 3 ? 'rgba(99,102,241,0.04)' : 'transparent' }}>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                <tr key={i} style={{ background: i === 3 ? 'rgba(var(--brand-rgb),0.04)' : 'transparent' }}>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                     <div style={{ fontSize: 12, fontWeight: 500 }}>{d.day}</div>
                     <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{d.date}</div>
                   </td>
-                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', color: 'var(--brand)' }}>{d.work || '—'}</td>
-                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', color: 'var(--status-warn)' }}>{d.drive || '—'}</td>
-                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', color: 'var(--text-low)' }}>{d.break_ || '—'}</td>
-                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, textAlign: 'right', fontWeight: 600 }}>{d.total || '—'}</td>
+                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right', color: 'var(--brand)' }}>{d.work || '—'}</td>
+                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right', color: 'var(--status-warn)' }}>{d.drive || '—'}</td>
+                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right', color: 'var(--text-low)' }}>{d.break_ || '—'}</td>
+                  <td className="mono" style={{ padding: '8px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 13, textAlign: 'right', fontWeight: 600 }}>{d.total || '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -395,15 +395,15 @@ function TimeViewV2() {
             <StatusBadge status="pending" label="In Progress" />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
-            <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(99,102,241,0.03)', borderRadius: 6 }}>
+            <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(var(--brand-rgb),0.03)', borderRadius: 6 }}>
               <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--brand)' }}>{ppWork.toFixed(1)}h</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>Billable</div>
             </div>
-            <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(99,102,241,0.03)', borderRadius: 6 }}>
+            <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(var(--brand-rgb),0.03)', borderRadius: 6 }}>
               <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--status-warn)' }}>{ppDrive.toFixed(1)}h</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>Drive</div>
             </div>
-            <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(99,102,241,0.03)', borderRadius: 6 }}>
+            <div style={{ textAlign: 'center', padding: '10px', background: 'rgba(var(--brand-rgb),0.03)', borderRadius: 6 }}>
               <div className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-high)' }}>{(ppWork + ppDrive).toFixed(1)}h</div>
               <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>Total</div>
             </div>
@@ -413,7 +413,7 @@ function TimeViewV2() {
             {ppDays.map((h, i) => (
               <div key={i} style={{
                 flex: 1, height: h > 0 ? `${(h/10)*100}%` : 2,
-                background: h > 8 ? 'var(--status-warn)' : h > 0 ? 'var(--brand)' : 'rgba(99,102,241,0.05)',
+                background: h > 8 ? 'var(--status-warn)' : h > 0 ? 'var(--brand)' : 'rgba(var(--brand-rgb),0.05)',
                 borderRadius: '2px 2px 0 0', opacity: h > 0 ? 0.7 : 0.3,
                 minHeight: 2
               }} title={h > 0 ? `${h}h` : 'Off'} />
@@ -423,7 +423,7 @@ function TimeViewV2() {
             <span style={{ fontSize: 8, color: 'var(--text-low)' }}>{ppStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
             <span style={{ fontSize: 8, color: 'var(--text-low)' }}>{ppEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
           </div>
-          <div style={{ marginTop: 12, padding: '8px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)' }}>
+          <div style={{ marginTop: 12, padding: '8px 10px', borderRadius: 6, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>⟡</span>
               <span style={{ fontSize: 11, color: 'var(--brand)' }}>ShieldTech AI insights appear here as time entries accumulate.</span>
@@ -442,7 +442,7 @@ function TimeViewV2() {
             </div>
             <div style={{ padding: '14px 18px' }}>
               <textarea autoFocus value={stopNote} onChange={e => setStopNote(e.target.value)} placeholder="e.g. Mounted 4 domes in the lobby, terminated + tested runs 3–6" rows={3}
-                style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: `1px solid ${stopNote.trim() ? 'var(--border-subtle)' : 'rgba(251,191,36,0.4)'}`, borderRadius: 6, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
+                style={{ width: '100%', padding: '8px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: `1px solid ${stopNote.trim() ? 'var(--border-subtle)' : 'rgba(var(--warn-rgb),0.4)'}`, borderRadius: 6, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
             </div>
             <div style={{ padding: '12px 18px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button onClick={() => { setStopNote(null); startRef.current = Date.now() - elapsed * 1000; persistTimer(); setRunning(true); }} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Keep Timing</button>
@@ -481,7 +481,7 @@ function TimeViewV2() {
             <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
                 <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 4 }}>Project</div>
-                <select value={manualEntry.project} onChange={e => setManualEntry(prev => ({...prev, project: e.target.value}))} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }}>
+                <select value={manualEntry.project} onChange={e => setManualEntry(prev => ({...prev, project: e.target.value}))} style={{ width: '100%', padding: '8px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }}>
                   {projectGroups.map(g => (
                     <optgroup key={g.label} label={g.label}>
                       {g.opts.map(o => <option key={o.ref} value={o.ref}>{o.label}</option>)}
@@ -491,22 +491,22 @@ function TimeViewV2() {
               </div>
               <div>
                 <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 4 }}>Task</div>
-                <select value={manualEntry.task} onChange={e => setManualEntry(prev => ({...prev, task: e.target.value}))} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }}>
+                <select value={manualEntry.task} onChange={e => setManualEntry(prev => ({...prev, task: e.target.value}))} style={{ width: '100%', padding: '8px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }}>
                   {(tasks[manualEntry.project] || tasks.default).map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 4 }}>Date</div>
-                <input type="date" value={manualEntry.date} onChange={e => setManualEntry(prev => ({...prev, date: e.target.value}))} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+                <input type="date" value={manualEntry.date} onChange={e => setManualEntry(prev => ({...prev, date: e.target.value}))} style={{ width: '100%', padding: '8px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 4 }}>Start Time</div>
-                  <input type="time" value={manualEntry.startTime} onChange={e => setManualEntry(prev => ({...prev, startTime: e.target.value}))} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+                  <input type="time" value={manualEntry.startTime} onChange={e => setManualEntry(prev => ({...prev, startTime: e.target.value}))} style={{ width: '100%', padding: '8px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
                 </div>
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 4 }}>End Time</div>
-                  <input type="time" value={manualEntry.endTime} onChange={e => setManualEntry(prev => ({...prev, endTime: e.target.value}))} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+                  <input type="time" value={manualEntry.endTime} onChange={e => setManualEntry(prev => ({...prev, endTime: e.target.value}))} style={{ width: '100%', padding: '8px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
                 </div>
               </div>
               {/* Duration preview */}
@@ -517,7 +517,7 @@ function TimeViewV2() {
                 const hrs = Math.floor(mins / 60);
                 const rm = mins % 60;
                 return mins > 0 ? (
-                  <div style={{ padding: '6px 10px', borderRadius: 5, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
+                  <div style={{ padding: '6px 10px', borderRadius: 5, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
                     <span className="mono" style={{ fontSize: 14, fontWeight: 600, color: 'var(--brand)' }}>{hrs}h {rm}m</span>
                     <span style={{ fontSize: 10, color: 'var(--text-low)', marginLeft: 6 }}>duration</span>
                   </div>
@@ -530,7 +530,7 @@ function TimeViewV2() {
               </div>
               <div>
                 <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 4 }}>Notes <span style={{ color: 'var(--status-warn)' }}>*</span> <span style={{ textTransform: 'none', fontWeight: 400 }}>(required)</span></div>
-                <textarea value={manualEntry.notes} onChange={e => setManualEntry(prev => ({...prev, notes: e.target.value}))} placeholder="What did you work on? Required before saving." rows={2} style={{ width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: `1px solid ${manualEntry.notes.trim() ? 'var(--border-subtle)' : 'rgba(251,191,36,0.4)'}`, borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
+                <textarea value={manualEntry.notes} onChange={e => setManualEntry(prev => ({...prev, notes: e.target.value}))} placeholder="What did you work on? Required before saving." rows={2} style={{ width: '100%', padding: '8px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: `1px solid ${manualEntry.notes.trim() ? 'var(--border-subtle)' : 'rgba(var(--warn-rgb),0.4)'}`, borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
               </div>
             </div>
             <div style={{ padding: '12px 18px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
@@ -632,14 +632,14 @@ function ExpenseView() {
       {/* Quick-snap — pick the category, then shoot */}
       <div style={{ display: 'flex', gap: 6 }}>
         {['Materials', 'Fuel', 'Tools', 'Meals', 'Other'].map(c => (
-          <button key={c} onClick={() => setSnapCat(c)} style={{ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, background: snapCat === c ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${snapCat === c ? 'var(--brand)' : 'var(--border-subtle)'}`, color: snapCat === c ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
+          <button key={c} onClick={() => setSnapCat(c)} style={{ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, background: snapCat === c ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', border: `1px solid ${snapCat === c ? 'var(--brand)' : 'var(--border-subtle)'}`, color: snapCat === c ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
         ))}
       </div>
       <input ref={snapRef} type="file" accept="image/*" capture="environment" onChange={snap} style={{ display: 'none' }} />
       <button disabled={snapBusy} onClick={() => snapRef.current && snapRef.current.click()} style={{
         padding: '14px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none',
         borderRadius: 10, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)',
-        opacity: snapBusy ? 0.5 : 1, boxShadow: '0 0 18px -6px rgba(99,102,241,0.5)'
+        opacity: snapBusy ? 0.5 : 1, boxShadow: '0 0 18px -6px rgba(var(--brand-rgb),0.5)'
       }}>{snapBusy ? 'Uploading…' : `📷 Snap a ${snapCat.toLowerCase()} receipt`}</button>
       <button onClick={() => setShowForm(s => !s)} style={{ padding: '9px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
         {showForm ? 'Cancel' : '+ Manual expense (no receipt)'}
@@ -651,15 +651,15 @@ function ExpenseView() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div>
               <div className="label-sm" style={{ marginBottom: 4 }}>AMOUNT</div>
-              <input type="number" inputMode="decimal" value={f.amount} onChange={e => setF(p => ({ ...p, amount: e.target.value }))} placeholder="0.00" style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 16, fontFamily: 'var(--font-mono)', outline: 'none' }} />
+              <input type="number" inputMode="decimal" value={f.amount} onChange={e => setF(p => ({ ...p, amount: e.target.value }))} placeholder="0.00" style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 16, fontFamily: 'var(--font-mono)', outline: 'none' }} />
             </div>
             <div>
               <div className="label-sm" style={{ marginBottom: 4 }}>DESCRIPTION</div>
-              <input value={f.desc} onChange={e => setF(p => ({ ...p, desc: e.target.value }))} placeholder="What was this for?" style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 16, fontFamily: 'var(--font-body)', outline: 'none' }} />
+              <input value={f.desc} onChange={e => setF(p => ({ ...p, desc: e.target.value }))} placeholder="What was this for?" style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 16, fontFamily: 'var(--font-body)', outline: 'none' }} />
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               {['Materials','Fuel','Tools','Meals','Other'].map(c => (
-                <button key={c} onClick={() => setF(p => ({ ...p, category: c }))} style={{ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, background: f.category === c ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${f.category === c ? 'var(--brand)' : 'var(--border-subtle)'}`, color: f.category === c ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
+                <button key={c} onClick={() => setF(p => ({ ...p, category: c }))} style={{ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, background: f.category === c ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', border: `1px solid ${f.category === c ? 'var(--brand)' : 'var(--border-subtle)'}`, color: f.category === c ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c}</button>
               ))}
             </div>
             <button onClick={submit} style={{ padding: '11px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Submit Expense</button>
@@ -672,7 +672,7 @@ function ExpenseView() {
         <div>
           <div className="label-sm" style={{ marginBottom: 8 }}>MY RECEIPTS</div>
           {myReceipts.slice(0, 12).map(r => (
-            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
               <div style={{ width: 4, height: 26, borderRadius: 2, background: statusColors[r.status] || 'var(--text-low)' }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12.5, color: 'var(--text-high)' }}>{r.vendor || r.note || 'Receipt'}</div>
@@ -689,7 +689,7 @@ function ExpenseView() {
         <div className="label-sm" style={{ marginBottom: 8 }}>RECENT EXPENSES</div>
         {expenses.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-low)', padding: '10px 0' }}>Nothing yet — snap a receipt or add a manual expense.</div>}
         {expenses.slice(0, 20).map((e, i) => (
-          <div key={e.id || i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+          <div key={e.id || i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
             <div style={{ width: 4, height: 28, borderRadius: 2, background: statusColors[e.status] }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, color: 'var(--text-high)' }}>{e.desc}</div>
@@ -782,7 +782,7 @@ function VehicleInspectionView() {
           {cat.items.map((item, ii) => (
             <label key={ii} style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0',
-              borderBottom: ii < cat.items.length - 1 ? '1px solid rgba(99,102,241,0.04)' : 'none', cursor: 'pointer'
+              borderBottom: ii < cat.items.length - 1 ? '1px solid rgba(var(--brand-rgb),0.04)' : 'none', cursor: 'pointer'
             }}>
               <div onClick={() => {
                 const copy = [...checks];
@@ -804,9 +804,9 @@ function VehicleInspectionView() {
       {/* Report issue */}
       <GlassPanel style={{ borderLeft: '3px solid var(--status-warn)' }}>
         <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>Report an Issue</div>
-        <textarea value={issueText} onChange={e => setIssueText(e.target.value)} placeholder="Describe the issue (flat tire, missing tool, vehicle damage)…" rows={3} style={{ width: '100%', padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
+        <textarea value={issueText} onChange={e => setIssueText(e.target.value)} placeholder="Describe the issue (flat tire, missing tool, vehicle damage)…" rows={3} style={{ width: '100%', padding: '8px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
         <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-          <button onClick={submitIssue} style={{ flex: 1, padding: '8px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 6, color: 'var(--status-warn)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send Issue to Dispatch</button>
+          <button onClick={submitIssue} style={{ flex: 1, padding: '8px', background: 'rgba(var(--warn-rgb),0.1)', border: '1px solid rgba(var(--warn-rgb),0.25)', borderRadius: 6, color: 'var(--status-warn)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send Issue to Dispatch</button>
         </div>
       </GlassPanel>
 
@@ -877,7 +877,7 @@ function PartsRequestView() {
             <span className="mono">{r.job}</span>
           </div>
           {r.tracking && (
-            <div style={{ marginTop: 6, padding: '4px 8px', borderRadius: 4, background: 'rgba(99,102,241,0.04)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ marginTop: 6, padding: '4px 8px', borderRadius: 4, background: 'rgba(var(--brand-rgb),0.04)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <Icon name="package" size={12} color="var(--text-low)" />
               <span className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{r.tracking}</span>
             </div>
@@ -1013,11 +1013,11 @@ function TechAssetsView() {
         {a.ip && <button onClick={() => { navigator.clipboard?.writeText?.(a.ip); showToast('IP copied'); }} className="glass" style={{ flex: 1, padding: '10px', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="topology" size={12} color="var(--text-mid)" /> Copy IP</button>}
       </div>
       <GlassPanel style={{ padding: 12 }}><div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}><Icon name="info" size={12} color="var(--text-low)" /><span className="label-sm">IDENTITY</span></div>
-        {[{l:'ID',v:a.id},{l:'Type',v:a.type},{l:'Mfg',v:a.mfg},{l:'Model',v:a.model},{l:'Serial',v:a.serial},{l:'MAC',v:a.mac||'—'}].map((f,i) => (<div key={i} onClick={() => {if(f.v!=='—'){navigator.clipboard?.writeText?.(f.v);showToast('Copied');}}} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)', cursor: f.v!=='—'?'pointer':'default' }}><span style={{ fontSize: 12, color: 'var(--text-low)' }}>{f.l}</span><span className="mono" style={{ fontSize: 12, color: 'var(--text-mid)' }}>{f.v}</span></div>))}
+        {[{l:'ID',v:a.id},{l:'Type',v:a.type},{l:'Mfg',v:a.mfg},{l:'Model',v:a.model},{l:'Serial',v:a.serial},{l:'MAC',v:a.mac||'—'}].map((f,i) => (<div key={i} onClick={() => {if(f.v!=='—'){navigator.clipboard?.writeText?.(f.v);showToast('Copied');}}} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', cursor: f.v!=='—'?'pointer':'default' }}><span style={{ fontSize: 12, color: 'var(--text-low)' }}>{f.l}</span><span className="mono" style={{ fontSize: 12, color: 'var(--text-mid)' }}>{f.v}</span></div>))}
       </GlassPanel>
       {a.ip && <GlassPanel style={{ padding: 12 }}><div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}><Icon name="topology" size={12} color="var(--text-low)" /><span className="label-sm">NETWORK</span></div>
-        {[{l:'IP',v:a.ip},{l:'Firmware',v:a.firmware}].map((f,i) => (<div key={i} onClick={() => {navigator.clipboard?.writeText?.(f.v);showToast('Copied');}} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)', cursor: 'pointer' }}><span style={{ fontSize: 12, color: 'var(--text-low)' }}>{f.l}</span><span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{f.v}</span></div>))}
-        {a.fwUpdate && <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)', fontSize: 11, color: 'var(--status-warn)', display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="warning-tri" size={12} color="var(--status-warn)" /> Firmware update available</div>}
+        {[{l:'IP',v:a.ip},{l:'Firmware',v:a.firmware}].map((f,i) => (<div key={i} onClick={() => {navigator.clipboard?.writeText?.(f.v);showToast('Copied');}} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', cursor: 'pointer' }}><span style={{ fontSize: 12, color: 'var(--text-low)' }}>{f.l}</span><span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{f.v}</span></div>))}
+        {a.fwUpdate && <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(var(--warn-rgb),0.06)', border: '1px solid rgba(var(--warn-rgb),0.15)', fontSize: 11, color: 'var(--status-warn)', display: 'flex', alignItems: 'center', gap: 4 }}><Icon name="warning-tri" size={12} color="var(--status-warn)" /> Firmware update available</div>}
       </GlassPanel>}
       <GlassPanel style={{ padding: 12, borderLeft: '3px solid var(--status-warn)' }}><div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}><Icon name="access-control" size={12} color="var(--status-warn)" /><span className="label-sm" style={{ color: 'var(--status-warn)' }}>CREDENTIALS</span></div>
         {passwords.filter(p => {
@@ -1027,14 +1027,14 @@ function TechAssetsView() {
           if (!dev) return false;
           const tok = dev.split(' ')[0];
           return dev === a.name || (tok && a.name.includes(tok)) || (a.mfg && dev.includes(a.mfg));
-        }).map((p,i) => (<div key={i} style={{ padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+        }).map((p,i) => (<div key={i} style={{ padding: '6px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}><span style={{ fontSize: 11, color: 'var(--text-mid)' }}>{p.label}</span><span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.username}</span></div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span className="mono" style={{ fontSize: 12, flex: 1, color: revealed[p.id]?'var(--text-high)':'var(--text-low)', letterSpacing: revealed[p.id]?0:'0.1em' }}>{revealed[p.id]?p.password:'••••••••'}</span>
             <button onClick={() => setRevealed(r => ({...r,[p.id]:!r[p.id]}))} style={{ padding: '2px 8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{revealed[p.id]?'Hide':'Show'}</button>
-            <button onClick={() => {navigator.clipboard?.writeText?.(p.password);showToast('Copied');}} style={{ padding: '2px 8px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy</button></div></div>))}
+            <button onClick={() => {navigator.clipboard?.writeText?.(p.password);showToast('Copied');}} style={{ padding: '2px 8px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy</button></div></div>))}
       </GlassPanel>
       <GlassPanel style={{ padding: 12 }}><div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}><Icon name="wrench" size={12} color="var(--text-low)" /><span className="label-sm">INSTALLATION</span></div>
-        {[{l:'Mount',v:a.mount},{l:'Cable',v:a.cable},{l:'Switch/Port',v:a.switchPort||'—'},{l:'Location',v:a.site+' / '+a.room}].map((f,i) => (<div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><span style={{ fontSize: 12, color: 'var(--text-low)' }}>{f.l}</span><span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{f.v}</span></div>))}
+        {[{l:'Mount',v:a.mount},{l:'Cable',v:a.cable},{l:'Switch/Port',v:a.switchPort||'—'},{l:'Location',v:a.site+' / '+a.room}].map((f,i) => (<div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><span style={{ fontSize: 12, color: 'var(--text-low)' }}>{f.l}</span><span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{f.v}</span></div>))}
       </GlassPanel>
       {a.notes && <GlassPanel style={{ padding: 12 }}><div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}><Icon name="note" size={12} color="var(--text-low)" /><span className="label-sm">NOTES</span></div><p style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.5, margin: 0 }}>{a.notes}</p></GlassPanel>}
       <div style={{ display: 'flex', gap: 6 }}>
@@ -1042,7 +1042,7 @@ function TechAssetsView() {
           if (!txt || !txt.trim()) return;
           assetStore.set(list => (list || []).map(x => x.id === a.id ? { ...x, notes: (x.notes ? x.notes + '\n' : '') + txt.trim() } : x));
           setSelectedAsset(prev => prev ? { ...prev, notes: (prev.notes ? prev.notes + '\n' : '') + txt.trim() } : prev);
-        } })} style={{ flex: 1, padding: '10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="note" size={12} color="var(--brand)" /> Add Note</button>
+        } })} style={{ flex: 1, padding: '10px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}><Icon name="note" size={12} color="var(--brand)" /> Add Note</button>
         <button onClick={() => {
           assetStore.set(list => (list || []).map(x => x.id === a.id ? { ...x, status: 'flagged' } : x));
           setSelectedAsset(prev => prev ? { ...prev, status: 'flagged' } : prev);
@@ -1053,22 +1053,22 @@ function TechAssetsView() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <select value={selectedCustomer} onChange={e => setSelectedCustomer(e.target.value)} style={{ padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', fontWeight: 500 }}>
+      <select value={selectedCustomer} onChange={e => setSelectedCustomer(e.target.value)} style={{ padding: '8px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none', fontWeight: 500 }}>
         <option value="">All customers</option>
         {customers.map(c => <option key={c} value={c}>{c}</option>)}
       </select>
       <input ref={docFileRef} type="file" style={{ display: 'none' }} onChange={uploadDoc} />
       <div style={{ display: 'flex', gap: 0, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
-        {tabs.map(t => (<button key={t.id} onClick={() => setActiveTab(t.id)} style={{ flex: 1, padding: '8px 4px', fontSize: 11, fontWeight: activeTab===t.id?600:400, background: activeTab===t.id?'rgba(99,102,241,0.12)':'transparent', border: 'none', color: activeTab===t.id?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>{t.l}<span className="mono" style={{ fontSize: 9, opacity: 0.6 }}>{t.c}</span></button>))}
+        {tabs.map(t => (<button key={t.id} onClick={() => setActiveTab(t.id)} style={{ flex: 1, padding: '8px 4px', fontSize: 11, fontWeight: activeTab===t.id?600:400, background: activeTab===t.id?'rgba(var(--brand-rgb),0.12)':'transparent', border: 'none', color: activeTab===t.id?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>{t.l}<span className="mono" style={{ fontSize: 9, opacity: 0.6 }}>{t.c}</span></button>))}
       </div>
       {activeTab === 'configs' && (<>
         <div style={{ display: 'flex', gap: 6 }}>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, IP, serial..." style={{ flex: 1, padding: '8px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, IP, serial..." style={{ flex: 1, padding: '8px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={addConfig} style={{ width: 38, height: 38, borderRadius: 8, background: 'var(--brand)', border: 'none', color: '#fff', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>+</button>
       </div>
       
         <div style={{ display: 'flex', gap: 4, overflow: 'auto', paddingBottom: 2 }}>
-          {types.map(t => (<button key={t} onClick={() => setFilter(t)} style={{ padding: '4px 10px', borderRadius: 100, fontSize: 10, whiteSpace: 'nowrap', background: filter===t?'rgba(99,102,241,0.12)':'transparent', border: '1px solid '+(filter===t?'var(--brand)':'var(--border-subtle)'), color: filter===t?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t==='all'?'All':t}</button>))}
+          {types.map(t => (<button key={t} onClick={() => setFilter(t)} style={{ padding: '4px 10px', borderRadius: 100, fontSize: 10, whiteSpace: 'nowrap', background: filter===t?'rgba(var(--brand-rgb),0.12)':'transparent', border: '1px solid '+(filter===t?'var(--brand)':'var(--border-subtle)'), color: filter===t?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t==='all'?'All':t}</button>))}
         </div>
         {filtered.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, border: '1px dashed var(--border-subtle)', borderRadius: 10 }}>No configurations documented yet — add devices with ＋ and they sync to the portal Assets screen.</div>}
         {filtered.map(a => (<button key={a.id} onClick={() => setSelectedAsset(a)} className="glass" style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, border: '1px solid var(--border-subtle)', cursor: 'pointer', borderRadius: 10, textAlign: 'left', fontFamily: 'var(--font-body)', width: '100%' }}>
@@ -1086,7 +1086,7 @@ function TechAssetsView() {
             <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', width: 60 }}>{p.username}</span>
             <span className="mono" style={{ fontSize: 12, flex: 1, color: revealed[p.id]?'var(--text-high)':'var(--text-low)', letterSpacing: revealed[p.id]?0:'0.1em' }}>{revealed[p.id]?p.password:'••••••••'}</span>
             <button onClick={() => setRevealed(r => ({...r,[p.id]:!r[p.id]}))} style={{ padding: '3px 8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{revealed[p.id]?'Hide':'Show'}</button>
-            <button onClick={() => {navigator.clipboard?.writeText?.(p.password);showToast('Copied');}} style={{ padding: '3px 8px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy</button>
+            <button onClick={() => {navigator.clipboard?.writeText?.(p.password);showToast('Copied');}} style={{ padding: '3px 8px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Copy</button>
           </div></GlassPanel>))}
       </div>)}
       {activeTab === 'docs' && (<div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -1180,7 +1180,7 @@ function MobileTopologyView({ configs = [], networks = [], showToast }) {
                     <span className="mono" style={{ color: 'var(--brand)' }}>{d.ip}</span>
                   </div>
                 </div>
-                <button onClick={() => {navigator.clipboard?.writeText?.(d.ip);showToast('IP copied');}} style={{ padding: '4px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Copy IP</button>
+                <button onClick={() => {navigator.clipboard?.writeText?.(d.ip);showToast('IP copied');}} style={{ padding: '4px 10px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Copy IP</button>
               </div>
             );
           })}

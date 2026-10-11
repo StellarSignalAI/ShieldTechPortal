@@ -122,7 +122,7 @@ function SSAttach({ project, update, onClose }) {
           </button>
         ))}
         <div style={{ display: 'flex', gap: 7, marginTop: 4 }}>
-          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="…or new project name" style={{ flex: 1, padding: '11px 12px', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 12.5, fontFamily: 'var(--font-body)', outline: 'none', minWidth: 0 }} />
+          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="…or new project name" style={{ flex: 1, padding: '11px 12px', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 12.5, fontFamily: 'var(--font-body)', outline: 'none', minWidth: 0 }} />
           <button onClick={() => newName.trim() && link(newName.trim())} style={{ padding: '0 16px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Create</button>
         </div>
       </div>

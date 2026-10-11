@@ -56,6 +56,9 @@ function CalendarHubScreen() {
 
 /* CARE — the console plus the asset inventory it monitors. */
 function MonitoringHubScreen() {
+  /* ShieldTech OS (UniFi-pattern console) owns Care when it is loaded; the
+     tabbed console below stays as the fallback. */
+  if (window.ShieldOSConsole) return <window.ShieldOSConsole initial={hubInitial() === 'assets' ? 'assets' : hubInitial() === 'cameras' ? 'protect' : 'sites'} />;
   return <HubTabs initial={hubInitial() === 'assets' ? 'assets' : 'console'} tabs={[
     { id: 'console', label: 'Monitoring Console', C: window.MonitoringConsole },
     { id: 'assets', label: 'Assets', C: window.AssetsScreen },

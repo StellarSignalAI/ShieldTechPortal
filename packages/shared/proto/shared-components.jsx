@@ -22,7 +22,7 @@ class AppErrorBoundary extends React.Component {
           <div style={{ fontSize: 30, marginBottom: 10 }}>⚠️</div>
           <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-high)', marginBottom: 6 }}>This screen hit a snag</div>
           <div style={{ fontSize: 12.5, color: 'var(--text-mid)', lineHeight: 1.5, marginBottom: 8 }}>It didn’t take down the rest of the app. You can head back and keep working.</div>
-          <div className="mono" style={{ fontSize: 10.5, color: 'var(--text-low)', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '8px 10px', marginBottom: 14, wordBreak: 'break-word', textAlign: 'left' }}>{msg}</div>
+          <div className="mono" style={{ fontSize: 10.5, color: 'var(--text-low)', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '8px 10px', marginBottom: 14, wordBreak: 'break-word', textAlign: 'left' }}>{msg}</div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
             <button onClick={this.reset} style={{ padding: '9px 18px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Back to dashboard</button>
             <button onClick={() => window.location.reload()} style={{ padding: '9px 18px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Reload</button>
@@ -153,18 +153,18 @@ function StatusDot({ status = 'online', size = 8, pulse }) {
 /* ── Status Badge ── */
 function StatusBadge({ status, label }) {
   const map = {
-    online: { bg: 'rgba(52,211,153,0.12)', color: 'var(--status-ok)', text: label || 'Online' },
-    warning: { bg: 'rgba(251,191,36,0.12)', color: 'var(--status-warn)', text: label || 'Warning' },
-    critical: { bg: 'rgba(244,63,94,0.12)', color: 'var(--status-critical)', text: label || 'Critical' },
+    online: { bg: 'rgba(var(--ok-rgb),0.12)', color: 'var(--status-ok)', text: label || 'Online' },
+    warning: { bg: 'rgba(var(--warn-rgb),0.12)', color: 'var(--status-warn)', text: label || 'Warning' },
+    critical: { bg: 'rgba(var(--critical-rgb),0.12)', color: 'var(--status-critical)', text: label || 'Critical' },
     offline: { bg: 'rgba(92,111,134,0.15)', color: 'var(--text-low)', text: label || 'Offline' },
-    info: { bg: 'rgba(99,102,241,0.12)', color: 'var(--status-info)', text: label || 'Info' },
-    paid: { bg: 'rgba(52,211,153,0.12)', color: 'var(--status-ok)', text: label || 'Paid' },
-    overdue: { bg: 'rgba(244,63,94,0.12)', color: 'var(--status-critical)', text: label || 'Overdue' },
-    pending: { bg: 'rgba(251,191,36,0.12)', color: 'var(--status-warn)', text: label || 'Pending' },
+    info: { bg: 'rgba(var(--brand-rgb),0.12)', color: 'var(--status-info)', text: label || 'Info' },
+    paid: { bg: 'rgba(var(--ok-rgb),0.12)', color: 'var(--status-ok)', text: label || 'Paid' },
+    overdue: { bg: 'rgba(var(--critical-rgb),0.12)', color: 'var(--status-critical)', text: label || 'Overdue' },
+    pending: { bg: 'rgba(var(--warn-rgb),0.12)', color: 'var(--status-warn)', text: label || 'Pending' },
     draft: { bg: 'rgba(92,111,134,0.15)', color: 'var(--text-low)', text: label || 'Draft' },
-    hot: { bg: 'rgba(244,63,94,0.12)', color: 'var(--status-critical)', text: label || 'Hot' },
-    warm: { bg: 'rgba(251,191,36,0.12)', color: 'var(--status-warn)', text: label || 'Warm' },
-    cold: { bg: 'rgba(99,102,241,0.12)', color: 'var(--status-info)', text: label || 'Cold' },
+    hot: { bg: 'rgba(var(--critical-rgb),0.12)', color: 'var(--status-critical)', text: label || 'Hot' },
+    warm: { bg: 'rgba(var(--warn-rgb),0.12)', color: 'var(--status-warn)', text: label || 'Warm' },
+    cold: { bg: 'rgba(var(--brand-rgb),0.12)', color: 'var(--status-info)', text: label || 'Cold' },
   };
   const s = map[status] || map.info;
   return (
@@ -194,7 +194,7 @@ function SectionHeader({ title, action, actionLabel, icon, count }) {
           {title}
         </h3>
         {count != null && (
-          <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)', background: 'rgba(99,102,241,0.08)', padding: '2px 8px', borderRadius: 100 }}>{count}</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)', background: 'rgba(var(--brand-rgb),0.08)', padding: '2px 8px', borderRadius: 100 }}>{count}</span>
         )}
       </div>
       {actionLabel && (
@@ -228,7 +228,7 @@ function HealthRing({ value, size = 140, strokeWidth = 10, color, label }) {
   return (
     <div style={{ position: 'relative', width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(99,102,241,0.08)" strokeWidth={strokeWidth} />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(var(--brand-rgb),0.08)" strokeWidth={strokeWidth} />
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={c} strokeWidth={strokeWidth}
           strokeDasharray={circ} strokeDashoffset={circ - (anim / 100) * circ}
           strokeLinecap="round" style={{ filter: `drop-shadow(0 0 6px ${c})`, transition: 'stroke-dashoffset 0.1s' }}
@@ -254,7 +254,7 @@ function UptimeStrip({ data, style }) {
       {data.map((v, i) => (
         <div key={i} style={{
           width: 4, height: 16, borderRadius: 1,
-          background: v >= 99 ? 'var(--status-ok)' : v >= 95 ? 'var(--status-warn)' : v < 50 ? 'var(--status-critical)' : 'rgba(99,102,241,0.2)',
+          background: v >= 99 ? 'var(--status-ok)' : v >= 95 ? 'var(--status-warn)' : v < 50 ? 'var(--status-critical)' : 'rgba(var(--brand-rgb),0.2)',
           opacity: v >= 99 ? 0.7 : 1
         }} title={`Day ${i+1}: ${v}%`} />
       ))}
@@ -273,14 +273,14 @@ function ApprovalCard({ tag, title, summary, detail, aiContent, onApprove, onRej
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
         <span style={{
           fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em',
-          background: 'rgba(99,102,241,0.1)', color: 'var(--brand)', padding: '2px 8px', borderRadius: 4
+          background: 'rgba(var(--brand-rgb),0.1)', color: 'var(--brand)', padding: '2px 8px', borderRadius: 4
         }}>{tag}</span>
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{title}</span>
       </div>
       <p style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.5, marginBottom: 8 }}>{summary}</p>
       {aiContent && (
         <div style={{
-          background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)',
+          background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)',
           borderRadius: 6, padding: 12, fontSize: 12, color: 'var(--text-mid)',
           lineHeight: 1.6, marginBottom: 12, fontStyle: 'italic'
         }}>
@@ -289,12 +289,12 @@ function ApprovalCard({ tag, title, summary, detail, aiContent, onApprove, onRej
       )}
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={onApprove} style={{
-          background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.25)',
+          background: 'rgba(var(--ok-rgb),0.12)', border: '1px solid rgba(var(--ok-rgb),0.25)',
           color: 'var(--status-ok)', padding: '6px 16px', borderRadius: 6, fontSize: 12,
           fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)'
         }}>Approve</button>
         <button onClick={onReject} style={{
-          background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)',
+          background: 'rgba(var(--critical-rgb),0.08)', border: '1px solid rgba(var(--critical-rgb),0.2)',
           color: 'var(--status-critical)', padding: '6px 16px', borderRadius: 6, fontSize: 12,
           fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)'
         }}>Reject</button>
@@ -326,13 +326,13 @@ function DataTable({ columns, rows, onRowClick, style }) {
               cursor: onRowClick ? 'pointer' : 'default',
               transition: 'background 0.15s'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99,102,241,0.04)'}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)'}
             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
               {columns.map((col, ci) => (
                 <td key={ci} style={{
                   padding: '10px 12px', fontSize: 13,
-                  borderBottom: '1px solid rgba(99,102,241,0.05)',
+                  borderBottom: '1px solid rgba(var(--brand-rgb),0.05)',
                   color: 'var(--text-high)', whiteSpace: 'nowrap',
                   fontFamily: col.mono ? 'var(--font-mono)' : 'inherit',
                   textAlign: col.align || 'left'
@@ -352,7 +352,7 @@ function DataTable({ columns, rows, onRowClick, style }) {
 function MiniBar({ value, max = 100, color = 'var(--brand)', width = 80, label }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div style={{ width, height: 6, background: 'rgba(99,102,241,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+      <div style={{ width, height: 6, background: 'rgba(var(--brand-rgb),0.08)', borderRadius: 3, overflow: 'hidden' }}>
         <div style={{ width: `${(value/max)*100}%`, height: '100%', background: color, borderRadius: 3, transition: 'width 0.6s ease' }} />
       </div>
       {label && <span className="mono" style={{ fontSize: 11, color: 'var(--text-mid)' }}>{label}</span>}
@@ -367,7 +367,7 @@ function DetailField({ label, value, mono, badge }) {
       <div style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', marginBottom: 2 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
         <span style={{ fontSize: 12, color: 'var(--text-high)', fontFamily: mono ? 'var(--font-mono)' : 'inherit' }}>{value}</span>
-        {badge && <span style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', background: 'rgba(251,191,36,0.12)', color: 'var(--status-warn)', padding: '1px 4px', borderRadius: 3 }}>{badge}</span>}
+        {badge && <span style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', background: 'rgba(var(--warn-rgb),0.12)', color: 'var(--status-warn)', padding: '1px 4px', borderRadius: 3 }}>{badge}</span>}
       </div>
     </div>
   );
@@ -378,7 +378,7 @@ function DetailField({ label, value, mono, badge }) {
 function FormField({ label, placeholder, textarea, value, onChange, style }) {
   const inputStyle = {
     width: '100%', padding: textarea ? '10px 14px' : '8px 12px',
-    background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
+    background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)',
     borderRadius: 'var(--radius-sm)', color: 'var(--text-high)',
     fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none',
     resize: textarea ? 'vertical' : undefined, minHeight: textarea ? 72 : undefined
@@ -443,7 +443,7 @@ function ShieldModalHost() {
   const statusColorMap = { ok: 'var(--status-ok)', online: 'var(--status-ok)', warn: 'var(--status-warn)', warning: 'var(--status-warn)', critical: 'var(--status-critical)', offline: 'var(--text-low)', info: 'var(--brand)', pending: 'var(--brand)' };
   const set = (k, v) => setValues(prev => ({ ...prev, [k]: v }));
   const inputStyle = {
-    width: '100%', padding: '9px 12px', background: 'rgba(5,7,10,0.5)',
+    width: '100%', padding: '9px 12px', background: 'rgba(var(--canvas-rgb),0.5)',
     border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)',
     color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none'
   };
@@ -493,7 +493,7 @@ function ShieldModalHost() {
             <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-high)' }}>{titles[kind] || 'Details'}</div>
             {cfg.subtitle && <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 3 }}>{cfg.subtitle}</div>}
           </div>
-          <button onClick={close} aria-label="Close" style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 6, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 15, cursor: 'pointer', lineHeight: 1 }}>✕</button>
+          <button onClick={close} aria-label="Close" style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 6, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', fontSize: 15, cursor: 'pointer', lineHeight: 1 }}>✕</button>
         </div>
 
         {/* Body (scrolls) */}
@@ -555,7 +555,7 @@ function ShieldModalHost() {
                   {sec.rows && (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '7px 16px' }}>
                       {sec.rows.map((r, ri) => (
-                        <div key={ri} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, borderBottom: '1px solid rgba(99,102,241,0.06)', paddingBottom: 6, gridColumn: r.full ? '1 / -1' : 'auto' }}>
+                        <div key={ri} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, borderBottom: '1px solid rgba(var(--brand-rgb),0.06)', paddingBottom: 6, gridColumn: r.full ? '1 / -1' : 'auto' }}>
                           <span style={{ fontSize: 12, color: 'var(--text-low)' }}>{r.k}</span>
                           <span className={r.mono === false ? '' : 'mono'} style={{ fontSize: 12, fontWeight: 600, color: r.color || 'var(--text-high)', textAlign: 'right' }}>{r.v}</span>
                         </div>
@@ -573,7 +573,7 @@ function ShieldModalHost() {
                               <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{m.label}</span>
                               <span className="mono" style={{ fontSize: 12, color: col, fontWeight: 600 }}>{m.display != null ? m.display : Math.round(m.value)}</span>
                             </div>
-                            <div style={{ height: 6, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
+                            <div style={{ height: 6, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden' }}>
                               <div style={{ width: pct + '%', height: '100%', borderRadius: 3, background: col, transition: 'width 0.5s ease' }} />
                             </div>
                           </div>
@@ -584,7 +584,7 @@ function ShieldModalHost() {
                   {sec.items && (
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       {sec.items.map((it, ii) => (
-                        <div key={ii} onClick={it.onClick} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: ii < sec.items.length - 1 ? '1px solid rgba(99,102,241,0.06)' : 'none', cursor: it.onClick ? 'pointer' : 'default' }}>
+                        <div key={ii} onClick={it.onClick} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: ii < sec.items.length - 1 ? '1px solid rgba(var(--brand-rgb),0.06)' : 'none', cursor: it.onClick ? 'pointer' : 'default' }}>
                           {it.status && <span style={{ width: 7, height: 7, borderRadius: '50%', background: statusColorMap[it.status] || 'var(--text-low)', flexShrink: 0 }} />}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 13, color: 'var(--text-high)' }}>{it.title}</div>
@@ -606,7 +606,7 @@ function ShieldModalHost() {
               <canvas ref={sigRef} width={560} height={200}
                 onMouseDown={sigStart} onMouseMove={sigMove} onMouseUp={sigEnd} onMouseLeave={sigEnd}
                 onTouchStart={sigStart} onTouchMove={sigMove} onTouchEnd={sigEnd}
-                style={{ width: '100%', height: 180, background: 'rgba(5,7,10,0.5)', border: '1px dashed var(--border-strong)', borderRadius: 8, touchAction: 'none', cursor: 'crosshair' }} />
+                style={{ width: '100%', height: 180, background: 'rgba(var(--canvas-rgb),0.5)', border: '1px dashed var(--border-strong)', borderRadius: 8, touchAction: 'none', cursor: 'crosshair' }} />
               <button onClick={sigClear} style={{ marginTop: 8, padding: '5px 12px', fontSize: 11, background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Clear</button>
             </div>
           )}
@@ -643,7 +643,7 @@ function ShieldModalHost() {
           {kind === 'detail' && (cfg.actions || []).map((a, ai) => (
             a.primary || a.danger
               ? <ModalPrimary key={ai} busy={busy} danger={a.danger} onClick={() => { if (a.onClick) a.onClick(); if (a.close !== false) finish(a.successMsg); }} label={a.label} />
-              : <button key={ai} onClick={() => { if (a.onClick) a.onClick(); if (a.close) close(); }} style={{ padding: '8px 18px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{a.label}</button>
+              : <button key={ai} onClick={() => { if (a.onClick) a.onClick(); if (a.close) close(); }} style={{ padding: '8px 18px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{a.label}</button>
           ))}
         </div>
       </div>

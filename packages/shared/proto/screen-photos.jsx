@@ -49,7 +49,7 @@ function SitePhotosScreen() {
         <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 10 }}>Required-Shot Compliance — Active Jobs</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10 }}>
           {compliance.map(({ wo, required, done, missing, pct }) => (
-            <div key={wo.id} style={{ border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '10px 12px', background: 'rgba(5,7,10,0.4)' }}>
+            <div key={wo.id} style={{ border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '10px 12px', background: 'rgba(var(--canvas-rgb),0.4)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <div>
                   <span className="mono" style={{ fontSize: 10, color: 'var(--brand)' }}>{wo.id}</span>
@@ -57,13 +57,13 @@ function SitePhotosScreen() {
                 </div>
                 <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: pct === 100 ? 'var(--status-ok)' : pct >= 50 ? 'var(--status-warn)' : 'var(--status-critical)' }}>{done.length}/{required.length}</span>
               </div>
-              <div style={{ height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.08)', overflow: 'hidden', marginBottom: 7 }}>
+              <div style={{ height: 4, borderRadius: 2, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden', marginBottom: 7 }}>
                 <div style={{ width: `${pct}%`, height: '100%', borderRadius: 2, background: pct === 100 ? 'var(--status-ok)' : pct >= 50 ? 'var(--status-warn)' : 'var(--status-critical)', transition: 'width 0.3s' }}></div>
               </div>
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {required.map(slot => {
                   const ok = done.includes(slot);
-                  return <span key={slot} style={{ fontSize: 8, padding: '2px 7px', borderRadius: 8, background: ok ? 'rgba(52,211,153,0.1)' : 'rgba(148,163,184,0.08)', border: `1px solid ${ok ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'}`, color: ok ? 'var(--status-ok)' : 'var(--text-low)' }}>{ok ? '✓ ' : '○ '}{slot}</span>;
+                  return <span key={slot} style={{ fontSize: 8, padding: '2px 7px', borderRadius: 8, background: ok ? 'rgba(var(--ok-rgb),0.1)' : 'rgba(148,163,184,0.08)', border: `1px solid ${ok ? 'rgba(var(--ok-rgb),0.3)' : 'var(--border-subtle)'}`, color: ok ? 'var(--status-ok)' : 'var(--text-low)' }}>{ok ? '✓ ' : '○ '}{slot}</span>;
                 })}
               </div>
               {missing.length > 0 && wo.status !== 'completed' && (
@@ -89,13 +89,13 @@ function SitePhotosScreen() {
             const conf = PHOTO_PHASES[ph];
             const on = phaseFilter === ph;
             return (
-              <button key={ph} onClick={() => setPhaseFilter(ph)} style={{ padding: '4px 11px', borderRadius: 12, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', background: on ? (conf ? `${conf.c}1c` : 'rgba(99,102,241,0.15)') : 'transparent', border: `1px solid ${on ? (conf ? conf.c + '60' : 'var(--border-strong)') : 'var(--border-subtle)'}`, color: on ? (conf ? conf.c : 'var(--brand)') : 'var(--text-low)', textTransform: 'capitalize' }}>{ph}</button>
+              <button key={ph} onClick={() => setPhaseFilter(ph)} style={{ padding: '4px 11px', borderRadius: 12, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', background: on ? (conf ? `${conf.c}1c` : 'rgba(var(--brand-rgb),0.15)') : 'transparent', border: `1px solid ${on ? (conf ? conf.c + '60' : 'var(--border-strong)') : 'var(--border-subtle)'}`, color: on ? (conf ? conf.c : 'var(--brand)') : 'var(--text-low)', textTransform: 'capitalize' }}>{ph}</button>
             );
           })}
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, background: 'rgba(99,102,241,0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 2, background: 'rgba(var(--brand-rgb),0.06)', borderRadius: 8, padding: 3, border: '1px solid var(--border-subtle)' }}>
           {[['feed', 'Photo Feed'], ['pairs', `Before / After (${pairs.length})`]].map(([v, label]) => (
-            <button key={v} onClick={() => setView(v)} style={{ padding: '4px 14px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', fontWeight: 500, background: view === v ? 'rgba(99,102,241,0.18)' : 'transparent', color: view === v ? 'var(--brand)' : 'var(--text-low)' }}>{label}</button>
+            <button key={v} onClick={() => setView(v)} style={{ padding: '4px 14px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', fontWeight: 500, background: view === v ? 'rgba(var(--brand-rgb),0.18)' : 'transparent', color: view === v ? 'var(--brand)' : 'var(--text-low)' }}>{label}</button>
           ))}
         </div>
       </div>
@@ -127,7 +127,7 @@ function SitePhotosScreen() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
                 <span className="mono" style={{ fontSize: 9, color: 'var(--brand)' }}>{pair.before.wo}</span>
                 <span style={{ fontSize: 9, color: 'var(--text-low)' }}>{pair.before.techName} · {pair.after.day}</span>
-                <button onClick={() => showToast("Sharing to the customer portal isn't wired up yet", 'warn')} style={{ marginLeft: 'auto', padding: '3px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 9, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Share</button>
+                <button onClick={() => showToast("Sharing to the customer portal isn't wired up yet", 'warn')} style={{ marginLeft: 'auto', padding: '3px 10px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 9, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Share</button>
               </div>
             </div>
           ))}
@@ -139,6 +139,6 @@ function SitePhotosScreen() {
   );
 }
 
-const photosSelStyle = { background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '6px 10px', color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' };
+const photosSelStyle = { background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '6px 10px', color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' };
 
 Object.assign(window, { SitePhotosScreen });

@@ -128,7 +128,7 @@ function QboNewMenu({ onPick }) {
           <div style={{ display: 'grid', gridTemplateColumns: qboIsMobile() ? '1fr' : '1fr 1fr', gap: 6 }}>
             {g.items.map(it => (
               <button key={it.id} onClick={() => onPick(it.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border-subtle)', background: 'rgba(255,255,255,0.02)', color: 'var(--text-high)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-                <span style={{ width: 28, height: 28, borderRadius: 8, display: 'grid', placeItems: 'center', background: 'rgba(99,102,241,0.12)', color: 'var(--brand)', fontSize: 14, flexShrink: 0 }}>{it.glyph}</span>
+                <span style={{ width: 28, height: 28, borderRadius: 8, display: 'grid', placeItems: 'center', background: 'rgba(var(--brand-rgb),0.12)', color: 'var(--brand)', fontSize: 14, flexShrink: 0 }}>{it.glyph}</span>
                 <span style={{ minWidth: 0 }}>
                   <span style={{ display: 'block', fontSize: 13, fontWeight: 600 }}>{it.label}</span>
                   <span style={{ display: 'block', fontSize: 10.5, color: 'var(--text-low)' }}>{it.hint}</span>
@@ -143,14 +143,14 @@ function QboNewMenu({ onPick }) {
 }
 
 /* ── field primitives (compact, tabular, keyboard-friendly) ── */
-const qboInp = { width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: 'rgba(5,7,10,0.45)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' };
+const qboInp = { width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: 'rgba(var(--canvas-rgb),0.45)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' };
 const qboLbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
 function QField({ label, children, span }) { return <div style={span ? { gridColumn: '1 / -1' } : undefined}><span style={qboLbl}>{label}</span>{children}</div>; }
 function QSeg({ options, value, onChange }) {
   return (
-    <div style={{ display: 'flex', gap: 4, background: 'rgba(99,102,241,0.06)', borderRadius: 9, padding: 3, border: '1px solid var(--border-subtle)' }}>
+    <div style={{ display: 'flex', gap: 4, background: 'rgba(var(--brand-rgb),0.06)', borderRadius: 9, padding: 3, border: '1px solid var(--border-subtle)' }}>
       {options.map(o => (
-        <button key={o} onClick={() => onChange(o)} style={{ flex: 1, padding: '8px 6px', borderRadius: 7, fontSize: 12, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap', background: value === o ? 'rgba(99,102,241,0.18)' : 'transparent', color: value === o ? 'var(--brand)' : 'var(--text-low)' }}>{o}</button>
+        <button key={o} onClick={() => onChange(o)} style={{ flex: 1, padding: '8px 6px', borderRadius: 7, fontSize: 12, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap', background: value === o ? 'rgba(var(--brand-rgb),0.18)' : 'transparent', color: value === o ? 'var(--brand)' : 'var(--text-low)' }}>{o}</button>
       ))}
     </div>
   );
@@ -277,7 +277,7 @@ function QboPaymentForm({ prefill, onClose }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {inv ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)' }}>
           <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{inv.num}</span>
           <span style={{ flex: 1, fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inv.customer}</span>
           <span className="mono" style={{ fontSize: 12.5, color: 'var(--text-mid)' }}>open {qboMoneyFmt(balance)}</span>
@@ -422,7 +422,7 @@ function QboBillPaymentForm({ prefill, onClose }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {bill ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)' }}>
           <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{bill.doc_number || bill.num || ('BILL-' + bill.qbo_id)}</span>
           <span style={{ flex: 1, fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bill.vendor_name || bill.vendor}</span>
           <span className="mono" style={{ fontSize: 12.5, color: 'var(--text-mid)' }}>open {qboMoneyFmt(balance)}</span>
@@ -538,7 +538,7 @@ function QboSeedServices({ onClose }) {
     const pct = progress.total ? Math.round(progress.done / progress.total * 100) : 100;
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ height: 6, borderRadius: 3, background: 'rgba(99,102,241,0.1)', overflow: 'hidden' }}><div style={{ width: pct + '%', height: '100%', background: 'var(--brand)', transition: 'width .2s' }} /></div>
+        <div style={{ height: 6, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.1)', overflow: 'hidden' }}><div style={{ width: pct + '%', height: '100%', background: 'var(--brand)', transition: 'width .2s' }} /></div>
         <div style={{ fontSize: 13 }}>{progress.done} of {progress.total} · <span style={{ color: 'var(--status-ok)' }}>{progress.created} created</span>{progress.failed ? <span style={{ color: 'var(--status-critical)' }}> · {progress.failed} failed</span> : ''}</div>
         {progress.stopped === 'not-connected' && <QNote>QuickBooks isn't connected yet — set the Intuit keys on qbo-sync, then run this again. Nothing was created.</QNote>}
         {progress.error && progress.stopped !== 'not-connected' && <QNote>Last error: {progress.error}</QNote>}

@@ -127,4 +127,5 @@ import './proto/screen-outbox.jsx';
 import './proto/screen-secret-weapon.jsx';
 import './proto/screen-cockpit-preview.jsx';
 import './proto/screen-messages.jsx';
+import './proto/screen-unifi-console.jsx';
 import './proto/screen-hubs.jsx';

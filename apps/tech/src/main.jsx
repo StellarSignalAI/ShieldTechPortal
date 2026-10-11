@@ -154,8 +154,8 @@ function TechPresencePill() {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 5,
       padding: '3px 10px', borderRadius: 100,
-      background: onClock ? 'rgba(52,211,153,0.08)' : 'rgba(63,169,245,0.04)',
-      border: `1px solid ${onClock ? 'rgba(52,211,153,0.2)' : 'var(--border-subtle)'}`
+      background: onClock ? 'rgba(var(--ok-rgb),0.08)' : 'rgba(63,169,245,0.04)',
+      border: `1px solid ${onClock ? 'rgba(var(--ok-rgb),0.2)' : 'var(--border-subtle)'}`
     }}>
       <div style={{ width: 6, height: 6, borderRadius: '50%', background: c, animation: onClock ? 'pulse-online 3s ease-in-out infinite' : 'none' }} />
       {onClock && <span style={{ fontSize: 10, color: c, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>On Clock</span>}
@@ -189,7 +189,7 @@ function TechShellV2({ tab, setTab, children }) {
           <header style={{
         padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         borderBottom: '1px solid var(--border-subtle)',
-        background: 'rgba(10,14,20,0.9)', backdropFilter: 'blur(12px)',
+        background: 'rgba(var(--card-rgb),0.9)', backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)', flexShrink: 0
       }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -207,7 +207,7 @@ function TechShellV2({ tab, setTab, children }) {
 
           <nav style={{
         display: 'flex', borderTop: '1px solid var(--border-subtle)',
-        background: 'rgba(10,14,20,0.95)', backdropFilter: 'blur(12px)',
+        background: 'rgba(var(--card-rgb),0.95)', backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)', flexShrink: 0,
         paddingBottom: 'env(safe-area-inset-bottom, 0px)'
       }}>
@@ -327,6 +327,7 @@ function TechApp() {
     'job-detail': () => TechJobView ? <TechJobView job={selectedJob} setTab={setTab} /> : JobFlowView ? <JobFlowView job={selectedJob} setTab={setTab} /> : <JobDetailView job={selectedJob} setTab={setTab} />,
     time: () => TechClockView ? <TechClockView /> : <TimeViewV2 />,
     assets: () => <React.Fragment>{TechHomeView && back('more')}<TechAssetsView /></React.Fragment>,
+    devices: () => <React.Fragment>{TechHomeView && back('more')}{window.TechDevicesView ? <window.TechDevicesView setTab={setTab} /> : <TechAssetsView />}</React.Fragment>,
     expenses: () => <React.Fragment>{TechHomeView && back('more')}{TechReceiptsView ? <TechReceiptsView /> : <ExpenseView />}</React.Fragment>,
     ai: () => <React.Fragment>{TechHomeView && back('more')}<TechCopilotView /></React.Fragment>,
     route: () => <BackWrap setTab={setTab}><TechRouteView /></BackWrap>,
@@ -370,7 +371,7 @@ function TechApp() {
           <TweaksPanel>
             <TweakSection label="Navigation" />
             <TweakSelect label="Tab" value={tab}
-        options={['today', 'schedule', 'search', 'quotes', 'invoices', 'health', 'photos', 'capture', 'punch', 'truck', 'route', 'voice', 'scanner', 'ar', 'sync', 'upsell', 'safety', 'skills', 'toolbox', 'job-detail', 'time', 'expenses', 'ai', 'more', 'vehicle', 'parts', 'resources']}
+        options={['today', 'schedule', 'search', 'quotes', 'invoices', 'health', 'devices', 'photos', 'capture', 'punch', 'truck', 'route', 'voice', 'scanner', 'ar', 'sync', 'upsell', 'safety', 'skills', 'toolbox', 'job-detail', 'time', 'expenses', 'ai', 'more', 'vehicle', 'parts', 'resources']}
         onChange={(v) => setTab(v)} />
           </TweaksPanel>
           <ShieldToastHost />

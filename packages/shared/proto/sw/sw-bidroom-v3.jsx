@@ -120,7 +120,7 @@ function BidRoom({ oppId, onClose }) {
     <BrSubmitV3 opp={opp} state={state} update={update} />;
 
   return (
-    <div className="sw-fade" style={{ position: 'fixed', inset: 0, zIndex: 130, display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 80% -10%, rgba(99,102,241,0.09), transparent 45%), var(--canvas)' }} data-screen-label={'Bid Room — ' + opp.title}>
+    <div className="sw-fade" style={{ position: 'fixed', inset: 0, zIndex: 130, display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 80% -10%, rgba(var(--brand-rgb),0.09), transparent 45%), var(--canvas)' }} data-screen-label={'Bid Room — ' + opp.title}>
       {/* Header */}
       <header style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 14, padding: isMobile ? '10px 14px' : '11px 20px', borderBottom: '1px solid var(--border-subtle)', background: 'rgba(8,11,18,0.88)', backdropFilter: 'blur(14px)' }}>
         <Btn kind="secondary" size="sm" icon="back" onClick={onClose}>{isMobile ? '' : 'Leads'}</Btn>
@@ -149,7 +149,7 @@ function BidRoom({ oppId, onClose }) {
           const active = mode === m.id;
           const badge = m.id === 'review' && decisions.length - doneN > 0 ? decisions.length - doneN : null;
           return (
-            <button key={m.id} onClick={() => m.id === 'blueprint' ? setShowBlueprint(true) : setMode(m.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 13px', borderRadius: 'var(--radius-md)', cursor: 'pointer', flexShrink: 0, background: active ? 'rgba(99,102,241,0.13)' : 'transparent', border: '1px solid ' + (active ? 'var(--border-strong)' : 'transparent'), color: active ? 'var(--brand)' : 'var(--text-mid)', font: '600 12px/1 var(--font-body)' }}>
+            <button key={m.id} onClick={() => m.id === 'blueprint' ? setShowBlueprint(true) : setMode(m.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 13px', borderRadius: 'var(--radius-md)', cursor: 'pointer', flexShrink: 0, background: active ? 'rgba(var(--brand-rgb),0.13)' : 'transparent', border: '1px solid ' + (active ? 'var(--border-strong)' : 'transparent'), color: active ? 'var(--brand)' : 'var(--text-mid)', font: '600 12px/1 var(--font-body)' }}>
               <Icon name={m.icon} size={13} color={active ? 'var(--brand)' : 'var(--text-low)'} />{m.label}
               {badge && <span style={{ minWidth: 17, height: 17, padding: '0 4px', borderRadius: 999, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'var(--brand)', color: '#03121F', font: '700 10px/1 var(--font-mono)' }}>{badge}</span>}
             </button>

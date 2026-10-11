@@ -15,7 +15,7 @@ const salesStageStore = createShieldStore('sstages', {});   // stage overrides f
 
 const SALES_STAGES = [
   ['lead', 'Lead', '#94A3B8', 0.10],
-  ['qualified', 'Qualified', '#6366F1', 0.35],
+  ['qualified', 'Qualified', 'var(--brand)', 0.35],
   ['proposal', 'Proposal Sent', '#FBBF24', 0.60],
   ['won', 'Won', '#34D399', 1],
   ['lost', 'Lost', '#F43F5E', 0],
@@ -158,7 +158,7 @@ function SalesPipelineView({ openItem }) {
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search every bid — name, customer, amount…"
-          style={{ flex: 1, padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+          style={{ flex: 1, padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={() => setNewDeal(true)} style={{ padding: '0 16px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>+ Deal</button>
       </div>
 
@@ -201,7 +201,7 @@ function SalesNewDealSheet({ onClose, presetCustomer }) {
   const [allCusts] = useShieldStore(customerStore);
   const [f, setF] = React.useState({ title: '', customer: presetCustomer || '', value: '', stage: 'lead', notes: '' });
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
-  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' };
   const lbl = { fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-low)', marginBottom: 5, display: 'block' };
   const save = () => {
     if (!f.title.trim()) { showToast('Deal name is required', 'warn'); return; }
@@ -313,9 +313,9 @@ function SalesDealSheet({ item, onClose }) {
 
         {/* Actions */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          {item._doc && item.stage !== 'won' && <button onClick={emailAcceptLink} style={act('rgba(99,102,241,0.08)', '1px solid var(--border-strong)', 'var(--brand)')}>✉ Email accept link</button>}
-          {item.stage !== 'won' && <button onClick={winToProject} style={act('rgba(52,211,153,0.08)', '1px solid rgba(52,211,153,0.3)', 'var(--status-ok)')}>✓ Won{item._doc ? ' → Project' : ''}</button>}
-          <button onClick={() => setLogOpen(true)} style={act('rgba(99,102,241,0.05)', '1px solid var(--border-subtle)', 'var(--text-mid)')}>+ Log activity / task</button>
+          {item._doc && item.stage !== 'won' && <button onClick={emailAcceptLink} style={act('rgba(var(--brand-rgb),0.08)', '1px solid var(--border-strong)', 'var(--brand)')}>✉ Email accept link</button>}
+          {item.stage !== 'won' && <button onClick={winToProject} style={act('rgba(var(--ok-rgb),0.08)', '1px solid rgba(var(--ok-rgb),0.3)', 'var(--status-ok)')}>✓ Won{item._doc ? ' → Project' : ''}</button>}
+          <button onClick={() => setLogOpen(true)} style={act('rgba(var(--brand-rgb),0.05)', '1px solid var(--border-subtle)', 'var(--text-mid)')}>+ Log activity / task</button>
           <button disabled={aiBusy} onClick={() => aiDraft('follow-up')} style={act('rgba(192,132,252,0.08)', '1px solid rgba(192,132,252,0.3)', '#c084fc')}>{aiBusy ? 'Drafting…' : '⟡ AI follow-up email'}</button>
         </div>
 
@@ -324,7 +324,7 @@ function SalesDealSheet({ item, onClose }) {
           <div className="glass" style={{ padding: 13, borderRadius: 12, borderLeft: '3px solid #c084fc' }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#c084fc', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>AI draft — {draft.intent}</div>
             <textarea value={draft.text} onChange={e => setDraft(d => ({ ...d, text: e.target.value }))} rows={7}
-              style={{ width: '100%', padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 12.5, lineHeight: 1.5, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
+              style={{ width: '100%', padding: '10px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 12.5, lineHeight: 1.5, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
               <button onClick={() => { navigator.clipboard && navigator.clipboard.writeText(draft.text); showToast('Copied', 'ok'); }} style={act('transparent', '1px solid var(--border-subtle)', 'var(--text-mid)')}>Copy</button>
               <button onClick={sendDraft} style={{ ...act('linear-gradient(135deg, var(--brand), var(--brand-pressed))', 'none', '#fff'), flex: 1 }}>Send email →</button>
@@ -337,7 +337,7 @@ function SalesDealSheet({ item, onClose }) {
           <span style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-low)', marginBottom: 6, display: 'block' }}>Activity ({linked.length})</span>
           {linked.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)' }}>No activity yet — log a call, meeting, or task above.</div>}
           {linked.slice(0, 8).map(a => (
-            <div key={a.id} style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', alignItems: 'baseline' }}>
+            <div key={a.id} style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)', alignItems: 'baseline' }}>
               <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: 'var(--brand)', width: 44, flexShrink: 0 }}>{a.type}</span>
               <span style={{ fontSize: 12, color: 'var(--text-mid)', flex: 1 }}>{a.note}</span>
               <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
@@ -360,23 +360,23 @@ function SalesLeadsView({ openDealFor }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', gap: 8 }}>
         <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search leads & customers…"
-          style={{ flex: 1, padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+          style={{ flex: 1, padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={() => setAdding(true)} style={{ padding: '0 16px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>+ Lead</button>
       </div>
       {rows.length === 0 && <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>{query ? `Nothing matches “${query}”.` : 'No leads yet — tap + Lead to add your first prospect.'}</div>}
       {rows.map(c => (
         <div key={c.id} className="glass" style={{ padding: '12px 13px', borderRadius: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-subtle)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{c.logo || (c.name || '?').slice(0, 2).toUpperCase()}</span>
+            <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-subtle)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--brand)', flexShrink: 0 }}>{c.logo || (c.name || '?').slice(0, 2).toUpperCase()}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-high)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
               <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{[c.industry, c.phone, c.email].filter(Boolean).join(' · ') || '—'}</div>
             </div>
-            {c.leadStatus === 'lead' && <span style={{ fontSize: 8.5, fontWeight: 700, color: '#FBBF24', border: '1px solid rgba(251,191,36,0.4)', borderRadius: 100, padding: '2px 8px' }}>LEAD</span>}
+            {c.leadStatus === 'lead' && <span style={{ fontSize: 8.5, fontWeight: 700, color: '#FBBF24', border: '1px solid rgba(var(--warn-rgb),0.4)', borderRadius: 100, padding: '2px 8px' }}>LEAD</span>}
           </div>
           <div style={{ display: 'flex', gap: 7, marginTop: 9 }}>
-            <button onClick={() => openDealFor(c.name)} style={{ flex: 1, padding: '8px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Deal</button>
-            {c.phone && <a href={`tel:${c.phone}`} onClick={() => addActivity({ type: 'call', note: `Called ${c.name}`, customer: c.name, status: 'done' })} style={{ flex: 1, padding: '8px 0', background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'center', textDecoration: 'none' }}>📞 Call</a>}
+            <button onClick={() => openDealFor(c.name)} style={{ flex: 1, padding: '8px 0', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Deal</button>
+            {c.phone && <a href={`tel:${c.phone}`} onClick={() => addActivity({ type: 'call', note: `Called ${c.name}`, customer: c.name, status: 'done' })} style={{ flex: 1, padding: '8px 0', background: 'rgba(var(--ok-rgb),0.07)', border: '1px solid rgba(var(--ok-rgb),0.25)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'center', textDecoration: 'none' }}>📞 Call</a>}
             <button onClick={() => addActivity({ type: 'task', note: `Follow up with ${c.name}`, customer: c.name, due: addDaysISO(todayISO(), 2) }) || showToast('Follow-up task added for 2 days out', 'ok')} style={{ flex: 1, padding: '8px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-mid)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⏰ Follow up</button>
           </div>
         </div>
@@ -389,7 +389,7 @@ function SalesLeadsView({ openDealFor }) {
 function SalesNewLeadSheet({ onClose }) {
   const [f, setF] = React.useState({ name: '', industry: '', phone: '', email: '', notes: '' });
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
-  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' };
   const lbl = { fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-low)', marginBottom: 5, display: 'block' };
   const save = () => {
     if (!f.name.trim()) { showToast('Company / name required', 'warn'); return; }
@@ -421,7 +421,7 @@ function SalesNewLeadSheet({ onClose }) {
 function SalesNewActivitySheet({ preset, onClose }) {
   const [f, setF] = React.useState({ type: 'task', note: '', due: '', customer: (preset && preset.customer) || '' });
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
-  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', colorScheme: 'dark' };
+  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', colorScheme: 'dark' };
   const lbl = { fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-low)', marginBottom: 5, display: 'block' };
   const save = () => {
     if (!f.note.trim()) { showToast('Describe the activity', 'warn'); return; }
@@ -436,7 +436,7 @@ function SalesNewActivitySheet({ preset, onClose }) {
           <span style={lbl}>Type</span>
           <div style={{ display: 'flex', gap: 5 }}>
             {[['task', '⏰ Task'], ['call', '📞 Call'], ['meeting', '🤝 Meeting'], ['email', '✉ Email'], ['note', '📝 Note']].map(([id, l]) => (
-              <button key={id} onClick={() => setF(p => ({ ...p, type: id }))} style={{ flex: 1, padding: '8px 0', borderRadius: 9, fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', background: f.type === id ? 'rgba(99,102,241,0.14)' : 'transparent', border: `1px solid ${f.type === id ? 'var(--brand)' : 'var(--border-subtle)'}`, color: f.type === id ? 'var(--brand)' : 'var(--text-low)' }}>{l}</button>
+              <button key={id} onClick={() => setF(p => ({ ...p, type: id }))} style={{ flex: 1, padding: '8px 0', borderRadius: 9, fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', background: f.type === id ? 'rgba(var(--brand-rgb),0.14)' : 'transparent', border: `1px solid ${f.type === id ? 'var(--brand)' : 'var(--border-subtle)'}`, color: f.type === id ? 'var(--brand)' : 'var(--text-low)' }}>{l}</button>
             ))}
           </div>
         </div>
@@ -502,7 +502,7 @@ function SalesQuotesView({ openItem }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', gap: 8 }}>
         <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search quotes & proposals…"
-          style={{ flex: 1, padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+          style={{ flex: 1, padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={() => setCreating(true)} style={{ padding: '0 16px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>+ Quote</button>
       </div>
       {quotes.length === 0 && <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>No quotes yet — tap + Quote to build and send one.</div>}
@@ -532,7 +532,7 @@ function SalesNewQuoteSheet({ onClose }) {
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
   const setLine = (i, k, v) => setF(p => ({ ...p, lines: p.lines.map((l, ix) => ix === i ? { ...l, [k]: v } : l) }));
   const total = f.lines.reduce((s, l) => s + (Number(l.qty) || 1) * (Number(l.rate) || 0), 0);
-  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' };
   const lbl = { fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-low)', marginBottom: 5, display: 'block' };
   const save = async () => {
     if (!f.customer.trim()) { showToast('Customer is required', 'warn'); return; }
@@ -625,7 +625,7 @@ function SalesStatsView() {
                 <span style={{ fontSize: 11, color: c, fontWeight: 600 }}>{label}</span>
                 <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{col.length} · {salesFmt$(v)}</span>
               </div>
-              <div style={{ height: 7, borderRadius: 4, background: 'rgba(99,102,241,0.06)', overflow: 'hidden' }}>
+              <div style={{ height: 7, borderRadius: 4, background: 'rgba(var(--brand-rgb),0.06)', overflow: 'hidden' }}>
                 <div style={{ width: `${Math.round(v / maxCol * 100)}%`, height: '100%', background: c, borderRadius: 4, transition: 'width 0.4s' }} />
               </div>
             </div>
@@ -635,7 +635,7 @@ function SalesStatsView() {
       <MSection title="Activity leaderboard">
         {leaders.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)', padding: '6px 2px' }}>Log calls, meetings, and tasks — the leaderboard builds itself.</div>}
         {leaders.map(([who, n], i) => (
-          <div key={who} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 2px', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+          <div key={who} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 2px', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
             <span className="mono" style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? '#FBBF24' : 'var(--text-low)', width: 18 }}>#{i + 1}</span>
             <span style={{ fontSize: 12.5, color: 'var(--text-high)', flex: 1 }}>{who}</span>
             <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{n} activit{n === 1 ? 'y' : 'ies'}</span>
@@ -662,7 +662,7 @@ function SalesAvatarMenu() {
   const u = window.__shieldUser;
   const theme = (prefs && prefs.theme) || 'dark';
   const item = { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '11px 14px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' };
-  const seg = (active) => ({ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', background: active ? 'rgba(99,102,241,0.14)' : 'transparent', border: `1px solid ${active ? 'var(--brand)' : 'var(--border-subtle)'}`, color: active ? 'var(--brand)' : 'var(--text-low)' });
+  const seg = (active) => ({ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', background: active ? 'rgba(var(--brand-rgb),0.14)' : 'transparent', border: `1px solid ${active ? 'var(--brand)' : 'var(--border-subtle)'}`, color: active ? 'var(--brand)' : 'var(--text-low)' });
   return (
     <div style={{ position: 'relative' }}>
       <button onClick={() => setOpen(o => !o)} style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>{(u && u.initials) || '·'}</button>
@@ -711,7 +711,7 @@ function SalesApp() {
   };
 
   const header = (
-    <header style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', background: 'rgba(10,14,20,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0 }}>
+    <header style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle)', background: 'rgba(var(--card-rgb),0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <img src="uploads/ShieldTech Emblem Transparent MK1 .png" alt="ShieldTech" style={{ height: 22 }} />
         <span className="display" style={{ fontSize: 12, fontWeight: 300, letterSpacing: '0.08em', color: 'var(--text-high)' }}>SHIELDTECH</span>
@@ -726,9 +726,9 @@ function SalesApp() {
       {header}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {wide && (
-          <nav style={{ width: 176, flexShrink: 0, borderRight: '1px solid var(--border-subtle)', padding: '14px 10px', display: 'flex', flexDirection: 'column', gap: 4, background: 'rgba(10,14,20,0.5)' }}>
+          <nav style={{ width: 176, flexShrink: 0, borderRight: '1px solid var(--border-subtle)', padding: '14px 10px', display: 'flex', flexDirection: 'column', gap: 4, background: 'rgba(var(--card-rgb),0.5)' }}>
             {SALES_TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', background: tab === t.id ? 'rgba(99,102,241,0.12)' : 'transparent', color: tab === t.id ? 'var(--brand)' : 'var(--text-mid)', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, textAlign: 'left' }}>
+              <button key={t.id} onClick={() => setTab(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 9, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', background: tab === t.id ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', color: tab === t.id ? 'var(--brand)' : 'var(--text-mid)', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, textAlign: 'left' }}>
                 <Icon name={t.icon} size={17} color={tab === t.id ? 'var(--brand)' : 'var(--text-low)'} />
                 {t.label}
               </button>
@@ -739,7 +739,7 @@ function SalesApp() {
         <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>{views[tab]}</div>
       </div>
       {!wide && (
-        <nav style={{ display: 'flex', borderTop: '1px solid var(--border-subtle)', background: 'rgba(10,14,20,0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <nav style={{ display: 'flex', borderTop: '1px solid var(--border-subtle)', background: 'rgba(var(--card-rgb),0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           {SALES_TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, padding: '8px 0 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: 'none', border: 'none', color: tab === t.id ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', position: 'relative' }}>
               {tab === t.id && <div style={{ position: 'absolute', top: -1, left: '30%', right: '30%', height: 2, background: 'var(--brand)', borderRadius: '0 0 2px 2px', boxShadow: '0 0 8px var(--brand)' }} />}

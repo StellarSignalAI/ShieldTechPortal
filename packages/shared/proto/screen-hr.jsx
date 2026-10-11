@@ -9,9 +9,9 @@ const hrMoney = (n) => n == null ? '—' : '$' + (Number(n) || 0).toLocaleString
 const hrDate = (iso) => iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 const hrWhen = (iso) => iso ? new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';
 const hrBtn = (bg, bd, fg) => ({ padding: '6px 12px', borderRadius: 7, border: `1px solid ${bd}`, background: bg, color: fg, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' });
-const hrBtnPrimary = () => hrBtn('rgba(99,102,241,0.1)', 'var(--border-strong)', 'var(--brand)');
-const hrBtnQuiet = () => hrBtn('rgba(10,14,20,0.6)', 'var(--border-subtle)', 'var(--text-mid)');
-const hrInput = { padding: '7px 10px', borderRadius: 7, border: '1px solid var(--border-subtle)', background: 'rgba(10,14,20,0.6)', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)' };
+const hrBtnPrimary = () => hrBtn('rgba(var(--brand-rgb),0.1)', 'var(--border-strong)', 'var(--brand)');
+const hrBtnQuiet = () => hrBtn('rgba(var(--card-rgb),0.6)', 'var(--border-subtle)', 'var(--text-mid)');
+const hrInput = { padding: '7px 10px', borderRadius: 7, border: '1px solid var(--border-subtle)', background: 'rgba(var(--card-rgb),0.6)', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)' };
 const hrIsAdmin = () => (window.__shieldUser || {}).role === 'Admin';
 
 function HRSevChip({ sev }) {
@@ -228,7 +228,7 @@ function HRPayrollCenterScreen() {
             </div>
           </div>
           <button onClick={() => setEx(x.id, 'acknowledged')} style={hrBtnQuiet()}>Ack</button>
-          <button onClick={() => setEx(x.id, 'resolved')} style={hrBtn('rgba(52,211,153,0.1)', 'rgba(52,211,153,0.4)', 'var(--status-ok)')}>Resolve</button>
+          <button onClick={() => setEx(x.id, 'resolved')} style={hrBtn('rgba(var(--ok-rgb),0.1)', 'rgba(var(--ok-rgb),0.4)', 'var(--status-ok)')}>Resolve</button>
         </div>
       ))}
 
@@ -372,7 +372,7 @@ function HRHiringScreen() {
               {a.status.replace(/_/g, ' ')}
             </span>
             {hrIsAdmin() && a.status === 'awaiting_approval' && (<>
-              <button onClick={() => move(a.id, 'approve')} disabled={!!busy} style={hrBtn('rgba(52,211,153,0.1)', 'rgba(52,211,153,0.4)', 'var(--status-ok)')}>Approve</button>
+              <button onClick={() => move(a.id, 'approve')} disabled={!!busy} style={hrBtn('rgba(var(--ok-rgb),0.1)', 'rgba(var(--ok-rgb),0.4)', 'var(--status-ok)')}>Approve</button>
               <button onClick={() => move(a.id, 'reject')} disabled={!!busy} style={hrBtnQuiet()}>Reject</button>
             </>)}
             {hrIsAdmin() && a.status === 'approved' && (
@@ -811,12 +811,12 @@ function HRSetupScreen() {
       <div className="glass" style={{ padding: 14, marginBottom: 12 }}>
         <div className="label-sm" style={{ marginBottom: 8 }}>FEATURE FLAGS {hrIsAdmin() ? '' : '(Admin can change)'}</div>
         {flagRows.map(([k, label, sub]) => (
-          <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+          <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{label}</div>
               <div style={{ fontSize: 10.5, color: 'var(--text-low)' }}>{sub}</div>
             </div>
-            <button onClick={() => toggle(k)} style={hrBtn(flags[k] ? 'rgba(52,211,153,0.1)' : 'rgba(10,14,20,0.6)', flags[k] ? 'rgba(52,211,153,0.4)' : 'var(--border-subtle)', flags[k] ? 'var(--status-ok)' : 'var(--text-low)')}>
+            <button onClick={() => toggle(k)} style={hrBtn(flags[k] ? 'rgba(var(--ok-rgb),0.1)' : 'rgba(var(--card-rgb),0.6)', flags[k] ? 'rgba(var(--ok-rgb),0.4)' : 'var(--border-subtle)', flags[k] ? 'var(--status-ok)' : 'var(--text-low)')}>
               {flags[k] ? 'ON' : 'OFF'}
             </button>
           </div>
@@ -834,7 +834,7 @@ function HRSetupScreen() {
           components (percent of gross, $ per hour, or $ per period). Nothing is hardcoded.
         </div>}
         {(cfg || []).map(c => (
-          <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+          <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
             <div style={{ flex: 1, fontSize: 12, color: 'var(--text-high)' }}>{c.label || c.key}</div>
             <span className="mono" style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>
               {c.type === 'percent' ? `${c.value}% of gross` : c.type === 'per_hour' ? `${hrMoney(c.value)}/hr` : `${hrMoney(c.value)}/period`}

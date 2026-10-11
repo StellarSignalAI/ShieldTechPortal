@@ -6,7 +6,7 @@
 
 const OPS6_EMPTY = ({ children }) => <div className="glass" style={{ padding: 24, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>{children}</div>;
 const ops6$ = (n) => '$' + Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
-const ops6Inp = { width: '100%', padding: '12px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
+const ops6Inp = { width: '100%', padding: '12px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
 const ops6Lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
 const ops6Btn = (primary) => ({ padding: '12px 16px', borderRadius: 11, border: primary ? 'none' : '1px solid var(--border-subtle)', background: primary ? 'linear-gradient(135deg, var(--brand), var(--brand-pressed))' : 'transparent', color: primary ? '#fff' : 'var(--text-mid)', fontSize: 13, fontWeight: primary ? 700 : 500, cursor: 'pointer', fontFamily: 'var(--font-body)' });
 
@@ -62,7 +62,7 @@ function MReceiptThumb({ row, size = 54 }) {
     return () => { alive = false; };
   }, [row.id]);
   return (
-    <div onClick={src ? () => window.open(src, '_blank') : undefined} style={{ width: size, height: size, borderRadius: 9, overflow: 'hidden', background: 'rgba(99,102,241,0.07)', border: '1px solid var(--border-subtle)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: src ? 'pointer' : 'default' }}>
+    <div onClick={src ? () => window.open(src, '_blank') : undefined} style={{ width: size, height: size, borderRadius: 9, overflow: 'hidden', background: 'rgba(var(--brand-rgb),0.07)', border: '1px solid var(--border-subtle)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: src ? 'pointer' : 'default' }}>
       {src ? <img src={src} alt="receipt" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 18 }}>🧾</span>}
     </div>
   );
@@ -127,7 +127,7 @@ function MExpensesFull() {
               <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>{r.vendor || r.note || 'Receipt'}</div>
               <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{r.uploader_name || 'Field'} · {new Date(r.created_at).toLocaleDateString()}{r.amount ? ` · ${ops6$(r.amount)}` : ''}</div>
             </div>
-            {isAdmin && <button onClick={() => { setConvertRow(r); setCf({ vendor: r.vendor || '', amount: r.amount || '', category: 'Materials' }); }} style={{ padding: '8px 12px', borderRadius: 9, border: 'none', background: 'rgba(52,211,153,0.14)', color: 'var(--status-ok)', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>→ Expense</button>}
+            {isAdmin && <button onClick={() => { setConvertRow(r); setCf({ vendor: r.vendor || '', amount: r.amount || '', category: 'Materials' }); }} style={{ padding: '8px 12px', borderRadius: 9, border: 'none', background: 'rgba(var(--ok-rgb),0.14)', color: 'var(--status-ok)', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>→ Expense</button>}
           </div>
         ))}
       </>}
@@ -140,7 +140,7 @@ function MExpensesFull() {
           <div style={{ fontSize: 10.5, color: 'var(--text-low)', margin: '3px 0 0' }}>{r.by} · {r.category} · {r.date} · <span style={{ color: stC[r.status] }}>{r.status}</span></div>
           {isAdmin && r.status === 'pending' && (
             <div style={{ display: 'flex', gap: 8, marginTop: 9 }}>
-              <button onClick={() => act(r.id, 'approved')} style={{ flex: 1, padding: '9px 0', borderRadius: 9, border: 'none', background: 'rgba(52,211,153,0.14)', color: 'var(--status-ok)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>
+              <button onClick={() => act(r.id, 'approved')} style={{ flex: 1, padding: '9px 0', borderRadius: 9, border: 'none', background: 'rgba(var(--ok-rgb),0.14)', color: 'var(--status-ok)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>
               <button onClick={() => act(r.id, 'rejected')} style={{ flex: 1, padding: '9px 0', borderRadius: 9, border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--status-critical)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✕ Reject</button>
             </div>
           )}
@@ -223,7 +223,7 @@ function MRRBuilderFull({ onNav }) {
       <MSection title="Plan" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {(plans || []).map(p => (
-          <button key={p.id} onClick={() => setV(s => ({ ...s, plan: p.id }))} className="glass" style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 12, border: `1px solid ${v.plan === p.id ? 'var(--brand)' : 'var(--border-subtle)'}`, background: v.plan === p.id ? 'rgba(99,102,241,0.1)' : 'var(--glass-bg)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+          <button key={p.id} onClick={() => setV(s => ({ ...s, plan: p.id }))} className="glass" style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 12, border: `1px solid ${v.plan === p.id ? 'var(--brand)' : 'var(--border-subtle)'}`, background: v.plan === p.id ? 'rgba(var(--brand-rgb),0.1)' : 'var(--glass-bg)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{p.name}</span>
               <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: 'var(--brand)' }}>{ops6$(p.price)}/mo</span>
@@ -395,7 +395,7 @@ function MOnboardingFull({ onNav }) {
             <div style={{ marginTop: 9 }}>
               {l.items.map((it, i) => (
                 <button key={i} onClick={() => toggle(l.id, i)} style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', padding: '7px 2px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>
-                  <span style={{ width: 18, height: 18, borderRadius: 6, border: `1.5px solid ${it.done ? 'var(--status-ok)' : 'var(--border-strong)'}`, background: it.done ? 'rgba(52,211,153,0.15)' : 'transparent', color: 'var(--status-ok)', fontSize: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{it.done ? '✓' : ''}</span>
+                  <span style={{ width: 18, height: 18, borderRadius: 6, border: `1.5px solid ${it.done ? 'var(--status-ok)' : 'var(--border-strong)'}`, background: it.done ? 'rgba(var(--ok-rgb),0.15)' : 'transparent', color: 'var(--status-ok)', fontSize: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{it.done ? '✓' : ''}</span>
                   <span style={{ fontSize: 12.5, color: it.done ? 'var(--text-low)' : 'var(--text-high)', textDecoration: it.done ? 'line-through' : 'none' }}>{it.t}</span>
                 </button>
               ))}
@@ -436,7 +436,7 @@ function MRFPFull({ onNav }) {
             <div style={{ marginTop: 9 }}>
               {r.reqs.map((q, i) => (
                 <button key={i} onClick={() => toggle(r.id, i)} style={{ display: 'flex', alignItems: 'flex-start', gap: 9, width: '100%', padding: '6px 2px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>
-                  <span style={{ width: 18, height: 18, borderRadius: 6, border: `1.5px solid ${q.ok ? 'var(--status-ok)' : 'var(--border-strong)'}`, background: q.ok ? 'rgba(52,211,153,0.15)' : 'transparent', color: 'var(--status-ok)', fontSize: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{q.ok ? '✓' : ''}</span>
+                  <span style={{ width: 18, height: 18, borderRadius: 6, border: `1.5px solid ${q.ok ? 'var(--status-ok)' : 'var(--border-strong)'}`, background: q.ok ? 'rgba(var(--ok-rgb),0.15)' : 'transparent', color: 'var(--status-ok)', fontSize: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{q.ok ? '✓' : ''}</span>
                   <span style={{ fontSize: 12, color: q.ok ? 'var(--text-low)' : 'var(--text-high)', lineHeight: 1.4 }}>{q.t}</span>
                 </button>
               ))}
@@ -493,7 +493,7 @@ function MCopilotFull({ onNav }) {
       {all.length === 0 && <OPS6_EMPTY>No jobs on the schedule yet — the copilot reviews your week and flags gaps, conflicts and overloads the moment jobs exist.</OPS6_EMPTY>}
       {unassigned.map(j => sugg('◌', `“${j.title}” has no tech assigned`, `Day ${j.day} · ${window.mFmtH ? window.mFmtH(j.start) : j.start}`, (
         <div style={{ display: 'flex', gap: 6, marginTop: 9, flexWrap: 'wrap' }}>
-          {techIds.slice(0, 5).map(t => <button key={t} onClick={() => assign(j, t)} style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border-strong)', background: 'rgba(99,102,241,0.08)', color: 'var(--brand)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>→ {t}</button>)}
+          {techIds.slice(0, 5).map(t => <button key={t} onClick={() => assign(j, t)} style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border-strong)', background: 'rgba(var(--brand-rgb),0.08)', color: 'var(--brand)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>→ {t}</button>)}
         </div>
       )))}
       {overlaps.map((o, i) => sugg('⚠', `${o.t} is double-booked`, `“${o.a.title}” overlaps “${o.b.title}” on day ${o.a.day}`, (
@@ -576,7 +576,7 @@ function MServiceReportsFull() {
   const [f, setF] = React.useState({ job: '', customer: '', work: '', recs: '' });
   const gen = () => {
     if (!f.customer.trim() || !f.work.trim()) { showToast('Add the customer and what was done', 'warn'); return; }
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Service Report</title><style>body{font-family:-apple-system,Segoe UI,sans-serif;max-width:700px;margin:0 auto;padding:40px 32px;color:#16202b;line-height:1.5}h1{font-size:22px;border-bottom:3px solid #6366F1;padding-bottom:10px}h2{font-size:14px;color:#1d5c96;margin-top:24px}.meta{color:#54636f;font-size:13px}</style></head><body><h1>ShieldTech Service Report</h1><div class="meta">${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} · ${f.job || 'Service visit'}</div><h2>Customer</h2><p>${f.customer}</p><h2>Work performed</h2><p>${f.work.replace(/\n/g, '<br/>')}</p>${f.recs.trim() ? `<h2>Recommendations</h2><p>${f.recs.replace(/\n/g, '<br/>')}</p>` : ''}<h2>Technician</h2><p>${(window.__shieldUser || {}).name || 'ShieldTech Solutions'} · (215) 555-0100</p></body></html>`;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Service Report</title><style>body{font-family:-apple-system,Segoe UI,sans-serif;max-width:700px;margin:0 auto;padding:40px 32px;color:#16202b;line-height:1.5}h1{font-size:22px;border-bottom:3px solid var(--brand);padding-bottom:10px}h2{font-size:14px;color:#1d5c96;margin-top:24px}.meta{color:#54636f;font-size:13px}</style></head><body><h1>ShieldTech Service Report</h1><div class="meta">${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} · ${f.job || 'Service visit'}</div><h2>Customer</h2><p>${f.customer}</p><h2>Work performed</h2><p>${f.work.replace(/\n/g, '<br/>')}</p>${f.recs.trim() ? `<h2>Recommendations</h2><p>${f.recs.replace(/\n/g, '<br/>')}</p>` : ''}<h2>Technician</h2><p>${(window.__shieldUser || {}).name || 'ShieldTech Solutions'} · (215) 555-0100</p></body></html>`;
     const blob = new Blob([html], { type: 'text/html' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ShieldTech-Report-${f.customer.replace(/\W+/g, '-')}.html`; a.click(); URL.revokeObjectURL(a.href);
     showToast('Report downloaded — print to PDF or email it', 'ok');

@@ -34,7 +34,7 @@ function SV2Docs({ project, floor, updateFloor }) {
 
   const media = floor.photos || [], issues = floor.issues || [], readings = floor.readings || [], zones = floor.zones || [];
   const pins =
-    sub === 'Media'    ? media.map(m => ({ id: m.id, x: m.x, y: m.y, c: m.kind === '360' ? '#c084fc' : m.kind === 'video' ? '#FBBF24' : '#6366F1', glyph: svMediaGlyph[m.kind || 'photo'] })) :
+    sub === 'Media'    ? media.map(m => ({ id: m.id, x: m.x, y: m.y, c: m.kind === '360' ? '#c084fc' : m.kind === 'video' ? '#FBBF24' : 'var(--brand)', glyph: svMediaGlyph[m.kind || 'photo'] })) :
     sub === 'Issues'   ? issues.map(i => ({ id: i.id, x: i.x, y: i.y, c: SV_SEV[i.sev].c, glyph: '!' })) :
     sub === 'Readings' ? readings.map(r => ({ id: r.id, x: r.x, y: r.y, c: svReading(r.kind).color, glyph: '·' })) :
     zones.map(z => ({ id: z.id, x: ssCentroid(z.poly)[0], y: ssCentroid(z.poly)[1], poly: z.poly, c: svZone(z.type).c }));
@@ -53,7 +53,7 @@ function SV2Docs({ project, floor, updateFloor }) {
               const [cx, cy] = ssCentroid(floor.rooms[0] ? floor.rooms[0].poly : [[5, 5]]);
               updateFloor({ ...floor, photos: [...media, { id: ssId('p'), x: cx + Math.random() * 4, y: cy + Math.random() * 3, kind, label: `${kind === '360' ? '360° panorama' : kind === 'video' ? 'Video clip' : 'Photo'} — ${floor.rooms[0] ? floor.rooms[0].name : floor.label}`, hue: Math.floor(Math.random() * 360), dur: kind === 'video' ? '0:31' : undefined }] });
               showToast(`${kind === '360' ? '360° capture' : kind} pinned to plan`, 'ok');
-            }} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.06)', color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{lbl}</button>
+            }} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: '1px solid var(--border-subtle)', background: 'rgba(var(--brand-rgb),0.06)', color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{lbl}</button>
           ))}
         </div>
         <div style={{ fontSize: 9, color: 'var(--text-low)', textAlign: 'center', marginTop: -3 }}>Pairs with Ricoh Theta / Insta360 for one-tap panoramas pinned where you stand.</div>
@@ -123,7 +123,7 @@ function SV2Docs({ project, floor, updateFloor }) {
                 <span style={{ color: 'var(--text-mid)', fontWeight: 600 }}>Floor coverage — {floor.label}</span>
                 <span className="mono" style={{ color: pct > 60 ? 'var(--status-ok)' : 'var(--status-warn)', fontWeight: 700 }}>{pct}%</span>
               </div>
-              <div style={{ height: 6, borderRadius: 3, background: 'rgba(99,102,241,0.1)' }}>
+              <div style={{ height: 6, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.1)' }}>
                 <div style={{ width: pct + '%', height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, var(--brand), var(--status-ok))' }}></div>
               </div>
             </div>
@@ -165,7 +165,7 @@ function SVMediaViewer({ media, onClose }) {
       {!is360 && media.kind !== 'video' && (
         <div style={{ display: 'flex', gap: 7, padding: 12, borderTop: '1px solid var(--border-subtle)' }}>
           {['✎ Draw', '→ Arrow', '▢ Box', 'T Text'].map(t => (
-            <button key={t} onClick={() => showToast('Markup added to photo', 'ok')} style={{ flex: 1, padding: '10px 0', borderRadius: 9, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.06)', color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t}</button>
+            <button key={t} onClick={() => showToast('Markup added to photo', 'ok')} style={{ flex: 1, padding: '10px 0', borderRadius: 9, border: '1px solid var(--border-subtle)', background: 'rgba(var(--brand-rgb),0.06)', color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t}</button>
           ))}
         </div>
       )}
@@ -177,7 +177,7 @@ function SVAddIssue({ floor, updateFloor, onClose }) {
   const [title, setTitle] = React.useState('');
   const [sev, setSev] = React.useState('med');
   const [room, setRoom] = React.useState(floor.rooms[0] ? floor.rooms[0].name : '');
-  const inp = { width: '100%', padding: '10px 12px', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inp = { width: '100%', padding: '10px 12px', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
   return (
     <MSheet title="Flag an issue" onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>

@@ -3,7 +3,7 @@
    checklist hits and scope items — magicplan-style AI capture, ShieldTech flavored. */
 
 const SV_AI_SCRIPT = [];
-const SV_AI_KIND = { note: { c: '#6366F1', label: 'Note' }, issue: { c: '#F43F5E', label: 'Issue' }, scope: { c: '#34D399', label: 'Scope item' }, photo: { c: '#FBBF24', label: 'Photo task' } };
+const SV_AI_KIND = { note: { c: 'var(--brand)', label: 'Note' }, issue: { c: '#F43F5E', label: 'Issue' }, scope: { c: '#34D399', label: 'Scope item' }, photo: { c: '#FBBF24', label: 'Photo task' } };
 
 function SVAICapture({ project, update, floor, updateFloor, onClose }) {
   const [entries, setEntries] = React.useState([]);
@@ -87,7 +87,7 @@ function SVAICapture({ project, update, floor, updateFloor, onClose }) {
 
       <div style={{ padding: 14, borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 8 }}>
         <button onClick={onClose} style={{ flex: 1, padding: '13px 0', borderRadius: 12, border: '1px solid var(--border-subtle)', background: 'none', color: 'var(--text-mid)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Discard</button>
-        <button onClick={apply} disabled={!entries.length} style={{ flex: 2, padding: '13px 0', borderRadius: 12, border: 'none', background: entries.length ? 'linear-gradient(135deg, var(--brand), var(--brand-pressed))' : 'rgba(99,102,241,0.1)', color: entries.length ? '#fff' : 'var(--text-low)', fontSize: 12.5, fontWeight: 700, cursor: entries.length ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>File {entries.length} items to survey</button>
+        <button onClick={apply} disabled={!entries.length} style={{ flex: 2, padding: '13px 0', borderRadius: 12, border: 'none', background: entries.length ? 'linear-gradient(135deg, var(--brand), var(--brand-pressed))' : 'rgba(var(--brand-rgb),0.1)', color: entries.length ? '#fff' : 'var(--text-low)', fontSize: 12.5, fontWeight: 700, cursor: entries.length ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>File {entries.length} items to survey</button>
       </div>
     </div>
   );

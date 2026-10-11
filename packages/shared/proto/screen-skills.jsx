@@ -45,9 +45,9 @@ function SkillsMatrixScreen() {
 
   const levelStyle = [
     { bg: 'rgba(92,111,134,0.1)',   color: 'var(--text-low)',    border: 'var(--border-subtle)', symbol: '·',  label: 'None' },
-    { bg: 'rgba(99,102,241,0.12)',  color: 'var(--brand)',       border: 'rgba(99,102,241,0.3)', symbol: '1',  label: 'Basic' },
-    { bg: 'rgba(251,191,36,0.15)',  color: 'var(--status-warn)', border: 'rgba(251,191,36,0.35)',symbol: '2',  label: 'Proficient' },
-    { bg: 'rgba(52,211,153,0.18)',  color: 'var(--status-ok)',   border: 'rgba(52,211,153,0.35)',symbol: 'star',label: 'Expert' },
+    { bg: 'rgba(var(--brand-rgb),0.12)',  color: 'var(--brand)',       border: 'rgba(var(--brand-rgb),0.3)', symbol: '1',  label: 'Basic' },
+    { bg: 'rgba(var(--warn-rgb),0.15)',  color: 'var(--status-warn)', border: 'rgba(var(--warn-rgb),0.35)',symbol: '2',  label: 'Proficient' },
+    { bg: 'rgba(var(--ok-rgb),0.18)',  color: 'var(--status-ok)',   border: 'rgba(var(--ok-rgb),0.35)',symbol: 'star',label: 'Expert' },
   ];
 
   const cycleLevel = (techId, skillId) => {
@@ -87,10 +87,10 @@ function SkillsMatrixScreen() {
       <div style={{ display:'flex', gap:10, alignItems:'stretch', flexShrink:0 }}>
         {techScore.map(t => (
           <div key={t.id} className="glass" style={{ flex:1, padding:'10px 12px', textAlign:'center' }}>
-            <div style={{ width:30, height:30, borderRadius:'50%', background:'rgba(99,102,241,0.12)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:700, color:t.color, margin:'0 auto 5px', border:'1px solid '+t.color+'40' }}>{t.id}</div>
+            <div style={{ width:30, height:30, borderRadius:'50%', background:'rgba(var(--brand-rgb),0.12)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:700, color:t.color, margin:'0 auto 5px', border:'1px solid '+t.color+'40' }}>{t.id}</div>
             <div style={{ fontSize:10, fontWeight:500, color:'var(--text-high)', marginBottom:2 }}>{t.name.split(' ')[0]}</div>
             <div className="mono" style={{ fontSize:14, fontWeight:700, color:t.score>=80?'var(--status-ok)':t.score>=60?'var(--status-warn)':'var(--brand)' }}>{t.score}%</div>
-            <div style={{ height:3, background:'rgba(99,102,241,0.08)', borderRadius:2, overflow:'hidden', marginTop:4 }}>
+            <div style={{ height:3, background:'rgba(var(--brand-rgb),0.08)', borderRadius:2, overflow:'hidden', marginTop:4 }}>
               <div style={{ width:t.score+'%', height:'100%', background:t.score>=80?'var(--status-ok)':t.score>=60?'var(--status-warn)':'var(--brand)', borderRadius:2, transition:'width 0.4s ease' }} />
             </div>
           </div>
@@ -100,7 +100,7 @@ function SkillsMatrixScreen() {
             <div style={{ fontSize:10, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--status-warn)', marginBottom:5 }}>warn {gapSkills.length} Skills Need 2+ Experts</div>
             <div style={{ display:'flex', flexWrap:'wrap', gap:4 }}>
               {gapSkills.slice(0,8).map(s => (
-                <span key={s.id} style={{ fontSize:9, color:'var(--status-warn)', background:'rgba(251,191,36,0.1)', padding:'2px 7px', borderRadius:100 }}>{s.name}</span>
+                <span key={s.id} style={{ fontSize:9, color:'var(--status-warn)', background:'rgba(var(--warn-rgb),0.1)', padding:'2px 7px', borderRadius:100 }}>{s.name}</span>
               ))}
             </div>
           </div>
@@ -116,9 +116,9 @@ function SkillsMatrixScreen() {
             <span style={{ fontSize:10, color:l.color }}>{l.label}</span>
           </div>
         ))}
-        <div style={{ marginLeft:'auto', display:'flex', gap:2, background:'rgba(99,102,241,0.06)', borderRadius:7, padding:3, border:'1px solid var(--border-subtle)' }}>
+        <div style={{ marginLeft:'auto', display:'flex', gap:2, background:'rgba(var(--brand-rgb),0.06)', borderRadius:7, padding:3, border:'1px solid var(--border-subtle)' }}>
           {['all','Camera Systems','Access Control','Alarm & Fire','Networking','Compliance'].map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{ padding:'3px 10px', borderRadius:5, fontSize:10, fontFamily:'var(--font-body)', border:'none', cursor:'pointer', background:filter===f?'rgba(99,102,241,0.18)':'transparent', color:filter===f?'var(--brand)':'var(--text-low)', fontWeight:filter===f?600:400, transition:'all 0.15s', whiteSpace:'nowrap' }}>
+            <button key={f} onClick={() => setFilter(f)} style={{ padding:'3px 10px', borderRadius:5, fontSize:10, fontFamily:'var(--font-body)', border:'none', cursor:'pointer', background:filter===f?'rgba(var(--brand-rgb),0.18)':'transparent', color:filter===f?'var(--brand)':'var(--text-low)', fontWeight:filter===f?600:400, transition:'all 0.15s', whiteSpace:'nowrap' }}>
               {f==='all'?'All':f}
             </button>
           ))}
@@ -141,18 +141,18 @@ function SkillsMatrixScreen() {
             {filteredGroups.map(group => (
               <React.Fragment key={group.group}>
                 <tr>
-                  <td colSpan={techs.length+2} style={{ padding:'10px 12px 4px', fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:group.color, background:'rgba(99,102,241,0.03)', borderTop:'1px solid var(--border-subtle)' }}>{group.group}</td>
+                  <td colSpan={techs.length+2} style={{ padding:'10px 12px 4px', fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:group.color, background:'rgba(var(--brand-rgb),0.03)', borderTop:'1px solid var(--border-subtle)' }}>{group.group}</td>
                 </tr>
                 {group.skills.map(skill => {
                   const vals = techs.map(t => matrix[t.id]?.[skill.id] || 0);
                   const expertCount = vals.filter(v => v===3).length;
                   const isGap = expertCount < 2;
                   return (
-                    <tr key={skill.id} onMouseEnter={() => setHighlight(skill.id)} onMouseLeave={() => setHighlight(null)} style={{ background:highlight===skill.id?'rgba(99,102,241,0.04)':'transparent', transition:'background 0.1s' }}>
-                      <td style={{ padding:'7px 12px', fontSize:12, color:'var(--text-high)', borderBottom:'1px solid rgba(99,102,241,0.05)', whiteSpace:'nowrap' }}>
+                    <tr key={skill.id} onMouseEnter={() => setHighlight(skill.id)} onMouseLeave={() => setHighlight(null)} style={{ background:highlight===skill.id?'rgba(var(--brand-rgb),0.04)':'transparent', transition:'background 0.1s' }}>
+                      <td style={{ padding:'7px 12px', fontSize:12, color:'var(--text-high)', borderBottom:'1px solid rgba(var(--brand-rgb),0.05)', whiteSpace:'nowrap' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:7 }}>
                           {skill.name}
-                          {isGap && <span style={{ fontSize:8, color:'var(--status-warn)', background:'rgba(251,191,36,0.1)', padding:'1px 5px', borderRadius:4 }}>gap</span>}
+                          {isGap && <span style={{ fontSize:8, color:'var(--status-warn)', background:'rgba(var(--warn-rgb),0.1)', padding:'1px 5px', borderRadius:4 }}>gap</span>}
                         </div>
                         <div style={{ fontSize:9, color:'var(--text-low)' }}>{skill.vendor}</div>
                       </td>
@@ -160,7 +160,7 @@ function SkillsMatrixScreen() {
                         const level = matrix[t.id]?.[skill.id] || 0;
                         const ls = levelStyle[level];
                         return (
-                          <td key={t.id} style={{ padding:'6px 8px', textAlign:'center', borderBottom:'1px solid rgba(99,102,241,0.05)' }}>
+                          <td key={t.id} style={{ padding:'6px 8px', textAlign:'center', borderBottom:'1px solid rgba(var(--brand-rgb),0.05)' }}>
                             <div
                               onClick={() => cycleLevel(t.id, skill.id)}
                               title={'Click to change — current: ' + ls.label}
@@ -172,9 +172,9 @@ function SkillsMatrixScreen() {
                           </td>
                         );
                       })}
-                      <td style={{ padding:'6px 8px', borderBottom:'1px solid rgba(99,102,241,0.05)' }}>
+                      <td style={{ padding:'6px 8px', borderBottom:'1px solid rgba(var(--brand-rgb),0.05)' }}>
                         <div style={{ display:'flex', gap:2 }}>
-                          {vals.map((v,vi) => <div key={vi} style={{ width:4, height:16, borderRadius:2, background:v===0?'rgba(99,102,241,0.08)':v===1?'rgba(99,102,241,0.4)':v===2?'var(--status-warn)':'var(--status-ok)' }} />)}
+                          {vals.map((v,vi) => <div key={vi} style={{ width:4, height:16, borderRadius:2, background:v===0?'rgba(var(--brand-rgb),0.08)':v===1?'rgba(var(--brand-rgb),0.4)':v===2?'var(--status-warn)':'var(--status-ok)' }} />)}
                         </div>
                       </td>
                     </tr>

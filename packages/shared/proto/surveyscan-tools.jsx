@@ -21,13 +21,13 @@ function SV2Forms({ project, update }) {
               </div>
               <MBadge color={done === cl.items.length ? 'var(--status-ok)' : 'var(--status-warn)'}>{done === cl.items.length ? 'complete' : 'in progress'}</MBadge>
             </div>
-            <div style={{ height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.1)', margin: '9px 0 10px' }}>
+            <div style={{ height: 4, borderRadius: 2, background: 'rgba(var(--brand-rgb),0.1)', margin: '9px 0 10px' }}>
               <div style={{ width: (done / cl.items.length) * 100 + '%', height: '100%', borderRadius: 2, background: 'var(--status-ok)', transition: 'width 0.25s' }}></div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {cl.items.map((it, i) => (
-                <button key={i} onClick={() => toggle(cl.id, i)} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 2px', background: 'none', border: 'none', borderBottom: '1px solid rgba(99,102,241,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-                  <span style={{ width: 17, height: 17, borderRadius: 5, flexShrink: 0, border: '1.5px solid', borderColor: it.done ? 'var(--status-ok)' : 'var(--border-strong)', background: it.done ? 'rgba(52,211,153,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--status-ok)' }}>{it.done ? '✓' : ''}</span>
+                <button key={i} onClick={() => toggle(cl.id, i)} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '7px 2px', background: 'none', border: 'none', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+                  <span style={{ width: 17, height: 17, borderRadius: 5, flexShrink: 0, border: '1.5px solid', borderColor: it.done ? 'var(--status-ok)' : 'var(--border-strong)', background: it.done ? 'rgba(var(--ok-rgb),0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--status-ok)' }}>{it.done ? '✓' : ''}</span>
                   <span style={{ fontSize: 11.5, color: it.done ? 'var(--text-low)' : 'var(--text-mid)', textDecoration: it.done ? 'line-through' : 'none' }}>{it.t}</span>
                 </button>
               ))}
@@ -43,7 +43,7 @@ function SV2Forms({ project, update }) {
                 update({ ...project, checklists: [...lists, { id: ssId('cl'), tpl: t.id, name: t.name, kind: t.kind, items: t.items.map(x => ({ t: x, done: false })) }] });
                 showToast(`"${t.name}" applied`, 'ok'); setPick(false);
               }} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 13px', borderRadius: 11, border: '1px solid var(--border-subtle)', background: 'var(--glass-bg)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-                <span style={{ width: 32, height: 32, borderRadius: 9, flexShrink: 0, background: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--brand)' }}>{t.kind === 'SOP' ? '¶' : t.kind === 'Form' ? '≡' : '☑'}</span>
+                <span style={{ width: 32, height: 32, borderRadius: 9, flexShrink: 0, background: 'rgba(var(--brand-rgb),0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--brand)' }}>{t.kind === 'SOP' ? '¶' : t.kind === 'Form' ? '≡' : '☑'}</span>
                 <span style={{ flex: 1 }}>
                   <span style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>{t.name}</span>
                   <span style={{ display: 'block', fontSize: 9.5, color: 'var(--text-low)' }}>{t.kind} · {t.items.length} items · reusable across surveys</span>
@@ -73,8 +73,8 @@ function SVLaser({ onClose }) {
     <MSheet title="Laser distance meter" onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
         {prefs.laser ? (
-          <div className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 14px', borderRadius: 12, border: '1px solid rgba(52,211,153,0.35)' }}>
-            <span style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(52,211,153,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--status-ok)' }}>✓</span>
+          <div className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 14px', borderRadius: 12, border: '1px solid rgba(var(--ok-rgb),0.35)' }}>
+            <span style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(var(--ok-rgb),0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--status-ok)' }}>✓</span>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>{prefs.laser.name}</div>
               <div className="mono" style={{ fontSize: 9.5, color: 'var(--text-low)' }}>{prefs.laser.id} · battery {prefs.laser.batt}% · measurements flow into corner mode</div>
@@ -116,13 +116,13 @@ function SVSync({ project, onClose }) {
           </div>
         </div>
         {feed.map((e, i) => (
-          <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'baseline', padding: '6px 2px', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+          <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'baseline', padding: '6px 2px', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
             <span style={{ fontSize: 11, color: e.dir === 'up' ? 'var(--brand)' : '#c084fc', flexShrink: 0 }}>{e.dir === 'up' ? '↑' : '↓'}</span>
             <span style={{ fontSize: 11.5, color: 'var(--text-mid)', flex: 1 }}>{e.t}</span>
             <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)', flexShrink: 0 }}>{e.who.split(' ')[0]} · {e.time}</span>
           </div>
         ))}
-        <button onClick={() => { showToast('Share link copied — office & customer can view read-only', 'ok'); }} style={{ padding: '12px 0', borderRadius: 11, border: '1px solid var(--border-strong)', background: 'rgba(99,102,241,0.08)', color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⧉ Copy shareable project link</button>
+        <button onClick={() => { showToast('Share link copied — office & customer can view read-only', 'ok'); }} style={{ padding: '12px 0', borderRadius: 11, border: '1px solid var(--border-strong)', background: 'rgba(var(--brand-rgb),0.08)', color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⧉ Copy shareable project link</button>
       </div>
     </MSheet>
   );
@@ -151,10 +151,10 @@ function SVViews({ floor, onClose }) {
                 return (
                   <g key={r.id}>
                     {ssEdges(r.poly).map(([p, q], i) => (
-                      <polygon key={i} points={[iso(p, 0), iso(q, 0), iso(q, h), iso(p, h)].map(v => v.join(',')).join(' ')} fill="rgba(99,102,241,0.10)" stroke="rgba(99,102,241,0.55)" strokeWidth="0.3" />
+                      <polygon key={i} points={[iso(p, 0), iso(q, 0), iso(q, h), iso(p, h)].map(v => v.join(',')).join(' ')} fill="rgba(var(--brand-rgb),0.10)" stroke="rgba(var(--brand-rgb),0.55)" strokeWidth="0.3" />
                     ))}
-                    <polygon points={top.map(v => v.join(',')).join(' ')} fill="rgba(99,102,241,0.05)" stroke="rgba(99,102,241,0.8)" strokeWidth="0.35" />
-                    <polygon points={base.map(v => v.join(',')).join(' ')} fill="none" stroke="rgba(99,102,241,0.3)" strokeWidth="0.25" strokeDasharray="1 0.8" />
+                    <polygon points={top.map(v => v.join(',')).join(' ')} fill="rgba(var(--brand-rgb),0.05)" stroke="rgba(var(--brand-rgb),0.8)" strokeWidth="0.35" />
+                    <polygon points={base.map(v => v.join(',')).join(' ')} fill="none" stroke="rgba(var(--brand-rgb),0.3)" strokeWidth="0.25" strokeDasharray="1 0.8" />
                     <text transform={`translate(${iso(ssCentroid(r.poly), h)[0]},${iso(ssCentroid(r.poly), h)[1] - 1.5})`} textAnchor="middle" fontSize="2.4" fill="var(--text-mid)" fontFamily="var(--font-body)">{r.name}</text>
                   </g>
                 );
@@ -171,12 +171,12 @@ function SVViews({ floor, onClose }) {
                 <div key={r.id} style={{ marginBottom: 10 }}>
                   <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-mid)', marginBottom: 3 }}>{r.name} — unrolled walls</div>
                   <svg viewBox={`0 0 ${per} ${h + 2}`} style={{ width: '100%', height: 52 }} preserveAspectRatio="none">
-                    <rect x="0" y="1" width={per} height={h} fill="rgba(99,102,241,0.06)" stroke="rgba(99,102,241,0.5)" strokeWidth="0.25" />
+                    <rect x="0" y="1" width={per} height={h} fill="rgba(var(--brand-rgb),0.06)" stroke="rgba(var(--brand-rgb),0.5)" strokeWidth="0.25" />
                     {(floor.doors || []).filter(d => d.room === r.id).map((d, i) => {
                       const off = (per / ((floor.doors || []).filter(x => x.room === r.id).length + 1)) * (i + 1);
                       return d.kind === 'door'
-                        ? <rect key={d.id} x={off} y={h - 6} width={d.w} height="6.2" fill="rgba(52,211,153,0.18)" stroke="var(--status-ok)" strokeWidth="0.22" />
-                        : <rect key={d.id} x={off} y={3} width={d.w} height="4" fill="rgba(251,191,36,0.16)" stroke="var(--status-warn)" strokeWidth="0.22" />;
+                        ? <rect key={d.id} x={off} y={h - 6} width={d.w} height="6.2" fill="rgba(var(--ok-rgb),0.18)" stroke="var(--status-ok)" strokeWidth="0.22" />
+                        : <rect key={d.id} x={off} y={3} width={d.w} height="4" fill="rgba(var(--warn-rgb),0.16)" stroke="var(--status-warn)" strokeWidth="0.22" />;
                     })}
                     <text x="0.7" y={h - 0.6} fontSize="1.8" fill="var(--text-low)" fontFamily="var(--font-mono, monospace)">{h}′ × {Math.round(per)}′ = {Math.round(per * h)} ft² wall</text>
                   </svg>

@@ -233,7 +233,7 @@ function CustomDashboard({ onNav }) {
           <span style={{ fontSize: 10.5, color: 'var(--text-low)', marginRight: 4, letterSpacing: '0.02em' }}>Drag to reorder · drag corner to resize</span>}
           <button onClick={() => setEditMode(!editMode)} style={{
             padding: '5px 14px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-            background: editMode ? 'var(--brand)' : 'rgba(99,102,241,0.06)',
+            background: editMode ? 'var(--brand)' : 'rgba(var(--brand-rgb),0.06)',
             border: editMode ? 'none' : '1px solid var(--border-strong)',
             color: editMode ? '#fff' : 'var(--brand)',
             cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -281,7 +281,7 @@ function CustomDashboard({ onNav }) {
 
           })}
           {editMode &&
-          <button onClick={() => setWidgetGallery(true)} style={{ gridColumn: 'span 1', gridRow: 'span 1', borderRadius: 22, border: '2px dashed var(--border-strong)', background: 'rgba(99,102,241,0.03)', color: 'var(--text-low)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font-body)' }}
+          <button onClick={() => setWidgetGallery(true)} style={{ gridColumn: 'span 1', gridRow: 'span 1', borderRadius: 22, border: '2px dashed var(--border-strong)', background: 'rgba(var(--brand-rgb),0.03)', color: 'var(--text-low)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font-body)' }}
           onMouseEnter={(e) => {e.currentTarget.style.borderColor = 'var(--brand)';e.currentTarget.style.color = 'var(--brand)';}}
           onMouseLeave={(e) => {e.currentTarget.style.borderColor = 'var(--border-strong)';e.currentTarget.style.color = 'var(--text-low)';}}>
               <span style={{ fontSize: 26 }}>+</span><span style={{ fontSize: 11 }}>Add</span>
@@ -349,12 +349,12 @@ function WidgetMenuBtn({ widget, onRemove, showToast }) {
       <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, width: 140, background: 'var(--modal)', border: '1px solid var(--border-strong)', borderRadius: 6, zIndex: 100, padding: '4px 0', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
           {['Configure', 'Refresh', 'Resize', 'Set Time Range'].map((label, i) =>
         <button key={i} onClick={() => {showToast(`${label}: ${widget.label}`);setOpen(false);}} style={{ display: 'block', width: '100%', padding: '6px 12px', background: 'none', border: 'none', color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}
-        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
+        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.06)'}
         onMouseLeave={(e) => e.currentTarget.style.background = 'none'}>{label}</button>
         )}
           <div style={{ height: 1, background: 'var(--border-subtle)', margin: '3px 8px' }} />
           <button onClick={() => {onRemove();setOpen(false);}} style={{ display: 'block', width: '100%', padding: '6px 12px', background: 'none', border: 'none', color: 'var(--status-critical)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}
-        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(244,63,94,0.04)'}
+        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(var(--critical-rgb),0.04)'}
         onMouseLeave={(e) => e.currentTarget.style.background = 'none'}>Remove</button>
         </div>
       }
@@ -406,7 +406,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
         <div className="label-sm" style={{ marginBottom: 10 }}>{label}</div>
         <div style={{ display: 'flex', gap: 6 }}>
           {[{ stage: 'Lead', n: 8, val: '$240K' }, { stage: 'Proposal', n: 4, val: '$180K' }, { stage: 'Negotiate', n: 2, val: '$128K' }, { stage: 'Closed', n: 6, val: '$420K' }].map((s, i) =>
-          <div key={i} style={{ flex: 1, padding: 8, borderRadius: 6, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
+          <div key={i} style={{ flex: 1, padding: 8, borderRadius: 6, background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
               <div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>{s.stage}</div>
               <div className="mono" style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>{s.n}</div>
               <div className="mono" style={{ fontSize: 10, color: 'var(--text-mid)' }}>{s.val}</div>
@@ -429,7 +429,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
       <GlassPanel style={base}>
         <div className="label-sm" style={{ marginBottom: 8 }}>{label}</div>
         {[{ job: 'Metro Bank — Install', tech: 'MR', status: 'In Progress' }, { job: 'Acme Dental — NVR', tech: 'JL', status: 'En Route' }, { job: 'City Hall — Access', tech: 'KW', status: 'In Progress' }].map((j, i) =>
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11 }}>
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11 }}>
             <StatusDot status={j.status === 'In Progress' ? 'online' : 'info'} size={5} />
             <span style={{ flex: 1, color: 'var(--text-mid)' }}>{j.job}</span>
             <span style={{ color: 'var(--brand)', fontWeight: 600, fontSize: 10 }}>{j.tech}</span>
@@ -449,7 +449,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
         'Cash position strong: 4.2 months runway at current burn.',
         'Diana Patel is unassigned this afternoon — assign Bayshore Medical?'].
         map((insight, i) =>
-        <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--text-mid)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, color: 'var(--text-mid)', display: 'flex', alignItems: 'center', gap: 6 }}>
             <StatusDot status="info" size={4} />
             <span style={{ flex: 1 }}>{insight}</span>
           </div>
@@ -467,7 +467,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
         { time: '12:30 PM', text: 'Mike Reyes checked in at Metro Bank', icon: '⌖' },
         { time: '11:00 AM', text: 'Proposal PROP-301 viewed by Pinnacle Financial', icon: '⊙' }].
         map((a, i) =>
-        <div key={i} style={{ display: 'flex', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+        <div key={i} style={{ display: 'flex', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
             <span style={{ fontSize: 12 }}>{a.icon}</span>
             <span style={{ flex: 1, fontSize: 11, color: 'var(--text-mid)' }}>{a.text}</span>
             <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{a.time}</span>
@@ -498,7 +498,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
         {[{ l: 'Managed (RMR)', m: 68 }, { l: 'Alarm', m: 35 }, { l: 'CCTV', m: 32 }, { l: 'Access', m: 29 }, { l: 'Fire', m: 23 }].map((s, i) =>
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
             <span style={{ fontSize: 11, color: 'var(--text-mid)', width: 100 }}>{s.l}</span>
-            <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.06)', overflow: 'hidden' }}>
+            <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(var(--brand-rgb),0.06)', overflow: 'hidden' }}>
               <div style={{ width: `${s.m}%`, height: '100%', borderRadius: 2, background: s.m >= 30 ? 'var(--status-ok)' : s.m >= 25 ? 'var(--status-warn)' : 'var(--status-critical)' }} />
             </div>
             <span className="mono" style={{ fontSize: 10, fontWeight: 600, width: 30, textAlign: 'right', color: s.m >= 30 ? 'var(--status-ok)' : s.m >= 25 ? 'var(--status-warn)' : 'var(--status-critical)' }}>{s.m}%</span>
@@ -511,7 +511,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
     return (
       <GlassPanel style={{ ...base, minHeight: 140, position: 'relative', overflow: 'hidden' }}>
         <div className="label-sm" style={{ marginBottom: 8 }}>{label}</div>
-        <div style={{ position: 'absolute', inset: 40, background: 'rgba(99,102,241,0.02)', borderRadius: 6 }}>
+        <div style={{ position: 'absolute', inset: 40, background: 'rgba(var(--brand-rgb),0.02)', borderRadius: 6 }}>
           {[[30, 40], [55, 50], [42, 60], [65, 30]].map((pos, i) =>
           <div key={i} style={{ position: 'absolute', left: `${pos[0]}%`, top: `${pos[1]}%`, width: 20, height: 20, borderRadius: 5, background: 'var(--glass-bg)', border: '1px solid var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: 'var(--brand)' }}>
               {['MR', 'JL', 'KW', 'TG'][i]}
@@ -539,7 +539,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
       <GlassPanel style={pad}>
         <div className="label-sm" style={{ marginBottom: 8 }}>{label}</div>
         {[{ n: 'Mike Reyes', jobs: 28, hours: 168, rating: 4.9 }, { n: 'Kevin White', jobs: 24, hours: 162, rating: 4.8 }, { n: 'Jessica Liu', jobs: 22, hours: 155, rating: 4.9 }].map((t, i) =>
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
             <span className="mono" style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? 'var(--status-ok)' : i === 1 ? 'var(--brand)' : 'var(--text-mid)', width: 16 }}>#{i + 1}</span>
             <span style={{ flex: 1, fontSize: 12, color: 'var(--text-mid)' }}>{t.n}</span>
             <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{t.jobs} jobs</span>
@@ -616,7 +616,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
       <GlassPanel style={base}>
         <div className="label-sm" style={{ marginBottom: 8 }}>{label}</div>
         {[{ n: 'John Mitchell', s: 'online', r: 'Admin' }, { n: 'Sarah Chen', s: 'online', r: 'Sales' }, { n: 'Mike Reyes', s: 'busy', r: 'Field' }, { n: 'Jessica Liu', s: 'busy', r: 'Field' }, { n: 'Kevin White', s: 'offline', r: 'Field' }].map((m, i) =>
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
             <StatusDot status={m.s === 'online' ? 'online' : m.s === 'busy' ? 'warning' : 'offline'} size={6} />
             <span style={{ flex: 1, fontSize: 11, color: 'var(--text-mid)' }}>{m.n}</span>
             <span style={{ fontSize: 9, color: 'var(--text-low)' }}>{m.r}</span>
@@ -654,7 +654,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
           <span className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--brand)' }}>${(current / 1000).toFixed(0)}K</span>
           <span className="mono" style={{ fontSize: 12, color: 'var(--text-low)' }}>/ ${(goal / 1000).toFixed(0)}K</span>
         </div>
-        <div style={{ height: 8, borderRadius: 4, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
+        <div style={{ height: 8, borderRadius: 4, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden' }}>
           <div style={{ width: `${pct}%`, height: '100%', borderRadius: 4, background: 'linear-gradient(90deg, var(--brand), var(--status-ok))' }} />
         </div>
         <div className="mono" style={{ fontSize: 10, color: 'var(--text-low)', textAlign: 'right', marginTop: 4 }}>{pct}% of annual goal</div>
@@ -678,7 +678,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
       <GlassPanel style={{ ...base, borderLeft: '3px solid var(--status-warn)' }}>
         <div className="label-sm" style={{ marginBottom: 6 }}>{label}</div>
         {[{ n: 'Verkada CD52', s: 'Out of Stock', c: 'var(--status-critical)' }, { n: 'Axis Q6135-LE PTZ', s: '1 left', c: 'var(--status-warn)' }, { n: 'Mercury LP4502', s: '2 left', c: 'var(--status-warn)' }].map((a, i) =>
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
             <StatusDot status={a.s.includes('Out') ? 'critical' : 'warning'} size={5} />
             <span style={{ flex: 1, fontSize: 11 }}>{a.n}</span>
             <span className="mono" style={{ fontSize: 9, color: a.c }}>{a.s}</span>
@@ -692,7 +692,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
       <GlassPanel style={base}>
         <div className="label-sm" style={{ marginBottom: 6 }}>{label}</div>
         {[{ c: 'City Hall', d: 'Jun 15', v: '$3,200/mo' }, { c: 'Acme Dental', d: 'Jul 1', v: '$1,800/mo' }, { c: 'Westfield Mall', d: 'Jul 22', v: '$5,400/mo' }].map((r, i) =>
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
             <span style={{ flex: 1, fontSize: 11, color: 'var(--text-mid)' }}>{r.c}</span>
             <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{r.d}</span>
             <span className="mono" style={{ fontSize: 10, fontWeight: 500, color: 'var(--brand)' }}>{r.v}</span>
@@ -703,7 +703,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
   }
   if (type === 'notes') {
     return (
-      <GlassPanel style={{ ...base, background: 'rgba(251,191,36,0.04)', borderColor: 'rgba(251,191,36,0.15)' }}>
+      <GlassPanel style={{ ...base, background: 'rgba(var(--warn-rgb),0.04)', borderColor: 'rgba(var(--warn-rgb),0.15)' }}>
         <div className="label-sm" style={{ marginBottom: 6, color: 'var(--status-warn)' }}>⌖ {label}</div>
         <div contentEditable suppressContentEditableWarning style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, minHeight: 60, outline: 'none', cursor: 'text' }}>
           Click to edit this note...
@@ -718,7 +718,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
         {[{ k: '⌘K', d: 'Command palette' }, { k: '⌘N', d: 'New invoice' }, { k: '⌘F', d: 'Search' }, { k: 'ESC', d: 'Close modal' }].map((s, i) =>
         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
             <span style={{ fontSize: 11, color: 'var(--text-mid)' }}>{s.d}</span>
-            <span className="mono" style={{ fontSize: 10, padding: '1px 6px', borderRadius: 3, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-low)' }}>{s.k}</span>
+            <span className="mono" style={{ fontSize: 10, padding: '1px 6px', borderRadius: 3, background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', color: 'var(--text-low)' }}>{s.k}</span>
           </div>
         )}
       </GlassPanel>);
@@ -757,7 +757,7 @@ function WidgetLibraryDrawer({ library, onAdd, onClose, currentWidgets }) {
               return (
                 <button key={w.type} onClick={() => {if (!already) {onAdd(w.type);onClose();}}} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '8px 12px', borderRadius: 6, background: already ? 'rgba(99,102,241,0.03)' : 'transparent',
+                  padding: '8px 12px', borderRadius: 6, background: already ? 'rgba(var(--brand-rgb),0.03)' : 'transparent',
                   border: '1px solid var(--border-subtle)', cursor: already ? 'default' : 'pointer',
                   opacity: already ? 0.5 : 1, fontFamily: 'var(--font-body)', textAlign: 'left', width: '100%', color: 'var(--text-mid)', fontSize: 12
                 }}>
@@ -786,26 +786,26 @@ function PreferencesDrawer({ density, setDensity, accent, setAccent, onClose, sh
         <div className="label-sm" style={{ marginBottom: 8 }}>DENSITY</div>
         <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
           {['compact', 'comfortable'].map((d) =>
-          <button key={d} onClick={() => setDensity(d)} style={{ flex: 1, padding: '8px', borderRadius: 6, background: density === d ? 'rgba(99,102,241,0.1)' : 'transparent', border: `1px solid ${density === d ? 'var(--brand)' : 'var(--border-subtle)'}`, color: density === d ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{d}</button>
+          <button key={d} onClick={() => setDensity(d)} style={{ flex: 1, padding: '8px', borderRadius: 6, background: density === d ? 'rgba(var(--brand-rgb),0.1)' : 'transparent', border: `1px solid ${density === d ? 'var(--brand)' : 'var(--border-subtle)'}`, color: density === d ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{d}</button>
           )}
         </div>
         <div className="label-sm" style={{ marginBottom: 8 }}>ACCENT INTENSITY</div>
         <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
           {['subtle', 'normal', 'vivid'].map((a) =>
-          <button key={a} onClick={() => setAccent(a)} style={{ flex: 1, padding: '8px', borderRadius: 6, background: accent === a ? 'rgba(99,102,241,0.1)' : 'transparent', border: `1px solid ${accent === a ? 'var(--brand)' : 'var(--border-subtle)'}`, color: accent === a ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{a}</button>
+          <button key={a} onClick={() => setAccent(a)} style={{ flex: 1, padding: '8px', borderRadius: 6, background: accent === a ? 'rgba(var(--brand-rgb),0.1)' : 'transparent', border: `1px solid ${accent === a ? 'var(--brand)' : 'var(--border-subtle)'}`, color: accent === a ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{a}</button>
           )}
         </div>
         <div className="label-sm" style={{ marginBottom: 8 }}>SAVED TABLE VIEWS</div>
         {['Invoice table — Overdue only, sorted by amount', 'CRM pipeline — Hot leads, last 30 days', 'Inventory — Low stock alert'].map((sv, i) =>
-        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
             <span style={{ fontSize: 12, color: 'var(--text-mid)' }}>{sv}</span>
-            <button onClick={() => showToast('View loaded')} style={{ padding: '2px 8px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Load</button>
+            <button onClick={() => showToast('View loaded')} style={{ padding: '2px 8px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Load</button>
           </div>
         )}
         <div style={{ marginTop: 20 }}>
           <div className="label-sm" style={{ marginBottom: 8 }}>DASHBOARD ADMIN</div>
           <button onClick={() => showToast('Dashboard reset to role default')} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', marginBottom: 6 }}>Reset to Role Default</button>
-          <button onClick={() => showToast('Saved as default for Owner role')} style={{ width: '100%', padding: '8px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save as Default for Role (Admin)</button>
+          <button onClick={() => showToast('Saved as default for Owner role')} style={{ width: '100%', padding: '8px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save as Default for Role (Admin)</button>
         </div>
       </div>
     </div>);
@@ -853,7 +853,7 @@ function NavCustomizeDrawer({ onClose, showToast, inline }) {
 
         <div className="label-sm" style={{ marginBottom: 8 }}>PINNED (TOP)</div>
         {navItems.filter((n) => n.pinned).map((n, i) =>
-    <div key={n.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', marginBottom: 3, borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.03)' }}>
+    <div key={n.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', marginBottom: 3, borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'rgba(var(--brand-rgb),0.03)' }}>
             <span style={{ cursor: 'grab', color: 'var(--text-low)', fontSize: 10 }}>⠿</span>
             <span style={{ flex: 1, fontSize: 12, color: 'var(--brand)' }}>★ {n.label}</span>
             <button onClick={() => togglePin(n.id)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 10, cursor: 'pointer' }}>Unpin</button>
@@ -868,7 +868,7 @@ function NavCustomizeDrawer({ onClose, showToast, inline }) {
               <button onClick={() => moveItem(i, 1)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 7, cursor: 'pointer', padding: 0 }}>▼</button>
             </div>
             <span style={{ flex: 1, fontSize: 12, color: n.visible ? 'var(--text-high)' : 'var(--text-low)' }}>{n.label}</span>
-            <button onClick={() => togglePin(n.id)} style={{ padding: '2px 6px', background: n.pinned ? 'rgba(99,102,241,0.08)' : 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: n.pinned ? 'var(--brand)' : 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{n.pinned ? '★' : '☆'}</button>
+            <button onClick={() => togglePin(n.id)} style={{ padding: '2px 6px', background: n.pinned ? 'rgba(var(--brand-rgb),0.08)' : 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: n.pinned ? 'var(--brand)' : 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{n.pinned ? '★' : '☆'}</button>
             <button onClick={() => toggleVisible(n.id)} style={{ padding: '2px 6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 3, color: n.visible ? 'var(--status-ok)' : 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{n.visible ? '⊙' : '—'}</button>
           </div>
     )}
@@ -921,7 +921,7 @@ function SidecartDrawer({ items, setItems, onClose, showToast }) {
         </div>
 
         {items.map((item, i) =>
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 12, color: 'var(--text-high)' }}>{item.desc}</div>
               <div className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{item.qty} × ${item.rate.toLocaleString()}</div>
@@ -939,7 +939,7 @@ function SidecartDrawer({ items, setItems, onClose, showToast }) {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 14 }}>
           <button onClick={() => {showToast('Added to quote');onClose();}} style={{ width: '100%', padding: '10px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Add to Quote</button>
-          <button onClick={() => {showToast('Invoice created');onClose();}} style={{ width: '100%', padding: '10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Invoice</button>
+          <button onClick={() => {showToast('Invoice created');onClose();}} style={{ width: '100%', padding: '10px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Invoice</button>
           <button onClick={() => {showToast('Proposal started');onClose();}} style={{ width: '100%', padding: '10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Start Proposal</button>
         </div>
       </div>
@@ -969,7 +969,7 @@ function NotificationCenter({ onClose, showToast }) {
         {/* Filter tabs */}
         <div style={{ display: 'flex', gap: 4, padding: '8px 20px', borderBottom: '1px solid var(--border-subtle)' }}>
           {['all', 'payments', 'geofence', 'proposals', 'overdue'].map((t) =>
-          <button key={t} onClick={() => setPrefTab(t)} style={{ padding: '3px 10px', borderRadius: 4, fontSize: 10, background: prefTab === t ? 'rgba(99,102,241,0.1)' : 'transparent', border: `1px solid ${prefTab === t ? 'var(--brand)' : 'transparent'}`, color: prefTab === t ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{t}</button>
+          <button key={t} onClick={() => setPrefTab(t)} style={{ padding: '3px 10px', borderRadius: 4, fontSize: 10, background: prefTab === t ? 'rgba(var(--brand-rgb),0.1)' : 'transparent', border: `1px solid ${prefTab === t ? 'var(--brand)' : 'transparent'}`, color: prefTab === t ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{t}</button>
           )}
         </div>
 
@@ -982,9 +982,9 @@ function NotificationCenter({ onClose, showToast }) {
           </div>
         )}
         {notifications.filter((n) => prefTab === 'all' || n.type === prefTab || prefTab === 'payments' && n.type === 'payment' || prefTab === 'proposals' && n.type === 'proposal').map((n) =>
-        <div key={n.id} style={{ display: 'flex', gap: 10, padding: '12px 20px', borderBottom: '1px solid rgba(99,102,241,0.04)', background: n.read ? 'transparent' : 'rgba(99,102,241,0.02)', cursor: 'pointer' }}
-        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99,102,241,0.04)'}
-        onMouseLeave={(e) => e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(99,102,241,0.02)'}>
+        <div key={n.id} style={{ display: 'flex', gap: 10, padding: '12px 20px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', background: n.read ? 'transparent' : 'rgba(var(--brand-rgb),0.02)', cursor: 'pointer' }}
+        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)'}
+        onMouseLeave={(e) => e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(var(--brand-rgb),0.02)'}>
             <span style={{ fontSize: 16, flexShrink: 0 }}>{typeIcons[n.type]}</span>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: n.read ? 400 : 600, color: 'var(--text-high)' }}>{n.title}</div>
@@ -1006,14 +1006,14 @@ function NotificationCenter({ onClose, showToast }) {
           { event: 'Driving safety event', inApp: true, email: false, sms: false },
           { event: 'Approval required', inApp: true, email: true, sms: false }].
           map((p, i) =>
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
               <span style={{ flex: 1, fontSize: 11, color: 'var(--text-mid)' }}>{p.event}</span>
               {['In-App', 'Email', 'SMS'].map((ch, j) => {
               const active = j === 0 ? p.inApp : j === 1 ? p.email : p.sms;
               return (
                 <button key={ch} onClick={() => showToast(`${ch} ${active ? 'disabled' : 'enabled'} for ${p.event}`)} style={{
                   padding: '2px 6px', borderRadius: 3, fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)',
-                  background: active ? 'rgba(99,102,241,0.1)' : 'transparent',
+                  background: active ? 'rgba(var(--brand-rgb),0.1)' : 'transparent',
                   border: `1px solid ${active ? 'var(--brand)' : 'var(--border-subtle)'}`,
                   color: active ? 'var(--brand)' : 'var(--text-low)'
                 }}>{ch}</button>);
@@ -1092,7 +1092,7 @@ function CommandPalette({ onClose, onNav, showToast }) {
               return (
                 <button key={i} onClick={cmd.action} style={{
                   display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 18px',
-                  background: selected === globalIdx ? 'rgba(99,102,241,0.08)' : 'none',
+                  background: selected === globalIdx ? 'rgba(var(--brand-rgb),0.08)' : 'none',
                   border: 'none', cursor: 'pointer', color: 'var(--text-high)', fontSize: 13,
                   fontFamily: 'var(--font-body)', textAlign: 'left', transition: 'background 0.1s'
                 }}
@@ -1135,7 +1135,7 @@ function CustomerTimeline({ customer }) {
   return (
     <div style={{ maxWidth: 700 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'var(--brand)' }}>CH</div>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'var(--brand)' }}>CH</div>
         <div>
           <div className="display" style={{ fontSize: 16, fontWeight: 500 }}>{name}</div>
           <div style={{ fontSize: 11, color: 'var(--text-low)' }}>Unified Customer Timeline · All interactions</div>
@@ -1204,7 +1204,7 @@ function TabContextMenu({ x, y, idx, tabs, setTabs, activeTab, setActiveTab, set
               fontSize: 12, cursor: item.disabled ? 'default' : 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left',
               opacity: item.disabled ? 0.4 : 1
             }}
-            onMouseEnter={(e) => {if (!item.disabled) e.currentTarget.style.background = 'rgba(99,102,241,0.06)';}}
+            onMouseEnter={(e) => {if (!item.disabled) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.06)';}}
             onMouseLeave={(e) => e.currentTarget.style.background = 'none'}>{item.label}</button>);
 
         })}
@@ -1224,7 +1224,7 @@ function DeleteTabConfirm({ idx, tabs, onConfirm, onCancel }) {
         </div>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button onClick={onCancel} style={{ padding: '8px 18px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
-          <button onClick={onConfirm} style={{ padding: '8px 18px', background: 'rgba(244,63,94,0.12)', border: '1px solid rgba(244,63,94,0.3)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Delete Tab</button>
+          <button onClick={onConfirm} style={{ padding: '8px 18px', background: 'rgba(var(--critical-rgb),0.12)', border: '1px solid rgba(var(--critical-rgb),0.3)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Delete Tab</button>
         </div>
       </div>
     </div>);
@@ -1258,7 +1258,7 @@ function WidgetGalleryPicker({ library, onAdd, onClose, currentWidgets }) {
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} data-comment-anchor="eefcc07a6b-div-1006-9">
           <div className="display" style={{ fontSize: 18, fontWeight: 400 }}>Widget Gallery</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search widgets..." style={{ padding: '5px 14px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 180 }} />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search widgets..." style={{ padding: '5px 14px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 180 }} />
             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
           </div>
         </div>
@@ -1274,14 +1274,14 @@ function WidgetGalleryPicker({ library, onAdd, onClose, currentWidgets }) {
                 return (
                   <button key={w.type} onClick={() => {setSelectedWidget(w.type);setSelectedSize(widgetSizes[w.type]?.[1] || widgetSizes[w.type]?.[0] || 'medium');setSelectedStyle(0);}} style={{
                     display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 16px',
-                    background: selectedWidget === w.type ? 'rgba(99,102,241,0.08)' : 'none',
+                    background: selectedWidget === w.type ? 'rgba(var(--brand-rgb),0.08)' : 'none',
                     border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left',
                     color: selectedWidget === w.type ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12
                   }}
-                  onMouseEnter={(e) => {if (selectedWidget !== w.type) e.currentTarget.style.background = 'rgba(99,102,241,0.03)';}}
+                  onMouseEnter={(e) => {if (selectedWidget !== w.type) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.03)';}}
                   onMouseLeave={(e) => {if (selectedWidget !== w.type) e.currentTarget.style.background = 'none';}}>
                       <span style={{ flex: 1 }}>{w.label}</span>
-                      {already && <span style={{ fontSize: 9, color: 'var(--text-low)', padding: '1px 6px', borderRadius: 3, background: 'rgba(99,102,241,0.06)' }}>Added</span>}
+                      {already && <span style={{ fontSize: 9, color: 'var(--text-low)', padding: '1px 6px', borderRadius: 3, background: 'rgba(var(--brand-rgb),0.06)' }}>Added</span>}
                     </button>);
 
               })}
@@ -1302,7 +1302,7 @@ function WidgetGalleryPicker({ library, onAdd, onClose, currentWidgets }) {
                   {sizes.map((s) =>
                 <button key={s} onClick={() => setSelectedSize(s)} style={{
                   padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-body)',
-                  background: selectedSize === s ? 'rgba(99,102,241,0.12)' : 'var(--glass-bg)',
+                  background: selectedSize === s ? 'rgba(var(--brand-rgb),0.12)' : 'var(--glass-bg)',
                   border: `1.5px solid ${selectedSize === s ? 'var(--brand)' : 'var(--border-subtle)'}`,
                   color: selectedSize === s ? 'var(--brand)' : 'var(--text-mid)',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
@@ -1325,7 +1325,7 @@ function WidgetGalleryPicker({ library, onAdd, onClose, currentWidgets }) {
                       {styles.map((st, si) =>
                   <button key={si} onClick={() => setSelectedStyle(si)} style={{
                     padding: '6px 14px', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-body)',
-                    background: selectedStyle === si ? 'rgba(99,102,241,0.12)' : 'transparent',
+                    background: selectedStyle === si ? 'rgba(var(--brand-rgb),0.12)' : 'transparent',
                     border: `1px solid ${selectedStyle === si ? 'var(--brand)' : 'var(--border-subtle)'}`,
                     color: selectedStyle === si ? 'var(--brand)' : 'var(--text-mid)',
                     fontSize: 11
@@ -1368,7 +1368,7 @@ function DashboardTab({ label, isActive, onClick, onDoubleClick, onClose }) {
     style={{
       padding: '5px 6px 5px 10px',
       borderRadius: '6px 6px 0 0', fontSize: 11, fontWeight: isActive ? 600 : 400,
-      background: isActive ? 'rgba(99,102,241,0.1)' : 'transparent',
+      background: isActive ? 'rgba(var(--brand-rgb),0.1)' : 'transparent',
       border: 'none', borderBottom: isActive ? '2px solid var(--brand)' : '2px solid transparent',
       color: isActive ? 'var(--brand)' : 'var(--text-mid)',
       cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 2,
@@ -1379,7 +1379,7 @@ function DashboardTab({ label, isActive, onClick, onDoubleClick, onClose }) {
       {onClose ?
       <span onClick={(e) => {e.stopPropagation();onClose();}}
       style={{ width: 16, height: 16, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: hovered ? 'var(--text-low)' : 'transparent', cursor: 'pointer', marginLeft: 2, background: hovered ? 'rgba(92,111,134,0.15)' : 'transparent', transition: 'all 0.15s', pointerEvents: hovered ? 'auto' : 'none' }}
-      onMouseEnter={(e) => {e.currentTarget.style.background = 'rgba(244,63,94,0.15)';e.currentTarget.style.color = 'var(--status-critical)';}}
+      onMouseEnter={(e) => {e.currentTarget.style.background = 'rgba(var(--critical-rgb),0.15)';e.currentTarget.style.color = 'var(--status-critical)';}}
       onMouseLeave={(e) => {e.currentTarget.style.background = hovered ? 'rgba(92,111,134,0.15)' : 'transparent';e.currentTarget.style.color = hovered ? 'var(--text-low)' : 'transparent';}}>✕</span> :
       <span style={{ width: 16 }}></span>}
     </button>);
@@ -1445,7 +1445,7 @@ function ShieldAIChatWidget({ label, base }) {
         <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
             <div style={{
             maxWidth: '85%', padding: '8px 11px', borderRadius: m.role === 'user' ? '10px 10px 2px 10px' : '10px 10px 10px 2px',
-            background: m.role === 'user' ? 'var(--brand)' : 'rgba(99,102,241,0.06)',
+            background: m.role === 'user' ? 'var(--brand)' : 'rgba(var(--brand-rgb),0.06)',
             border: m.role === 'user' ? 'none' : '1px solid var(--border-subtle)',
             color: m.role === 'user' ? '#fff' : 'var(--text-mid)', fontSize: 11, lineHeight: 1.5
           }}>
@@ -1454,7 +1454,7 @@ function ShieldAIChatWidget({ label, base }) {
           </div>
         )}
         {typing &&
-        <div style={{ display: 'flex', gap: 4, padding: '8px 11px', width: 'fit-content', borderRadius: '10px 10px 10px 2px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)' }}>
+        <div style={{ display: 'flex', gap: 4, padding: '8px 11px', width: 'fit-content', borderRadius: '10px 10px 10px 2px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)' }}>
             {[0, 1, 2].map((d) => <div key={d} style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--brand)', opacity: 0.4, animation: `pulse-online 1s ease-in-out ${d * 0.2}s infinite` }} />)}
           </div>
         }
@@ -1465,7 +1465,7 @@ function ShieldAIChatWidget({ label, base }) {
       <div style={{ display: 'flex', gap: 4, padding: '0 12px 6px', flexWrap: 'wrap' }}>
           {quickPrompts.map((p, i) =>
         <button key={i} onClick={() => send(p)}
-        style={{ padding: '3px 8px', borderRadius: 100, fontSize: 9, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{p}</button>
+        style={{ padding: '3px 8px', borderRadius: 100, fontSize: 9, background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{p}</button>
         )}
         </div>
       }
@@ -1474,8 +1474,8 @@ function ShieldAIChatWidget({ label, base }) {
       <div style={{ padding: '8px 10px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 6 }}>
         <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => {if (e.key === 'Enter') send();}}
         placeholder="Ask ShieldTech AI anything..."
-        style={{ flex: 1, padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' }} />
-        <button onClick={send} style={{ padding: '7px 12px', background: input.trim() ? 'var(--brand)' : 'rgba(99,102,241,0.06)', border: 'none', borderRadius: 6, color: input.trim() ? '#fff' : 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600, transition: 'all 0.15s' }}>Send</button>
+        style={{ flex: 1, padding: '7px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        <button onClick={send} style={{ padding: '7px 12px', background: input.trim() ? 'var(--brand)' : 'rgba(var(--brand-rgb),0.06)', border: 'none', borderRadius: 6, color: input.trim() ? '#fff' : 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600, transition: 'all 0.15s' }}>Send</button>
       </div>
     </GlassPanel>);
 
@@ -1520,7 +1520,7 @@ function WidgetSizePreview({ type, label, size, styleIdx, styles }) {
         <div style={{ padding: 16, borderRadius: 14, background: 'var(--glass-bg)', border: '1px solid var(--border-subtle)', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 140 }}>
           <div style={{ fontSize: 11, color: 'var(--text-low)', marginBottom: 8, alignSelf: 'flex-start' }}>{label}</div>
           <div style={{ position: 'relative', width: 72, height: 72 }}>
-            <svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="30" fill="none" stroke="rgba(99,102,241,0.08)" strokeWidth="6" /><circle cx="36" cy="36" r="30" fill="none" stroke={accent} strokeWidth="6" strokeDasharray={`${0.94 * 188.5} ${188.5}`} strokeLinecap="round" transform="rotate(-90 36 36)" /></svg>
+            <svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="30" fill="none" stroke="rgba(var(--brand-rgb),0.08)" strokeWidth="6" /><circle cx="36" cy="36" r="30" fill="none" stroke={accent} strokeWidth="6" strokeDasharray={`${0.94 * 188.5} ${188.5}`} strokeLinecap="round" transform="rotate(-90 36 36)" /></svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="mono" style={{ fontSize: 18, fontWeight: 700, color: accent }}>94%</span></div>
           </div>
         </div>);
@@ -1531,12 +1531,12 @@ function WidgetSizePreview({ type, label, size, styleIdx, styles }) {
         <div style={{ padding: 16, borderRadius: 14, background: 'var(--glass-bg)', border: '1px solid var(--border-subtle)', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 140 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ fontSize: 11, color: 'var(--text-low)', fontWeight: 500 }}>{label}</div>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(244,63,94,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--status-critical)', fontSize: 12, fontWeight: 700 }}>!</div>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(var(--critical-rgb),0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--status-critical)', fontSize: 12, fontWeight: 700 }}>!</div>
           </div>
           <div className="mono" style={{ fontSize: 36, fontWeight: 700, color: 'var(--text-high)' }}>7</div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(244,63,94,0.08)', color: 'var(--status-critical)' }}>2 critical</span>
-            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(251,191,36,0.08)', color: 'var(--status-warn)' }}>3 high</span>
+            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(var(--critical-rgb),0.08)', color: 'var(--status-critical)' }}>2 critical</span>
+            <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(var(--warn-rgb),0.08)', color: 'var(--status-warn)' }}>3 high</span>
           </div>
         </div>);
 
@@ -1598,7 +1598,7 @@ function WidgetSizePreview({ type, label, size, styleIdx, styles }) {
           <div style={{ fontSize: 11, color: 'var(--text-low)', marginBottom: 10 }}>{label}</div>
           <div style={{ display: 'flex', gap: 2 }}>
             {[{ s: 'Lead', n: 8, w: 30 }, { s: 'Proposal', n: 4, w: 24 }, { s: 'Negotiate', n: 2, w: 18 }, { s: 'Closed', n: 6, w: 28 }].map((s, i) =>
-            <div key={i} style={{ width: `${s.w}%`, padding: '8px 4px', background: `rgba(99,102,241,${0.06 + i * 0.04})`, borderRadius: i === 0 ? '6px 0 0 6px' : i === 3 ? '0 6px 6px 0' : 0, textAlign: 'center' }}>
+            <div key={i} style={{ width: `${s.w}%`, padding: '8px 4px', background: `rgba(var(--brand-rgb),${0.06 + i * 0.04})`, borderRadius: i === 0 ? '6px 0 0 6px' : i === 3 ? '0 6px 6px 0' : 0, textAlign: 'center' }}>
                 <div className="mono" style={{ fontSize: 14, fontWeight: 600, color: 'var(--brand)' }}>{s.n}</div>
                 <div style={{ fontSize: 7, color: 'var(--text-low)' }}>{s.s}</div>
               </div>
@@ -1627,13 +1627,13 @@ function WidgetSizePreview({ type, label, size, styleIdx, styles }) {
             <span className="mono" style={{ fontSize: 20, fontWeight: 600, color: 'var(--brand)' }}>{jobs.length}</span>
           </div>
           {jobs.map((j, i) =>
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
-              <div style={{ width: 26, height: 26, borderRadius: 6, background: j.status === 'In Progress' ? 'rgba(52,211,153,0.1)' : j.status === 'En Route' ? 'rgba(99,102,241,0.1)' : 'rgba(92,111,134,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: j.status === 'In Progress' ? 'var(--status-ok)' : 'var(--brand)', flexShrink: 0 }}>{j.tech}</div>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
+              <div style={{ width: 26, height: 26, borderRadius: 6, background: j.status === 'In Progress' ? 'rgba(var(--ok-rgb),0.1)' : j.status === 'En Route' ? 'rgba(var(--brand-rgb),0.1)' : 'rgba(92,111,134,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: j.status === 'In Progress' ? 'var(--status-ok)' : 'var(--brand)', flexShrink: 0 }}>{j.tech}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-high)' }}>{j.job}</div>
                 <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{j.time} · {j.status}</div>
               </div>
-              {j.pct > 0 && <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}><div style={{ width: `${j.pct}%`, height: '100%', borderRadius: 2, background: 'var(--status-ok)' }} /></div>}
+              {j.pct > 0 && <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden' }}><div style={{ width: `${j.pct}%`, height: '100%', borderRadius: 2, background: 'var(--status-ok)' }} /></div>}
             </div>
           )}
         </div>);
@@ -1652,7 +1652,7 @@ function WidgetSizePreview({ type, label, size, styleIdx, styles }) {
           { text: 'Pinnacle Financial viewed proposal PROP-301 four times yesterday.', type: 'hot' },
           { text: 'Tony Garcia speeding event: 42 in 25 zone. Review driving score?', type: 'warn' }].
           map((ins, i) =>
-          <div key={i} style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+          <div key={i} style={{ display: 'flex', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', marginTop: 4, flexShrink: 0, background: ins.type === 'warn' ? 'var(--status-warn)' : ins.type === 'action' ? 'var(--status-critical)' : ins.type === 'hot' ? 'var(--status-ok)' : 'var(--brand)' }} />
               <span style={{ fontSize: 11, color: 'var(--text-mid)', lineHeight: 1.5 }}>{ins.text}</span>
             </div>
@@ -1672,7 +1672,7 @@ function WidgetSizePreview({ type, label, size, styleIdx, styles }) {
           { time: '10:20 AM', text: 'New ticket TK-2210 — Harbor View', icon: '▣', ago: '4h' },
           { time: '9:00 AM', text: 'Jessica Liu clocked in', icon: '◔', ago: '5h' }].
           map((a, i) =>
-          <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)', alignItems: 'center' }}>
+          <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', alignItems: 'center' }}>
               <span style={{ fontSize: 13, flexShrink: 0 }}>{a.icon}</span>
               <span style={{ flex: 1, fontSize: 11, color: 'var(--text-mid)' }}>{a.text}</span>
               <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)', flexShrink: 0 }}>{a.ago}</span>
@@ -1693,7 +1693,7 @@ function WidgetSizePreview({ type, label, size, styleIdx, styles }) {
           </svg>
           <div style={{ display: 'flex', gap: 8 }}>
             {[{ p: '30 Days', v: '+$62K' }, { p: '60 Days', v: '+$94K' }, { p: '90 Days', v: '+$125K' }].map((f, i) =>
-            <div key={i} style={{ flex: 1, padding: 8, borderRadius: 8, background: 'rgba(52,211,153,0.04)', border: '1px solid rgba(52,211,153,0.1)', textAlign: 'center' }}>
+            <div key={i} style={{ flex: 1, padding: 8, borderRadius: 8, background: 'rgba(var(--ok-rgb),0.04)', border: '1px solid rgba(var(--ok-rgb),0.1)', textAlign: 'center' }}>
                 <div className="mono" style={{ fontSize: 16, fontWeight: 600, color: 'var(--status-ok)' }}>{f.v}</div>
                 <div style={{ fontSize: 8, color: 'var(--text-low)' }}>{f.p}</div>
               </div>
@@ -1719,7 +1719,7 @@ function WidgetSizePreview({ type, label, size, styleIdx, styles }) {
             <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{label}</div>
             <div style={{ display: 'flex', gap: 4 }}>
               {['1W', '1M', '3M', 'YTD'].map((p) =>
-              <span key={p} style={{ padding: '2px 8px', borderRadius: 4, fontSize: 8, background: p === 'YTD' ? 'rgba(99,102,241,0.12)' : 'transparent', color: p === 'YTD' ? 'var(--brand)' : 'var(--text-low)', border: '1px solid transparent' }}>{p}</span>
+              <span key={p} style={{ padding: '2px 8px', borderRadius: 4, fontSize: 8, background: p === 'YTD' ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', color: p === 'YTD' ? 'var(--brand)' : 'var(--text-low)', border: '1px solid transparent' }}>{p}</span>
               )}
             </div>
           </div>

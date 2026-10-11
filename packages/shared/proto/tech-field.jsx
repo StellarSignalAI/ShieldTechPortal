@@ -70,11 +70,11 @@ function TfMap({ jobs, height = 220, focusId, onPick, style }) {
     jobs.forEach((j, i) => {
       const pt = pins[j.site]; if (!pt) return; pts.push(pt);
       const c = techDiscColor(techDiscipline(j)); const on = j.id === focusId;
-      const html = `<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div style="width:${on ? 34 : 28}px;height:${on ? 34 : 28}px;border-radius:50%;background:${j.done ? 'rgba(10,14,20,0.9)' : c};border:2px solid ${c};box-shadow:0 0 ${on ? 18 : 10}px ${c}99;display:flex;align-items:center;justify-content:center;font:800 11px/1 system-ui;color:#fff">${j.done ? '✓' : i + 1}</div><div style="padding:1px 6px;border-radius:6px;background:rgba(10,14,20,0.9);font:600 9px/1.4 system-ui;color:#fff;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis">${(j.customer || '').replace(/</g, '')}</div></div>`;
+      const html = `<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div style="width:${on ? 34 : 28}px;height:${on ? 34 : 28}px;border-radius:50%;background:${j.done ? 'rgba(var(--card-rgb),0.9)' : c};border:2px solid ${c};box-shadow:0 0 ${on ? 18 : 10}px ${c}99;display:flex;align-items:center;justify-content:center;font:800 11px/1 system-ui;color:#fff">${j.done ? '✓' : i + 1}</div><div style="padding:1px 6px;border-radius:6px;background:rgba(var(--card-rgb),0.9);font:600 9px/1.4 system-ui;color:#fff;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis">${(j.customer || '').replace(/</g, '')}</div></div>`;
       const m = L.marker(pt, { icon: L.divIcon({ html, className: '', iconSize: [120, 50], iconAnchor: [60, 17] }) }).addTo(group);
       if (onPick) m.on('click', () => onPick(j));
     });
-    if (gps) { const html = '<div style="width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--brand,#6366F1);box-shadow:0 0 12px rgba(99,102,241,0.8)"></div>'; L.marker(gps, { icon: L.divIcon({ html, className: '', iconSize: [14, 14], iconAnchor: [7, 7] }) }).addTo(group); pts.push(gps); }
+    if (gps) { const html = '<div style="width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--brand,#3B8BFF);box-shadow:0 0 12px rgba(var(--brand-rgb),0.8)"></div>'; L.marker(gps, { icon: L.divIcon({ html, className: '', iconSize: [14, 14], iconAnchor: [7, 7] }) }).addTo(group); pts.push(gps); }
     if (pts.length) { try { api.map.fitBounds(L.latLngBounds(pts).pad(0.35), { maxZoom: 14, animate: false }); } catch { /* noop */ } }
     else if (gps) api.map.setView(gps, 12);
   }, [jobs, pins, gps, focusId]);
@@ -84,7 +84,7 @@ function TfMap({ jobs, height = 220, focusId, onPick, style }) {
       <style>{'.tf-map .leaflet-control-zoom{display:none}.tf-map .leaflet-control-attribution{font-size:8px;opacity:.7}'}</style>
       <div ref={elRef} style={{ position: 'absolute', inset: 0 }} />
       {!window.__shieldLiveMap && <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', color: 'var(--text-low)', fontSize: 12 }}>Map unavailable</div>}
-      {jobs.length > 0 && located < jobs.length && <div className="mono" style={{ position: 'absolute', top: 8, left: 10, fontSize: 9.5, color: 'var(--text-mid)', background: 'rgba(10,14,20,0.85)', padding: '3px 7px', borderRadius: 6, zIndex: 400 }}>{located}/{jobs.length} sites placed{located < jobs.length ? ' · locating…' : ''}</div>}
+      {jobs.length > 0 && located < jobs.length && <div className="mono" style={{ position: 'absolute', top: 8, left: 10, fontSize: 9.5, color: 'var(--text-mid)', background: 'rgba(var(--card-rgb),0.85)', padding: '3px 7px', borderRadius: 6, zIndex: 400 }}>{located}/{jobs.length} sites placed{located < jobs.length ? ' · locating…' : ''}</div>}
     </div>
   );
 }
@@ -205,11 +205,11 @@ function TechHomeView({ setTab, setSelectedJob, setCtx }) {
       <div style={{ position: 'relative' }}>
         <TfMap jobs={segs} height={230} focusId={next && next.id} onPick={open} />
         <div style={{ position: 'absolute', left: 12, right: 12, bottom: 12, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', zIndex: 400, pointerEvents: 'none' }}>
-          <div style={{ background: 'rgba(10,14,20,0.88)', border: '1px solid var(--border-subtle)', borderRadius: 14, padding: '9px 12px', backdropFilter: 'blur(8px)' }}>
+          <div style={{ background: 'rgba(var(--card-rgb),0.88)', border: '1px solid var(--border-subtle)', borderRadius: 14, padding: '9px 12px', backdropFilter: 'blur(8px)' }}>
             <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em' }}>{segs.length} {segs.length === 1 ? 'visit' : 'visits'}{worth > 0 ? ` worth ${tfMoney(worth)}` : ''}</div>
             <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>{done} of {segs.length} complete{crewView ? ' · crew view' : ''}</div>
           </div>
-          <button onClick={() => setTab('schedule')} style={{ pointerEvents: 'auto', background: 'rgba(10,14,20,0.88)', border: '1px solid var(--border-subtle)', borderRadius: 999, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View all ›</button>
+          <button onClick={() => setTab('schedule')} style={{ pointerEvents: 'auto', background: 'rgba(var(--card-rgb),0.88)', border: '1px solid var(--border-subtle)', borderRadius: 999, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View all ›</button>
         </div>
       </div>
 
@@ -372,7 +372,7 @@ function TechSearchView({ setTab, setSelectedJob, setCtx }) {
 /* ══════════════ More ══════════════ */
 function TechMoreView({ setTab }) {
   const groups = [
-    ['Work', [['jobs', 'All jobs', 'Full job list and history'], ['photos', 'Site photos', 'Capture and job documentation'], ['assets', 'Assets', 'Devices on site — scan, status, IPs'], ['punch', 'Punch list', 'Assigned fix-it items'], ['parts', 'Parts request', 'Request parts from the warehouse'], ['truck', 'My truck', 'Van stock and restock'], ['vehicle', 'Vehicle inspection', 'Daily pre-trip checklist'], ['route', 'My route', 'Smart day plan, traffic-aware']]],
+    ['Work', [['jobs', 'All jobs', 'Full job list and history'], ['photos', 'Site photos', 'Capture and job documentation'], ['devices', 'Devices', 'Site devices — status, IPs, adopt'], ['assets', 'Assets & vault', 'Configs, passwords, docs, networks'], ['punch', 'Punch list', 'Assigned fix-it items'], ['parts', 'Parts request', 'Request parts from the warehouse'], ['truck', 'My truck', 'Van stock and restock'], ['vehicle', 'Vehicle inspection', 'Daily pre-trip checklist'], ['route', 'My route', 'Smart day plan, traffic-aware']]],
     ['Money', [['quotes', 'Quotes', 'Send, approve and schedule'], ['invoices', 'Invoices', 'Issue, resend, collect payment'], ['expenses', 'Receipts & expenses', 'Snap receipts, mileage, reimbursements'], ['time', 'Timesheet', 'Clock, drafts, submit the week'], ['health', 'Business health', 'Clients, quotes, jobs, invoices — past 30 days']]],
     ['Tools', [['ai', 'ShieldTech AI', 'Wiring, RTSP/ONVIF, panel programming help'], ['voice', 'Voice notes', 'Dictate → work order'], ['scanner', 'Model scanner', 'Scan stickers → specs and manuals'], ['ar', 'AR wire-mapper', 'Tag ports and cable runs'], ['upsell', 'Upsell spotter', 'Quote opportunities on site'], ['resources', 'Resources', 'Guides, diagrams, SOPs'], ['toolbox', 'Toolbox talk', 'Daily safety briefing'], ['skills', 'Skill tree', 'Certs, XP, leaderboard']]],
     ['Safety & system', [['safety', 'Lone-worker safety', 'Check-in timer and man-down'], ['messages', 'Message dispatch', 'Chat with the office'], ['sync', 'Sync queue', 'Offline capture status']]],

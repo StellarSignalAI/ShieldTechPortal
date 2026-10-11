@@ -4,7 +4,7 @@
    drop photo pins. Theme: dark blueprint / light paper (Tweaks). */
 
 const SS_THEMES = {
-  dark:  { bg: '#07101c', grid: 'rgba(99,102,241,0.07)', gridBold: 'rgba(99,102,241,0.13)', wall: '#9fd4fb', wallW: 2.5, roomFill: 'rgba(99,102,241,0.06)', roomSel: 'rgba(99,102,241,0.14)', dim: '#5b87a8', label: '#cfe7fa', sub: '#6f93ad', cable: '#FBBF24', photo: '#34D399' },
+  dark:  { bg: '#07101c', grid: 'rgba(var(--brand-rgb),0.07)', gridBold: 'rgba(var(--brand-rgb),0.13)', wall: '#9fd4fb', wallW: 2.5, roomFill: 'rgba(var(--brand-rgb),0.06)', roomSel: 'rgba(var(--brand-rgb),0.14)', dim: '#5b87a8', label: '#cfe7fa', sub: '#6f93ad', cable: '#FBBF24', photo: '#34D399' },
   paper: { bg: '#eef2ee', grid: 'rgba(30,64,120,0.08)', gridBold: 'rgba(30,64,120,0.16)', wall: '#1e3a5f', wallW: 2.5, roomFill: 'rgba(30,64,120,0.05)', roomSel: 'rgba(30,64,120,0.12)', dim: '#4a6a8a', label: '#122a44', sub: '#4a6a8a', cable: '#b45309', photo: '#0f766e' },
 };
 
@@ -300,7 +300,7 @@ function SSPlanEditor({ floor, onChange, onCaptureRoom }) {
       <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 2 }}>
         {SS_TOOLS.map(t => (
           <button key={t.id} onClick={() => { setTool(t.id); if (t.id === 'device') setPalette(true); if (t.id !== 'cable') setCableDraft(null); }}
-            style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '7px 11px', borderRadius: 9, border: '1px solid', borderColor: tool === t.id ? 'var(--border-strong)' : 'var(--border-subtle)', background: tool === t.id ? 'rgba(99,102,241,0.14)' : 'rgba(99,102,241,0.03)', color: tool === t.id ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+            style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '7px 11px', borderRadius: 9, border: '1px solid', borderColor: tool === t.id ? 'var(--border-strong)' : 'var(--border-subtle)', background: tool === t.id ? 'rgba(var(--brand-rgb),0.14)' : 'rgba(var(--brand-rgb),0.03)', color: tool === t.id ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
             <span style={{ fontSize: 12 }}>{t.icon}</span>{t.label}
             {t.id === 'device' && tool === 'device' && <span style={{ color: ssDev(devType).color }}>· {ssDev(devType).label.split(' ')[0]}</span>}
           </button>
@@ -314,8 +314,8 @@ function SSPlanEditor({ floor, onChange, onCaptureRoom }) {
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{info.title}</div>
             <div style={{ fontSize: 9.5, color: 'var(--text-low)' }}>{info.sub}</div>
           </div>
-          {sel.kind === 'room' && onCaptureRoom && <button onClick={() => onCaptureRoom()} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border-strong)', background: 'rgba(99,102,241,0.08)', color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>↻ Rescan</button>}
-          <button onClick={delSel} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(244,63,94,0.3)', background: 'rgba(244,63,94,0.07)', color: '#F43F5E', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Delete</button>
+          {sel.kind === 'room' && onCaptureRoom && <button onClick={() => onCaptureRoom()} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border-strong)', background: 'rgba(var(--brand-rgb),0.08)', color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>↻ Rescan</button>}
+          <button onClick={delSel} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(var(--critical-rgb),0.3)', background: 'rgba(var(--critical-rgb),0.07)', color: '#F43F5E', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Delete</button>
         </div>
       )}
       {/* device palette sheet */}
@@ -324,7 +324,7 @@ function SSPlanEditor({ floor, onChange, onCaptureRoom }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
             {SS_DEVICES.map(d => (
               <button key={d.type} onClick={() => { setDevType(d.type); setPalette(false); showToast(`Tap the plan to place ${d.label}`, 'ok'); }}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '12px 6px 10px', borderRadius: 11, border: '1px solid', borderColor: devType === d.type ? d.color : 'var(--border-subtle)', background: devType === d.type ? `color-mix(in srgb, ${d.color} 10%, transparent)` : 'rgba(99,102,241,0.03)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '12px 6px 10px', borderRadius: 11, border: '1px solid', borderColor: devType === d.type ? d.color : 'var(--border-subtle)', background: devType === d.type ? `color-mix(in srgb, ${d.color} 10%, transparent)` : 'rgba(var(--brand-rgb),0.03)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                 <svg width="26" height="26" viewBox="0 0 24 24"><path d={d.glyph} fill="none" stroke={d.color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                 <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-high)', lineHeight: 1.15, textAlign: 'center' }}>{d.label}</span>
                 <span className="mono" style={{ fontSize: 8, color: 'var(--text-low)' }}>{d.sku} · ${d.unit}</span>
@@ -345,16 +345,16 @@ function SSPlanEditor({ floor, onChange, onCaptureRoom }) {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 10, gap: 8, minHeight: 0 }}>
         <div style={{ display: 'flex', gap: 4, overflowX: 'auto' }}>
           {SS_TOOLS.map(t => (
-            <button key={t.id} onClick={() => { setTool(t.id); if (t.id === 'device') setPalette(true); }} style={{ flexShrink: 0, padding: '7px 11px', borderRadius: 9, border: '1px solid', borderColor: tool === t.id ? 'var(--border-strong)' : 'var(--border-subtle)', background: tool === t.id ? 'rgba(99,102,241,0.14)' : 'transparent', color: tool === t.id ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.icon} {t.label}</button>
+            <button key={t.id} onClick={() => { setTool(t.id); if (t.id === 'device') setPalette(true); }} style={{ flexShrink: 0, padding: '7px 11px', borderRadius: 9, border: '1px solid', borderColor: tool === t.id ? 'var(--border-strong)' : 'var(--border-subtle)', background: tool === t.id ? 'rgba(var(--brand-rgb),0.14)' : 'transparent', color: tool === t.id ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.icon} {t.label}</button>
           ))}
         </div>
         <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>{canvas('100%')}</div>
-        {info && <div className="glass" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 11 }}><span style={{ flex: 1, fontSize: 12, color: 'var(--text-high)' }}>{info.title}</span><button onClick={delSel} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(244,63,94,0.3)', background: 'rgba(244,63,94,0.07)', color: '#F43F5E', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>Delete</button></div>}
+        {info && <div className="glass" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 11 }}><span style={{ flex: 1, fontSize: 12, color: 'var(--text-high)' }}>{info.title}</span><button onClick={delSel} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(var(--critical-rgb),0.3)', background: 'rgba(var(--critical-rgb),0.07)', color: '#F43F5E', fontSize: 10, fontWeight: 600, cursor: 'pointer' }}>Delete</button></div>}
         {palette && tool === 'device' && (
           <MSheet title="Device palette" onClose={() => setPalette(false)}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
               {SS_DEVICES.map(d => (
-                <button key={d.type} onClick={() => { setDevType(d.type); setPalette(false); }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '12px 6px 10px', borderRadius: 11, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.03)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                <button key={d.type} onClick={() => { setDevType(d.type); setPalette(false); }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '12px 6px 10px', borderRadius: 11, border: '1px solid var(--border-subtle)', background: 'rgba(var(--brand-rgb),0.03)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                   <svg width="26" height="26" viewBox="0 0 24 24"><path d={d.glyph} fill="none" stroke={d.color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"></path></svg>
                   <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-high)' }}>{d.label}</span>
                 </button>

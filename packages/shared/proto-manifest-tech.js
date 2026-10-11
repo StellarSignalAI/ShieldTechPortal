@@ -12,6 +12,7 @@ import './proto/tech-dial.jsx';
 import './proto/tech-money.jsx';
 import './proto/tech-field.jsx';
 import './proto/tech-jobber.jsx';
+import './proto/tech-unifi.jsx';
 import './proto/screen-tech-v2.jsx';
 import './proto/screen-customers.jsx';
 import './proto/screen-networkglue.jsx';

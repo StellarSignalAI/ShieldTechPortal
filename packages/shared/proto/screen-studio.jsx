@@ -190,12 +190,12 @@ function StudioScreen({ onExportToProposal }) {
         {/* Customer + Project Header */}
         <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-            <select value={customer} onChange={(e) => { if (e.target.value === '__new__') { openNewCustomer(rec => setCustomer(rec.name)); return; } setCustomer(e.target.value); }} style={{ flex: 1, padding: '5px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+            <select value={customer} onChange={(e) => { if (e.target.value === '__new__') { openNewCustomer(rec => setCustomer(rec.name)); return; } setCustomer(e.target.value); }} style={{ flex: 1, padding: '5px 8px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
               <option value="">Select customer…</option>
               {customers.map((c) => <option key={c} value={c}>{c}</option>)}
               <option value="__new__">＋ New customer…</option>
             </select>
-            <button onClick={() => setLeftCollapsed(true)} title="Hide catalog" style={{ flexShrink: 0, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>«</button>
+            <button onClick={() => setLeftCollapsed(true)} title="Hide catalog" style={{ flexShrink: 0, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>«</button>
           </div>
           <input value={projectName} onChange={(e) => setProjectName(e.target.value)} style={{ width: '100%', padding: '4px 8px', background: 'transparent', border: '1px solid transparent', borderRadius: 4, color: 'var(--text-mid)', fontSize: 10, fontFamily: 'var(--font-body)', outline: 'none' }}
           onFocus={(e) => e.target.style.borderColor = 'var(--border-subtle)'}
@@ -204,13 +204,13 @@ function StudioScreen({ onExportToProposal }) {
 
         {/* Search + Filters */}
         <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search brands, devices, models..." style={{ width: '100%', padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', marginBottom: 6 }} />
+          <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search brands, devices, models..." style={{ width: '100%', padding: '6px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', marginBottom: 6 }} />
           <div style={{ display: 'flex', gap: 4 }}>
-            <select value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} style={{ flex: 1, padding: '3px 4px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 9, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+            <select value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} style={{ flex: 1, padding: '3px 4px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 9, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
               <option value="all">All Brands</option>
               {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
-            <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} style={{ flex: 1, padding: '3px 4px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 9, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+            <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} style={{ flex: 1, padding: '3px 4px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 9, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
               <option value="all">All Categories</option>
               {categories.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -233,10 +233,10 @@ function StudioScreen({ onExportToProposal }) {
               }}
               onPointerUp={(e) => { if (e.pointerType === 'touch' && dragPlaceDevice !== device) e.nativeEvent.__stArmMark = true; }}
               style={{
-                padding: '8px 12px', cursor: 'grab', borderBottom: '1px solid rgba(99,102,241,0.03)',
+                padding: '8px 12px', cursor: 'grab', borderBottom: '1px solid rgba(var(--brand-rgb),0.03)',
                 transition: 'background 0.1s'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99,102,241,0.04)'}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)'}
               onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ width: 28, height: 28, borderRadius: 5, background: `${catColors[device.cat] || 'var(--brand)'}15`, border: `1px solid ${catColors[device.cat] || 'var(--brand)'}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -259,7 +259,7 @@ function StudioScreen({ onExportToProposal }) {
 
         {/* Bottom: ShieldTech AI + Draw */}
         <div style={{ padding: '8px 12px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <button onClick={() => setDrawingBuilderOpen(true)} style={{ width: '100%', padding: '7px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✏ Open Drawing Builder</button>
+          <button onClick={() => setDrawingBuilderOpen(true)} style={{ width: '100%', padding: '7px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✏ Open Drawing Builder</button>
           <button onClick={() => showToast("AI floor-plan analysis isn't wired up yet")} style={{ width: '100%', padding: '7px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
             <span>⟡</span> ShieldTech AI: Auto-Design Layout
           </button>
@@ -267,12 +267,12 @@ function StudioScreen({ onExportToProposal }) {
       </div>
 
       {/* ─── CENTER: Tabbed design surface ─── */}
-      <div style={{ background: 'rgba(5,7,10,0.6)', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ background: 'rgba(var(--canvas-rgb),0.6)', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Design surface tab bar */}
         <div style={{ display: 'flex', gap: 2, padding: '6px 10px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
           {studioTabs.map((t) =>
-          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: '5px 14px', fontSize: 11, fontWeight: activeTab === t.id ? 600 : 400, borderRadius: 6, background: activeTab === t.id ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${activeTab === t.id ? 'var(--brand)' : 'transparent'}`, color: activeTab === t.id ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.l}</button>
+          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: '5px 14px', fontSize: 11, fontWeight: activeTab === t.id ? 600 : 400, borderRadius: 6, background: activeTab === t.id ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', border: `1px solid ${activeTab === t.id ? 'var(--brand)' : 'transparent'}`, color: activeTab === t.id ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.l}</button>
           )}
         </div>
 
@@ -317,7 +317,7 @@ function StudioScreen({ onExportToProposal }) {
             {[{ id: 'select', l: 'Select' }, { id: 'wall', l: 'Wall' }, { id: 'line', l: 'Cable Run' }, { id: 'text', l: 'Text' }, { id: 'measure', l: 'Measure' }].map((t) =>
               <button key={t.id} onClick={() => setActiveTool(t.id)} style={{
                 padding: '4px 10px', fontSize: 10, borderRadius: 4,
-                background: activeTool === t.id ? 'rgba(99,102,241,0.15)' : 'rgba(10,14,20,0.7)',
+                background: activeTool === t.id ? 'rgba(var(--brand-rgb),0.15)' : 'rgba(var(--card-rgb),0.7)',
                 border: `1px solid ${activeTool === t.id ? 'var(--brand)' : 'var(--border-subtle)'}`,
                 color: activeTool === t.id ? 'var(--brand)' : 'var(--text-low)',
                 cursor: 'pointer', fontFamily: 'var(--font-body)', backdropFilter: 'blur(8px)'
@@ -325,9 +325,9 @@ function StudioScreen({ onExportToProposal }) {
               )}
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <button onClick={() => document.getElementById('studio-plan-inp').click()} style={{ padding: '4px 10px', background: 'rgba(10,14,20,0.7)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', backdropFilter: 'blur(8px)' }}>◉ Upload Plan</button>
+            <button onClick={() => document.getElementById('studio-plan-inp').click()} style={{ padding: '4px 10px', background: 'rgba(var(--card-rgb),0.7)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', backdropFilter: 'blur(8px)' }}>◉ Upload Plan</button>
             <input id="studio-plan-inp" type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files && e.target.files[0]; if (!f) return; setPlanBg(URL.createObjectURL(f)); showToast('Floor plan loaded — drop devices onto it'); const store = window.__shieldStorage; if (store && store.uploadFile) store.uploadFile(f, { folder: 'floor-plans', entity: 'floor_plan', name: f.name }).then(r => { if (r && r.url && !r.local) setPlanBg(r.url); }).catch(() => {}); }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'rgba(10,14,20,0.7)', border: '1px solid var(--border-subtle)', borderRadius: 4, backdropFilter: 'blur(8px)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'rgba(var(--card-rgb),0.7)', border: '1px solid var(--border-subtle)', borderRadius: 4, backdropFilter: 'blur(8px)' }}>
               <button onClick={() => zoomBy(-0.1)} title="Zoom out" style={{ padding: '3px 9px', background: 'transparent', border: 'none', color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>−</button>
               <button onClick={resetView} title="Reset view" className="mono" style={{ padding: '3px 4px', minWidth: 38, background: 'transparent', border: 'none', borderLeft: '1px solid var(--border-subtle)', borderRight: '1px solid var(--border-subtle)', color: 'var(--text-low)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>{Math.round(zoom * 100)}%</button>
               <button onClick={() => zoomBy(0.1)} title="Zoom in" style={{ padding: '3px 9px', background: 'transparent', border: 'none', color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+</button>
@@ -337,7 +337,7 @@ function StudioScreen({ onExportToProposal }) {
 
         {/* Reopen catalog (shown when collapsed) */}
         {leftCollapsed &&
-          <button onClick={() => setLeftCollapsed(false)} title="Show catalog" style={{ position: 'absolute', top: 10, left: 10, zIndex: 6, display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', background: 'rgba(10,14,20,0.85)', border: '1px solid var(--brand)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', backdropFilter: 'blur(8px)' }}>» Catalog</button>
+          <button onClick={() => setLeftCollapsed(false)} title="Show catalog" style={{ position: 'absolute', top: 10, left: 10, zIndex: 6, display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', background: 'rgba(var(--card-rgb),0.85)', border: '1px solid var(--brand)', borderRadius: 6, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', backdropFilter: 'blur(8px)' }}>» Catalog</button>
         }
 
         {planBg && <img src={planBg} alt="floor plan" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', opacity: 0.5, pointerEvents: 'none' }} />}
@@ -345,7 +345,7 @@ function StudioScreen({ onExportToProposal }) {
         <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
           <defs>
             <pattern id="studioGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(99,102,241,0.05)" strokeWidth="0.5" />
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(var(--brand-rgb),0.05)" strokeWidth="0.5" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#studioGrid)" />
@@ -368,7 +368,7 @@ function StudioScreen({ onExportToProposal }) {
           </g>
 
           {/* Cable runs */}
-          <g transform="translate(40, 40)" stroke="rgba(99,102,241,0.12)" strokeWidth="1" strokeDasharray="4 3" fill="none">
+          <g transform="translate(40, 40)" stroke="rgba(var(--brand-rgb),0.12)" strokeWidth="1" strokeDasharray="4 3" fill="none">
             {placedDevices.filter((d) => d.device.cat === 'NVR' || d.device.cat === 'Network').length > 0 && placedDevices.filter((d) => d.device.cat === 'Cameras' || d.device.cat === 'Access').map((pd, i) => {
                 const hub = placedDevices.find((d) => d.device.cat === 'NVR' || d.device.cat === 'Network');
                 return hub ? <line key={i} x1={hub.x} y1={hub.y} x2={pd.x} y2={pd.y} /> : null;
@@ -418,16 +418,16 @@ function StudioScreen({ onExportToProposal }) {
                   {/* FOV cone for cameras */}
                   {fov && fov.angle < 360 && fovPath &&
                     <path d={fovPath}
-                    fill={isSel ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.04)'}
-                    stroke={isSel ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.1)'}
+                    fill={isSel ? 'rgba(var(--brand-rgb),0.08)' : 'rgba(var(--brand-rgb),0.04)'}
+                    stroke={isSel ? 'rgba(var(--brand-rgb),0.25)' : 'rgba(var(--brand-rgb),0.1)'}
                     strokeWidth="0.5"
                     style={{ transition: 'fill 0.2s' }} />
                     }
                   {/* Fisheye 360° circle */}
                   {fov && fov.angle >= 360 &&
                     <circle r={fov.range}
-                    fill={isSel ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.03)'}
-                    stroke={isSel ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.08)'}
+                    fill={isSel ? 'rgba(var(--brand-rgb),0.06)' : 'rgba(var(--brand-rgb),0.03)'}
+                    stroke={isSel ? 'rgba(var(--brand-rgb),0.2)' : 'rgba(var(--brand-rgb),0.08)'}
                     strokeWidth="0.5" />
                     }
 
@@ -438,7 +438,7 @@ function StudioScreen({ onExportToProposal }) {
 
                   {/* Device icon background */}
                   <rect x="-13" y="-13" width="26" height="26" rx="6"
-                    fill="rgba(10,14,20,0.9)" stroke={color} strokeWidth={isSel ? 2 : 1.2}
+                    fill="rgba(var(--card-rgb),0.9)" stroke={color} strokeWidth={isSel ? 2 : 1.2}
                     style={{ filter: `drop-shadow(0 0 ${isSel ? 8 : 4}px ${color})` }} />
 
                   {/* SVG icon via foreignObject */}
@@ -464,7 +464,7 @@ function StudioScreen({ onExportToProposal }) {
             const pd = placedDevices[selectedDevice];
             const isCamera = pd.device.cat === 'Cameras';
             return (
-              <div style={{ position: 'absolute', bottom: 12, left: 12, zIndex: 5, padding: '10px 14px', borderRadius: 8, background: 'rgba(10,14,20,0.9)', border: '1px solid var(--border-strong)', backdropFilter: 'blur(8px)', maxWidth: 300 }}>
+              <div style={{ position: 'absolute', bottom: 12, left: 12, zIndex: 5, padding: '10px 14px', borderRadius: 8, background: 'rgba(var(--card-rgb),0.9)', border: '1px solid var(--border-strong)', backdropFilter: 'blur(8px)', maxWidth: 300 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Icon name={subcatIcons[pd.device.subcat] || catIcons[pd.device.cat] || 'cam-dome'} size={16} color={catColors[pd.device.cat] || 'var(--brand)'} />
@@ -476,7 +476,7 @@ function StudioScreen({ onExportToProposal }) {
 
             {/* FOV controls for cameras */}
             {isCamera &&
-                <div style={{ marginBottom: 8, padding: '6px 0', borderTop: '1px solid rgba(99,102,241,0.06)' }}>
+                <div style={{ marginBottom: 8, padding: '6px 0', borderTop: '1px solid rgba(var(--brand-rgb),0.06)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-low)', marginBottom: 4 }}>
                   <span>Rotation</span>
                   <span className="mono">{pd.rotation || 0}°</span>
@@ -488,16 +488,16 @@ function StudioScreen({ onExportToProposal }) {
                 }
 
             <div style={{ display: 'flex', gap: 4 }}>
-              <button onClick={() => setDeviceDetailOpen(pd.device)} style={{ padding: '3px 8px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Details</button>
-              <button onClick={() => {const newRot = ((pd.rotation || 0) + 45) % 360;setPlacedDevices((prev) => prev.map((d, idx) => idx === selectedDevice ? { ...d, rotation: newRot } : d));}} style={{ padding: '3px 8px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Rotate 45°</button>
-              <button onClick={() => removeDevice(selectedDevice)} style={{ padding: '3px 8px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)', borderRadius: 3, color: 'var(--status-critical)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Remove</button>
+              <button onClick={() => setDeviceDetailOpen(pd.device)} style={{ padding: '3px 8px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Details</button>
+              <button onClick={() => {const newRot = ((pd.rotation || 0) + 45) % 360;setPlacedDevices((prev) => prev.map((d, idx) => idx === selectedDevice ? { ...d, rotation: newRot } : d));}} style={{ padding: '3px 8px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', borderRadius: 3, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Rotate 45°</button>
+              <button onClick={() => removeDevice(selectedDevice)} style={{ padding: '3px 8px', background: 'rgba(var(--critical-rgb),0.06)', border: '1px solid rgba(var(--critical-rgb),0.15)', borderRadius: 3, color: 'var(--status-critical)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Remove</button>
             </div>
           </div>);
           })()}
 
         {/* Drop zone indicator */}
         {dragPlaceDevice &&
-          <div style={{ position: 'absolute', inset: 0, border: '3px dashed var(--brand)', borderRadius: 8, background: 'rgba(99,102,241,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 3 }}>
+          <div style={{ position: 'absolute', inset: 0, border: '3px dashed var(--brand)', borderRadius: 8, background: 'rgba(var(--brand-rgb),0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 3 }}>
             <span style={{ fontSize: 14, color: 'var(--brand)', fontWeight: 500 }}>Drop {dragPlaceDevice.name} here</span>
           </div>
           }
@@ -511,7 +511,7 @@ function StudioScreen({ onExportToProposal }) {
           <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Bill of Materials</div>
           <div style={{ display: 'flex', gap: 0, borderRadius: 5, overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
             {['itemized', 'by-system', 'lump-sum'].map((m) =>
-            <button key={m} onClick={() => setPricingMode(m)} style={{ flex: 1, padding: '4px', fontSize: 9, fontWeight: 500, textTransform: 'uppercase', background: pricingMode === m ? 'rgba(99,102,241,0.12)' : 'transparent', border: 'none', color: pricingMode === m ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{m.replace('-', ' ')}</button>
+            <button key={m} onClick={() => setPricingMode(m)} style={{ flex: 1, padding: '4px', fontSize: 9, fontWeight: 500, textTransform: 'uppercase', background: pricingMode === m ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', border: 'none', color: pricingMode === m ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{m.replace('-', ' ')}</button>
             )}
           </div>
         </div>
@@ -519,7 +519,7 @@ function StudioScreen({ onExportToProposal }) {
         <div style={{ flex: 1, overflow: 'auto' }}>
           <div className="label-sm" style={{ padding: '10px 14px 4px' }}>EQUIPMENT ({bomList.length} types, {placedDevices.length} devices)</div>
           {bomList.map((item, i) =>
-          <div key={i} style={{ padding: '7px 14px', display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11 }}>
+          <div key={i} style={{ padding: '7px 14px', display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ color: 'var(--text-high)', fontWeight: 400 }}>{item.device.name}</div>
                 <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{brands.find((b) => b.id === item.device.brand)?.name} · {item.device.sku}</div>
@@ -531,7 +531,7 @@ function StudioScreen({ onExportToProposal }) {
           )}
 
           <div className="label-sm" style={{ padding: '14px 14px 4px' }}>LABOR (estimated)</div>
-          <div style={{ padding: '7px 14px', display: 'flex', justifyContent: 'space-between', fontSize: 11, borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+          <div style={{ padding: '7px 14px', display: 'flex', justifyContent: 'space-between', fontSize: 11, borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
             <span style={{ color: 'var(--text-mid)' }}>Install + Commission ({placedDevices.length} devices × 1.5h avg)</span>
             <span className="mono" style={{ fontWeight: 500 }}>${laborEstimate.toLocaleString()}</span>
           </div>
@@ -635,7 +635,7 @@ function DeviceDetailModal({ device, brands, onClose, onPlace, showToast }) {
         </div>
 
         {/* Comparable products suggestion */}
-        <div style={{ marginBottom: 14, padding: '8px 12px', borderRadius: 6, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)' }}>
+        <div style={{ marginBottom: 14, padding: '8px 12px', borderRadius: 6, background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--brand)', marginBottom: 4 }}><span>⟡</span> ShieldTech AI: Similar products</div>
           <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>Consider the {device.brand === 'axis' ? 'Hanwha' : 'Axis'} equivalent for {device.margin < 25 ? 'better margins' : 'price comparison'}.</div>
         </div>
@@ -722,7 +722,7 @@ function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClos
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span className="display" style={{ fontSize: 16, fontWeight: 500 }}>Drawing Builder</span>
-            <input value={drawName} onChange={(e) => setDrawName(e.target.value)} placeholder="Drawing name..." style={{ padding: '4px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 200 }} />
+            <input value={drawName} onChange={(e) => setDrawName(e.target.value)} placeholder="Drawing name..." style={{ padding: '4px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 200 }} />
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
             <button onClick={saveDrawing} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Drawing</button>
@@ -735,7 +735,7 @@ function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClos
           {[{ id: 'select', l: '⊕ Select' }, { id: 'wall', l: '▬ Wall' }, { id: 'line', l: '— Line' }, { id: 'rect', l: '□ Room' }, { id: 'text', l: 'T Text' }, { id: 'door', l: '◫ Door' }, { id: 'erase', l: '✕ Erase' }].map((t) =>
           <button key={t.id} onClick={() => setDrawTool(t.id)} style={{
             padding: '5px 12px', borderRadius: 5, fontSize: 11,
-            background: drawTool === t.id ? 'rgba(99,102,241,0.12)' : 'transparent',
+            background: drawTool === t.id ? 'rgba(var(--brand-rgb),0.12)' : 'transparent',
             border: `1px solid ${drawTool === t.id ? 'var(--brand)' : 'var(--border-subtle)'}`,
             color: drawTool === t.id ? 'var(--brand)' : 'var(--text-mid)',
             cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -748,13 +748,13 @@ function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClos
         </div>
 
         {/* Canvas */}
-        <div style={{ flex: 1, background: 'rgba(5,7,10,0.6)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ flex: 1, background: 'rgba(var(--canvas-rgb),0.6)', position: 'relative', overflow: 'hidden' }}>
           <svg ref={canvasRef} width="100%" height="100%" style={{ touchAction: 'none', cursor: drawTool === 'wall' || drawTool === 'line' ? 'crosshair' : drawTool === 'text' ? 'text' : 'default' }}
           onPointerDown={handleCanvasMouseDown}
           onPointerUp={handleCanvasMouseUp}>
             <defs>
               <pattern id="drawGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(99,102,241,0.06)" strokeWidth="0.5" />
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(var(--brand-rgb),0.06)" strokeWidth="0.5" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#drawGrid)" />
@@ -762,7 +762,7 @@ function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClos
             {/* Drawn walls/lines */}
             {lines.map((l, i) =>
             <line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
-            stroke={drawTool === 'erase' ? 'rgba(244,63,94,0.5)' : 'rgba(159,178,200,0.4)'}
+            stroke={drawTool === 'erase' ? 'rgba(var(--critical-rgb),0.5)' : 'rgba(159,178,200,0.4)'}
             strokeWidth={drawTool === 'line' ? 1 : 2.5}
             style={{ cursor: drawTool === 'erase' ? 'pointer' : 'default' }}
             onClick={() => {if (drawTool === 'erase') setLines((prev) => prev.filter((_, j) => j !== i));}} />
@@ -779,15 +779,15 @@ function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClos
           {/* Text input overlay */}
           {addingText &&
           <div style={{ position: 'absolute', left: addingText.x, top: addingText.y, zIndex: 10 }}>
-              <input autoFocus placeholder="Label..." onKeyDown={(e) => {if (e.key === 'Enter') addText(e.target.value);if (e.key === 'Escape') setAddingText(null);}} onBlur={(e) => addText(e.target.value)} style={{ padding: '3px 8px', background: 'rgba(10,14,20,0.9)', border: '1px solid var(--brand)', borderRadius: 4, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 120 }} />
+              <input autoFocus placeholder="Label..." onKeyDown={(e) => {if (e.key === 'Enter') addText(e.target.value);if (e.key === 'Escape') setAddingText(null);}} onBlur={(e) => addText(e.target.value)} style={{ padding: '3px 8px', background: 'rgba(var(--card-rgb),0.9)', border: '1px solid var(--brand)', borderRadius: 4, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 120 }} />
             </div>
           }
 
           {/* Saved Drawings sidebar */}
-          <div style={{ position: 'absolute', top: 10, right: 10, width: 180, maxHeight: '60%', overflow: 'auto', padding: '8px 10px', background: 'rgba(10,14,20,0.9)', border: '1px solid var(--border-subtle)', borderRadius: 8, backdropFilter: 'blur(8px)' }}>
+          <div style={{ position: 'absolute', top: 10, right: 10, width: 180, maxHeight: '60%', overflow: 'auto', padding: '8px 10px', background: 'rgba(var(--card-rgb),0.9)', border: '1px solid var(--border-subtle)', borderRadius: 8, backdropFilter: 'blur(8px)' }}>
             <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 6 }}>Saved Drawings</div>
             {savedDrawings.map((d) =>
-            <div key={d.id} style={{ padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+            <div key={d.id} style={{ padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                 <div style={{ fontSize: 11, color: 'var(--text-high)', fontWeight: 500 }}>{d.name}</div>
                 <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{d.customer} · {d.date}</div>
               </div>

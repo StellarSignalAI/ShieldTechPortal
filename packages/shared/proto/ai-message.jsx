@@ -34,7 +34,7 @@ function MermaidDiagram({ code }) {
   }, [code]);
   if (err) {
     return (
-      <div style={{ margin: '8px 0', padding: 10, borderRadius: 8, background: 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)' }}>
+      <div style={{ margin: '8px 0', padding: 10, borderRadius: 8, background: 'rgba(var(--canvas-rgb),0.55)', border: '1px solid var(--border-subtle)' }}>
         <div style={{ fontSize: 10, color: 'var(--status-warn)', marginBottom: 4 }}>Diagram couldn't render — showing source</div>
         <pre style={{ margin: 0, fontSize: 11, color: 'var(--text-mid)', whiteSpace: 'pre-wrap', fontFamily: 'var(--font-mono)' }}>{code}</pre>
       </div>

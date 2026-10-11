@@ -9,10 +9,10 @@ function PurchaseOrdersScreen() {
 
   const statusMap = {
     draft:    { color: 'var(--text-low)',       bg: 'rgba(92,111,134,0.15)',  label: 'Draft' },
-    sent:     { color: 'var(--brand)',           bg: 'rgba(99,102,241,0.12)', label: 'Sent' },
-    partial:  { color: 'var(--status-warn)',     bg: 'rgba(251,191,36,0.12)', label: 'Partial' },
-    received: { color: 'var(--status-ok)',       bg: 'rgba(52,211,153,0.12)', label: 'Received' },
-    cancelled:{ color: 'var(--status-critical)', bg: 'rgba(244,63,94,0.1)',   label: 'Cancelled' },
+    sent:     { color: 'var(--brand)',           bg: 'rgba(var(--brand-rgb),0.12)', label: 'Sent' },
+    partial:  { color: 'var(--status-warn)',     bg: 'rgba(var(--warn-rgb),0.12)', label: 'Partial' },
+    received: { color: 'var(--status-ok)',       bg: 'rgba(var(--ok-rgb),0.12)', label: 'Received' },
+    cancelled:{ color: 'var(--status-critical)', bg: 'rgba(var(--critical-rgb),0.1)',   label: 'Cancelled' },
   };
 
   const filtered = pos.filter(p => tab === 'all' || p.status === tab);
@@ -71,7 +71,7 @@ function PurchaseOrdersScreen() {
             <span style={{ fontSize:10, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--text-low)', lineHeight:1.4 }}>{s.label}</span>
           </div>
         ))}
-        <button onClick={() => setShowNewPO(true)} style={{ padding:'0 20px', background:'rgba(99,102,241,0.08)', border:'1px solid var(--border-strong)', borderRadius:10, color:'var(--brand)', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }}>+ New PO</button>
+        <button onClick={() => setShowNewPO(true)} style={{ padding:'0 20px', background:'rgba(var(--brand-rgb),0.08)', border:'1px solid var(--border-strong)', borderRadius:10, color:'var(--brand)', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }}>+ New PO</button>
       </div>
 
       <div style={{ flex:1, display:'flex', gap:12, minHeight:0 }}>
@@ -88,7 +88,7 @@ function PurchaseOrdersScreen() {
               const s = statusMap[p.status];
               const recPct = p.total > 0 ? (p.items.reduce((sum,item) => sum+item.received*item.unit,0)/p.total)*100 : 0;
               return (
-                <div key={p.id} onClick={() => setSelected(si)} style={{ padding:'12px 14px', cursor:'pointer', borderBottom:'1px solid var(--border-subtle)', background:selected===si?'rgba(99,102,241,0.06)':'transparent', borderLeft:'3px solid '+(selected===si?s.color:'transparent'), transition:'all 0.15s' }}>
+                <div key={p.id} onClick={() => setSelected(si)} style={{ padding:'12px 14px', cursor:'pointer', borderBottom:'1px solid var(--border-subtle)', background:selected===si?'rgba(var(--brand-rgb),0.06)':'transparent', borderLeft:'3px solid '+(selected===si?s.color:'transparent'), transition:'all 0.15s' }}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
                     <span className="mono" style={{ fontSize:11, color:'var(--brand)', fontWeight:600 }}>{p.id}</span>
                     <span style={{ fontSize:9, color:s.color, background:s.bg, padding:'1px 7px', borderRadius:100, fontWeight:600 }}>{s.label}</span>
@@ -99,7 +99,7 @@ function PurchaseOrdersScreen() {
                     <span className="mono" style={{ fontSize:11, color:'var(--text-high)', fontWeight:600 }}>${p.total.toLocaleString()}</span>
                   </div>
                   {(p.status==='partial') && (
-                    <div style={{ marginTop:5, height:3, background:'rgba(99,102,241,0.08)', borderRadius:2, overflow:'hidden' }}>
+                    <div style={{ marginTop:5, height:3, background:'rgba(var(--brand-rgb),0.08)', borderRadius:2, overflow:'hidden' }}>
                       <div style={{ width:recPct+'%', height:'100%', background:'var(--status-warn)', borderRadius:2, transition:'width 0.4s ease' }} />
                     </div>
                   )}
@@ -118,12 +118,12 @@ function PurchaseOrdersScreen() {
                 <span style={{ fontSize:11, color:sm.color, background:sm.bg, padding:'2px 10px', borderRadius:100, fontWeight:600 }}>{sm.label}</span>
 
                 {po.status === 'draft' && (
-                  <button onClick={() => submitPO(po.id)} style={{ padding:'5px 14px', background:'rgba(99,102,241,0.1)', border:'1px solid var(--border-strong)', borderRadius:6, color:'var(--brand)', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)' }}>Submit PO to Vendor</button>
+                  <button onClick={() => submitPO(po.id)} style={{ padding:'5px 14px', background:'rgba(var(--brand-rgb),0.1)', border:'1px solid var(--border-strong)', borderRadius:6, color:'var(--brand)', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)' }}>Submit PO to Vendor</button>
                 )}
                 {(po.status === 'sent' || po.status === 'partial') && (
                   <>
-                    <button onClick={() => receiveAll(po.id)} style={{ padding:'5px 14px', background:'rgba(52,211,153,0.08)', border:'1px solid rgba(52,211,153,0.2)', borderRadius:6, color:'var(--status-ok)', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)' }}>Receive All</button>
-                    <button onClick={() => cancelPO(po.id)} style={{ padding:'5px 14px', background:'rgba(244,63,94,0.06)', border:'1px solid rgba(244,63,94,0.15)', borderRadius:6, color:'var(--status-critical)', fontSize:11, cursor:'pointer', fontFamily:'var(--font-body)' }}>Cancel PO</button>
+                    <button onClick={() => receiveAll(po.id)} style={{ padding:'5px 14px', background:'rgba(var(--ok-rgb),0.08)', border:'1px solid rgba(var(--ok-rgb),0.2)', borderRadius:6, color:'var(--status-ok)', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)' }}>Receive All</button>
+                    <button onClick={() => cancelPO(po.id)} style={{ padding:'5px 14px', background:'rgba(var(--critical-rgb),0.06)', border:'1px solid rgba(var(--critical-rgb),0.15)', borderRadius:6, color:'var(--status-critical)', fontSize:11, cursor:'pointer', fontFamily:'var(--font-body)' }}>Cancel PO</button>
                   </>
                 )}
                 <div style={{ marginLeft:'auto', display:'flex', gap:8 }}>
@@ -132,7 +132,7 @@ function PurchaseOrdersScreen() {
                     { k: 'Vendor', v: po.vendor || '—' },
                     { k: 'Status', v: po.status },
                     { k: 'Total', v: po.total != null ? ('$' + Number(po.total).toLocaleString()) : '—' }
-                  ] })} style={{ fontSize:11, color:'var(--text-mid)', background:'rgba(99,102,241,0.04)', border:'1px solid var(--border-subtle)', borderRadius:6, padding:'4px 12px', cursor:'pointer', fontFamily:'var(--font-body)' }}>Print PO</button>
+                  ] })} style={{ fontSize:11, color:'var(--text-mid)', background:'rgba(var(--brand-rgb),0.04)', border:'1px solid var(--border-subtle)', borderRadius:6, padding:'4px 12px', cursor:'pointer', fontFamily:'var(--font-body)' }}>Print PO</button>
                 </div>
               </div>
               <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
@@ -158,7 +158,7 @@ function PurchaseOrdersScreen() {
                     const done = recVal >= item.qty;
                     const sc = done || po.status==='received' ? 'var(--status-ok)' : recVal > 0 ? 'var(--status-warn)' : 'var(--text-low)';
                     return (
-                      <tr key={i} style={{ borderBottom:'1px solid rgba(99,102,241,0.05)' }}>
+                      <tr key={i} style={{ borderBottom:'1px solid rgba(var(--brand-rgb),0.05)' }}>
                         <td style={{ padding:'10px', fontSize:13, color:'var(--text-high)' }}>{item.desc}</td>
                         <td style={{ padding:'10px', fontSize:11, color:'var(--text-low)', fontFamily:'var(--font-mono)' }}>{item.sku}</td>
                         <td style={{ padding:'10px', textAlign:'center', fontSize:12, fontFamily:'var(--font-mono)', color:'var(--text-high)' }}>{item.qty}</td>
@@ -172,7 +172,7 @@ function PurchaseOrdersScreen() {
                         </td>
                         <td style={{ padding:'10px' }}>
                           {(po.status==='sent'||po.status==='partial') && !done && (
-                            <button onClick={() => receiveLine(po.id, i)} style={{ fontSize:10, color:'var(--status-ok)', background:'rgba(52,211,153,0.08)', border:'1px solid rgba(52,211,153,0.2)', borderRadius:5, padding:'3px 8px', cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }}>Mark Rcvd</button>
+                            <button onClick={() => receiveLine(po.id, i)} style={{ fontSize:10, color:'var(--status-ok)', background:'rgba(var(--ok-rgb),0.08)', border:'1px solid rgba(var(--ok-rgb),0.2)', borderRadius:5, padding:'3px 8px', cursor:'pointer', fontFamily:'var(--font-body)', whiteSpace:'nowrap' }}>Mark Rcvd</button>
                           )}
                         </td>
                       </tr>
@@ -182,12 +182,12 @@ function PurchaseOrdersScreen() {
               </table>
 
               {(po.status==='partial'||po.status==='sent') && (
-                <div style={{ marginTop:16, padding:'12px 16px', background:'rgba(99,102,241,0.04)', border:'1px solid var(--border-subtle)', borderRadius:8 }}>
+                <div style={{ marginTop:16, padding:'12px 16px', background:'rgba(var(--brand-rgb),0.04)', border:'1px solid var(--border-subtle)', borderRadius:8 }}>
                   <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
                     <span style={{ fontSize:11, color:'var(--text-low)' }}>Receiving Progress</span>
                     <span className="mono" style={{ fontSize:11, color:'var(--status-warn)', fontWeight:600 }}>${receivedTotal.toLocaleString()} of ${po.total.toLocaleString()}</span>
                   </div>
-                  <div style={{ height:6, background:'rgba(99,102,241,0.08)', borderRadius:3, overflow:'hidden' }}>
+                  <div style={{ height:6, background:'rgba(var(--brand-rgb),0.08)', borderRadius:3, overflow:'hidden' }}>
                     <div style={{ width:receivedPct+'%', height:'100%', background:receivedPct===100?'var(--status-ok)':'var(--status-warn)', borderRadius:3, transition:'width 0.4s ease' }} />
                   </div>
                   <div style={{ fontSize:10, color:'var(--text-low)', marginTop:4 }}>{Math.round(receivedPct)}% received</div>
@@ -214,10 +214,10 @@ function PurchaseOrdersScreen() {
             {[{l:'Vendor Name',k:'vendor',ph:'e.g. Axis Communications'},{l:'Related Job/Project',k:'job',ph:'e.g. Metro Bank Install'}].map(f => (
               <div key={f.l} style={{ marginBottom:12 }}>
                 <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--text-low)', marginBottom:4 }}>{f.l}</div>
-                <input value={newPo[f.k] || ''} onChange={e => setNewPo(prev => ({ ...prev, [f.k]: e.target.value }))} placeholder={f.ph} style={{ width:'100%', background:'rgba(99,102,241,0.04)', border:'1px solid var(--border-subtle)', borderRadius:7, padding:'8px 12px', color:'var(--text-high)', fontSize:12, fontFamily:'var(--font-body)', outline:'none' }} />
+                <input value={newPo[f.k] || ''} onChange={e => setNewPo(prev => ({ ...prev, [f.k]: e.target.value }))} placeholder={f.ph} style={{ width:'100%', background:'rgba(var(--brand-rgb),0.04)', border:'1px solid var(--border-subtle)', borderRadius:7, padding:'8px 12px', color:'var(--text-high)', fontSize:12, fontFamily:'var(--font-body)', outline:'none' }} />
               </div>
             ))}
-            <div style={{ padding:'12px 14px', background:'rgba(99,102,241,0.04)', border:'1px solid var(--border-subtle)', borderRadius:8, fontSize:11, color:'var(--text-low)', marginBottom:20 }}>Add line items after creation in the PO detail view.</div>
+            <div style={{ padding:'12px 14px', background:'rgba(var(--brand-rgb),0.04)', border:'1px solid var(--border-subtle)', borderRadius:8, fontSize:11, color:'var(--text-low)', marginBottom:20 }}>Add line items after creation in the PO detail view.</div>
             <div style={{ display:'flex', gap:8 }}>
               <button onClick={() => setShowNewPO(false)} style={{ flex:1, padding:'9px 0', background:'transparent', border:'1px solid var(--border-subtle)', borderRadius:7, color:'var(--text-low)', fontSize:12, cursor:'pointer', fontFamily:'var(--font-body)' }}>Cancel</button>
               <button onClick={() => {
@@ -228,7 +228,7 @@ function PurchaseOrdersScreen() {
                 setPos(prev => [...prev, { id, vendor: newPo.vendor.trim(), job: (newPo.job || '').trim(), status: 'draft', date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), total: 0, items: [] }]);
                 setSelected(pos.length); setShowNewPO(false); setNewPo({});
                 showToast(`${id} created as draft — ${newPo.vendor.trim()}`, 'ok');
-              }} style={{ flex:2, padding:'9px 0', background:'rgba(99,102,241,0.12)', border:'1px solid var(--border-strong)', borderRadius:7, color:'var(--brand)', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)' }}>Create Draft PO</button>
+              }} style={{ flex:2, padding:'9px 0', background:'rgba(var(--brand-rgb),0.12)', border:'1px solid var(--border-strong)', borderRadius:7, color:'var(--brand)', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-body)' }}>Create Draft PO</button>
             </div>
           </div>
         </>

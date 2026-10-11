@@ -45,9 +45,9 @@ function MBadge({ children, color = 'var(--brand)' }) {
 
 function MSegment({ options, value, onChange }) {
   return (
-    <div style={{ display: 'flex', gap: 2, background: 'rgba(99,102,241,0.06)', borderRadius: 10, padding: 3, border: '1px solid var(--border-subtle)', overflowX: 'auto' }}>
+    <div style={{ display: 'flex', gap: 2, background: 'rgba(var(--brand-rgb),0.06)', borderRadius: 10, padding: 3, border: '1px solid var(--border-subtle)', overflowX: 'auto' }}>
       {options.map(o => (
-        <button key={o} onClick={() => onChange(o)} style={{ flex: 1, padding: '7px 12px', borderRadius: 8, fontSize: 12, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', fontWeight: 500, whiteSpace: 'nowrap', background: value === o ? 'rgba(99,102,241,0.18)' : 'transparent', color: value === o ? 'var(--brand)' : 'var(--text-low)', transition: 'all 0.15s' }}>{o}</button>
+        <button key={o} onClick={() => onChange(o)} style={{ flex: 1, padding: '7px 12px', borderRadius: 8, fontSize: 12, fontFamily: 'var(--font-body)', border: 'none', cursor: 'pointer', fontWeight: 500, whiteSpace: 'nowrap', background: value === o ? 'rgba(var(--brand-rgb),0.18)' : 'transparent', color: value === o ? 'var(--brand)' : 'var(--text-low)', transition: 'all 0.15s' }}>{o}</button>
       ))}
     </div>
   );
@@ -55,7 +55,7 @@ function MSegment({ options, value, onChange }) {
 
 function MBar({ pct, color }) {
   return (
-    <div style={{ height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
+    <div style={{ height: 4, borderRadius: 2, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden' }}>
       <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%', borderRadius: 2, background: color || (pct > 90 ? 'var(--status-critical)' : pct > 70 ? 'var(--status-warn)' : 'var(--brand)'), transition: 'width 0.4s' }}></div>
     </div>
   );

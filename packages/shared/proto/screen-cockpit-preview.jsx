@@ -27,8 +27,8 @@ const CkpColTitle = ({ icon, label, count, color }) => (
 const CkpEmpty = ({ children }) => <div style={{ padding: '20px 12px', textAlign: 'center', fontSize: 11.5, color: 'var(--text-low)', border: '1px dashed var(--border-subtle)', borderRadius: 11 }}>{children}</div>;
 const ckpBtn = (variant) => ({
   padding: '7px 13px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap',
-  border: variant === 'primary' ? 'none' : `1px solid ${variant === 'ok' ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'}`,
-  background: variant === 'primary' ? 'linear-gradient(135deg, var(--brand), var(--brand-pressed))' : variant === 'ok' ? 'rgba(52,211,153,0.09)' : 'transparent',
+  border: variant === 'primary' ? 'none' : `1px solid ${variant === 'ok' ? 'rgba(var(--ok-rgb),0.3)' : 'var(--border-subtle)'}`,
+  background: variant === 'primary' ? 'linear-gradient(135deg, var(--brand), var(--brand-pressed))' : variant === 'ok' ? 'rgba(var(--ok-rgb),0.09)' : 'transparent',
   color: variant === 'primary' ? '#fff' : variant === 'ok' ? 'var(--status-ok)' : 'var(--text-mid)',
 });
 
@@ -51,7 +51,7 @@ function CkpPeek({ peek, onClose, onAction }) {
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, marginBottom: 16 }}>
             {[['Customer', d.customer], ['Status', d.status], [peek.kind === 'invoice' ? 'Due' : 'Expires', d.due || d.expires || '—'], ['Source', d.source || 'portal']].map(([k, v]) => (
-              <div key={k} style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 11px' }}>
+              <div key={k} style={{ background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 11px' }}>
                 <div style={{ fontSize: 8.5, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{k}</div>
                 <div style={{ fontSize: 12.5, color: 'var(--text-high)', fontWeight: 500 }}>{String(v)}</div>
               </div>
@@ -60,7 +60,7 @@ function CkpPeek({ peek, onClose, onAction }) {
           {(d.lines || []).length > 0 && <>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.09em', color: 'var(--text-low)', marginBottom: 7 }}>LINE ITEMS</div>
             {d.lines.map((l, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.06)' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.06)' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-mid)', flex: 1 }}>{l.desc}</span>
                 <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)' }}>{l.qty}×{CKP_$(l.rate)}</span>
                 <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{CKP_$((Number(l.qty) || 1) * (Number(l.rate) || 0))}</span>
@@ -157,7 +157,7 @@ function CockpitPreviewScreen() {
           <div style={{ display: 'flex', gap: 9 }}>
             <input value={cmd} onChange={e => setCmd(e.target.value)} onKeyDown={e => e.key === 'Enter' && runCmd()}
               placeholder='Type a command — “invoice Acme 2500” · “go projects” · “auto-bid”'
-              style={{ flex: 1, padding: '13px 17px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'rgba(99,102,241,0.05)', color: 'var(--text-high)', fontSize: 13.5, fontFamily: 'var(--font-body)', outline: 'none' }} />
+              style={{ flex: 1, padding: '13px 17px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'rgba(var(--brand-rgb),0.05)', color: 'var(--text-high)', fontSize: 13.5, fontFamily: 'var(--font-body)', outline: 'none' }} />
             <button onClick={runCmd} style={{ ...ckpBtn('primary'), padding: '0 20px', fontSize: 13 }}>⏎</button>
           </div>
           <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 5 }}>In the full build this is ⌘K from anywhere — it creates, finds, and navigates.</div>

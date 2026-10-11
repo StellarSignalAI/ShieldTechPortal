@@ -33,11 +33,11 @@ function StudioDevicePicker({ deviceCatalog, brands, onPick, onClose, filter, ti
           <span style={{ fontSize: 15, fontWeight: 600 }}>{title || 'Add Device'}</span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
         </div>
-        <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Search the catalog…" style={{ width: '100%', padding: '8px 10px', marginBottom: 10, background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)' }} />
+        <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Search the catalog…" style={{ width: '100%', padding: '8px 10px', marginBottom: 10, background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)' }} />
         <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
           {list.map(d => (
-            <button key={d.id} onClick={() => onPick(d)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 7, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>
-              <span style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(99,102,241,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <button key={d.id} onClick={() => onPick(d)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 7, background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>
+              <span style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(var(--brand-rgb),0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {typeof Icon !== 'undefined' && <Icon name={(window.__studioSubcatIcons && window.__studioSubcatIcons[d.subcat]) || 'cam-dome'} size={15} color="var(--brand)" />}
               </span>
               <span style={{ flex: 1, minWidth: 0 }}>
@@ -55,7 +55,7 @@ function StudioDevicePicker({ deviceCatalog, brands, onPick, onClose, filter, ti
 }
 
 function studioBtn(primary) {
-  return { padding: '4px 11px', borderRadius: 5, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', border: primary ? 'none' : '1px solid var(--border-strong)', background: primary ? 'var(--brand)' : 'rgba(99,102,241,0.08)', color: primary ? '#fff' : 'var(--brand)' };
+  return { padding: '4px 11px', borderRadius: 5, fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', border: primary ? 'none' : '1px solid var(--border-strong)', background: primary ? 'var(--brand)' : 'rgba(var(--brand-rgb),0.08)', color: primary ? '#fff' : 'var(--brand)' };
 }
 
 /* ════════════════ INTERCONNECT — drag to connect ════════════════ */
@@ -151,7 +151,7 @@ function InterconnectCanvas({ placedDevices, connections, setConnections, brands
       {picker && <StudioDevicePicker deviceCatalog={deviceCatalog} brands={brands} title="Add Device to Diagram" onClose={() => setPicker(false)} onPick={(d) => { studioAddDevice(setPlacedDevices, placedDevices, d, showToast); setPicker(false); }} />}
 
       <div ref={wrapRef} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={() => setDrag(null)}
-        style={{ flex: 1, position: 'relative', overflow: 'auto', background: 'rgba(5,7,10,0.6)', cursor: drag?.type === 'node' ? 'grabbing' : 'default' }}>
+        style={{ flex: 1, position: 'relative', overflow: 'auto', background: 'rgba(var(--canvas-rgb),0.6)', cursor: drag?.type === 'node' ? 'grabbing' : 'default' }}>
         <div style={{ position: 'relative', width: 760, height: Math.max(480, (Math.max(...Object.values(pos).map(p => p.y), 0) + 120)) }}>
           {/* tier labels */}
           {['Edge Devices', 'Network', 'Recorders / Power'].map((l, t) => (
@@ -161,7 +161,7 @@ function InterconnectCanvas({ placedDevices, connections, setConnections, brands
           {/* edges */}
           <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
             <defs>
-              <pattern id="icGrid" width="38" height="38" patternUnits="userSpaceOnUse"><path d="M38 0 L0 0 0 38" fill="none" stroke="rgba(99,102,241,0.04)" strokeWidth="0.5" /></pattern>
+              <pattern id="icGrid" width="38" height="38" patternUnits="userSpaceOnUse"><path d="M38 0 L0 0 0 38" fill="none" stroke="rgba(var(--brand-rgb),0.04)" strokeWidth="0.5" /></pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#icGrid)" />
             {connections.map(c => {
@@ -172,7 +172,7 @@ function InterconnectCanvas({ placedDevices, connections, setConnections, brands
               return (
                 <g key={c.id} style={{ pointerEvents: 'all', cursor: 'pointer' }} onClick={() => setSelEdge(isSel ? null : c.id)}>
                   <path d={bezier(a, b)} fill="none" stroke={c.color} strokeWidth={isSel ? 3 : 1.8} opacity={isSel ? 1 : 0.7} />
-                  <rect x={mid.x - 32} y={mid.y - 9} width="64" height="16" rx="3" fill="rgba(10,14,20,0.92)" stroke={c.color} strokeWidth="0.5" opacity="0.95" />
+                  <rect x={mid.x - 32} y={mid.y - 9} width="64" height="16" rx="3" fill="rgba(var(--card-rgb),0.92)" stroke={c.color} strokeWidth="0.5" opacity="0.95" />
                   <text x={mid.x} y={mid.y + 2} textAnchor="middle" fill={c.color} fontSize="8" fontFamily="var(--font-mono)">{c.cable}</text>
                 </g>
               );
@@ -188,16 +188,16 @@ function InterconnectCanvas({ placedDevices, connections, setConnections, brands
             const c = connections.find(x => x.id === selEdge); if (!c || !pos[c.from] || !pos[c.to]) return null;
             const a = portR(c.from), b = portL(c.to); const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
             return (
-              <div style={{ position: 'absolute', left: mid.x - 70, top: mid.y + 12, zIndex: 20, width: 140, padding: 8, background: 'rgba(10,14,20,0.96)', border: '1px solid var(--border-strong)', borderRadius: 8, backdropFilter: 'blur(8px)' }}>
+              <div style={{ position: 'absolute', left: mid.x - 70, top: mid.y + 12, zIndex: 20, width: 140, padding: 8, background: 'rgba(var(--card-rgb),0.96)', border: '1px solid var(--border-strong)', borderRadius: 8, backdropFilter: 'blur(8px)' }}>
                 <div style={{ fontSize: 9, color: 'var(--text-low)', marginBottom: 4 }}>{placedDevices[c.from].tag} → {placedDevices[c.to].tag}</div>
-                <select value={c.cable} onChange={e => setConnections(prev => prev.map(x => x.id === c.id ? { ...x, cable: e.target.value } : x))} style={{ width: '100%', padding: '3px 4px', marginBottom: 4, background: 'rgba(5,7,10,0.6)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 9, fontFamily: 'var(--font-body)' }}>
+                <select value={c.cable} onChange={e => setConnections(prev => prev.map(x => x.id === c.id ? { ...x, cable: e.target.value } : x))} style={{ width: '100%', padding: '3px 4px', marginBottom: 4, background: 'rgba(var(--canvas-rgb),0.6)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 9, fontFamily: 'var(--font-body)' }}>
                   {['Cat6A', 'Cat6', 'OSDP / Composite', '18/2 Power', '22/4 Shielded', 'Fiber OM4', 'Siamese RG59'].map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
-                  <input type="number" value={c.length} onChange={e => setConnections(prev => prev.map(x => x.id === c.id ? { ...x, length: parseInt(e.target.value) || 0 } : x))} style={{ width: 50, padding: '2px 4px', background: 'rgba(5,7,10,0.6)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 9, fontFamily: 'var(--font-mono)' }} />
+                  <input type="number" value={c.length} onChange={e => setConnections(prev => prev.map(x => x.id === c.id ? { ...x, length: parseInt(e.target.value) || 0 } : x))} style={{ width: 50, padding: '2px 4px', background: 'rgba(var(--canvas-rgb),0.6)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-high)', fontSize: 9, fontFamily: 'var(--font-mono)' }} />
                   <span style={{ fontSize: 9, color: 'var(--text-low)' }}>ft run</span>
                 </div>
-                <button onClick={() => { setConnections(prev => prev.filter(x => x.id !== c.id)); setSelEdge(null); }} style={{ width: '100%', padding: '3px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 4, color: 'var(--status-critical)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Delete link</button>
+                <button onClick={() => { setConnections(prev => prev.filter(x => x.id !== c.id)); setSelEdge(null); }} style={{ width: '100%', padding: '3px', background: 'rgba(var(--critical-rgb),0.08)', border: '1px solid rgba(var(--critical-rgb),0.2)', borderRadius: 4, color: 'var(--status-critical)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Delete link</button>
               </div>
             );
           })()}
@@ -212,7 +212,7 @@ function InterconnectCanvas({ placedDevices, connections, setConnections, brands
               <div key={idx}
                 onMouseEnter={() => setHoverNode(idx)} onMouseLeave={() => setHoverNode(null)}
                 onPointerDown={(e) => { const { x, y } = localXY(e); setDrag({ type: 'node', idx, dx: x - p.x, dy: y - p.y }); }}
-                style={{ position: 'absolute', left: p.x, top: p.y, width: NODE_W, height: NODE_H, borderRadius: 9, background: 'rgba(10,14,20,0.95)', border: `1.5px solid ${linkTarget && isHover ? 'var(--brand)' : color}`, boxShadow: (linkTarget && isHover) ? '0 0 14px var(--brand)' : `0 0 6px ${color}40`, display: 'flex', alignItems: 'center', gap: 8, padding: '0 10px', cursor: 'grab', userSelect: 'none', touchAction: 'none', zIndex: drag?.idx === idx ? 10 : 2 }}>
+                style={{ position: 'absolute', left: p.x, top: p.y, width: NODE_W, height: NODE_H, borderRadius: 9, background: 'rgba(var(--card-rgb),0.95)', border: `1.5px solid ${linkTarget && isHover ? 'var(--brand)' : color}`, boxShadow: (linkTarget && isHover) ? '0 0 14px var(--brand)' : `0 0 6px ${color}40`, display: 'flex', alignItems: 'center', gap: 8, padding: '0 10px', cursor: 'grab', userSelect: 'none', touchAction: 'none', zIndex: drag?.idx === idx ? 10 : 2 }}>
                 <div style={{ width: 26, height: 26, borderRadius: 6, background: `${color}1f`, border: `1px solid ${color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   {typeof Icon !== 'undefined' && <Icon name={(window.__studioSubcatIcons && window.__studioSubcatIcons[pd.device.subcat]) || 'cam-dome'} size={14} color={color} />}
                 </div>
@@ -221,11 +221,11 @@ function InterconnectCanvas({ placedDevices, connections, setConnections, brands
                   <div style={{ fontSize: 10, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pd.device.name}</div>
                 </div>
                 {/* left in-port */}
-                <div style={{ position: 'absolute', left: -6, top: NODE_H / 2 - 6, width: 12, height: 12, borderRadius: '50%', background: 'rgba(10,14,20,0.95)', border: `2px solid ${color}`, opacity: 0.6 }} />
+                <div style={{ position: 'absolute', left: -6, top: NODE_H / 2 - 6, width: 12, height: 12, borderRadius: '50%', background: 'rgba(var(--card-rgb),0.95)', border: `2px solid ${color}`, opacity: 0.6 }} />
                 {/* right out-port (drag handle) */}
                 <div onPointerDown={(e) => { e.stopPropagation(); const { x, y } = localXY(e); setMouse({ x, y }); setDrag({ type: 'link', idx }); }}
                   title="Drag to connect"
-                  style={{ position: 'absolute', right: -7, top: NODE_H / 2 - 7, width: 14, height: 14, borderRadius: '50%', background: color, border: '2px solid rgba(10,14,20,0.95)', cursor: 'crosshair', boxShadow: `0 0 6px ${color}` }} />
+                  style={{ position: 'absolute', right: -7, top: NODE_H / 2 - 7, width: 14, height: 14, borderRadius: '50%', background: color, border: '2px solid rgba(var(--card-rgb),0.95)', cursor: 'crosshair', boxShadow: `0 0 6px ${color}` }} />
               </div>
             );
           })}
@@ -248,9 +248,9 @@ function RackFaceplate({ device, color, hpx, dragging }) {
     panel = (
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0 }}>
         <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gridAutoFlow: 'column', gap: 1.5 }}>
-          {Array.from({ length: 24 }).map((_, i) => <span key={i} style={{ width: 5, height: 5, borderRadius: 1, background: [3, 7, 8, 14, 19].includes(i) ? '#34d399' : '#0C0A14', border: '0.5px solid #2a3340', boxShadow: [3, 7, 8, 14, 19].includes(i) ? '0 0 3px #34d399' : 'none' }} />)}
+          {Array.from({ length: 24 }).map((_, i) => <span key={i} style={{ width: 5, height: 5, borderRadius: 1, background: [3, 7, 8, 14, 19].includes(i) ? '#34d399' : 'var(--card)', border: '0.5px solid #2a3340', boxShadow: [3, 7, 8, 14, 19].includes(i) ? '0 0 3px #34d399' : 'none' }} />)}
         </div>
-        <div style={{ display: 'flex', gap: 2, marginLeft: 'auto' }}>{[0, 1].map(i => <span key={i} style={{ width: 8, height: 9, borderRadius: 1, background: '#0C0A14', border: '1px solid #2a3340' }} />)}</div>
+        <div style={{ display: 'flex', gap: 2, marginLeft: 'auto' }}>{[0, 1].map(i => <span key={i} style={{ width: 8, height: 9, borderRadius: 1, background: 'var(--card)', border: '1px solid #2a3340' }} />)}</div>
       </div>
     );
   } else if (kind === 'nvr') {
@@ -263,22 +263,22 @@ function RackFaceplate({ device, color, hpx, dragging }) {
   } else if (kind === 'ups') {
     panel = (
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
-        <span style={{ width: 26, height: hpx > 44 ? 18 : 11, borderRadius: 2, background: 'linear-gradient(135deg,#0a2233,#06121a)', border: '1px solid #1a3344', boxShadow: 'inset 0 0 4px #6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="mono" style={{ fontSize: 6, color: '#5bc0ff' }}>100%</span></span>
+        <span style={{ width: 26, height: hpx > 44 ? 18 : 11, borderRadius: 2, background: 'linear-gradient(135deg,#0a2233,#06121a)', border: '1px solid #1a3344', boxShadow: 'inset 0 0 4px var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="mono" style={{ fontSize: 6, color: '#5bc0ff' }}>100%</span></span>
         <div style={{ display: 'flex', gap: 1.5 }}>{Array.from({ length: 5 }).map((_, i) => <span key={i} style={{ width: 4, height: 10, borderRadius: 1, background: i < 4 ? '#34d399' : '#1a2230', boxShadow: i < 4 ? '0 0 2px #34d399' : 'none' }} />)}</div>
-        <div style={{ display: 'flex', gap: 3, marginLeft: 'auto' }}>{[0, 1].map(i => <span key={i} style={{ width: 9, height: 9, borderRadius: '50%', background: '#0C0A14', border: '1.5px solid #2a3340' }} />)}</div>
+        <div style={{ display: 'flex', gap: 3, marginLeft: 'auto' }}>{[0, 1].map(i => <span key={i} style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--card)', border: '1.5px solid #2a3340' }} />)}</div>
       </div>
     );
   } else if (kind === 'psu') {
     panel = (
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1 }}>
         <div style={{ display: 'flex', gap: 3 }}>{Array.from({ length: 4 }).map((_, i) => <span key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: i < 3 ? '#34d399' : '#f59e0b', boxShadow: `0 0 3px ${i < 3 ? '#34d399' : '#f59e0b'}` }} />)}</div>
-        <div style={{ display: 'flex', gap: 2, marginLeft: 'auto' }}>{Array.from({ length: 6 }).map((_, i) => <span key={i} style={{ width: 5, height: 8, borderRadius: 1, background: '#0C0A14', border: '1px solid #2a3340' }} />)}</div>
+        <div style={{ display: 'flex', gap: 2, marginLeft: 'auto' }}>{Array.from({ length: 6 }).map((_, i) => <span key={i} style={{ width: 5, height: 8, borderRadius: 1, background: 'var(--card)', border: '1px solid #2a3340' }} />)}</div>
       </div>
     );
   } else if (kind === 'patch') {
     panel = (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(24, 1fr)', gap: 1, flex: 1 }}>
-        {Array.from({ length: 24 }).map((_, i) => <span key={i} style={{ height: 8, borderRadius: 1, background: '#0C0A14', border: '0.5px solid #2a3340' }} />)}
+        {Array.from({ length: 24 }).map((_, i) => <span key={i} style={{ height: 8, borderRadius: 1, background: 'var(--card)', border: '0.5px solid #2a3340' }} />)}
       </div>
     );
   } else {
@@ -371,17 +371,17 @@ function RackElevationView({ placedDevices, catColors, showToast, setPlacedDevic
         <button onClick={() => showToast && showToast('Rack elevation exported to PDF')} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>PDF</button>
         <button onClick={() => onExportToProposal ? onExportToProposal() : (showToast && showToast('Rack added to proposal'))} style={studioBtn(true)}>↗ Export to Proposal</button>
       </div>
-      <div style={{ flex: 1, overflow: 'auto', background: 'rgba(5,7,10,0.6)', padding: 20, display: 'flex', justifyContent: 'center' }}>
+      <div style={{ flex: 1, overflow: 'auto', background: 'rgba(var(--canvas-rgb),0.6)', padding: 20, display: 'flex', justifyContent: 'center' }}>
         <div style={{ display: 'flex', gap: 0, alignItems: 'flex-start' }}>
           {/* U numbers */}
           <div style={{ display: 'flex', flexDirection: 'column', width: 24 }}>
             {Array.from({ length: RACK_U }, (_, i) => RACK_U - i).map(n => <div key={n} className="mono" style={{ height: UPX, fontSize: 7, color: 'var(--text-low)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 4 }}>{n}</div>)}
           </div>
           {/* rack frame */}
-          <div style={{ position: 'relative', width: 300, background: '#0C0A14', border: '3px solid #1a2230', borderRadius: 6, height: RACK_U * UPX }}
+          <div style={{ position: 'relative', width: 300, background: 'var(--card)', border: '3px solid #1a2230', borderRadius: 6, height: RACK_U * UPX }}
             ref={stackRef} onPointerMove={onStackMove} onPointerUp={onStackUp} onPointerLeave={onStackUp}>
             {/* empty slot lines */}
-            {Array.from({ length: RACK_U }).map((_, i) => <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: i * UPX, height: UPX, borderBottom: '1px solid rgba(99,102,241,0.04)' }} />)}
+            {Array.from({ length: RACK_U }).map((_, i) => <div key={i} style={{ position: 'absolute', left: 0, right: 0, top: i * UPX, height: UPX, borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }} />)}
             {/* mounted units */}
             {order.map((idx, pos) => {
               const pd = placedDevices[idx]; if (!pd) return null;
@@ -393,7 +393,7 @@ function RackElevationView({ placedDevices, catColors, showToast, setPlacedDevic
                   <div style={{ position: 'relative', height: '100%' }}>
                     <RackFaceplate device={pd.device} color={color} hpx={h * UPX - 2} dragging={isDrag} />
                     <span className="mono" style={{ position: 'absolute', top: 2, right: 18, fontSize: 7, color: 'var(--text-low)' }}>{pd.tag} · {h}U</span>
-                    <button data-rack-remove onClick={() => removeUnit(idx)} title="Remove" style={{ position: 'absolute', top: 1, right: 1, width: 13, height: 13, borderRadius: 3, background: 'rgba(244,63,94,0.12)', border: 'none', color: 'var(--status-critical)', fontSize: 8, cursor: 'pointer', lineHeight: 1 }}>✕</button>
+                    <button data-rack-remove onClick={() => removeUnit(idx)} title="Remove" style={{ position: 'absolute', top: 1, right: 1, width: 13, height: 13, borderRadius: 3, background: 'rgba(var(--critical-rgb),0.12)', border: 'none', color: 'var(--status-critical)', fontSize: 8, cursor: 'pointer', lineHeight: 1 }}>✕</button>
                   </div>
                 </div>
               );
@@ -405,7 +405,7 @@ function RackElevationView({ placedDevices, catColors, showToast, setPlacedDevic
             <div style={{ fontWeight: 600, color: 'var(--text-mid)', marginBottom: 8 }}>Mounted ({order.length})</div>
             {order.map((idx, pos) => { const pd = placedDevices[idx]; if (!pd) return null; const color = catColors[pd.device.cat] || 'var(--brand)';
               return (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                   <span style={{ width: 6, height: 6, borderRadius: 1, background: color, flexShrink: 0 }} />
                   <span style={{ color: 'var(--text-mid)', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pd.device.name}</span>
                   <span className="mono" style={{ color: 'var(--text-low)' }}>{heights[pos]}U</span>
@@ -455,12 +455,12 @@ function PhotoQuoteCanvas({ placedDevices, setPlacedDevices, dragPlaceDevice, se
         <span style={{ fontSize: 12, fontWeight: 600 }}>Image Quoting</span>
         <span style={{ fontSize: 10, color: 'var(--text-low)' }}>Drop catalog devices onto a real site photo — each lands in the BOM</span>
         <div style={{ flex: 1 }} />
-        <button onClick={() => fileRef.current?.click()} style={{ padding: '4px 12px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◉ {photo ? 'Replace Photo' : 'Upload Site Photo'}</button>
+        <button onClick={() => fileRef.current?.click()} style={{ padding: '4px 12px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◉ {photo ? 'Replace Photo' : 'Upload Site Photo'}</button>
         <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{ display: 'none' }} />
         <button onClick={() => onExportToProposal ? onExportToProposal() : (showToast && showToast('Photo markups added to proposal'))} style={studioBtn(true)}>↗ Export to Proposal</button>
       </div>
       <div onDragOver={e => e.preventDefault()} onDrop={drop} onClick={(e) => { if (dragPlaceDevice && photo) drop(e); }}
-        style={{ flex: 1, position: 'relative', overflow: 'hidden', background: photo ? '#000' : 'rgba(5,7,10,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        style={{ flex: 1, position: 'relative', overflow: 'hidden', background: photo ? '#000' : 'rgba(var(--canvas-rgb),0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {!photo ? (
           <div style={{ textAlign: 'center', color: 'var(--text-low)' }}>
             <div style={{ width: 64, height: 64, borderRadius: 14, border: '2px dashed var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 28 }}>◉</div>
@@ -475,15 +475,15 @@ function PhotoQuoteCanvas({ placedDevices, setPlacedDevices, dragPlaceDevice, se
               const color = catColors[pin.device.cat] || 'var(--brand)';
               return (
                 <div key={i} style={{ position: 'absolute', left: `${pin.x}%`, top: `${pin.y}%`, transform: 'translate(-50%,-50%)', zIndex: 3 }}>
-                  <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(10,14,20,0.9)', border: `2px solid ${color}`, boxShadow: `0 0 10px ${color}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(var(--card-rgb),0.9)', border: `2px solid ${color}`, boxShadow: `0 0 10px ${color}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {typeof Icon !== 'undefined' && <Icon name={(window.__studioSubcatIcons && window.__studioSubcatIcons[pin.device.subcat]) || 'cam-dome'} size={15} color={color} />}
                   </div>
-                  <div className="mono" style={{ position: 'absolute', top: 32, left: '50%', transform: 'translateX(-50%)', fontSize: 8, color: '#fff', background: 'rgba(10,14,20,0.85)', padding: '1px 5px', borderRadius: 3, whiteSpace: 'nowrap' }}>{pin.tag}</div>
+                  <div className="mono" style={{ position: 'absolute', top: 32, left: '50%', transform: 'translateX(-50%)', fontSize: 8, color: '#fff', background: 'rgba(var(--card-rgb),0.85)', padding: '1px 5px', borderRadius: 3, whiteSpace: 'nowrap' }}>{pin.tag}</div>
                   <button onClick={() => setPins(prev => prev.filter((_, j) => j !== i))} style={{ position: 'absolute', top: -8, right: -8, width: 16, height: 16, borderRadius: '50%', background: 'var(--status-critical)', border: 'none', color: '#fff', fontSize: 9, cursor: 'pointer', lineHeight: 1 }}>✕</button>
                 </div>
               );
             })}
-            {dragPlaceDevice && <div style={{ position: 'absolute', inset: 0, border: '3px dashed var(--brand)', background: 'rgba(99,102,241,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}><span style={{ color: 'var(--brand)', fontSize: 14, fontWeight: 600, background: 'rgba(10,14,20,0.8)', padding: '6px 14px', borderRadius: 6 }}>Drop {dragPlaceDevice.name}</span></div>}
+            {dragPlaceDevice && <div style={{ position: 'absolute', inset: 0, border: '3px dashed var(--brand)', background: 'rgba(var(--brand-rgb),0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}><span style={{ color: 'var(--brand)', fontSize: 14, fontWeight: 600, background: 'rgba(var(--card-rgb),0.8)', padding: '6px 14px', borderRadius: 6 }}>Drop {dragPlaceDevice.name}</span></div>}
           </div>
         )}
       </div>
