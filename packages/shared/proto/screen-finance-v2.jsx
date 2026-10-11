@@ -35,6 +35,12 @@ const FINANCE_TAB_AREA = {};
 FINANCE_AREAS.forEach((a) => a.tabs.forEach((t) => { FINANCE_TAB_AREA[t.id] = a.id; }));
 
 function FinanceScreen() {
+  /* The QuickBooks-pattern shell (screen-qbo-shell.jsx) hosts every page; this
+     tabbed layout remains as the fallback. */
+  if (window.QboFinanceScreen) return <QboFinanceScreen />;
+  return <FinanceScreenTabs />;
+}
+function FinanceScreenTabs() {
   const initialTab = (window.__qboParams && window.__qboParams.financeTab) || 'overview';
   const [tab, setTabRaw] = React.useState(FINANCE_TAB_AREA[initialTab] ? initialTab : 'overview');
   const [area, setArea] = React.useState(FINANCE_TAB_AREA[initialTab] || 'command');

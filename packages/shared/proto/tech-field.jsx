@@ -132,30 +132,37 @@ function TfQuickSheet({ onClose, setTab, onRequest }) {
     </TmSheet>
   );
 }
-function TfRequestSheet({ onClose }) {
+function TfRequestSheet({ onClose, kind }) {
+  const isJob = kind === 'job';
   const [custs] = useShieldStore(customerStore);
   const [f, setF] = React.useState({ customer: '', site: '', type: 'Install', scope: '', date: tfIso() });
   const me = window.__shieldUser || {};
   const submit = () => {
     if (!f.customer.trim() || !f.scope.trim()) { shieldToast('Customer and what needs doing are required', 'warn'); return; }
     const id = 'WO-' + Date.now().toString(36).toUpperCase().slice(-5);
-    workOrderStore.set(prev => [{ id, customer: f.customer.trim(), site: f.site.trim(), type: f.type, scope: f.scope.trim(), status: 'requested', requestedBy: me.name || 'Tech', techId: (me.name || '').split(' ').map(w => w[0]).join('').toUpperCase(), assignedTo: me.id || null, scheduled: f.date, createdAt: Date.now(), notes: `Requested from the field by ${me.name || 'a technician'}` }, ...(prev || [])]);
-    shieldToast(`${id} requested — dispatch will schedule it`, 'ok'); onClose();
+    const c = (custs || []).find(x => x.name === f.customer.trim());
+    workOrderStore.set(prev => [{ id, customer: f.customer.trim(), site: f.site.trim() || (c && (c.address || c.site)) || '', type: f.type, scope: f.scope.trim(), status: isJob ? 'open' : 'requested', requestedBy: me.name || 'Tech', techId: (me.name || '').split(' ').map(w => w[0]).join('').toUpperCase(), assignedTo: me.id || null, scheduled: f.date, createdAt: Date.now(), notes: isJob ? `Created in the field by ${me.name || 'a technician'}` : `Requested from the field by ${me.name || 'a technician'}` }, ...(prev || [])]);
+    shieldToast(isJob ? `${id} scheduled for ${f.date}` : `${id} requested — dispatch will schedule it`, 'ok'); onClose();
   };
   return (
-    <TmSheet title="Request a job" onClose={onClose}>
+    <TmSheet title={isJob ? 'New job' : 'Request a job'} onClose={onClose}>
       <TmField label="Customer"><input list="tf-custs" value={f.customer} onChange={e => setF(p => ({ ...p, customer: e.target.value }))} placeholder="Who is it for?" style={tmInput} /><datalist id="tf-custs">{(custs || []).map(c => <option key={c.id || c.name} value={c.name} />)}</datalist></TmField>
       <TmField label="Site address"><input value={f.site} onChange={e => setF(p => ({ ...p, site: e.target.value }))} placeholder="Street, city" style={tmInput} /></TmField>
       <TmField label="Type"><TmChips options={['Install', 'Repair', 'Maintenance', 'Survey']} value={f.type} onChange={v => setF(p => ({ ...p, type: v }))} /></TmField>
       <TmField label="What needs doing"><textarea rows={3} value={f.scope} onChange={e => setF(p => ({ ...p, scope: e.target.value }))} placeholder="Add 2 cameras to the loading dock, run Cat6 from the IDF" style={{ ...tmInput, resize: 'vertical' }} /></TmField>
       <TmField label="Preferred date"><input type="date" value={f.date} onChange={e => setF(p => ({ ...p, date: e.target.value }))} style={tmInput} /></TmField>
-      <TmPrimary label="Send request to dispatch" onClick={submit} />
+      <TmPrimary label={isJob ? 'Save job' : 'Send request to dispatch'} onClick={submit} />
     </TmSheet>
   );
 }
+/* open a job row: requested work orders go to the request page, everything else to the job page */
+function tfOpenJob(j, setTab, setSelectedJob, setCtx) {
+  if (j._wo && j._wo.status === 'requested' && setCtx && window.TjRequestView) { setCtx({ id: j._wo.id }); setTab('request'); return; }
+  setSelectedJob(j); setTab('job-detail');
+}
 
 /* ══════════════ Home ══════════════ */
-function TechHomeView({ setTab, setSelectedJob }) {
+function TechHomeView({ setTab, setSelectedJob, setCtx }) {
   const { jobs, upcoming, crewView } = useTechDay();
   const segs = React.useMemo(() => jobs.map(j => ({ ...j, disc: techDiscipline(j) })), [jobs]);
   const { t: timer, running } = useTechTimer();
@@ -168,7 +175,16 @@ function TechHomeView({ setTab, setSelectedJob }) {
   const worth = segs.reduce((s, j) => s + tfJobValue(j), 0);
   const active = segs.find(s => s.field === 'in-progress' || s.field === 'on-site' || s.field === 'en-route' || s.field === 'paused');
   const next = active || segs.find(s => !s.done && s.e >= nowMin) || segs.find(s => !s.done) || null;
-  const open = (j) => { setSelectedJob(j); setTab('job-detail'); };
+  const open = (j) => tfOpenJob(j, setTab, setSelectedJob, setCtx);
+  const pick = (id) => {
+    setSheet(null);
+    if (id === 'request') setSheet('request');
+    else if (id === 'job') setSheet('job');
+    else if (id === 'task') setSheet('task');
+    else if (id === 'client') setSheet('client');
+    else if (id === 'expense') { if (window.openTechReceipt) window.openTechReceipt({}); setTab('expenses'); }
+    else if (id === 'invoice' || id === 'quote') { if (setCtx) setCtx({ kind: id === 'quote' ? 'estimate' : 'invoice', prefill: {} }); setTab(id === 'quote' ? 'new-quote' : 'new-invoice'); }
+  };
   /* this week */
   const mon = tmMonday(); const weekKeys = Array.from({ length: 7 }, (_, i) => tfIso(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
   const weekJobs = segs.length + upcoming.filter(d => weekKeys.includes(d.iso)).reduce((s, d) => s + d.rows.length, 0);
@@ -238,20 +254,23 @@ function TechHomeView({ setTab, setSelectedJob }) {
 
       {/* FAB */}
       <button onClick={() => setSheet('quick')} title="Create" style={{ position: 'fixed', bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))', right: 'max(16px, calc(50% - 199px))', width: 56, height: 56, borderRadius: '50%', zIndex: 500, background: 'var(--brand)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 28, fontWeight: 300, lineHeight: 1, boxShadow: '0 10px 28px color-mix(in srgb, var(--brand) 45%, transparent)' }}>+</button>
-      {sheet === 'quick' && <TfQuickSheet onClose={() => setSheet(null)} setTab={setTab} onRequest={() => setSheet('request')} />}
+      {sheet === 'quick' && (window.TfSpeedDial ? <TfSpeedDial onClose={() => setSheet(null)} onPick={pick} /> : <TfQuickSheet onClose={() => setSheet(null)} setTab={setTab} onRequest={() => setSheet('request')} />)}
       {sheet === 'request' && <TfRequestSheet onClose={() => setSheet(null)} />}
+      {sheet === 'job' && <TfRequestSheet kind="job" onClose={() => setSheet(null)} />}
+      {sheet === 'task' && window.TjTaskSheet && <TjTaskSheet onClose={() => setSheet(null)} />}
+      {sheet === 'client' && window.TjClientSheet && <TjClientSheet onClose={() => setSheet(null)} />}
     </div>
   );
 }
 
 /* ══════════════ Schedule ══════════════ */
-function TechScheduleView({ setTab, setSelectedJob }) {
+function TechScheduleView({ setTab, setSelectedJob, setCtx }) {
   const { jobs, upcoming } = useTechDay();
   const [mode, setMode] = React.useState('Day');
   const today = tfIso();
   const [sel, setSel] = React.useState(today);
   const [weekStart, setWeekStart] = React.useState(() => tfIso(tmMonday()));
-  const open = (j) => { setSelectedJob(j); setTab('job-detail'); };
+  const open = (j) => tfOpenJob(j, setTab, setSelectedJob, setCtx);
   const dayJobs = (iso) => iso === today ? jobs : ((upcoming.find(d => d.iso === iso) || {}).rows || []);
   const weekKeys = Array.from({ length: 7 }, (_, i) => tfAddDays(weekStart, i));
   const list = [{ iso: today, rows: jobs }, ...upcoming].filter(d => d.rows.length);
@@ -312,7 +331,7 @@ function TechScheduleView({ setTab, setSelectedJob }) {
 }
 
 /* ══════════════ Search ══════════════ */
-function TechSearchView({ setTab, setSelectedJob }) {
+function TechSearchView({ setTab, setSelectedJob, setCtx }) {
   const [q, setQ] = React.useState('');
   const [wos] = useShieldStore(workOrderStore);
   const [cal] = useShieldStore(jobStore);
@@ -340,7 +359,7 @@ function TechSearchView({ setTab, setSelectedJob }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, color: 'var(--text-high)' }}>
       <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', padding: '0 2px' }}>Search</div>
       <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Jobs, customers, sites, devices, invoices…" style={{ ...tmInput, fontSize: 16, padding: '14px 16px', borderRadius: 16 }} />
-      {!res && <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>{[['All jobs', 'jobs'], ['Photos', 'photos'], ['Assets', 'assets'], ['Receipts', 'expenses'], ['Punch list', 'punch'], ['My truck', 'truck']].map(([l, id]) => <button key={id} onClick={() => setTab(id)} style={{ padding: '14px', borderRadius: 14, border: '1px solid var(--border-subtle)', background: 'var(--card)', color: 'var(--text-high)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>{l} ›</button>)}</div>}
+      {!res && (window.TjRecent ? <TjRecent setTab={setTab} setSelectedJob={setSelectedJob} setCtx={setCtx} /> : <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>{[['All jobs', 'jobs'], ['Photos', 'photos'], ['Assets', 'assets'], ['Receipts', 'expenses'], ['Punch list', 'punch'], ['My truck', 'truck']].map(([l, id]) => <button key={id} onClick={() => setTab(id)} style={{ padding: '14px', borderRadius: 14, border: '1px solid var(--border-subtle)', background: 'var(--card)', color: 'var(--text-high)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>{l} ›</button>)}</div>)}
       {res && !res.jobs.length && !res.customers.length && !res.assets.length && !res.inv.length && <div style={{ padding: '22px 16px', textAlign: 'center', color: 'var(--text-low)', fontSize: 12.5, border: '1px dashed var(--border-subtle)', borderRadius: 14 }}>Nothing matches "{q}".</div>}
       {res && group('Jobs', res.jobs.map(j => row(`${j.woId ? j.woId + ' · ' : ''}${j.customer}`, [j.site, j.desc].filter(Boolean).join(' · '), j.date ? tfDayLabel(j.date, { month: 'short', day: 'numeric' }) : '', () => open(j))))}
       {res && group('Customers', res.customers.map(c => row(c.name, [c.contact, c.phone, c.address || c.site].filter(Boolean).join(' · '), '', () => { if (c.phone) { try { navigator.clipboard.writeText(c.phone); } catch { /* noop */ } shieldToast(`${c.phone} copied`, 'ok'); } })))}
@@ -354,7 +373,7 @@ function TechSearchView({ setTab, setSelectedJob }) {
 function TechMoreView({ setTab }) {
   const groups = [
     ['Work', [['jobs', 'All jobs', 'Full job list and history'], ['photos', 'Site photos', 'Capture and job documentation'], ['assets', 'Assets', 'Devices on site — scan, status, IPs'], ['punch', 'Punch list', 'Assigned fix-it items'], ['parts', 'Parts request', 'Request parts from the warehouse'], ['truck', 'My truck', 'Van stock and restock'], ['vehicle', 'Vehicle inspection', 'Daily pre-trip checklist'], ['route', 'My route', 'Smart day plan, traffic-aware']]],
-    ['Money', [['expenses', 'Receipts & expenses', 'Snap receipts, mileage, reimbursements'], ['time', 'Timesheet', 'Clock, drafts, submit the week']]],
+    ['Money', [['quotes', 'Quotes', 'Send, approve and schedule'], ['invoices', 'Invoices', 'Issue, resend, collect payment'], ['expenses', 'Receipts & expenses', 'Snap receipts, mileage, reimbursements'], ['time', 'Timesheet', 'Clock, drafts, submit the week'], ['health', 'Business health', 'Clients, quotes, jobs, invoices — past 30 days']]],
     ['Tools', [['ai', 'ShieldTech AI', 'Wiring, RTSP/ONVIF, panel programming help'], ['voice', 'Voice notes', 'Dictate → work order'], ['scanner', 'Model scanner', 'Scan stickers → specs and manuals'], ['ar', 'AR wire-mapper', 'Tag ports and cable runs'], ['upsell', 'Upsell spotter', 'Quote opportunities on site'], ['resources', 'Resources', 'Guides, diagrams, SOPs'], ['toolbox', 'Toolbox talk', 'Daily safety briefing'], ['skills', 'Skill tree', 'Certs, XP, leaderboard']]],
     ['Safety & system', [['safety', 'Lone-worker safety', 'Check-in timer and man-down'], ['messages', 'Message dispatch', 'Chat with the office'], ['sync', 'Sync queue', 'Offline capture status']]],
   ];
@@ -370,6 +389,10 @@ function TechMoreView({ setTab }) {
           </div>
         </div>
       ))}
+      <div style={{ background: 'var(--card)', border: '1px solid var(--border-subtle)', borderRadius: 18, overflow: 'hidden' }}>
+        {[['Profile', () => shieldToast(`${(window.__shieldUser || {}).name || 'You'} · ${(window.__shieldUser || {}).email || ''}`, 'info')], ['Manage team', () => setTab('messages')], ['Company details', () => { window.location.href = appUrls.portal || '#'; }], ['Preferences', () => { const m = document.querySelector('[data-tech-avatar-menu]'); if (m) m.click(); else shieldToast('Appearance is in the avatar menu, top right', 'info'); }]].map(([l, fn], i) => <button key={l} onClick={fn} style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', width: '100%', padding: '13px 16px', background: 'none', border: 'none', borderTop: i ? '1px solid var(--border-subtle)' : 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)', color: 'var(--text-high)', fontSize: 14.5, fontWeight: 600 }}>{l}<span style={{ color: 'var(--text-low)' }}>›</span></button>)}
+        <button onClick={() => window.__shieldAuth && window.__shieldAuth.signOut()} style={{ width: '100%', padding: '13px 16px', background: 'none', border: 'none', borderTop: '1px solid var(--border-subtle)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)', color: 'var(--status-critical)', fontSize: 14.5, fontWeight: 600 }}>Logout</button>
+      </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <a href={appUrls.portal || '#'} style={{ flex: 1, textAlign: 'center', padding: '12px', borderRadius: 14, border: '1px solid var(--border-subtle)', color: 'var(--brand)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>Owner portal →</a>
         <a href={appUrls.customer || '#'} style={{ flex: 1, textAlign: 'center', padding: '12px', borderRadius: 14, border: '1px solid var(--border-subtle)', color: 'var(--brand)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>Customer portal →</a>
@@ -523,4 +546,4 @@ function TfMoney({ job, woId, projectId }) {
   );
 }
 
-Object.assign(window, { TechHomeView, TechScheduleView, TechSearchView, TechMoreView, TechJobView, TfMap, woNotesStore, tfGeocode });
+Object.assign(window, { TechHomeView, TechScheduleView, TechSearchView, TechMoreView, TechJobView, TfMap, TfRequestSheet, tfOpenJob, woNotesStore, tfGeocode });

@@ -168,6 +168,43 @@ ShieldTech's own data and tools.
   funnel. All from merged invoices, QBO bills/purchases mirror, `techExpenseStore`,
   `mrrStore`, `projectStore`, `npsStore`, receipts inbox.
 
+### 2g. QuickBooks shell (portal) + Jobber feature parity (tech app)
+- **Portal** (`packages/shared/proto/screen-qbo-shell.jsx`, `QboFinanceScreen`; `FinanceScreen`
+  renders it and keeps the tabbed layout as `FinanceScreenTabs` fallback): QuickBooks
+  Online's chrome page for page — top bar (company, "Navigate or search…", + New, sync,
+  notifications → Feed, settings), left rail (Create, Bookmarks, Home, Feed, Reports, All
+  apps, pinned Accounting/Expenses/Sales, Customise), the ALL APPS tree (`QBO_APPS`:
+  Accounting → Bank transactions, Integration transactions, Receipts, Reconcile, Rules,
+  Chart of accounts, Recurring transactions, My accountant · Expenses & Bills → Expense
+  transactions, Suppliers, Bills · Sales & Get Paid → Overview, Sales transactions,
+  Invoices, Products & services · Customer Hub → Overview, Leads, Customers, Estimates,
+  Reviews · Team → Employees, Timesheets, Payroll · Tax · Marketing) and the Reports tree
+  (Standard, Custom, Management, Cash flow overview/planner). Page template `QboPage` +
+  `QboMoneyBar` (QBO's unpaid/paid segment bars) + `QboList` (checkbox column, sortable
+  headers, action links with ▾, totals row, pagination). New pages: Invoices with money
+  bars, Sales overview (quick actions · income over time), Sales transactions (invoices +
+  estimates + payments with filters), Customers (open balance, Receive payment / Create
+  invoice), Customer Hub overview, Suppliers (vendors + bills bars), Bills (For review /
+  Unpaid / Paid), Receipts (upload tiles, For review / Reviewed → `openQboNew('purchase')`),
+  Rules (`bankRuleStore` 'bankrules'), My accountant (invite via outbox), Management /
+  Custom reports, Feed, Advanced transactions search. Everything else re-hosts the existing
+  Finance components inside the same chrome. Bookmarks and the tree state persist in
+  localStorage.
+- **Tech app** (`packages/shared/proto/tech-jobber.jsx`): speed-dial **+** (Request, Task →
+  `punchStore`, Expense, Invoice, Quote, Job, Client → `customerStore` via `buildCustomer`),
+  `TjDocBuilder` (client, overview, intro, line items from `__shieldQBO.items` or a
+  fallback catalog, optional lines, discount %, tax %, deposit, due, client message,
+  contract, Review and Send → `addEstimate`/`addInvoice` + email + QBO push), `TjDocView`
+  (Quote: Approve & Schedule → creates a WO · Resend · Collect signature · Convert to
+  invoice · Mark declined · Archive; Invoice: Collect Payment → marks paid + `recordPaid` ·
+  Resend · Send pay link via Approvals · Void; Notes tab on `woNotesStore` `doc:`),
+  `TjDocList` (Quotes / Invoices with status filters), `TjRequestView` (requested WOs: Send
+  Booking Confirmation, Complete assessment, Convert to quote / job, Archive, Delete),
+  `TjBusinessHealth` (clients, quotes, jobs, invoices with 30-day deltas), `TjRecent`
+  (search chips + recently active). Email goes through `queueEmail` when loaded, else
+  `__shieldEmail` (`tjMail`). Wired in `apps/tech/src/main.jsx` as tabs quotes, invoices,
+  doc-view, new-quote, new-invoice, request, health with a `ctx` state.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 
