@@ -341,7 +341,7 @@ function SellBoardScreen() {
     );
 
   return (
-    <div data-screen-label="Bid Board" style={{ display: 'flex', height: 'calc(100vh - 76px)', margin: '-4px 0 0', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)' }}>
+    <div data-screen-label="Bid Board" style={{ display: 'flex', height: 'var(--uf-h, calc(100vh - 76px))', margin: 'var(--uf-m, -4px 0 0)', overflow: 'hidden', borderRadius: 'var(--uf-r, 8px)', border: 'var(--uf-b, 1px solid var(--border-subtle))', background: 'var(--canvas)' }}>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '12px 16px 0', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
@@ -501,7 +501,7 @@ function SellProposalsScreen() {
   const ToolC = window[(PROP_TOOLS.find(t => t.id === tool) || {}).C];
 
   return (
-    <div data-screen-label="Proposals" style={{ display: 'flex', height: 'calc(100vh - 76px)', margin: '-4px 0 0', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)' }}>
+    <div data-screen-label="Proposals" style={{ display: 'flex', height: 'var(--uf-h, calc(100vh - 76px))', margin: 'var(--uf-m, -4px 0 0)', overflow: 'hidden', borderRadius: 'var(--uf-r, 8px)', border: 'var(--uf-b, 1px solid var(--border-subtle))', background: 'var(--canvas)' }}>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '12px 16px 0', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>

@@ -541,6 +541,36 @@ ShieldTech's own data and tools.
   requisition approved; new contract → drawer → trend; Revenue Ops; BlueShield. No page
   errors.
 
+### 2r. Mobile portal — SELL / DELIVER / CARE / ADMIN / MONEY on the unified frames
+- One codebase for both form factors: the phone now renders the **same unified screens**
+  the desktop uses (no more parallel `MWorkOrdersView` / `MProjects` / `MHelpdesk` /
+  `MProposals` / `MPurchaseOrders` / `MPartsReq` / `MMRR` / `MDispatchView` …). The old
+  touch views stay in the bundle but are no longer routed for these ids.
+- `mobile-app.jsx`: `M_UNIFIED` maps ids → window component names (crm / autobid /
+  secret-weapon → `SellBoardScreen`; proposals; workorder / photos / punchlist; projects;
+  dispatch; calendar / copilot; customers-list / nps; helpdesk / incidents; messages;
+  employees / skills; users; hr; approvals / timesheets / payroll / expenses; documents;
+  portal-settings; revops; purchase-orders / parts-req / inventory; mrr / rr-builder;
+  plan-room). The branch sets `window.__hubScreenId` so a legacy id lands on the right
+  tab, wraps the screen in `.m-unified` with `--uf-h: 100%` / `--uf-m: 0` / `--uf-r: 0` /
+  `--uf-b: none`, and the content area gets `data-desk="unified"` (padding 0, overflow
+  hidden) so the frame fills the space between the top bar and the tab bar.
+- Every unified root (`DvFrame`, `CaEngine`, Bid Board, Proposals, Messages, Revenue Ops,
+  BlueShield, Calendar, Dispatch) now sizes from `--uf-h / --uf-m / --uf-r / --uf-b`
+  with the desktop values as defaults, so nothing changed on desktop.
+- Phone fit: `UcTile` has `.uc-tile` / `.uc-tile-v` hooks → `mobile.css` makes tiles 2-up and
+  compact; tabs scroll sideways; tables scroll inside their card; inputs are 16px (no
+  iOS zoom). Drawers were already full-screen on `useIsMobile(820)`.
+- Calendar on the phone: `DeliverCalendarScreen` swaps the drag-and-drop desktop grid for
+  the touch `MobileCalendar` (agenda / week / month, tap-to-create) inside the same frame;
+  the Scheduling Copilot tab is unchanged. Dispatch's live-map roster starts collapsed on
+  phones so the map is unobstructed.
+- Directory chips still deep-link (`navSubSet` → `st2:subnav` → the screen's tab).
+- Verified with Playwright at 390×844 (iPhone UA): all 25 routed ids render their frame
+  with no page errors and no horizontal overflow; new work order from the phone → drawer
+  opens full-screen → close → row re-opens it; menu › Incidents chip opens Help Desk on
+  the Incidents tab. All four apps build. Service worker cache `shieldtech-v25`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

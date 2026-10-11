@@ -47,7 +47,7 @@ function dvGeocodeWorkOrder(id, addr) {
 
 function DvFrame({ label, title, sub, right, tiles, tabs, tab, onTab, chips, children, drawer, isMobile }) {
   return (
-    <div data-screen-label={label} style={{ display: 'flex', height: 'calc(100vh - 76px)', margin: '-4px 0 0', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)' }}>
+    <div data-screen-label={label} style={{ display: 'flex', height: 'var(--uf-h, calc(100vh - 76px))', margin: 'var(--uf-m, -4px 0 0)', overflow: 'hidden', borderRadius: 'var(--uf-r, 8px)', border: 'var(--uf-b, 1px solid var(--border-subtle))', background: 'var(--canvas)' }}>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '12px 16px 0', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
@@ -452,14 +452,17 @@ function DvCopilot() {
 }
 function DeliverCalendarScreen() {
   const [tab, setTab] = useDvSub('calendar', DV_CAL_SUBS, 'calendar', { copilot: 'copilot' });
+  const isMobile = useIsMobile(820);
+  // Phones get the touch calendar (agenda / week / month, tap-to-create) inside the same frame.
+  const calendar = isMobile && window.MobileCalendar ? <div style={{ padding: '10px 0 0' }}><MobileCalendar onNav={(id) => window.__shieldNav && window.__shieldNav(id)} /></div> : (window.CalendarScreen ? <CalendarScreen /> : null);
   return (
-    <div data-screen-label="Calendar & Copilot" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', margin: '-4px 0 0', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)' }}>
+    <div data-screen-label="Calendar & Copilot" style={{ display: 'flex', flexDirection: 'column', height: 'var(--uf-h, calc(100vh - 76px))', margin: 'var(--uf-m, -4px 0 0)', overflow: 'hidden', borderRadius: 'var(--uf-r, 8px)', border: 'var(--uf-b, 1px solid var(--border-subtle))', background: 'var(--canvas)' }}>
       <div style={{ padding: '10px 16px 0', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
         <div><div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-high)' }}>Calendar & Copilot</div></div>
         <div style={{ marginLeft: 12 }}><UcTabs tabs={DV_CAL_SUBS} value={tab} onChange={setTab} /></div>
       </div>
-      <div style={{ flex: 1, minHeight: 0, overflow: tab === 'copilot' ? 'auto' : 'hidden', padding: '0 16px 12px', '--cal-h': '100%' }}>
-        {tab === 'copilot' ? <DvCopilot /> : (window.CalendarScreen ? <CalendarScreen /> : null)}
+      <div style={{ flex: 1, minHeight: 0, overflow: tab === 'copilot' || isMobile ? 'auto' : 'hidden', padding: '0 16px 12px', '--cal-h': '100%' }}>
+        {tab === 'copilot' ? <DvCopilot /> : calendar}
       </div>
     </div>
   );
@@ -511,7 +514,7 @@ function DeliverDispatchScreen() {
   const techs = Object.values((fleet && fleet.techs) || {});
   const onDuty = techs.filter(t => t.onDuty).length;
   return (
-    <div data-screen-label="Dispatch & Fleet" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', margin: '-4px 0 0', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)' }}>
+    <div data-screen-label="Dispatch & Fleet" style={{ display: 'flex', flexDirection: 'column', height: 'var(--uf-h, calc(100vh - 76px))', margin: 'var(--uf-m, -4px 0 0)', overflow: 'hidden', borderRadius: 'var(--uf-r, 8px)', border: 'var(--uf-b, 1px solid var(--border-subtle))', background: 'var(--canvas)' }}>
       <div style={{ padding: '10px 16px 0', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <div><div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-high)' }}>Dispatch & Fleet</div><div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{onDuty} on duty · {techs.length} sharing location · live phone GPS</div></div>
         <div style={{ marginLeft: 12 }}><UcTabs tabs={DV_DSP_SUBS} value={tab} onChange={setTab} /></div>

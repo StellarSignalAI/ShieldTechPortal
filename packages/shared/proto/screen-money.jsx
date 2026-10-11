@@ -161,7 +161,7 @@ function MoneyPurchasingScreen() {
   const [pos, setPos] = useShieldStore(poStore);
   const [reqs] = useShieldStore(partsReqStore);
   const isMobile = useIsMobile(820);
-  const [tab, setTab] = useDvSub('purchase-orders', MN_PUR_SUBS, 'pos', { 'parts-req': 'req' });
+  const [tab, setTab] = useDvSub('purchase-orders', MN_PUR_SUBS, 'pos', { 'parts-req': 'req', inventory: 'inventory' });
   const [q, setQ] = React.useState('');
   const [chip, setChip] = React.useState('all');
   const [selPo, setSelPo] = React.useState(null);
@@ -317,7 +317,7 @@ function MoneyRecurringScreen() {
 /* ═══════════════════ REVENUE OPS + BLUESHIELD ═══════════════════ */
 function MoneyRevOpsScreen() {
   return (
-    <div data-screen-label="Revenue Ops" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', margin: '-4px 0 0', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)' }}>
+    <div data-screen-label="Revenue Ops" style={{ display: 'flex', flexDirection: 'column', height: 'var(--uf-h, calc(100vh - 76px))', margin: 'var(--uf-m, -4px 0 0)', overflow: 'hidden', borderRadius: 'var(--uf-r, 8px)', border: 'var(--uf-b, 1px solid var(--border-subtle))', background: 'var(--canvas)' }}>
       <div style={{ padding: '12px 16px 8px', flexShrink: 0 }}><div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-high)' }}>Revenue Ops</div><div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>Live cash, AR, AP and recurring revenue from QuickBooks and the contract book</div></div>
       <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '4px 16px 16px' }}>{window.RevOpsScreen ? <RevOpsScreen /> : null}</div>
     </div>
@@ -325,7 +325,7 @@ function MoneyRevOpsScreen() {
 }
 function MoneyBlueShieldScreen() {
   return (
-    <div data-screen-label="BlueShield Studio" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', margin: '-4px 0 0', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)' }}>
+    <div data-screen-label="BlueShield Studio" style={{ display: 'flex', flexDirection: 'column', height: 'var(--uf-h, calc(100vh - 76px))', margin: 'var(--uf-m, -4px 0 0)', overflow: 'hidden', borderRadius: 'var(--uf-r, 8px)', border: 'var(--uf-b, 1px solid var(--border-subtle))', background: 'var(--canvas)' }}>
       <div style={{ padding: '10px 16px 8px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12 }}><div><div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-high)' }}>BlueShield Studio</div><div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>Plans, takeoffs and markups — signed in with your ShieldTech account</div></div><div style={{ marginLeft: 'auto' }}><UcBtn kind="ghost" small onClick={() => window.open('/blueshield/app.html', '_blank')}>Open full screen</UcBtn></div></div>
       <div style={{ flex: 1, minHeight: 0, padding: '0 16px 12px' }}>{window.PlanRoomScreen ? <PlanRoomScreen embedded /> : null}</div>
     </div>

@@ -98,6 +98,30 @@ const M_SCREEN_MAP = {
   autobid: () => <AutoBidScreen />,
 };
 
+/* Unified SELL / DELIVER / CARE / ADMIN / MONEY screens — the same UniFi-pattern
+   frames the desktop uses, sized to the phone (frame fills the content area,
+   drawers go full-screen, tabs render inline). One codebase, one truth. */
+const M_UNIFIED = {
+  crm: 'SellBoardScreen', autobid: 'SellBoardScreen', 'secret-weapon': 'SellBoardScreen',
+  proposals: 'SellProposalsScreen',
+  workorder: 'DeliverWorkOrdersScreen', photos: 'DeliverWorkOrdersScreen', punchlist: 'DeliverWorkOrdersScreen',
+  projects: 'DeliverProjectsScreen',
+  dispatch: 'DeliverDispatchScreen',
+  calendar: 'DeliverCalendarScreen', copilot: 'DeliverCalendarScreen',
+  'customers-list': 'CareCustomersScreen', nps: 'CareCustomersScreen',
+  helpdesk: 'CareHelpdeskScreen', incidents: 'CareHelpdeskScreen',
+  messages: 'CareMessagesScreen',
+  employees: 'AdminTeamScreen', skills: 'AdminTeamScreen',
+  users: 'AdminUsersScreen', hr: 'AdminHRScreen',
+  approvals: 'AdminApprovalsScreen', timesheets: 'AdminApprovalsScreen', payroll: 'AdminApprovalsScreen', expenses: 'AdminApprovalsScreen',
+  documents: 'AdminDocumentsScreen', 'portal-settings': 'AdminSettingsScreen',
+  revops: 'MoneyRevOpsScreen',
+  'purchase-orders': 'MoneyPurchasingScreen', 'parts-req': 'MoneyPurchasingScreen', inventory: 'MoneyPurchasingScreen',
+  mrr: 'MoneyRecurringScreen', 'rr-builder': 'MoneyRecurringScreen',
+  'plan-room': 'MoneyBlueShieldScreen',
+};
+const mUnified = (id) => (M_UNIFIED[id] && window[M_UNIFIED[id]]) || null;
+
 /* Ids resolved by purpose-built touch-native views (branches below). */
 const M_NATIVE_IDS = ['m-more','calendar','login','helpdesk','incidents','quote-cash','purchase-orders','parts-req','mrr','nps','skills','knowledge','warranty','photos','punchlist','subcontractors','projects','proposals','finance','certs','tools','costing','audit','reports','contracts','sla','commissions','compliance','survey-ai','sitescan','fleet'];
 
@@ -294,7 +318,13 @@ function MobilePortalApp() {
   const cancelLP = () => { clearTimeout(lpTimer.current); };
 
   let content;
+  const Unified = mUnified(screen);
   if (screen === 'm-more') content = <MobileDirectory onNav={nav} />;
+  else if (Unified) {
+    // Legacy id → the unified screen opens on the matching tab (same hand-off the desktop uses).
+    window.__hubScreenId = screen;
+    content = <div className="m-unified" style={{ height: '100%', '--uf-h': '100%', '--uf-m': '0', '--uf-r': '0', '--uf-b': 'none' }}><Unified key={M_UNIFIED[screen]} /></div>;
+  }
   else if (screen === 'calendar') content = <MobileCalendar onNav={nav} />;
   else if (screen === 'cameras' || screen === 'topology' || screen === 'warroom' || screen === 'floorplan' || screen === 'anomaly' || screen === 'assets') content = window.MobileOS ? <MobileOS onNav={nav} /> : <MonitoringConsole />;
   else if (screen === 'helpdesk') content = <MHelpdesk onNav={nav} />;
@@ -361,7 +391,7 @@ function MobilePortalApp() {
       </header>
 
       {/* Content */}
-      <div className="m-screen" data-desk={!(M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen] || !!(window.M_OPS5 && window.M_OPS5[screen]))} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
+      <div className="m-screen" data-desk={Unified ? 'unified' : !(M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen] || !!(window.M_OPS5 && window.M_OPS5[screen]))} style={Unified ? { flex: 1, minHeight: 0, overflow: 'hidden', padding: 0 } : { flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
         {content}
       </div>
 

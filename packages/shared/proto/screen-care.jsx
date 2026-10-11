@@ -219,7 +219,7 @@ function CareHelpdeskScreen() {
 /* ═══════════════════ MESSAGES ═══════════════════ */
 function CareMessagesScreen() {
   return (
-    <div data-screen-label="Messages" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', margin: '-4px 0 0', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)' }}>
+    <div data-screen-label="Messages" style={{ display: 'flex', flexDirection: 'column', height: 'var(--uf-h, calc(100vh - 76px))', margin: 'var(--uf-m, -4px 0 0)', overflow: 'hidden', borderRadius: 'var(--uf-r, 8px)', border: 'var(--uf-b, 1px solid var(--border-subtle))', background: 'var(--canvas)' }}>
       <div style={{ padding: '12px 16px 8px', flexShrink: 0 }}><div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-high)' }}>Messages</div><div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>Field ⇄ office conversations, live</div></div>
       <div style={{ flex: 1, minHeight: 0, padding: '0 16px 12px', '--msg-h': '100%' }}>{window.PortalMessagesScreen ? <PortalMessagesScreen /> : null}</div>
     </div>
@@ -230,7 +230,7 @@ function CareMessagesScreen() {
 function CaEngine({ label, title, sub, subs, screen, fallback, hubMap, render, right }) {
   const [tab, setTab] = useDvSub(screen, subs, fallback, hubMap);
   return (
-    <div data-screen-label={label} style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', margin: '-4px 0 0', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)' }}>
+    <div data-screen-label={label} style={{ display: 'flex', flexDirection: 'column', height: 'var(--uf-h, calc(100vh - 76px))', margin: 'var(--uf-m, -4px 0 0)', overflow: 'hidden', borderRadius: 'var(--uf-r, 8px)', border: 'var(--uf-b, 1px solid var(--border-subtle))', background: 'var(--canvas)' }}>
       <div style={{ padding: '10px 16px 0', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <div><div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-high)' }}>{title}</div>{sub && <div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{sub}</div>}</div>
         {subs.length > 1 && <div style={{ marginLeft: 12 }}><UcTabs tabs={subs} value={tab} onChange={setTab} /></div>}

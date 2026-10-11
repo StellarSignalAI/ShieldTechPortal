@@ -194,9 +194,9 @@ function UcCard({ title, action, children, style, pad = 16 }) {
 function UcTile({ label, value, sub, tone }) {
   const col = tone === 'ok' ? 'var(--status-ok)' : tone === 'warn' ? 'var(--status-warn)' : tone === 'crit' ? 'var(--status-critical)' : 'var(--text-high)';
   return (
-    <div style={{ flex: '1 1 0', minWidth: 150, background: 'var(--card)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '14px 16px' }}>
+    <div className="uc-tile" style={{ flex: '1 1 0', minWidth: 150, background: 'var(--card)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '14px 16px' }}>
       <div style={{ fontSize: 11.5, color: 'var(--text-mid)', fontWeight: 500 }}>{label}</div>
-      <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', color: col, marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
+      <div className="uc-tile-v" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', color: col, marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 2 }}>{sub}</div>}
     </div>
   );

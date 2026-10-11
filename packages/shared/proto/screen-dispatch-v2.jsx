@@ -147,7 +147,8 @@ function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMe
   // Collapsible roster so the map is fully visible — especially on mobile where
   // the panel would otherwise cover most of the screen. Opening a tech's detail
   // is what surfaces their projects + options.
-  const [rosterOpen, setRosterOpen] = React.useState(true);
+  // Phones start with the roster collapsed so the map stays unobstructed.
+  const [rosterOpen, setRosterOpen] = React.useState(() => window.innerWidth > 820);
   return (
     <div className="glass" style={{ position: 'relative', height: '100%', minHeight: 340, overflow: 'hidden', borderRadius: 12 }}>
       {/* Real map fills the whole surface; roster + legend float on top */}
