@@ -38,10 +38,10 @@ const SCREEN_LIST = [
 const SCREEN_COMPONENTS = {
   'shieldtech-ai': 'ShieldAIScreen',
   /* Sell */
-  crm: 'SellHubScreen',
-  autobid: 'SellHubScreen',
-  'secret-weapon': 'SellHubScreen',
-  proposals: 'ProposalScreen',
+  crm: 'SellBoardScreen',
+  autobid: 'SellBoardScreen',
+  'secret-weapon': 'SellBoardScreen',
+  proposals: 'SellProposalsScreen',
   studio: 'StudioScreen',
   'survey-cloud': 'SurveyCloudScreen',
   /* Deliver */

@@ -129,3 +129,4 @@ import './proto/screen-cockpit-preview.jsx';
 import './proto/screen-messages.jsx';
 import './proto/screen-unifi-console.jsx';
 import './proto/screen-hubs.jsx';
+import './proto/screen-sell.jsx';

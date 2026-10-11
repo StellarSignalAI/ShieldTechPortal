@@ -415,6 +415,44 @@ ShieldTech's own data and tools.
 - Verified with Playwright (desktop home / OS / Money / Alerts, mobile home) in both
   appearances; no page errors.
 
+### 2n. SELL pass — Bid Board, Proposals, Design Studio
+- `packages/shared/proto/screen-sell.jsx` (loaded after screen-hubs):
+  - **`SellBoardScreen`** (`crm` / `autobid` / `secret-weapon`): opportunities are now
+    persisted records in `oppStore` (`st2_opps`, synced) and mirrored into the Secret
+    Weapon engine's `window.SW.OPPS` (`sellSyncOpps`) so the guided Bid Room, Auto-Bid
+    and the AI lead feed see the same bids. UniFi layout: tiles (in flight / due this
+    week / sent out / won / AI leads), tabs Board · List · AI leads · Auto-Bid (sidebar
+    children, `#/crm/<sub>`), system chips, `SellOppForm` (title, buyer with customer
+    datalist, value, due, system chips, source, site, POC, site walk, notes), properties
+    drawer (phase select with per-phase progress, details, hand-offs). Actions: Open bid
+    room, move phase / won / lost / no-go (`sellSetPhase` writes the bid-room state),
+    **Estimate → Proposal** (`sellOppToProposal`: the bid estimate's lines become a
+    proposal pricing block with tier margin applied; links `proposalId`), **Create
+    customer** (`sellEnsureCustomer`), **Schedule site walk** (requested work order
+    `requestedVia:'bid-board'` + `siteWalk` on the opp), Edit, Delete. Phone-width:
+    drawer becomes a full-screen sheet.
+  - **`SellProposalsScreen`** (`proposals`): tiles, tabs Proposals · Calculators
+    (`#/proposals/all|tools`), status chips, search, UniFi table, drawer (open builder,
+    preview as client, send with an email form → `__shieldAcceptance`, Accept → Project,
+    Mark declined with reason, PDF, Duplicate, Delete). **+ New proposal** is a real form
+    (customer select + new-customer name, proposal type, template or blank) and opens the
+    block builder (`ProposalBuilderView` from screen-proposal-v2 is reused). The Bid
+    Board and Design Studio hand a new id over via `window.__sellOpenProposal`.
+- `screen-studio.jsx`: the working design persists (`studioDesignStore`) and survives a
+  reload; named designs save/open from the toolbar (`studioDesignsStore`); demo devices,
+  demo walls and the fake room labels are gone (empty-state hint instead); the Drawing
+  Builder saves real geometry (`studioDrawingsStore`), reloads a saved drawing and **Use
+  as plan** puts the walls on the Plan View canvas; **Export → Proposal** writes a real
+  proposal (BOM + labor + cable as pricing lines, scope from device categories) and opens
+  the builder. Catalog category colours use the discipline tokens.
+- Shell: `crm` and `proposals` have sidebar children; header titles "Bid Board" /
+  "Proposals"; desktop maps the three SELL ids to the new screens; mobile `crm` uses
+  `SellBoardScreen` (old `BidBoardScreen` / `SellHubScreen` stay as fallbacks).
+- Verified with Playwright: add opportunity → drawer → move to Sent out → List → Estimate
+  → Proposal opens the builder with 7 priced lines → back to Proposals list + drawer →
+  new-proposal form → Calculators tab → Studio: place device, Save, reload keeps it,
+  Export → Proposal; phone-width board + sheet. No page errors.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

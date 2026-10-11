@@ -10,10 +10,16 @@ const NAV_GROUPS = [
   { id: 'shieldtech-ai', icon: 'hermes', label: 'ShieldTech AI', useSvg: true }]
 },
 { id: 'sell', label: 'SELL', collapsible: true, items: [
-  { id: 'crm', icon: 'pipeline', label: 'Bid Board', useSvg: true },
+  { id: 'crm', icon: 'pipeline', label: 'Bid Board', useSvg: true, children: [
+    { sub: 'board', label: 'Board' },
+    { sub: 'list', label: 'All bids' },
+    { sub: 'leads', label: 'AI leads' },
+    { sub: 'autobid', label: 'Auto-Bid' }] },
   { id: 'autobid', icon: 'proposals', label: 'Auto-Bid', useSvg: true, mobileOnly: true },
   { id: 'secret-weapon', icon: 'anomaly', label: 'Secret Weapon', useSvg: true, mobileOnly: true },
-  { id: 'proposals', icon: 'proposals', label: 'Proposals', useSvg: true },
+  { id: 'proposals', icon: 'proposals', label: 'Proposals', useSvg: true, children: [
+    { sub: 'all', label: 'Proposals' },
+    { sub: 'tools', label: 'Calculators' }] },
   { id: 'studio', icon: 'topology', label: 'Design Studio', useSvg: true },
   { id: 'survey-cloud', icon: 'floorplan', label: 'Survey Cloud', useSvg: true, mobileOnly: true }]
 },
@@ -614,7 +620,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
   const titles = {
     dashboard: 'Mission Control', customer: 'Customer Portal',
     assets: 'Asset Management', 'shieldtech-ai': 'ShieldTech AI',
-    crm: 'Leads', studio: 'Design Studio',
+    crm: 'Bid Board', studio: 'Design Studio',
     'product-library': 'Product Library', 'service-plans': 'Service Plans',
     'custom-dashboard': 'My Dashboard',
     'customers-list': 'Customers',
@@ -628,7 +634,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     expenses: 'Expense Approval', timesheets: 'Timesheet Approval', payroll: 'Payroll',
     hr: 'HR Center',
     projects: 'Projects', 'plan-room': 'BlueShield Studio', inventory: 'Inventory',
-    reports: 'Reports & BI', proposals: 'Proposal Builder',
+    reports: 'Reports & BI', proposals: 'Proposals',
     employees: 'Team Management', contracts: 'Contracts', sla: 'SLA Dashboard',
     integrations: 'Integrations', marketing: 'Marketing',
     documents: 'Documents & Attachments', 'portal-settings': 'Portal Settings',

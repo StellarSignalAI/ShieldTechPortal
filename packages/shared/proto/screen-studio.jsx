@@ -1,14 +1,30 @@
-/* Design Studio V2 — D-Tools Killer: Drawing Builder, Brand Catalog, Customer Select, BOM */
+/* Design Studio V2 — D-Tools Killer: Drawing Builder, Brand Catalog, Customer Select, BOM
+
+   The working design (customer, project, placed devices, interconnects, plan
+   lines) persists in studioDesignStore and survives reloads; named designs are
+   saved to studioDesignsStore and reopen from the toolbar. Export → Proposal
+   writes a real proposal record whose pricing block is the BOM + labor + cable. */
+
+const studioDesignStore = createShieldStore('studio-design', null);
+const studioDesignsStore = createShieldStore('studio-designs', []);
+const studioDrawingsStore = createShieldStore('studio-drawings', []);
+function studioSerialize(d) {
+  return { customer: d.customer || '', projectName: d.projectName || '', placed: (d.placedDevices || []).map(p => ({ x: p.x, y: p.y, tag: p.tag, rotation: p.rotation || 0, deviceId: p.device && p.device.id })), connections: d.connections || [], planLines: d.planLines || null, planTexts: d.planTexts || null, savedAt: Date.now() };
+}
+function studioRestorePlaced(saved, catalog) {
+  return ((saved && saved.placed) || []).map(p => { const device = catalog.find(c => c.id === p.deviceId); return device ? { x: p.x, y: p.y, tag: p.tag, rotation: p.rotation || 0, device } : null; }).filter(Boolean);
+}
 
 function StudioScreen({ onExportToProposal }) {
-  const [customer, setCustomer] = React.useState('');
-  const [projectName, setProjectName] = React.useState('');
+  const savedDesign = React.useMemo(() => studioDesignStore.get() || null, []);
+  const [customer, setCustomer] = React.useState((savedDesign && savedDesign.customer) || '');
+  const [projectName, setProjectName] = React.useState((savedDesign && savedDesign.projectName) || '');
   const [activeTab, setActiveTab] = React.useState('plan');
-  const [connections, setConnections] = React.useState([
-  { id: 'c1', from: 0, to: 7, cable: 'Cat6A', color: 'var(--brand)', length: 60 },
-  { id: 'c2', from: 1, to: 7, cable: 'Cat6A', color: 'var(--brand)', length: 45 },
-  { id: 'c3', from: 7, to: 8, cable: 'Cat6A', color: 'var(--brand)', length: 10 }]
-  );
+  const [connections, setConnections] = React.useState((savedDesign && savedDesign.connections) || []);
+  const [planLines, setPlanLines] = React.useState((savedDesign && savedDesign.planLines) || null);
+  const [planTexts, setPlanTexts] = React.useState((savedDesign && savedDesign.planTexts) || null);
+  const [designs] = useShieldStore(studioDesignsStore);
+  const [designId, setDesignId] = React.useState((savedDesign && savedDesign.designId) || null);
   const [activeTool, setActiveTool] = React.useState('select');
   const [activeDiscipline, setActiveDiscipline] = React.useState('Cameras');
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -18,16 +34,11 @@ function StudioScreen({ onExportToProposal }) {
   const [selectedDevice, setSelectedDevice] = React.useState(null);
   const [deviceDetailOpen, setDeviceDetailOpen] = React.useState(null);
   const [drawingBuilderOpen, setDrawingBuilderOpen] = React.useState(false);
-  const [savedDrawings, setSavedDrawings] = React.useState([]);
+  const [savedDrawings, setSavedDrawings] = useShieldStore(studioDrawingsStore);
   const [ssInbox] = useShieldStore(studioInboxStore);
-  const allDrawings = [...ssInbox.map((b) => ({ id: b.id, name: b.name, date: b.date, customer: b.customer, sitescan: true })), ...savedDrawings];
+  const allDrawings = [...ssInbox.map((b) => ({ id: b.id, name: b.name, date: b.date, customer: b.customer, sitescan: true })), ...(savedDrawings || [])];
   const [toast, setToast] = React.useState(null);
   const showToast = (m) => {setToast(m);setTimeout(() => setToast(null), 3000);};
-  const exportToProposal = () => {
-    showToast('Design + BOM pushed to Proposal Builder → opening proposal…');
-    if (onExportToProposal) { onExportToProposal(); return; }
-    if (window.__shieldNav) setTimeout(() => window.__shieldNav('proposals'), 700);
-  };
 
   /* ── Brand / Device Catalog ── */
   const brands = [
@@ -84,18 +95,47 @@ function StudioScreen({ onExportToProposal }) {
   { id: 'LV-PP48', name: 'Leviton 48-port Patch Panel', brand: 'leviton', cat: 'Cabling', subcat: 'Patch Panel', mp: '—', features: 'Cat6A, 2U, angled', msrp: 180, cost: 130, margin: 28, poe: 0, sku: 'CBL-LV-PP48', inStock: 6, disc: 'Cabling' }];
 
 
-  /* ── Placed Devices on Canvas ── */
-  const [placedDevices, setPlacedDevices] = React.useState([
-  { x: 120, y: 80, device: deviceCatalog[0], tag: 'CAM-01' },
-  { x: 340, y: 80, device: deviceCatalog[0], tag: 'CAM-02' },
-  { x: 520, y: 180, device: deviceCatalog[4], tag: 'CAM-03' },
-  { x: 120, y: 280, device: deviceCatalog[2], tag: 'CAM-04' },
-  { x: 60, y: 180, device: deviceCatalog[12], tag: 'ACR-01' },
-  { x: 340, y: 280, device: deviceCatalog[12], tag: 'ACR-02' },
-  { x: 520, y: 80, device: deviceCatalog[18], tag: 'PIR-01' },
-  { x: 280, y: 180, device: deviceCatalog[10], tag: 'NVR-01' },
-  { x: 200, y: 180, device: deviceCatalog[20], tag: 'SW-01' }]
-  );
+  /* ── Placed Devices on Canvas (restored from the persisted working design) ── */
+  const [placedDevices, setPlacedDevices] = React.useState(() => studioRestorePlaced(savedDesign, deviceCatalog));
+
+  /* Persist the working design on every change so a reload never loses it. */
+  React.useEffect(() => {
+    studioDesignStore.set({ ...studioSerialize({ customer, projectName, placedDevices, connections, planLines, planTexts }), designId });
+  }, [customer, projectName, placedDevices, connections, planLines, planTexts, designId]);
+
+  const loadDesign = (d) => {
+    setCustomer(d.customer || ''); setProjectName(d.projectName || ''); setConnections(d.connections || []);
+    setPlanLines(d.planLines || null); setPlanTexts(d.planTexts || null);
+    setPlacedDevices(studioRestorePlaced(d, deviceCatalog)); setDesignId(d.id || null);
+  };
+  const newDesign = () => { loadDesign({ id: null }); setPlanBg(null); showToast('New design'); };
+  const saveDesign = () => {
+    const name = projectName || `${customer ? customer + ' — ' : ''}Design ${(designs || []).length + 1}`;
+    const id = designId || ('design-' + Date.now());
+    const rec = { ...studioSerialize({ customer, projectName: name, placedDevices, connections, planLines, planTexts }), id, name, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) };
+    studioDesignsStore.set(prev => { const list = prev || []; return list.some(x => x.id === id) ? list.map(x => x.id === id ? rec : x) : [rec, ...list]; });
+    setDesignId(id); setProjectName(name); showToast(`“${name}” saved`);
+  };
+  const exportToProposal = () => {
+    if (!placedDevices.length) { showToast('Place devices on the plan first — nothing to export'); return; }
+    const lines = [
+      ...bomList.map(item => ({ desc: `${item.device.name} (${item.device.sku})`, qty: item.qty, rate: item.device.msrp })),
+      { desc: `Installation and commissioning (${placedDevices.length} devices)`, qty: 1, rate: laborEstimate },
+      ...(cableCost ? [{ desc: `Cabling — ${cableFt} ft interconnect, installed`, qty: 1, rate: cableCost }] : []),
+    ];
+    const cust = customer || 'New Client';
+    const title = projectName || 'Design Studio Proposal';
+    const blocks = defaultProposalBlocks(cust, title);
+    const pricing = blocks.find(b => b.type === 'pricing'); if (pricing) pricing.content.items = lines;
+    const cover = blocks.find(b => b.type === 'cover'); if (cover) cover.content.date = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    const scope = blocks.find(b => b.type === 'scope'); if (scope) scope.content.items = [...new Set(placedDevices.map(p => p.device.cat))].map(c => `Furnish, install and commission the ${c.toLowerCase()} shown on the design (${placedDevices.filter(p => p.device.cat === c).length} devices)`);
+    const rec = { id: nextProposalId(), customer: cust, title, status: 'draft', created: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), viewed: false, viewTime: '—', designId, blocks };
+    proposalStore.set(prev => [rec, ...(prev || [])]);
+    showToast(`${rec.id} drafted from this design — opening the builder…`);
+    window.__sellOpenProposal = rec.id;
+    if (onExportToProposal) { onExportToProposal(rec); return; }
+    if (window.__shieldNav) setTimeout(() => window.__shieldNav('proposals'), 500);
+  };
 
   const [dragPlaceDevice, setDragPlaceDevice] = React.useState(null);
 
@@ -178,12 +218,35 @@ function StudioScreen({ onExportToProposal }) {
   const catIcons = { 'Cameras': 'cam-dome', 'NVR': 'nvr-box', 'Access': 'reader', 'Intrusion': 'alarm-panel', 'Network': 'switch-ports', 'Power': 'ups', 'Cabling': 'cable', 'Fire': 'fire-panel' };
   const subcatIcons = { 'Dome': 'cam-dome', 'Bullet': 'cam-bullet', 'PTZ': 'cam-ptz', 'Mini Dome': 'cam-mini', 'Turret': 'cam-turret', 'Fisheye': 'cam-fisheye', 'Reader': 'reader', 'Controller': 'controller', 'Switch': 'switch-ports', 'Access Point': 'ap-ceiling', 'UPS': 'ups', 'Power Supply': 'poe', 'Motion Sensor': 'motion-sensor', 'Panel': 'alarm-panel', 'Door Lock': 'door-strike', '8ch Recorder': 'nvr-box', '32ch Recorder': 'nvr-box', '64ch Recorder': 'nvr-box' };
 
-  const catColors = { 'Cameras': 'var(--brand)', 'NVR': 'var(--status-ok)', 'Access': 'var(--accent-2)', 'Intrusion': 'var(--status-warn)', 'Network': 'var(--status-ok)', 'Power': '#f59e0b', 'Cabling': 'var(--text-low)', 'Fire': 'var(--status-critical)' };
+  const catColors = { 'Cameras': 'var(--disc-cctv)', 'NVR': 'var(--brand)', 'Access': 'var(--disc-access)', 'Intrusion': 'var(--disc-alarm)', 'Network': 'var(--brand)', 'Power': 'var(--status-warn)', 'Cabling': 'var(--disc-cabling)', 'Fire': 'var(--disc-fire)' };
   window.__studioSubcatIcons = subcatIcons;
   const studioTabs = [{ id: 'plan', l: 'Plan View' }, { id: 'interconnect', l: 'Interconnect' }, { id: 'rack', l: 'Rack Elevation' }, { id: 'photo', l: 'Image Quote' }];
 
+  const UBtn = window.UcBtn || (({ children, onClick }) => <button onClick={onClick}>{children}</button>);
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `${leftCollapsed ? '0px' : '260px'} 1fr 320px`, gap: 0, height: 'calc(100vh - 100px)', overflow: 'hidden', transition: 'grid-template-columns 0.25s ease' }}>
+    <div data-screen-label="Design Studio" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', margin: '-4px 0 0', overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)' }}>
+    {/* ─── Toolbar: design name, saved designs, surface tabs, export ─── */}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--card)', flexShrink: 0, flexWrap: 'wrap' }}>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-high)', whiteSpace: 'nowrap' }}>Design Studio</div>
+        <div style={{ fontSize: 11, color: 'var(--text-mid)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 260 }}>{projectName || 'Untitled design'}{customer ? ` · ${customer}` : ''}{designId ? '' : ' · unsaved'}</div>
+      </div>
+      <div style={{ display: 'flex', gap: 2, marginLeft: 6 }}>
+        {studioTabs.map((t) =>
+          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: '7px 12px', fontSize: 12.5, fontWeight: activeTab === t.id ? 600 : 500, background: 'none', border: 'none', borderBottom: activeTab === t.id ? '2px solid var(--brand)' : '2px solid transparent', color: activeTab === t.id ? 'var(--text-high)' : 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>{t.l}</button>
+        )}
+      </div>
+      <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+        <select value="" onChange={(e) => { const d = (designs || []).find(x => x.id === e.target.value); if (d) { loadDesign(d); setPlanBg(null); showToast(`Opened “${d.name}”`); } }} style={{ padding: '6px 8px', background: 'var(--canvas)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer', maxWidth: 200 }}>
+          <option value="">{(designs || []).length ? `Open design… (${designs.length})` : 'No saved designs'}</option>
+          {(designs || []).map(d => <option key={d.id} value={d.id}>{d.name} · {d.date}</option>)}
+        </select>
+        <UBtn kind="ghost" small onClick={newDesign}>New</UBtn>
+        <UBtn kind="soft" small onClick={saveDesign}>{designId ? 'Save' : 'Save design'}</UBtn>
+        <UBtn small onClick={exportToProposal}>Export → Proposal</UBtn>
+      </div>
+    </div>
+    <div style={{ display: 'grid', gridTemplateColumns: `${leftCollapsed ? '0px' : '260px'} 1fr 320px`, gap: 0, flex: 1, minHeight: 0, overflow: 'hidden', transition: 'grid-template-columns 0.25s ease' }}>
 
       {/* ─── LEFT: Device Catalog + Brand Browser ─── */}
       <div style={{ background: 'var(--card)', borderRight: leftCollapsed ? 'none' : '1px solid var(--border-subtle)', overflow: 'hidden', display: 'flex', flexDirection: 'column', opacity: leftCollapsed ? 0 : 1, transition: 'opacity 0.15s ease', pointerEvents: leftCollapsed ? 'none' : 'auto' }}>
@@ -269,13 +332,6 @@ function StudioScreen({ onExportToProposal }) {
       {/* ─── CENTER: Tabbed design surface ─── */}
       <div style={{ background: 'rgba(var(--canvas-rgb),0.6)', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-        {/* Design surface tab bar */}
-        <div style={{ display: 'flex', gap: 2, padding: '6px 10px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
-          {studioTabs.map((t) =>
-          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ padding: '5px 14px', fontSize: 11, fontWeight: activeTab === t.id ? 600 : 400, borderRadius: 6, background: activeTab === t.id ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', border: `1px solid ${activeTab === t.id ? 'var(--brand)' : 'transparent'}`, color: activeTab === t.id ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.l}</button>
-          )}
-        </div>
-
         {activeTab === 'interconnect' && <InterconnectCanvas placedDevices={placedDevices} connections={connections} setConnections={setConnections} brands={brands} catColors={catColors} showToast={showToast} setPlacedDevices={setPlacedDevices} deviceCatalog={deviceCatalog} onExportToProposal={exportToProposal} />}
         {activeTab === 'rack' && <RackElevationView placedDevices={placedDevices} catColors={catColors} showToast={showToast} setPlacedDevices={setPlacedDevices} deviceCatalog={deviceCatalog} brands={brands} onExportToProposal={exportToProposal} />}
         {activeTab === 'photo' && <PhotoQuoteCanvas placedDevices={placedDevices} setPlacedDevices={setPlacedDevices} dragPlaceDevice={dragPlaceDevice} setDragPlaceDevice={setDragPlaceDevice} catColors={catColors} showToast={showToast} onExportToProposal={exportToProposal} />}
@@ -352,20 +408,11 @@ function StudioScreen({ onExportToProposal }) {
 
           {/* Zoom + pan wrapper */}
           <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
-          {/* Walls */}
-          <g transform="translate(40, 40)" stroke="rgba(159,178,200,0.3)" strokeWidth="2" fill="none">
-            <rect x="0" y="0" width="560" height="320" rx="2" />
-            <line x1="200" y1="0" x2="200" y2="120" />
-            <line x1="200" y1="160" x2="200" y2="320" />
-            <line x1="400" y1="0" x2="400" y2="320" />
-            <line x1="0" y1="160" x2="200" y2="160" />
-            <line x1="400" y1="160" x2="560" y2="160" />
-            <text x="90" y="80" fill="rgba(159,178,200,0.15)" fontSize="12" fontFamily="var(--font-body)" textAnchor="middle">Reception</text>
-            <text x="90" y="240" fill="rgba(159,178,200,0.15)" fontSize="12" fontFamily="var(--font-body)" textAnchor="middle">Office A</text>
-            <text x="300" y="160" fill="rgba(159,178,200,0.15)" fontSize="12" fontFamily="var(--font-body)" textAnchor="middle">Server Room</text>
-            <text x="480" y="80" fill="rgba(159,178,200,0.15)" fontSize="12" fontFamily="var(--font-body)" textAnchor="middle">Office B</text>
-            <text x="480" y="240" fill="rgba(159,178,200,0.15)" fontSize="12" fontFamily="var(--font-body)" textAnchor="middle">Storage</text>
-          </g>
+          {/* Walls — from a drawing made in the Drawing Builder (“Use as plan”) */}
+          {planLines && <g transform="translate(40, 40)" stroke="rgba(159,176,195,0.45)" strokeWidth="2" fill="none">
+            {planLines.map((l, i) => <line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} />)}
+            {(planTexts || []).map((t, i) => <text key={'t' + i} x={t.x} y={t.y} fill="rgba(159,176,195,0.35)" fontSize="12" fontFamily="var(--font-body)" textAnchor="middle" stroke="none">{t.text}</text>)}
+          </g>}
 
           {/* Cable runs */}
           <g transform="translate(40, 40)" stroke="rgba(var(--brand-rgb),0.12)" strokeWidth="1" strokeDasharray="4 3" fill="none">
@@ -495,6 +542,16 @@ function StudioScreen({ onExportToProposal }) {
           </div>);
           })()}
 
+        {/* Empty plan hint */}
+        {!placedDevices.length && !planBg && !planLines && !dragPlaceDevice && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+            <div style={{ textAlign: 'center', maxWidth: 380, padding: 20 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-high)' }}>Start a design</div>
+              <div style={{ fontSize: 12, color: 'var(--text-mid)', marginTop: 6, lineHeight: 1.6 }}>Upload a floor plan or draw one in the Drawing Builder, then drag devices from the catalog onto it. The bill of materials and the quote build themselves on the right.</div>
+            </div>
+          </div>
+        )}
+
         {/* Drop zone indicator */}
         {dragPlaceDevice &&
           <div style={{ position: 'absolute', inset: 0, border: '3px dashed var(--brand)', borderRadius: 8, background: 'rgba(var(--brand-rgb),0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 3 }}>
@@ -588,7 +645,7 @@ function StudioScreen({ onExportToProposal }) {
       }} showToast={showToast} />}
 
       {/* ─── Drawing Builder Modal ─── */}
-      {drawingBuilderOpen && <DrawingBuilderModal savedDrawings={allDrawings} setSavedDrawings={setSavedDrawings} customer={customer} onClose={() => setDrawingBuilderOpen(false)} showToast={showToast} />}
+      {drawingBuilderOpen && <DrawingBuilderModal savedDrawings={allDrawings} setSavedDrawings={setSavedDrawings} customer={customer} initial={planLines ? { lines: planLines, texts: planTexts || [] } : null} onUsePlan={(d) => { setPlanLines(d.lines); setPlanTexts(d.texts); setPlanBg(null); setActiveTab('plan'); showToast('Drawing is now the plan — drop devices onto it'); }} onClose={() => setDrawingBuilderOpen(false)} showToast={showToast} />}
 
       {/* SiteScan imports chip */}
       {ssInbox.length > 0 &&
@@ -600,6 +657,7 @@ function StudioScreen({ onExportToProposal }) {
 
       {/* Toast */}
       {toast && <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, padding: '10px 24px', borderRadius: 8, background: 'var(--card)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 13, fontWeight: 500, boxShadow: 'var(--glow-brand-sm)', animation: 'fade-up 0.3s ease both' }}>{toast}</div>}
+    </div>
     </div>);
 
 }
@@ -651,22 +709,12 @@ function DeviceDetailModal({ device, brands, onClose, onPlace, showToast }) {
 }
 
 /* ── Drawing Builder Modal ── */
-function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClose, showToast }) {
+function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClose, showToast, initial, onUsePlan }) {
   const [drawTool, setDrawTool] = React.useState('wall');
   const [drawName, setDrawName] = React.useState('');
-  const [lines, setLines] = React.useState([
-  { x1: 50, y1: 50, x2: 450, y2: 50 },
-  { x1: 450, y1: 50, x2: 450, y2: 300 },
-  { x1: 450, y1: 300, x2: 50, y2: 300 },
-  { x1: 50, y1: 300, x2: 50, y2: 50 },
-  { x1: 200, y1: 50, x2: 200, y2: 200 },
-  { x1: 200, y1: 200, x2: 350, y2: 200 }]
-  );
-  const [texts, setTexts] = React.useState([
-  { x: 125, y: 130, text: 'Room A' },
-  { x: 320, y: 130, text: 'Room B' },
-  { x: 250, y: 260, text: 'Hallway' }]
-  );
+  const [lines, setLines] = React.useState((initial && initial.lines) || []);
+  const [texts, setTexts] = React.useState((initial && initial.texts) || []);
+  const [loadedId, setLoadedId] = React.useState(null);
   const [isDrawing, setIsDrawing] = React.useState(false);
   const [drawStart, setDrawStart] = React.useState(null);
   const [addingText, setAddingText] = React.useState(null);
@@ -708,12 +756,14 @@ function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClos
   };
 
   const saveDrawing = () => {
-    const name = drawName || `${customer ? customer + ' — ' : ''}Drawing ${savedDrawings.length + 1}`;
-    const id = 'd' + Date.now();
-    setSavedDrawings((prev) => [...prev, { id, name, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), customer }]);
+    const name = drawName || `${customer ? customer + ' — ' : ''}Drawing ${(savedDrawings || []).length + 1}`;
+    const id = loadedId || ('d' + Date.now());
+    const rec = { id, name, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), customer, lines, texts };
+    setSavedDrawings((prev) => { const list = prev || []; return list.some(d => d.id === id) ? list.map(d => d.id === id ? rec : d) : [...list, rec]; });
+    setLoadedId(id);
     showToast(`"${name}" saved to Design Studio`);
-    onClose();
   };
+  const usePlan = () => { if (!lines.length) { showToast('Draw some walls first'); return; } if (onUsePlan) onUsePlan({ lines, texts }); onClose(); };
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9000 }}>
@@ -725,7 +775,8 @@ function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClos
             <input value={drawName} onChange={(e) => setDrawName(e.target.value)} placeholder="Drawing name..." style={{ padding: '4px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 200 }} />
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <button onClick={saveDrawing} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Drawing</button>
+            <button onClick={saveDrawing} style={{ padding: '6px 16px', background: 'var(--brand-tint-12)', border: 'none', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Drawing</button>
+            <button onClick={usePlan} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Use as plan</button>
             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
           </div>
         </div>
@@ -786,10 +837,11 @@ function DrawingBuilderModal({ savedDrawings, setSavedDrawings, customer, onClos
           {/* Saved Drawings sidebar */}
           <div style={{ position: 'absolute', top: 10, right: 10, width: 180, maxHeight: '60%', overflow: 'auto', padding: '8px 10px', background: 'rgba(var(--card-rgb),0.9)', border: '1px solid var(--border-subtle)', borderRadius: 8, backdropFilter: 'blur(8px)' }}>
             <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 6 }}>Saved Drawings</div>
-            {savedDrawings.map((d) =>
-            <div key={d.id} style={{ padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-high)', fontWeight: 500 }}>{d.name}</div>
-                <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{d.customer} · {d.date}</div>
+            {!(savedDrawings || []).length && <div style={{ fontSize: 10.5, color: 'var(--text-low)' }}>None yet — draw walls, name it, Save.</div>}
+            {(savedDrawings || []).map((d) =>
+            <div key={d.id} onClick={() => { if (d.lines) { setLines(d.lines); setTexts(d.texts || []); setDrawName(d.name); setLoadedId(d.id); showToast(`Loaded “${d.name}”`); } }} style={{ padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', cursor: d.lines ? 'pointer' : 'default', color: loadedId === d.id ? 'var(--brand)' : 'var(--text-high)' }}>
+                <div style={{ fontSize: 11, fontWeight: 500 }}>{d.name}</div>
+                <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{d.customer || '—'} · {d.date}{d.sitescan ? ' · SiteScan' : ''}</div>
               </div>
             )}
           </div>
@@ -814,4 +866,4 @@ function SymbolIcon({ type, size = 14, asSvg, x, y, color = 'var(--brand)' }) {
   return <span style={{ fontSize: size, color, lineHeight: 1 }}>{char}</span>;
 }
 
-Object.assign(window, { StudioScreen, SymbolIcon, DeviceDetailModal, DrawingBuilderModal });
+Object.assign(window, { StudioScreen, SymbolIcon, DeviceDetailModal, DrawingBuilderModal, studioDesignStore, studioDesignsStore, studioDrawingsStore });
