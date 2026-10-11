@@ -61,6 +61,7 @@ function MHomeView({ onNav }) {
         <MStat label="TECHS ON SITE" value={fleetTechs.length ? `${onSite} / ${fleetTechs.length}` : '—'} sub={fleetTechs.length ? `${fleetTechs.filter(t => t.status === 'driving').length} driving` : 'no one clocked in yet'} delay={120} />
         <MStat label="OPEN TICKETS" value={String(openTickets)} sub={`${todayJobs.length} job${todayJobs.length === 1 ? '' : 's'} today`} delay={180} />
       </div>
+      {window.MobileOSStrip && <MobileOSStrip onNav={onNav} />}
       <MSection title="Quick actions">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
           <MActionBtn label="New Job" icon="calendar" primary onClick={() => (window.__shieldNewJob ? window.__shieldNewJob() : onNav('calendar'))} />

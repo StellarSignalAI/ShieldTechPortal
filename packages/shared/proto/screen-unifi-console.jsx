@@ -140,10 +140,10 @@ function UcControllers({ sites, onSynced }) {
       {!loaded && <div style={{ padding: 16, fontSize: 12, color: 'var(--text-mid)' }}>Loading…</div>}
       {loaded && !rows.length && <UcEmpty title="No controllers connected" body="Add a customer's UniFi OS console (Network, Protect and Access integration APIs) or a Site Manager API key. The key is stored on the backend only; the console reads devices, health, snapshots and door events from it every 5 minutes." cta="Connect controller" onCta={() => edit(null)} />}
       {rows.map((c, i) => { const h = c.health || {}; return (
-        <div key={c.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, padding: '12px 16px', borderTop: i ? '1px solid var(--border-subtle)' : 'none', alignItems: 'center' }}>
-          <div style={{ minWidth: 0 }}>
+        <div key={c.id} style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: '12px 16px', borderTop: i ? '1px solid var(--border-subtle)' : 'none', alignItems: 'center' }}>
+          <div style={{ flex: '1 1 240px', minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}><UcDot s={!c.enabled ? 'none' : c.last_error ? 'offline' : c.last_sync ? 'online' : 'warning'} /><span style={{ fontWeight: 600, fontSize: 13.5 }}>{c.label || c.host}</span><span style={{ fontSize: 10.5, padding: '1px 7px', borderRadius: 10, background: 'var(--brand-tint-12)', color: 'var(--brand)', fontWeight: 600 }}>{c.kind === 'site-manager' ? 'Site Manager' : 'Console'}</span>{!c.enabled && <span style={{ fontSize: 10.5, color: 'var(--text-low)' }}>paused</span>}</div>
-            <div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginTop: 2 }}>{c.customer} · {c.site} · <span className="mono">{c.host}</span></div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.customer} · {c.site} · <span className="mono">{c.host}</span></div>
             <div style={{ fontSize: 11.5, color: c.last_error ? 'var(--status-critical)' : 'var(--text-mid)', marginTop: 3 }}>{c.last_error ? `Error: ${c.last_error}` : c.last_sync ? `Synced ${ucAgo(Date.parse(c.last_sync))} · ${h.devices || 0} devices${h.cameras != null ? ` · ${h.cameras} cameras` : ''}${h.doors != null ? ` · ${h.doors} doors` : ''}${h.wan ? ` · WAN ${h.wan}` : ''}${h.clients ? ` · ${h.clients} clients` : ''}${h.partial ? ` · partial: ${h.partial.join('; ')}` : ''}` : 'Never synced'}</div>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -784,8 +784,8 @@ function UcAlertsPage({ assets, scope, go }) {
       <UcChips options={[{ id: 'open', l: 'Open' }, { id: 'acked', l: 'Acknowledged' }, { id: 'all', l: 'All' }]} value={f} onChange={setF} />
       <UcCard pad={0}>
         {!rows.length ? <UcEmpty title={f === 'open' ? 'No open alerts' : 'Nothing here'} body={`Every device documented${scope.customer ? ` for ${scope.customer}` : ''} reports online. Alerts raise when a device is flagged offline or for attention — by a tech, the office or a connected controller.`} /> : rows.map(x => (
-          <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 16px', borderBottom: '1px solid var(--border-subtle)', borderLeft: `3px solid ${x.sev === 'critical' ? 'var(--status-critical)' : 'var(--status-warn)'}` }}>
-            <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{x.title}</div><div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginTop: 2 }}>{x.customer}{x.detail ? ` · ${x.detail}` : ''}{x.at ? ` · ${ucAgo(x.at)}` : ''}</div></div>
+          <div key={x.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '11px 16px', borderBottom: '1px solid var(--border-subtle)', borderLeft: `3px solid ${x.sev === 'critical' ? 'var(--status-critical)' : 'var(--status-warn)'}` }}>
+            <div style={{ flex: '1 1 200px', minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{x.title}</div><div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginTop: 2 }}>{x.customer}{x.detail ? ` · ${x.detail}` : ''}{x.at ? ` · ${ucAgo(x.at)}` : ''}</div></div>
             {acked[x.id] ? <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 10, background: 'var(--ok-tint-12)', color: 'var(--status-ok)', fontWeight: 600 }}>ACK {ucAgo(acked[x.id])}</span> : <UcBtn small kind="ghost" onClick={() => ack(x.id)}>Acknowledge</UcBtn>}
             <UcBtn small kind="soft" onClick={() => ticket(x)}>Create ticket</UcBtn>
             <UcBtn small kind="ghost" onClick={() => { if (window.__shieldNav) window.__shieldNav('dispatch'); }}>Dispatch</UcBtn>

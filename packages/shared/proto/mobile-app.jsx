@@ -105,6 +105,8 @@ function screenLabel(id) {
   if (id === 'sitescan') return 'Survey Scan';
   if (id === 'autobid') return 'Auto-Bid';
   if (id === 'm-more') return 'Everything';
+  if (id === 'cameras') return 'ShieldTech OS';
+  if (id === 'finance') return 'Money';
   const item = NAV_ITEMS.find(i => i.id === id);
   return item ? item.label : 'ShieldTech';
 }
@@ -114,8 +116,9 @@ function MobileDirectory({ onNav }) {
   const [q, setQ] = useState('');
   const groups = NAV_GROUPS.map(g => ({
     ...g,
-    items: g.items.filter(i => !i.hidden && i.label.toLowerCase().includes(q.toLowerCase())),
+    items: g.items.filter(i => !i.hidden && (i.label.toLowerCase().includes(q.toLowerCase()) || (i.children || []).some(c => c.label.toLowerCase().includes(q.toLowerCase())))),
   })).filter(g => g.items.length > 0);
+  const goSub = (item, sub) => { if (window.navSubSet) window.navSubSet(item.id, sub, 'nav'); onNav(item.id); };
   const appUrls = window.__shieldAppUrls || {};
   const qn = q.trim().toLowerCase();
   const promoMatch = (keywords) => qn.length > 0 && keywords.some(k => k.includes(qn));
@@ -148,15 +151,23 @@ function MobileDirectory({ onNav }) {
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--text-low)', margin: '4px 0 8px' }}>{g.label}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {g.items.map(item => (
-              <button key={item.id} onClick={() => onNav(item.id)} className="glass" style={{
+              <React.Fragment key={item.id}>
+              <button onClick={() => item.children ? goSub(item, item.children[0].sub) : onNav(item.id)} className="glass" style={{
                 padding: '12px 12px', display: 'flex', alignItems: 'center', gap: 9,
                 border: '1px solid var(--border-subtle)', cursor: 'pointer',
                 background: 'var(--glass-bg)', borderRadius: 10,
-                textAlign: 'left', fontFamily: 'var(--font-body)'
+                textAlign: 'left', fontFamily: 'var(--font-body)', gridColumn: item.children ? '1 / -1' : undefined
               }}>
                 <Icon name={item.icon} size={16} color="var(--brand)" />
-                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', lineHeight: 1.25 }}>{item.label}</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', lineHeight: 1.25 }}>{item.id === 'cameras' ? 'ShieldTech OS' : item.label}</span>
               </button>
+              {item.children && (
+                <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 6, flexWrap: 'wrap', padding: '0 2px 4px' }}>
+                  {item.children.filter(c => !qn || c.label.toLowerCase().includes(qn) || item.label.toLowerCase().includes(qn)).map(c => (
+                    <button key={c.sub} onClick={() => goSub(item, c.sub)} style={{ padding: '6px 11px', borderRadius: 14, fontSize: 11.5, fontWeight: 600, background: 'var(--card)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c.label}</button>
+                  ))}
+                </div>)}
+              </React.Fragment>
             ))}
           </div>
         </div>
@@ -285,7 +296,7 @@ function MobilePortalApp() {
   let content;
   if (screen === 'm-more') content = <MobileDirectory onNav={nav} />;
   else if (screen === 'calendar') content = <MobileCalendar onNav={nav} />;
-  else if (screen === 'cameras' || screen === 'topology' || screen === 'warroom' || screen === 'floorplan' || screen === 'anomaly') content = <MonitoringConsole />;
+  else if (screen === 'cameras' || screen === 'topology' || screen === 'warroom' || screen === 'floorplan' || screen === 'anomaly' || screen === 'assets') content = window.MobileOS ? <MobileOS onNav={nav} /> : <MonitoringConsole />;
   else if (screen === 'helpdesk') content = <MHelpdesk onNav={nav} />;
   else if (screen === 'incidents') content = <MIncidents onNav={nav} />;
   else if (screen === 'quote-cash') content = <MQuoteToCash onNav={nav} />;

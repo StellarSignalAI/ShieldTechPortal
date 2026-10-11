@@ -636,8 +636,11 @@ function FinReports() {
 }
 
 /* ── Finance suite shell ── */
+const MFIN_SUB = { overview: 'Overview', invoices: 'Invoices', estimates: 'Proposals', ap: 'Bills', vendors: 'Bills', expenses: 'Expenses', receipts: 'Expenses', recurring: 'Recurring', 'sales-tax': 'Sales Tax', 'reports-center': 'Reports', settings: 'More', 'bank-transactions': 'More', reconcile: 'More', accounts: 'More', customers: 'More', products: 'More', payroll: 'More', 'sales-overview': 'Overview' };
 function MFinance({ onNav }) {
-  const [tab, setTab] = React.useState('Overview');
+  const subInit = window.__navSub && window.__navSub.screen === 'finance' ? window.__navSub.sub : null;
+  const [tab, setTab] = React.useState(MFIN_SUB[subInit] || 'Overview');
+  React.useEffect(() => { const h = (e) => { if (e.detail.screen === 'finance' && e.detail.source !== 'screen' && MFIN_SUB[e.detail.sub]) setTab(MFIN_SUB[e.detail.sub]); }; window.addEventListener('st2:subnav', h); return () => window.removeEventListener('st2:subnav', h); }, []);
   const tabs = ['Overview', 'AI Queue', 'Invoices', 'Recurring', 'Proposals', 'Bills', 'Expenses', 'Sales Tax', 'Lending', 'Reports', 'More'];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

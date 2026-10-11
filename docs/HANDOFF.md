@@ -381,6 +381,24 @@ ShieldTech's own data and tools.
   Inventory & Purchasing, Recurring Revenue, Customers, Help Desk, Messages, Team, HR,
   Users, Approvals, Documents, Portal Settings, and the mobile portal.
 
+### 2l. Mobile portal gets the same design
+- `packages/shared/proto/mobile-os.jsx` — `MobileOS` (screen ids `cameras` / `assets` /
+  topology aliases): site picker sheet, discipline chips (Sites · Network · Video ·
+  Access · Intrusion · Fire · Intercom · Cabling · Alerts · Controllers), 2-up tiles,
+  snapshot grid for live cameras, flat device rows with LIVE chips, a device sheet
+  (snapshot, facts, Unlock door → real controller unlock when live, mark status for
+  registry-only devices, Open a ticket, Dispatch a tech, Add to Assets), recent live
+  events, and `UcAlertsPage` / `UcControllers` reused for Alerts / Controllers (both now
+  wrap on narrow screens). `MobileOSStrip` sits on the mobile home above Quick actions.
+  Reads `window.__navSub` so directory chips open the right discipline.
+- `mobile-app.jsx`: directory shows Finance and ShieldTech OS children as chips (search
+  matches them), labels "ShieldTech OS" / "Money"; `MFinance` opens the tab a sub asks
+  for (`MFIN_SUB` map) and follows `st2:subnav`. Default bottom tabs gain **OS**
+  (existing 4-tab defaults migrate).
+- Verified with Playwright at 390px: home strip → OS, every chip, door sheet → unlock call,
+  Fire tiles, Alerts, Controllers card, drawer directory → Money › Invoices opens the
+  Invoices tab; no page errors.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

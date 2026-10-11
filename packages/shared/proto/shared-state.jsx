@@ -202,8 +202,17 @@ const mobileTabsStore = createShieldStore('mobiletabs', {
     { id: 'calendar',         icon: 'calendar',  label: 'Schedule' },
     { id: 'dispatch',         icon: 'dispatch',  label: 'Field' },
     { id: 'finance',          icon: 'finance',   label: 'Money' },
+    { id: 'cameras',          icon: 'topology',  label: 'OS' },
   ],
 });
+/* Existing 4-tab defaults pick up the ShieldTech OS tab in the open slot. */
+(() => {
+  const c = mobileTabsStore.get();
+  const legacy = ['custom-dashboard', 'calendar', 'dispatch', 'finance'];
+  if (c && Array.isArray(c.tabs) && c.tabs.length === 4 && c.tabs.every((t, i) => t.id === legacy[i]) && (c.maxTabs || 6) >= 6) {
+    mobileTabsStore.set({ ...c, maxTabs: 6, tabs: [...c.tabs, { id: 'cameras', icon: 'topology', label: 'OS' }] });
+  }
+})();
 /* Migrate the original 5-slot default up to 6 so there's an open slot to fill. */
 (() => {
   const c = mobileTabsStore.get();
