@@ -24,13 +24,27 @@ const NAV_GROUPS = [
   { id: 'survey-cloud', icon: 'floorplan', label: 'Survey Cloud', useSvg: true, mobileOnly: true }]
 },
 { id: 'deliver', label: 'DELIVER', collapsible: true, items: [
-  { id: 'calendar', icon: 'calendar', label: 'Calendar & Copilot', useSvg: true },
+  { id: 'calendar', icon: 'calendar', label: 'Calendar & Copilot', useSvg: true, children: [
+    { sub: 'calendar', label: 'Calendar' },
+    { sub: 'copilot', label: 'Scheduling Copilot' }] },
   { id: 'copilot', icon: 'hermes', label: 'Scheduling Copilot', useSvg: true, mobileOnly: true },
-  { id: 'dispatch', icon: 'dispatch', label: 'Dispatch & Fleet', useSvg: true },
-  { id: 'workorder', icon: 'clipboard', label: 'Work Orders', useSvg: true },
+  { id: 'dispatch', icon: 'dispatch', label: 'Dispatch & Fleet', useSvg: true, children: [
+    { sub: 'map', label: 'Live map' },
+    { sub: 'schedule', label: 'Schedule board' },
+    { sub: 'queue', label: 'Dispatch queue' },
+    { sub: 'owner', label: 'Where are my techs' },
+    { sub: 'driving', label: 'Driving safety' },
+    { sub: 'fleet', label: 'Fleet' }] },
+  { id: 'workorder', icon: 'clipboard', label: 'Work Orders', useSvg: true, children: [
+    { sub: 'all', label: 'Work orders' },
+    { sub: 'requested', label: 'Requests' },
+    { sub: 'photos', label: 'Site photos' },
+    { sub: 'punch', label: 'Punch lists' }] },
   { id: 'photos', icon: 'cameras', label: 'Site Photos', useSvg: true, mobileOnly: true },
   { id: 'punchlist', icon: 'approvals', label: 'Punch Lists', useSvg: true, mobileOnly: true },
-  { id: 'projects', icon: 'projects', label: 'Projects', useSvg: true },
+  { id: 'projects', icon: 'projects', label: 'Projects', useSvg: true, children: [
+    { sub: 'board', label: 'Board' },
+    { sub: 'list', label: 'List' }] },
   { id: 'plan-room', icon: 'floorplan', label: 'BlueShield Studio', useSvg: true }]
 },
 { id: 'collect', label: 'MONEY', collapsible: true, items: [
@@ -624,7 +638,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     'product-library': 'Product Library', 'service-plans': 'Service Plans',
     'custom-dashboard': 'My Dashboard',
     'customers-list': 'Customers',
-    dispatch: 'Dispatch Center', finance: 'Finance Suite', revops: 'Revenue Operations',
+    dispatch: 'Dispatch & Fleet', finance: 'Finance Suite', revops: 'Revenue Operations',
     timeline: 'Customer Timeline',
     approvals: 'Approvals Center',
     cameras: 'ShieldTech OS', topology: 'ShieldTech OS', finance: 'Finance',

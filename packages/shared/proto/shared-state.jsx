@@ -585,13 +585,9 @@ function normalizeJobDates(rec) {
    crew only appears when no backend/profiles exist, so screens never render
    an empty scheduler. */
 const TECH_PALETTE = ['var(--brand)', '#34D399', '#FBBF24', 'var(--accent-2)', '#F43F5E', '#22D3EE', '#A3E635', '#FB923C', 'var(--disc-av)', '#F472B6'];
-const DEMO_TECHS = [
-  { id: 'MR', name: 'Mike Reyes', color: 'var(--brand)' },
-  { id: 'JL', name: 'Jessica Liu', color: '#34D399' },
-  { id: 'KW', name: 'Kevin White', color: '#FBBF24' },
-  { id: 'DP', name: 'Diana Patel', color: 'var(--accent-2)' },
-  { id: 'TG', name: 'Tony Garcia', color: '#F43F5E' },
-];
+/* No placeholder crew: technicians are the real user roster (Supabase
+   profiles). Until users are invited the roster is simply empty. */
+const DEMO_TECHS = [];
 function techInitialsOf(name, email) {
   const n = String(name || '').trim();
   if (n && !n.includes('@')) {

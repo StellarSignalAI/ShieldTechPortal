@@ -130,3 +130,4 @@ import './proto/screen-messages.jsx';
 import './proto/screen-unifi-console.jsx';
 import './proto/screen-hubs.jsx';
 import './proto/screen-sell.jsx';
+import './proto/screen-deliver.jsx';

@@ -453,6 +453,40 @@ ShieldTech's own data and tools.
   new-proposal form → Calculators tab → Studio: place device, Save, reload keeps it,
   Export → Proposal; phone-width board + sheet. No page errors.
 
+### 2o. DELIVER pass — Work Orders, Projects, Calendar & Copilot, Dispatch & Fleet
+- `packages/shared/proto/screen-deliver.jsx` (loaded after screen-sell):
+  - **`DeliverWorkOrdersScreen`** (`workorder` / `photos` / `punchlist`): tiles
+    (requested, scheduled, in progress, completed 7d, **open value**), tabs Work orders ·
+    Requests · Site photos · Punch lists (`#/workorder/<sub>`), status chips, search,
+    UniFi table (value column), `DvWoDrawer` with **quoted value / cost so far / margin**
+    tiles (cost = materials + timed labor at $125/h), Accept & schedule (tech + date +
+    window form), Start / Complete, timer, Edit value, Invoice (NIFinanceModal), Map,
+    Ticket, Delete, and tabs Details (editable scope/notes, geocode state), Materials
+    (add/remove lines), Checklist (add/remove, progress, go to sign-off), Photos
+    (required shots upload + tech field photos), Sign-off (signature canvas → completed).
+    **+ New work order** is a form with customer select, site, type, quoted value, tech,
+    date, scope, notes; the site is geocoded on create (`wo.lat/lng`).
+  - **`DeliverProjectsScreen`** (`projects`): tiles, Board · List, status chips, search,
+    cards/table with contract, billed % and pin state; `ProjectDetailDrawer` (billing,
+    drawings, quotes, invoices, photos) and `ProjectWizard` reused. **Geocode on save**:
+    `dvGeocodeProject` runs after the wizard and for any stored project with a site
+    address and no pin (OpenStreetMap Nominatim, cached in `st2_geo`, 1 req/s). The
+    helper is `window.__shieldGeocode` for the tech app / dispatch.
+  - **`DeliverCalendarScreen`** (`calendar` / `copilot`): Calendar · Scheduling Copilot
+    tabs; the drag-and-drop `CalendarScreen` engine is unchanged (it now takes
+    `--cal-h` for height); `DvCopilot` is the copilot rebuilt on the UniFi cards.
+  - **`DeliverDispatchScreen`** (`dispatch`): Live map · Schedule board · Dispatch queue ·
+    Where are my techs · Driving safety · Fleet. `DispatchScreen` accepts `view` +
+    `embedded` (toolbar hidden). **`DvQueue`** replaces the queue: every work order without
+    a technician plus the calendar backlog, with Assign (tech + date, notifies the tech
+    app) and Open.
+- `DEMO_TECHS` is now empty: technicians are only ever the real user roster.
+- Sidebar children for all four DELIVER entries; titles "Dispatch & Fleet".
+- Verified with Playwright: new WO with value → drawer tiles (value/cost/margin), add
+  material updates cost and margin, Start job, hash tabs, Projects board/list + drawer,
+  geocode stub stamps lat/lng on both WO and project, Calendar + Copilot, Dispatch map /
+  queue / fleet, Accept & schedule on a requested WO; no page errors.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

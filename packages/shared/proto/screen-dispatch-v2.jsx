@@ -1,7 +1,8 @@
 /* Dispatch V2 — Real Map, Right-Click Context Menu, Geofencing, Schedule Board */
 
-function DispatchScreen() {
-  const [view, setView] = React.useState('map');
+function DispatchScreen({ view: viewProp, embedded }) {
+  const [viewState, setView] = React.useState('map');
+  const view = viewProp || viewState;
   const [selectedTech, setSelectedTech] = React.useState(null);
   const [contextMenu, setContextMenu] = React.useState(null);
   const [geofenceAlert, setGeofenceAlert] = React.useState(null);
@@ -54,9 +55,9 @@ function DispatchScreen() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', overflow: 'hidden' }} onClick={closeContext}>
-      {/* Dispatch Toolbar */}
-      <div style={{ display: 'flex', gap: 6, padding: '0 0 10px', flexShrink: 0, justifyContent: 'space-between', flexWrap: 'wrap', rowGap: 8 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: embedded ? '100%' : 'calc(100vh - 76px)', overflow: 'hidden' }} onClick={closeContext}>
+      {/* Dispatch Toolbar (hidden when the unified DELIVER screen drives the view) */}
+      {!embedded && <div style={{ display: 'flex', gap: 6, padding: '0 0 10px', flexShrink: 0, justifyContent: 'space-between', flexWrap: 'wrap', rowGap: 8 }}>
         <div style={{ display: 'flex', gap: 4, overflowX: 'auto', maxWidth: '100%', paddingBottom: 2 }}>
           {[{id:'map',label:'Live Map'},{id:'schedule',label:'Schedule Board'},{id:'queue',label:'Dispatch Queue'},{id:'driving',label:'Driving Safety'},{id:'owner',label:'Where Are My Techs?'}].map(t => (
             <button key={t.id} onClick={() => setView(t.id)} style={{
@@ -76,7 +77,7 @@ function DispatchScreen() {
             <span>⟡</span> Optimize Routes
           </button>
         </div>
-      </div>
+      </div>}
 
       {/* Content */}
       <div style={{ flex: 1, overflow: 'hidden' }}>

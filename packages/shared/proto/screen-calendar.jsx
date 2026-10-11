@@ -371,7 +371,7 @@ function CalendarScreen() {
   const openWorkOrder = (job) => { if (job && job.wo) woFocusStore.set(job.wo); navTo('workorder'); };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', gap: 12, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'var(--cal-h, calc(100vh - 76px))', gap: 12, overflow: 'hidden' }}>
       {/* Top bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
         <button onClick={() => view === 'month' ? setMonthOffset(m => m - 1) : setWeekOffset(w => w - 1)} style={calNavBtn}>‹</button>
