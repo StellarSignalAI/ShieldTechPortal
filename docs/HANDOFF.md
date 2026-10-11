@@ -516,6 +516,31 @@ ShieldTech's own data and tools.
   Incidents tab with the incident; Customers directory → record; every ADMIN page and
   settings section renders with fresh loads; no page errors.
 
+### 2q. MONEY (outside Finance) + BlueShield pass
+- `packages/shared/proto/screen-money.jsx` (loaded after screen-care):
+  - **`MoneyPurchasingScreen`** (`purchase-orders` / `parts-req`): tiles (POs, in flight,
+    received MTD, requisitions), Purchase orders · Parts requisitions · Inventory, status
+    chips, search, UniFi table, `MnPoDrawer` (**line items can finally be added** —
+    item / SKU / qty / unit; Send to vendor; Receive per line or all; Cancel; Print;
+    Delete draft). **Receiving puts stock into `inventoryStore`** (`mnStockIn`, matched
+    by SKU). Requisitions: five-stage board + `MnReqDrawer` (advance, **Create PO** from
+    the parts list, delete). **Inventory** is a persisted stock list (`st2_inventory`) —
+    add / adjust / remove items, reorder points, low-stock chip, **PO for low stock**
+    pre-filled from reorder points. The seeded demo warehouse is no longer shown.
+  - **`MoneyRecurringScreen`** (`mrr` / `rr-builder`): tiles (MRR, ARR, active, at-risk
+    MRR, cancelled 12m), Contracts · RR Builder, chips, search, table, drawer (edit, flag
+    at risk / mark active, cancel / reactivate, **what-if churn** that never writes the
+    store), new-contract form with a start date. The **MRR trend is computed from the
+    contracts' start / cancel dates** — the old baked-in month baseline is gone.
+  - **`MoneyRevOpsScreen`** frames `RevOpsScreen` (now Inter); **`MoneyBlueShieldScreen`**
+    frames the BlueShield iframe (`PlanRoomScreen embedded`) with an open-full-screen button.
+- Sidebar children for Inventory & Purchasing (POs, requisitions, inventory) and
+  Recurring Revenue (contracts, builder); titles fixed.
+- Verified with Playwright: new PO → add line → send → receive all → stock row appears in
+  Inventory; requisition → Create PO yields a draft PO with the parts and marks the
+  requisition approved; new contract → drawer → trend; Revenue Ops; BlueShield. No page
+  errors.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

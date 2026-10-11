@@ -72,9 +72,14 @@ const NAV_GROUPS = [
   { id: 'invoices', icon: 'expenses', label: 'Invoices', useSvg: true, mobileOnly: true },
   { id: 'estimates', icon: 'proposals', label: 'Proposal Pipeline', useSvg: true, mobileOnly: true },
   { id: 'outbox', icon: 'chat', label: 'Email Outbox', useSvg: true, mobileOnly: true },
-  { id: 'purchase-orders', icon: 'cart', label: 'Inventory & Purchasing', useSvg: true },
+  { id: 'purchase-orders', icon: 'cart', label: 'Inventory & Purchasing', useSvg: true, children: [
+    { sub: 'pos', label: 'Purchase orders' },
+    { sub: 'req', label: 'Parts requisitions' },
+    { sub: 'inventory', label: 'Inventory' }] },
   { id: 'parts-req', icon: 'parts', label: 'Parts Requisition', useSvg: true, mobileOnly: true },
-  { id: 'mrr', icon: 'roi', label: 'Recurring Revenue', useSvg: true },
+  { id: 'mrr', icon: 'roi', label: 'Recurring Revenue', useSvg: true, children: [
+    { sub: 'contracts', label: 'Contracts' },
+    { sub: 'builder', label: 'RR Builder' }] },
   { id: 'rr-builder', icon: 'roi', label: 'RR Builder', useSvg: true, mobileOnly: true },
   { id: 'expenses', icon: 'expenses', label: 'Expenses & Receipts', useSvg: true, mobileOnly: true }]
 },
@@ -658,6 +663,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
 /* ── App Shell ── */
 function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
   const titles = {
+    'purchase-orders': 'Inventory & Purchasing', 'parts-req': 'Inventory & Purchasing', mrr: 'Recurring Revenue', 'rr-builder': 'Recurring Revenue', revops: 'Revenue Ops',
     messages: 'Messages', users: 'Users & Invites', documents: 'Documents', 'portal-settings': 'Portal Settings', employees: 'Team & Skills', helpdesk: 'Help Desk', incidents: 'Help Desk', nps: 'Customers', skills: 'Team & Skills',
     dashboard: 'Mission Control', customer: 'Customer Portal',
     assets: 'Asset Management', 'shieldtech-ai': 'ShieldTech AI',
@@ -665,7 +671,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     'product-library': 'Product Library', 'service-plans': 'Service Plans',
     'custom-dashboard': 'My Dashboard',
     'customers-list': 'Customers',
-    dispatch: 'Dispatch & Fleet', finance: 'Finance Suite', revops: 'Revenue Operations',
+    dispatch: 'Dispatch & Fleet', finance: 'Finance Suite', revops: 'Revenue Ops',
     timeline: 'Customer Timeline',
     approvals: 'Approvals & Expenses',
     cameras: 'ShieldTech OS', topology: 'ShieldTech OS', finance: 'Finance',
@@ -693,19 +699,19 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     copilot: 'Scheduling Copilot',
     intel: 'Security Intelligence',
     'margin-xray': 'Margin X-Ray',
-    'rr-builder': 'Recurring Revenue Builder',
+    'rr-builder': 'Recurring Revenue',
     rfp: 'RFP Workspace',
     wallboard: 'NOC Wallboard',
     nps: 'NPS & Feedback',
     incidents: 'Incident Response',
     warranty: 'Warranty Tracker',
     'quote-cash': 'Quote to Cash',
-    mrr: 'MRR Tracker',
+    mrr: 'Recurring Revenue',
     helpdesk: 'Help Desk',
     workorder: 'Work Orders',
-    'parts-req': 'Parts Requisition',
+    'parts-req': 'Inventory & Purchasing',
     subcontractors: 'Sub-Contractors',
-    'purchase-orders': 'Purchase Orders',
+    'purchase-orders': 'Inventory & Purchasing',
     skills: 'Skills Matrix',
     knowledge: 'Knowledge Base'
   };

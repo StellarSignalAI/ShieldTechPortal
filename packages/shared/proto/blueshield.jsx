@@ -2,12 +2,12 @@
    at /blueshield/app.html, served verbatim) embedded as a portal screen. All
    drawing/takeoff/markup logic lives inside the app itself; it signs into the
    same Supabase project (bs_* tables, ShieldTech accounts only). */
-function PlanRoomScreen() {
+function PlanRoomScreen({ embedded }) {
   // Fill the shell's content area edge to edge. Desktop <main> pads 24px;
   // the mobile shell pads 14px and sizes with 100dvh — adapt so the iframe
   // fits the phone viewport with no horizontal or double scroll.
   const narrow = window.innerWidth < 900;
-  const wrap = narrow
+  const wrap = embedded ? { height: '100%', display: 'flex', borderRadius: 8, overflow: 'hidden' } : narrow
     ? { margin: -14, height: 'calc(100dvh - 160px)', overflow: 'hidden', display: 'flex' }
     : { margin: -24, height: 'calc(100% + 48px)', minHeight: 'calc(100vh - 120px)', display: 'flex' };
   return (

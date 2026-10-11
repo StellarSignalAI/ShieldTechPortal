@@ -17,7 +17,7 @@
       --brand:#1E80F0;--brand-b:#3DA2FF;--brand-rgb:30,128,240;--cyan:#19E3EC;--cyan-rgb:25,227,236;
       --violet:var(--accent-2);--red:#FF3B5C;--ok:#2BE08A;--warn:#FFC53D;
       --d-cctv:#1E80F0;--d-access:#19E3EC;--d-cable:#2BE08A;--d-alarm:var(--disc-alarm);--d-fire:#FF3B5C;
-      --f:'Hanken Grotesk',-apple-system,sans-serif;--m:'Geist Mono',ui-monospace,monospace;
+      --f:'Inter',-apple-system,sans-serif;--m:'Geist Mono',ui-monospace,monospace;
       font-family:var(--f);color:var(--fg);font-size:14px;letter-spacing:-.003em;
       background:#05070C;border-radius:16px;padding:22px;margin:-4px;
       background-image:radial-gradient(55% 40% at 8% -5%,rgba(var(--brand-rgb),.14),transparent 60%),radial-gradient(45% 40% at 100% 0%,rgba(var(--warn-rgb),.08),transparent 60%)}
