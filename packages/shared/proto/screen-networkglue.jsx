@@ -11,9 +11,9 @@
 const NG_CLASS = {
   managed:   { label: 'Managed',   color: 'var(--status-ok)',   glyph: '●' },
   unmanaged: { label: 'Unmanaged', color: 'var(--status-warn)', glyph: '○' },
-  virtual:   { label: 'Virtual',   color: '#a78bfa',            glyph: '◇' },
+  virtual:   { label: 'Virtual',   color: 'var(--accent-2)',            glyph: '◇' },
   hyperv:    { label: 'Hyper-V',   color: '#60a5fa',            glyph: '▢' },
-  vmware:    { label: 'VMware',    color: '#818cf8',            glyph: '▣' },
+  vmware:    { label: 'VMware',    color: 'var(--disc-av)',            glyph: '▣' },
 };
 
 /* Discovered devices (collector inbox) */
@@ -24,9 +24,9 @@ const NG_SWITCHES = [];
 /* Per-switch port assignments. Anything not listed = empty. */
 const NG_PORTMAP = {};
 const NG_PORT_TYPE = {
-  uplink:{c:'#a78bfa',l:'Uplink'}, trunk:{c:'#a78bfa',l:'Trunk'}, camera:{c:'var(--status-ok)',l:'Camera'},
+  uplink:{c:'var(--accent-2)',l:'Uplink'}, trunk:{c:'var(--accent-2)',l:'Trunk'}, camera:{c:'var(--status-ok)',l:'Camera'},
   access:{c:'var(--status-warn)',l:'Access'}, ap:{c:'#60a5fa',l:'AP'}, device:{c:'var(--brand)',l:'Device'},
-  host:{c:'#818cf8',l:'Host/VM'}, rogue:{c:'var(--status-critical)',l:'Rogue'},
+  host:{c:'var(--disc-av)',l:'Host/VM'}, rogue:{c:'var(--status-critical)',l:'Rogue'},
 };
 
 /* Microsoft identity — users */
@@ -111,7 +111,7 @@ function NetworkDiscoveryView({ showToast }) {
 
       {/* Summary */}
       <div style={{ display:'flex', gap:10 }}>
-        {[['DISCOVERED',counts.total,'var(--text-high)'],['MANAGED',counts.managed,'var(--status-ok)'],['UNMANAGED',counts.unmanaged,'var(--status-warn)'],['VIRTUAL / VM',counts.virtual,'#a78bfa'],['NEW — UNDOCUMENTED',counts.new,'var(--brand)']].map(([l,v,c]) => (
+        {[['DISCOVERED',counts.total,'var(--text-high)'],['MANAGED',counts.managed,'var(--status-ok)'],['UNMANAGED',counts.unmanaged,'var(--status-warn)'],['VIRTUAL / VM',counts.virtual,'var(--accent-2)'],['NEW — UNDOCUMENTED',counts.new,'var(--brand)']].map(([l,v,c]) => (
           <GlassPanel key={l} style={{ flex:1, padding:'12px 14px' }}>
             <div className="mono" style={{ fontSize:22, fontWeight:600, color:c, lineHeight:1.1 }}>{v}</div>
             <div style={{ fontSize:9, color:'var(--text-low)', textTransform:'uppercase', letterSpacing:'0.06em', marginTop:2 }}>{l}</div>

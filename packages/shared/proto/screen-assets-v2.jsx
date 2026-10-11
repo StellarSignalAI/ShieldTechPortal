@@ -317,8 +317,8 @@ function AssetTypesManager({ showToast }) {
   const types = [
     { name: 'IP Camera', icon: '◉', count: 42, fields: 12, color: 'var(--brand)' },
     { name: 'NVR / DVR', icon: '⊟', count: 8, fields: 10, color: 'var(--brand)' },
-    { name: 'Access Reader', icon: '⊠', count: 24, fields: 8, color: '#c084fc' },
-    { name: 'Access Panel', icon: '⊞', count: 6, fields: 9, color: '#c084fc' },
+    { name: 'Access Reader', icon: '⊠', count: 24, fields: 8, color: 'var(--accent-2)' },
+    { name: 'Access Panel', icon: '⊞', count: 6, fields: 9, color: 'var(--accent-2)' },
     { name: 'Alarm Panel', icon: '⚠', count: 4, fields: 11, color: 'var(--status-critical)' },
     { name: 'Fire Panel', icon: '⚠', count: 2, fields: 10, color: 'var(--status-critical)' },
     { name: 'Network Switch', icon: '⊚', count: 12, fields: 8, color: 'var(--status-ok)' },

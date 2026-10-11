@@ -116,7 +116,7 @@ function BrandKit({ showToast }) {
             ))}
           </div>
           <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
-            {['var(--brand)','var(--brand-pressed)','#0D2137','#F43F5E','#34D399','#8B5CF6'].map(c => (
+            {['var(--brand)','var(--brand-pressed)','#0D2137','#F43F5E','#34D399','var(--brand)'].map(c => (
               <div key={c} onClick={() => setPrimaryColor(c)} style={{ width: 24, height: 24, borderRadius: 4, background: c, cursor: 'pointer', border: primaryColor===c?'2px solid #fff':'2px solid transparent' }} />
             ))}
           </div>
@@ -262,7 +262,7 @@ function TemplateEditor({ docType, showToast }) {
 
             <div className="label-sm" style={{ marginBottom: 8 }}>ACCENT COLOR</div>
             <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-              {['var(--brand)','var(--brand-pressed)','#8B5CF6','#F43F5E','#FBBF24','#34D399'].map(c => (
+              {['var(--brand)','var(--brand-pressed)','var(--brand)','#F43F5E','#FBBF24','#34D399'].map(c => (
                 <div key={c} onClick={() => setAccentColor(c)} style={{ width: 24, height: 24, borderRadius: 4, background: c, cursor: 'pointer', border: accentColor===c?'2px solid #fff':'2px solid transparent' }} />
               ))}
             </div>

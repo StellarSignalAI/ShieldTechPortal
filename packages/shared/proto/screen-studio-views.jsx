@@ -9,7 +9,7 @@ function ngCableFor(a, b) {
   const cats = [a, b];
   if (cats.includes('Power')) return { type: '18/2 Power', color: '#f59e0b' };
   if (cats.includes('Cabling')) return { type: 'Cat6A', color: 'var(--brand)' };
-  if (cats.includes('Access')) return { type: 'OSDP / Composite', color: '#c084fc' };
+  if (cats.includes('Access')) return { type: 'OSDP / Composite', color: 'var(--accent-2)' };
   if (cats.includes('Intrusion')) return { type: '22/4 Shielded', color: 'var(--status-warn)' };
   if (cats.includes('Network') || cats.includes('NVR') || cats.includes('Cameras')) return { type: 'Cat6A', color: 'var(--brand)' };
   return { type: 'Cat6A', color: 'var(--brand)' };

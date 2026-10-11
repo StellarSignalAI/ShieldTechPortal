@@ -78,7 +78,7 @@ function SurveyCloudScreen() {
                   <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-low)', marginBottom: 7 }}>SYNC ACTIVITY</div>
                   {(p.sync || []).map((s, i) => (
                     <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
-                      <span style={{ fontSize: 11, color: s.dir === 'up' ? 'var(--brand)' : '#c084fc' }}>{s.dir === 'up' ? '↑' : '↓'}</span>
+                      <span style={{ fontSize: 11, color: s.dir === 'up' ? 'var(--brand)' : 'var(--accent-2)' }}>{s.dir === 'up' ? '↑' : '↓'}</span>
                       <span style={{ fontSize: 11.5, color: 'var(--text-mid)', flex: 1 }}>{s.t}</span>
                       <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{s.time}</span>
                     </div>
@@ -150,7 +150,7 @@ function SurveyCloudScreen() {
                 ))}
                 {est.extras.map(x => (
                   <div key={x.id} style={{ display: 'flex', gap: 10, fontSize: 12, padding: '6px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
-                    <span className="mono" style={{ fontWeight: 700, color: '#c084fc', width: 24 }}>{x.qty}</span>
+                    <span className="mono" style={{ fontWeight: 700, color: 'var(--accent-2)', width: 24 }}>{x.qty}</span>
                     <span style={{ flex: 1, color: 'var(--text-mid)' }}>{x.desc}</span>
                     <span className="mono" style={{ color: 'var(--text-high)' }}>{money(x.qty * x.unit)}</span>
                   </div>

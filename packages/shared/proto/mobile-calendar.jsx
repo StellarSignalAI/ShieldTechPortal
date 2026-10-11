@@ -9,7 +9,7 @@ const MC_TYPES = {
   install:     { c: 'var(--brand)', label: 'Install' },
   maintenance: { c: '#FBBF24', label: 'Maintenance' },
   repair:      { c: '#F43F5E', label: 'Repair' },
-  survey:      { c: '#c084fc', label: 'Survey' },
+  survey:      { c: 'var(--accent-2)', label: 'Survey' },
   meeting:     { c: '#34D399', label: 'Meeting' },
 };
 const MC_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

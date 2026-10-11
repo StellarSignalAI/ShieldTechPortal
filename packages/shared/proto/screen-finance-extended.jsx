@@ -74,7 +74,7 @@ function FinanceProducts({ setModal, showToast }) {
                 <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--brand)' }}>{p.sku}</td>
                 <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, fontWeight: 500 }}>{p.name}</td>
                 <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
-                  <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: p.type==='Service'?'rgba(var(--brand-rgb),0.08)':p.type==='Inventory'?'rgba(var(--ok-rgb),0.08)':'rgba(192,132,252,0.08)', color: p.type==='Service'?'var(--brand)':p.type==='Inventory'?'var(--status-ok)':'#c084fc', fontWeight: 600 }}>{p.type}</span>
+                  <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: p.type==='Service'?'rgba(var(--brand-rgb),0.08)':p.type==='Inventory'?'rgba(var(--ok-rgb),0.08)':'rgba(25,227,236,0.08)', color: p.type==='Service'?'var(--brand)':p.type==='Inventory'?'var(--status-ok)':'var(--accent-2)', fontWeight: 600 }}>{p.type}</span>
                 </td>
                 <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-low)' }}>{p.cat}</td>
                 <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, fontWeight: 500, textAlign: 'right' }}>${p.price.toLocaleString()}</td>

@@ -36,7 +36,7 @@ function MRRScreen() {
 
   const planBreakdown = [
     { plan: 'Enterprise', mrr: activeContracts.filter(c=>c.plan.includes('Enterprise')).reduce((s,c)=>s+c.mrr,0), color: 'var(--brand)' },
-    { plan: 'Pro',        mrr: activeContracts.filter(c=>c.plan.includes('Pro')).reduce((s,c)=>s+c.mrr,0),        color: '#c084fc' },
+    { plan: 'Pro',        mrr: activeContracts.filter(c=>c.plan.includes('Pro')).reduce((s,c)=>s+c.mrr,0),        color: 'var(--accent-2)' },
     { plan: 'Standard',   mrr: activeContracts.filter(c=>c.plan.includes('Standard')).reduce((s,c)=>s+c.mrr,0),  color: 'var(--status-warn)' },
     { plan: 'Gov',        mrr: activeContracts.filter(c=>c.plan.includes('Government')).reduce((s,c)=>s+c.mrr,0),color: 'var(--status-ok)' },
   ];

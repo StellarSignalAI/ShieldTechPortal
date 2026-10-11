@@ -163,7 +163,7 @@ function FinanceOverview({ onNav }) {
     { label: 'Current', amount: 134400, color: 'var(--status-ok)' },
     { label: '1–30', amount: 22100, color: 'var(--status-warn)' },
     { label: '31–60', amount: 14250, color: 'var(--status-critical)' },
-    { label: '60+', amount: 5200, color: '#c084fc' },
+    { label: '60+', amount: 5200, color: 'var(--accent-2)' },
   ];
   // Derive real AR aging + revenue from imported QuickBooks invoices when
   // present; otherwise the demo figures above stand in.
@@ -216,7 +216,7 @@ function FinanceOverview({ onNav }) {
     { label: 'Current', amount: live.b.cur, color: 'var(--status-ok)' },
     { label: '1–30', amount: live.b.d30, color: 'var(--status-warn)' },
     { label: '31–60', amount: live.b.d60, color: 'var(--status-critical)' },
-    { label: '60+', amount: live.b.d60p, color: '#c084fc' },
+    { label: '60+', amount: live.b.d60p, color: 'var(--accent-2)' },
   ] : DEMO_AR;
   const arTotal = arBuckets.reduce((s, b) => s + b.amount, 0);
   const revMTDStr = live ? money(live.revMTD) : '$284,600';

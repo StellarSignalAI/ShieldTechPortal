@@ -399,6 +399,22 @@ ShieldTech's own data and tools.
   Fire tiles, Alerts, Controllers card, drawer directory → Money › Invoices opens the
   Invoices tab; no page errors.
 
+### 2m. ShieldTech palette restored (blues + neons, no purple)
+- `packages/shared/styles/tokens/colors.css` — Dark: navy canvas `#0A0E14` / card
+  `#111722` / modal `#161F2E`, brand electric blue `#3FA9F5`, `--accent-2` neon cyan
+  `#19E3EC`, status ok `#27E39A` · warn `#FFB020` · critical `#FF3B5C`; disciplines cctv
+  blue, access cyan, cabling green, **alarm amber `#FF9F1C`** (was purple), fire red, new
+  `--disc-intercom` / `--disc-av`. Light: cool white canvas, navy text `#0B2B47`, brand
+  `#1A72C4`. UniFi layouts, Inter / Geist Mono and spacing are unchanged.
+- `effects.css` / `base/global.css` — soft neon glows are back on focus, active, hover
+  and status dots (critical pulses).
+- Every remaining purple literal in `packages/shared` and `apps` (`#c084fc`, `#a78bfa`,
+  `#818cf8`, `#9B5CFF`, `#7C4DDB`, `#8B5CF6`, their rgba forms) now reads a token:
+  cyan `--accent-2`, `--disc-av`, `--disc-alarm` or `--brand`. QuickBooks app pills, OS
+  kind colours and the revops accent follow. Service worker cache → `shieldtech-v20`.
+- Verified with Playwright (desktop home / OS / Money / Alerts, mobile home) in both
+  appearances; no page errors.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

@@ -397,6 +397,6 @@ function ProjectWizard({ customer, onClose, onComplete, showToast }) {
 
 /* Icon/color lookups (shared with studio) */
 const catIcons = { 'Cameras': 'cam-dome', 'NVR': 'nvr-box', 'Access': 'reader', 'Intrusion': 'alarm-panel', 'Network': 'switch-ports', 'Power': 'ups', 'Cabling': 'cable', 'Fire': 'fire-panel' };
-const catColors = { 'Cameras': 'var(--brand)', 'NVR': 'var(--status-ok)', 'Access': '#c084fc', 'Intrusion': 'var(--status-warn)', 'Network': 'var(--status-ok)', 'Power': '#f59e0b', 'Cabling': 'var(--text-low)', 'Fire': 'var(--status-critical)' };
+const catColors = { 'Cameras': 'var(--brand)', 'NVR': 'var(--status-ok)', 'Access': 'var(--accent-2)', 'Intrusion': 'var(--status-warn)', 'Network': 'var(--status-ok)', 'Power': '#f59e0b', 'Cabling': 'var(--text-low)', 'Fire': 'var(--status-critical)' };
 
 Object.assign(window, { ProjectWizard, catIcons, catColors });

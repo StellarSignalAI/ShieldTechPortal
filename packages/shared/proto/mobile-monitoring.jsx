@@ -9,9 +9,9 @@
 const MM_CUSTOMERS = [];
 
 const MM_TYPE_COLOR = {
-  ISP: '#5c6f86', Gateway: 'var(--brand)', Switch: 'var(--brand)', 'Access Point': '#a78bfa',
+  ISP: '#5c6f86', Gateway: 'var(--brand)', Switch: 'var(--brand)', 'Access Point': 'var(--accent-2)',
   Camera: 'var(--status-ok)', Access: 'var(--status-warn)', Alarm: 'var(--status-critical)',
-  NVR: '#60a5fa', Server: '#818cf8',
+  NVR: '#60a5fa', Server: 'var(--disc-av)',
 };
 
 const MM_NODES = [];
@@ -49,7 +49,7 @@ function MMNodeDetail({ node, onClose, onNav }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-low)', marginBottom: 3 }}><span>CPU {node.cpu}%</span><span>MEM {node.mem}%</span></div>
                 <div style={{ display: 'flex', gap: 5 }}>
                   <div style={{ flex: 1 }}><MBar pct={node.cpu} /></div>
-                  <div style={{ flex: 1 }}><MBar pct={node.mem} color="#a78bfa" /></div>
+                  <div style={{ flex: 1 }}><MBar pct={node.mem} color="var(--accent-2)" /></div>
                 </div>
               </div>
             )}
@@ -244,7 +244,7 @@ function MMDiscovery({ onNav }) {
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
-        {[['ALL', counts.total, 'var(--text-high)'], ['MGD', counts.managed, 'var(--status-ok)'], ['VM', counts.virtual, '#a78bfa'], ['NEW', counts.new, 'var(--brand)']].map(([l, v, c]) => (
+        {[['ALL', counts.total, 'var(--text-high)'], ['MGD', counts.managed, 'var(--status-ok)'], ['VM', counts.virtual, 'var(--accent-2)'], ['NEW', counts.new, 'var(--brand)']].map(([l, v, c]) => (
           <div key={l} className="glass" style={{ padding: '10px 8px', borderRadius: 11, textAlign: 'center' }}>
             <div className="mono" style={{ fontSize: 18, fontWeight: 600, color: c, lineHeight: 1 }}>{v}</div>
             <div style={{ fontSize: 8, color: 'var(--text-low)', marginTop: 2, letterSpacing: '0.04em' }}>{l}</div>

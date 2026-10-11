@@ -392,7 +392,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
           {buckets.map((b, i) =>
           <div key={i} style={{ flex: 1, textAlign: 'center' }}>
               <div className="mono" style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>${b.v}K</div>
-              <div style={{ height: Math.max(b.v / 134 * 60, 8), background: i === 0 ? 'var(--status-ok)' : i === 1 ? 'var(--status-warn)' : i === 2 ? 'var(--status-critical)' : '#c084fc', borderRadius: '3px 3px 0 0', opacity: 0.3 }} />
+              <div style={{ height: Math.max(b.v / 134 * 60, 8), background: i === 0 ? 'var(--status-ok)' : i === 1 ? 'var(--status-warn)' : i === 2 ? 'var(--status-critical)' : 'var(--accent-2)', borderRadius: '3px 3px 0 0', opacity: 0.3 }} />
               <div style={{ fontSize: 8, color: 'var(--text-low)', marginTop: 3 }}>{b.l}</div>
             </div>
           )}
@@ -555,7 +555,7 @@ function WidgetRenderer({ type, label, editMode, density }) {
       <GlassPanel style={base}>
         <div className="label-sm" style={{ marginBottom: 10 }}>{label}</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-          {[{ l: 'New Invoice', icon: '▤', c: 'var(--brand)' }, { l: 'New Proposal', icon: '▤', c: 'var(--status-ok)' }, { l: 'New Ticket', icon: '▣', c: 'var(--status-warn)' }, { l: 'New Customer', icon: '◯', c: '#c084fc' }].map((a, i) =>
+          {[{ l: 'New Invoice', icon: '▤', c: 'var(--brand)' }, { l: 'New Proposal', icon: '▤', c: 'var(--status-ok)' }, { l: 'New Ticket', icon: '▣', c: 'var(--status-warn)' }, { l: 'New Customer', icon: '◯', c: 'var(--accent-2)' }].map((a, i) =>
           <div key={i} style={{ padding: '10px 8px', borderRadius: 6, background: `${a.c}08`, border: `1px solid ${a.c}20`, textAlign: 'center', cursor: 'pointer', transition: 'all 0.15s' }}
           onMouseEnter={(e) => e.currentTarget.style.background = `${a.c}15`}
           onMouseLeave={(e) => e.currentTarget.style.background = `${a.c}08`}>
@@ -1487,7 +1487,7 @@ function WidgetSizePreview({ type, label, size, styleIdx, styles }) {
 
   // Color helpers per widget type
   const typeColors = {
-    'kpi-cash': 'var(--status-ok)', 'kpi-revenue': 'var(--brand)', 'kpi-mrr': '#a78bfa', 'kpi-margin': '#fbbf24',
+    'kpi-cash': 'var(--status-ok)', 'kpi-revenue': 'var(--brand)', 'kpi-mrr': 'var(--accent-2)', 'kpi-margin': '#fbbf24',
     'ar-aging': 'var(--status-warn)', 'pipeline': 'var(--brand)', 'device-health': 'var(--status-ok)',
     'todays-jobs': 'var(--brand)', 'ai-insights': 'var(--brand)', 'activity': 'var(--text-mid)',
     'cashflow-forecast': 'var(--status-ok)', 'profitability': 'var(--brand)', 'fleet-map': 'var(--brand)',
@@ -1574,7 +1574,7 @@ function WidgetSizePreview({ type, label, size, styleIdx, styles }) {
     }
     if (type === 'ar-aging' || type === 'profitability') {
       const bars = type === 'ar-aging' ?
-      [{ l: 'Current', v: 0.76, c: 'var(--status-ok)' }, { l: '1-30', v: 0.40, c: 'var(--status-warn)' }, { l: '31-60', v: 0.22, c: 'var(--status-critical)' }, { l: '60+', v: 0.10, c: '#c084fc' }] :
+      [{ l: 'Current', v: 0.76, c: 'var(--status-ok)' }, { l: '1-30', v: 0.40, c: 'var(--status-warn)' }, { l: '31-60', v: 0.22, c: 'var(--status-critical)' }, { l: '60+', v: 0.10, c: 'var(--accent-2)' }] :
       [{ l: 'RMR', v: 0.68, c: 'var(--status-ok)' }, { l: 'Alarm', v: 0.35, c: 'var(--brand)' }, { l: 'CCTV', v: 0.32, c: 'var(--brand)' }, { l: 'Access', v: 0.29, c: 'var(--status-warn)' }];
       return (
         <div style={{ padding: 16, borderRadius: 14, background: 'var(--glass-bg)', border: '1px solid var(--border-subtle)', minHeight: 100 }}>

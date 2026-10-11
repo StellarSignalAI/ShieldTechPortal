@@ -226,7 +226,7 @@ function SubcontractorScreen() {
                 <div style={{ display: 'flex', justifyContent: 'space-around' }}>
                   <PerformanceRing value={sc.performance.onTime} label="On-Time" color="var(--status-ok)" />
                   <PerformanceRing value={sc.performance.quality} label="Quality" color="var(--brand)" />
-                  <PerformanceRing value={sc.performance.communication} label="Comms" color="#c084fc" />
+                  <PerformanceRing value={sc.performance.communication} label="Comms" color="var(--accent-2)" />
                 </div>
               </div>
               <div className="glass" style={{ padding: 16 }}>

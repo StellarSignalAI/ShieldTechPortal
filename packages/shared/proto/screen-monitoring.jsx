@@ -159,10 +159,10 @@ function monitorNodeType(t) {
 }
 const MONITOR_TYPE_ICONS = { gateway: '🛡', switch: '⊞', ap: '⊚', camera: '◉', access: '⊠', alarm: '⚠', fire: '△', intercom: '☏', av: '♫', cabling: '≣', nvr: '⊟', server: '▢', device: '▢' };
 const MONITOR_TYPE_COLORS = {
-  gateway: 'var(--brand)', switch: 'var(--brand)', ap: '#a78bfa',
+  gateway: 'var(--brand)', switch: 'var(--brand)', ap: 'var(--accent-2)',
   camera: 'var(--status-ok)', access: 'var(--status-warn)', alarm: 'var(--status-critical)',
-  nvr: '#60a5fa', server: '#818cf8', device: '#94a3b8',
-  fire: 'var(--disc-fire)', intercom: 'var(--disc-access)', av: 'var(--text-mid)', cabling: 'var(--disc-cabling)'
+  nvr: '#60a5fa', server: 'var(--disc-av)', device: '#94a3b8',
+  fire: 'var(--disc-fire)', intercom: 'var(--disc-intercom)', av: 'var(--disc-av)', cabling: 'var(--disc-cabling)'
 };
 
 /* ══════════════════════════════════════════════════════════════

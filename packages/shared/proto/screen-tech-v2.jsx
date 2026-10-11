@@ -995,7 +995,7 @@ function TechAssetsView() {
   };
 
   const typeIcons = { 'IP Camera': 'cam-dome', 'NVR': 'nvr-box', 'Access Reader': 'reader', 'Network Switch': 'switch-ports', 'Alarm Panel': 'alarm-panel', 'Access Point': 'ap-ceiling' };
-  const typeColors = { 'IP Camera': 'var(--brand)', 'NVR': 'var(--status-ok)', 'Access Reader': '#c084fc', 'Network Switch': 'var(--status-ok)', 'Alarm Panel': 'var(--status-warn)', 'Access Point': '#a78bfa' };
+  const typeColors = { 'IP Camera': 'var(--brand)', 'NVR': 'var(--status-ok)', 'Access Reader': 'var(--accent-2)', 'Network Switch': 'var(--status-ok)', 'Alarm Panel': 'var(--status-warn)', 'Access Point': 'var(--accent-2)' };
   const types = ['all', ...new Set(configs.map(a => a.type))];
   const filtered = configs.filter(a => { if (filter !== 'all' && a.type !== filter) return false; if (search && !a.name.toLowerCase().includes(search.toLowerCase()) && !a.ip.includes(search)) return false; return true; });
   const tabs = [{id:'configs',l:'Configs',c:configs.length},{id:'passwords',l:'Passwords',c:passwords.length},{id:'docs',l:'Docs',c:documents.length},{id:'networks',l:'Networks',c:networks.length},{id:'topology',l:'Topology',c:''}];
@@ -1118,7 +1118,7 @@ function TechAssetsView() {
    (assetStore / assetNetStore). No fabricated devices, IPs, or actions. */
 function MobileTopologyView({ configs = [], networks = [], showToast }) {
   const typeIcons = { 'IP Camera': 'cam-dome', 'NVR': 'nvr-box', 'Access Reader': 'reader', 'Network Switch': 'switch-ports', 'Alarm Panel': 'alarm-panel', 'Access Point': 'ap-ceiling' };
-  const typeColors = { 'IP Camera': 'var(--brand)', 'NVR': 'var(--status-ok)', 'Access Reader': '#c084fc', 'Network Switch': 'var(--status-ok)', 'Alarm Panel': 'var(--status-warn)', 'Access Point': '#a78bfa' };
+  const typeColors = { 'IP Camera': 'var(--brand)', 'NVR': 'var(--status-ok)', 'Access Reader': 'var(--accent-2)', 'Network Switch': 'var(--status-ok)', 'Alarm Panel': 'var(--status-warn)', 'Access Point': 'var(--accent-2)' };
   const netDevices = (configs || []).filter(d => d.ip);
   const onlineCount = netDevices.filter(d => d.status === 'online').length;
 

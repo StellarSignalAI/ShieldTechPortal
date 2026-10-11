@@ -308,7 +308,7 @@ function NIFinanceCOA({ setModal, showToast }) {
     { num: '6200', name: 'Insurance', type: 'Expense', sub: 'Operating', balance: 18400, active: true },
     { num: '6300', name: 'Office & Admin', type: 'Expense', sub: 'Operating', balance: 8600, active: true },
   ];
-  const typeColors = { Asset: 'var(--brand)', Liability: 'var(--status-warn)', Equity: '#c084fc', Income: 'var(--status-ok)', Expense: 'var(--status-critical)' };
+  const typeColors = { Asset: 'var(--brand)', Liability: 'var(--status-warn)', Equity: 'var(--accent-2)', Income: 'var(--status-ok)', Expense: 'var(--status-critical)' };
 
   return (
     <div style={{ maxWidth: 1200 }}>

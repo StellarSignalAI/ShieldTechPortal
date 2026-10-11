@@ -5,7 +5,7 @@
 // toggles, and click-a-device → BOM line + spec + price.
 // ============================================================
 
-const BR_TRADE_COLOR = { 'CCTV': 'var(--brand-hover)', 'Access': '#6EE7B7', 'Access (PACS)': '#6EE7B7', 'Intrusion': '#FCD34D', 'Cabling': '#A78BFA', 'Fiber': '#A78BFA', 'Network': '#7DD3FC', 'Intercom': '#FDBA74', 'Paging': '#FDBA74', 'Nurse call': '#F9A8D4', 'Fire': '#F87171', 'Div 28': '#94A3B8', 'Div 27': '#94A3B8' };
+const BR_TRADE_COLOR = { 'CCTV': 'var(--brand-hover)', 'Access': '#6EE7B7', 'Access (PACS)': '#6EE7B7', 'Intrusion': '#FCD34D', 'Cabling': 'var(--accent-2)', 'Fiber': 'var(--accent-2)', 'Network': '#7DD3FC', 'Intercom': '#FDBA74', 'Paging': '#FDBA74', 'Nurse call': '#F9A8D4', 'Fire': '#F87171', 'Div 28': '#94A3B8', 'Div 27': '#94A3B8' };
 
 /* Combined single-plan model: rooms + every trade's devices */
 function brPlan(opp) {

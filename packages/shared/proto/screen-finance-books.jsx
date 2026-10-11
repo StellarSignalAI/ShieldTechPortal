@@ -255,7 +255,7 @@ function FinanceCOA({ setModal, showToast }) {
     const q = window.__shieldQBO; if (!q) return;
     q.accounts(500).then(r => { if (r && r.ok && r.data && r.data.length) setAccounts(r.data.map(mapAcct)); });
   }, []);
-  const typeColors = { Asset: 'var(--brand)', Liability: 'var(--status-warn)', Equity: '#c084fc', Income: 'var(--status-ok)', Expense: 'var(--status-critical)' };
+  const typeColors = { Asset: 'var(--brand)', Liability: 'var(--status-warn)', Equity: 'var(--accent-2)', Income: 'var(--status-ok)', Expense: 'var(--status-critical)' };
 
   return (
     <div style={{ maxWidth: 1200 }}>

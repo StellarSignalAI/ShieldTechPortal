@@ -8,7 +8,7 @@ const surveyPrefsStore = createShieldStore('svprefs', { hubLayout: 'workflow', r
 /* ── Signal reading kinds (magicplan's instrument readings → RF/network site readings) ── */
 const SV_READINGS = [
   { kind: 'wifi', label: 'Wi-Fi RSSI',   unit: 'dBm',  color: 'var(--brand)', good: v => v >= -65 },
-  { kind: 'lte',  label: 'LTE signal',   unit: 'dBm',  color: '#c084fc', good: v => v >= -95 },
+  { kind: 'lte',  label: 'LTE signal',   unit: 'dBm',  color: 'var(--accent-2)', good: v => v >= -95 },
   { kind: 'link', label: 'Drop test',    unit: 'Mbps', color: '#34D399', good: v => v >= 900 },
   { kind: 'poe',  label: 'PoE budget',   unit: 'W',    color: '#FBBF24', good: v => v >= 15 },
 ];

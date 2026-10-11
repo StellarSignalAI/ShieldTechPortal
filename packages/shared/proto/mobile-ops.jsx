@@ -2,7 +2,7 @@
    Helpdesk · Incidents · Quote-to-Cash · Purchase Orders · Parts Requests
    Each reads/writes its shared store, so every action syncs to the desktop portal. */
 
-const OPS_TECHS = { MR:{n:'Mike Reyes',c:'var(--brand)'}, JL:{n:'Jessica Liu',c:'#34D399'}, KW:{n:'Kevin White',c:'#FBBF24'}, DP:{n:'Diana Patel',c:'#c084fc'}, TG:{n:'Tony Garcia',c:'#F43F5E'}, AL:{n:'Alex Lee',c:'#60a5fa'} };
+const OPS_TECHS = { MR:{n:'Mike Reyes',c:'var(--brand)'}, JL:{n:'Jessica Liu',c:'#34D399'}, KW:{n:'Kevin White',c:'#FBBF24'}, DP:{n:'Diana Patel',c:'var(--accent-2)'}, TG:{n:'Tony Garcia',c:'#F43F5E'}, AL:{n:'Alex Lee',c:'#60a5fa'} };
 const opsNow = () => new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 const PRI_COLOR = { critical:'var(--status-critical)', high:'var(--status-warn)', medium:'var(--brand)', low:'var(--text-low)', P1:'var(--status-critical)', P2:'var(--status-warn)', P3:'var(--brand)' };
 const STATUS_COLOR = { open:'var(--status-warn)', 'in-progress':'var(--brand)', resolved:'var(--status-ok)', active:'var(--status-critical)' };
@@ -105,7 +105,7 @@ function MTicketDetail({ id, onClose }) {
         )}
 
         {t.aiSuggestion && (
-          <div style={{ background: 'linear-gradient(135deg, rgba(var(--brand-rgb),0.08), rgba(192,132,252,0.05))', border: '1px solid var(--border-strong)', borderRadius: 11, padding: '11px 13px' }}>
+          <div style={{ background: 'linear-gradient(135deg, rgba(var(--brand-rgb),0.08), rgba(25,227,236,0.05))', border: '1px solid var(--border-strong)', borderRadius: 11, padding: '11px 13px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}><Icon name="hermes" size={13} color="var(--brand)" /><span style={{ fontSize: 10, fontWeight: 700, color: 'var(--brand)', letterSpacing: '0.04em' }}>SHIELDTECH AI SUGGESTS</span></div>
             <div style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.45 }}>{t.aiSuggestion}</div>
           </div>
@@ -393,7 +393,7 @@ function MPODetail({ id, onClose }) {
 
 /* ══════════════ PARTS REQUESTS ══════════════ */
 const PR_STATUS = ['requested','approved','picking','shipped','delivered'];
-const PR_COLOR = { requested:'var(--status-warn)', approved:'var(--brand)', picking:'#c084fc', shipped:'#60a5fa', delivered:'var(--status-ok)' };
+const PR_COLOR = { requested:'var(--status-warn)', approved:'var(--brand)', picking:'var(--accent-2)', shipped:'#60a5fa', delivered:'var(--status-ok)' };
 const PR_URGENCY = { urgent:'var(--status-critical)', normal:'var(--text-low)', low:'var(--text-low)' };
 function MPartsReq({ onNav }) {
   const [reqs] = useShieldStore(partsReqStore);

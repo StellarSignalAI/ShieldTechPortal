@@ -148,7 +148,7 @@ function QboGlance({ onNav }) {
   D.purchases.filter(p => qgIn(p.txn_date, exR)).forEach(p => { const k = p.category || p.account_name || p.memo || 'Uncategorized'; cats.set(k, (cats.get(k) || 0) + (Number(p.total) || 0)); });
   D.bills.filter(b => qgIn(b.txn_date, exR)).forEach(b => { const k = 'Bills · ' + (b.vendor_name || 'Vendors'); cats.set(k, (cats.get(k) || 0) + (Number(b.total) || 0)); });
   D.expenses.filter(e => e.status === 'approved' && !e.qbo_id && qgIn(e.date, exR)).forEach(e => { const k = e.category || 'Field'; cats.set(k, (cats.get(k) || 0) + (Number(e.amount) || 0)); });
-  const catColors = ['var(--brand)', 'var(--disc-access, #19E3EC)', 'var(--disc-alarm, #9B5CFF)', 'var(--status-warn)', 'var(--disc-cabling, #27E39A)', 'var(--text-low)'];
+  const catColors = ['var(--brand)', 'var(--disc-access, #19E3EC)', 'var(--disc-alarm, var(--disc-alarm))', 'var(--status-warn)', 'var(--disc-cabling, #27E39A)', 'var(--text-low)'];
   const catList = [...cats.entries()].sort((a, b) => b[1] - a[1]);
   const top = catList.slice(0, 5); const rest = catList.slice(5).reduce((s, c) => s + c[1], 0);
   const exParts = [...top.map(([k, v], i) => ({ label: k, value: v, color: catColors[i] })), ...(rest > 0 ? [{ label: 'Other', value: rest, color: catColors[5] }] : [])];
@@ -176,7 +176,7 @@ function QboGlance({ onNav }) {
   /* AR aging */
   const open = D.invoices.filter(i => i.status === 'pending' || i.status === 'overdue');
   const bucket = (lo, hi) => open.filter(i => { const d = Number(i.days) || 0; return d >= lo && (hi == null || d <= hi); }).reduce((s, i) => s + i.amount, 0);
-  const arParts = [{ label: 'Current', value: bucket(0, 0), color: 'var(--status-ok)' }, { label: '1 – 30', value: bucket(1, 30), color: 'var(--status-warn)' }, { label: '31 – 60', value: bucket(31, 60), color: 'var(--status-critical)' }, { label: '61 – 90', value: bucket(61, 90), color: 'var(--disc-alarm, #9B5CFF)' }, { label: '91 and over', value: bucket(91, null), color: 'var(--disc-fire, #FF3B5C)' }];
+  const arParts = [{ label: 'Current', value: bucket(0, 0), color: 'var(--status-ok)' }, { label: '1 – 30', value: bucket(1, 30), color: 'var(--status-warn)' }, { label: '31 – 60', value: bucket(31, 60), color: 'var(--status-critical)' }, { label: '61 – 90', value: bucket(61, 90), color: 'var(--disc-alarm, var(--disc-alarm))' }, { label: '91 and over', value: bucket(91, null), color: 'var(--disc-fire, #FF3B5C)' }];
   const arTotal = arParts.reduce((s, p) => s + p.value, 0);
   const overdue = open.filter(i => i.status === 'overdue').reduce((s, i) => s + i.amount, 0);
 
@@ -207,7 +207,7 @@ function QboGlance({ onNav }) {
   const bar = (label, v, max, color, right) => <div style={{ marginTop: 8 }}><div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, marginBottom: 4 }}><span style={{ color: 'var(--text-mid)' }}><span className="mono" style={{ color: 'var(--text-high)', fontWeight: 600, marginRight: 8 }}>{qgMoney(v)}</span>{label}</span>{right}</div><div style={{ height: 8, borderRadius: 4, background: 'var(--border-subtle)', overflow: 'hidden' }}><div style={{ width: `${max > 0 ? Math.min(100, v / max * 100) : 0}%`, height: '100%', background: color, borderRadius: 4 }} /></div></div>;
 
   const quick = [['Customer', 'customer'], ['Product or service', 'item'], ['Estimate', 'estimate'], ['Invoice', 'invoice'], ['Recurring invoice', () => onNav('recurring')], ['Receive payment', 'payment'], ['Sales receipt', () => onNav('credits')], ['Bank deposit', () => onNav('bankfeed')], ['Create statement', () => onNav('statements')]];
-  const funnel = [['Open leads', leadsN == null ? '—' : leadsN, () => qgNav('crm'), 'var(--disc-access, #19E3EC)'], ['Open estimates', openEst.length, () => onNav('estimates'), 'var(--brand)'], ['In progress projects', inProg.length, () => qgNav('projects'), 'var(--disc-cabling, #27E39A)'], ['Unpaid invoices', open.length, () => onNav('invoices'), 'var(--status-warn)'], ['Reviews', D.nps.length, () => qgNav('nps'), 'var(--disc-alarm, #9B5CFF)']];
+  const funnel = [['Open leads', leadsN == null ? '—' : leadsN, () => qgNav('crm'), 'var(--disc-access, #19E3EC)'], ['Open estimates', openEst.length, () => onNav('estimates'), 'var(--brand)'], ['In progress projects', inProg.length, () => qgNav('projects'), 'var(--disc-cabling, #27E39A)'], ['Unpaid invoices', open.length, () => onNav('invoices'), 'var(--status-warn)'], ['Reviews', D.nps.length, () => qgNav('nps'), 'var(--disc-alarm, var(--disc-alarm))']];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 1400, paddingBottom: 20 }}>
@@ -217,7 +217,7 @@ function QboGlance({ onNav }) {
           {pill('Accounting', () => onNav('accounts'), 'var(--brand)')}
           {pill('Expenses & Pay Bills', () => onNav('ap'), 'var(--disc-cabling, #27E39A)')}
           {pill('Sales & Get Paid', () => onNav('invoices'), 'var(--disc-access, #19E3EC)')}
-          {pill('Customers', () => qgNav('customers-list'), 'var(--disc-alarm, #9B5CFF)')}
+          {pill('Customers', () => qgNav('customers-list'), 'var(--disc-alarm, var(--disc-alarm))')}
           {pill('Team', () => qgNav('employees'), 'var(--status-warn)')}
           {pill('Tax', () => onNav('sales-tax'), 'var(--disc-fire, #FF3B5C)')}
           {pill('Reports', () => onNav('reports-center'), 'var(--text-low)')}

@@ -316,13 +316,13 @@ function SalesDealSheet({ item, onClose }) {
           {item._doc && item.stage !== 'won' && <button onClick={emailAcceptLink} style={act('rgba(var(--brand-rgb),0.08)', '1px solid var(--border-strong)', 'var(--brand)')}>✉ Email accept link</button>}
           {item.stage !== 'won' && <button onClick={winToProject} style={act('rgba(var(--ok-rgb),0.08)', '1px solid rgba(var(--ok-rgb),0.3)', 'var(--status-ok)')}>✓ Won{item._doc ? ' → Project' : ''}</button>}
           <button onClick={() => setLogOpen(true)} style={act('rgba(var(--brand-rgb),0.05)', '1px solid var(--border-subtle)', 'var(--text-mid)')}>+ Log activity / task</button>
-          <button disabled={aiBusy} onClick={() => aiDraft('follow-up')} style={act('rgba(192,132,252,0.08)', '1px solid rgba(192,132,252,0.3)', '#c084fc')}>{aiBusy ? 'Drafting…' : '⟡ AI follow-up email'}</button>
+          <button disabled={aiBusy} onClick={() => aiDraft('follow-up')} style={act('rgba(25,227,236,0.08)', '1px solid rgba(25,227,236,0.3)', 'var(--accent-2)')}>{aiBusy ? 'Drafting…' : '⟡ AI follow-up email'}</button>
         </div>
 
         {/* AI draft */}
         {draft && (
-          <div className="glass" style={{ padding: 13, borderRadius: 12, borderLeft: '3px solid #c084fc' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#c084fc', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>AI draft — {draft.intent}</div>
+          <div className="glass" style={{ padding: 13, borderRadius: 12, borderLeft: '3px solid var(--accent-2)' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent-2)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>AI draft — {draft.intent}</div>
             <textarea value={draft.text} onChange={e => setDraft(d => ({ ...d, text: e.target.value }))} rows={7}
               style={{ width: '100%', padding: '10px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 12.5, lineHeight: 1.5, fontFamily: 'var(--font-body)', outline: 'none', resize: 'vertical' }} />
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>

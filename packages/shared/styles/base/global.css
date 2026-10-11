@@ -68,15 +68,15 @@ body {
   display: inline-block;
   flex-shrink: 0;
 }
-.status-dot.online { background: var(--status-ok); }
-.status-dot.warning { background: var(--status-warn); }
-.status-dot.critical { background: var(--status-critical); animation: pulse-critical 2s ease-in-out infinite; }
+.status-dot.online { background: var(--status-ok); box-shadow: var(--glow-ok); }
+.status-dot.warning { background: var(--status-warn); box-shadow: var(--glow-warn); }
+.status-dot.critical { background: var(--status-critical); box-shadow: var(--glow-critical); animation: pulse-critical 2s ease-in-out infinite; }
 .status-dot.offline { background: var(--text-low); }
-.status-dot.info { background: var(--status-info); }
+.status-dot.info { background: var(--status-info); box-shadow: 0 0 8px var(--status-info); }
 
 @keyframes pulse-critical {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(240,58,71,0.45); }
-  50% { box-shadow: 0 0 0 4px rgba(240,58,71,0); }
+  0%, 100% { box-shadow: 0 0 4px var(--status-critical); }
+  50% { box-shadow: 0 0 12px var(--status-critical), 0 0 24px rgba(var(--critical-rgb),0.3); }
 }
 
 @keyframes pulse-online {

@@ -22,7 +22,7 @@ function mdAge(days) {
   if (days <= 0) return { key: 'current', label: 'Current', token: '--status-ok', fb: '#34D399' };
   if (days <= 30) return { key: 'd30', label: '1–30 days', token: '--status-warn', fb: '#FBBF24' };
   if (days <= 60) return { key: 'd60', label: '31–60 days', token: '--status-critical', fb: '#F43F5E' };
-  return { key: 'd90', label: '60+ days', token: '--disc-alarm', fb: '#9B5CFF' };
+  return { key: 'd90', label: '60+ days', token: '--disc-alarm', fb: 'var(--disc-alarm)' };
 }
 const mdAgeColor = (days) => { const a = mdAge(days); return mdVar(a.token, a.fb); };
 

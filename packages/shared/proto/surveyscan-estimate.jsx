@@ -55,7 +55,7 @@ function SV2Estimate({ project, update, onNav }) {
         <MSection title="Extras & T&M">
           {e.extras.map(x => (
             <div key={x.id} style={{ display: 'flex', gap: 8, alignItems: 'baseline', padding: '6px 2px', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
-              <span className="mono" style={{ fontSize: 11.5, fontWeight: 700, color: '#c084fc', width: 30, flexShrink: 0 }}>{x.qty}×</span>
+              <span className="mono" style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--accent-2)', width: 30, flexShrink: 0 }}>{x.qty}×</span>
               <span style={{ fontSize: 11.5, color: 'var(--text-mid)', flex: 1 }}>{x.desc}</span>
               <span className="mono" style={{ fontSize: 11, color: 'var(--text-high)' }}>{money(x.qty * x.unit)}</span>
             </div>
@@ -137,13 +137,13 @@ function SV2Estimate({ project, update, onNav }) {
           <MSection title="ShieldTech AI voice notes">
             {(project.aiNotes || []).map(n => (
               <div key={n.id} style={{ display: 'flex', gap: 8, padding: '6px 2px', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)', alignItems: 'baseline' }}>
-                <span style={{ fontSize: 9, color: '#c084fc', fontWeight: 700, flexShrink: 0 }}>{n.room}</span>
+                <span style={{ fontSize: 9, color: 'var(--accent-2)', fontWeight: 700, flexShrink: 0 }}>{n.room}</span>
                 <span style={{ fontSize: 11, color: 'var(--text-mid)', fontStyle: 'italic' }}>“{n.text}”</span>
               </div>
             ))}
           </MSection>
         )}
-        <button onClick={() => { showToast('Scope package exported — proposal draft created', 'ok'); onNav && onNav('proposals'); }} style={{ padding: '13px 0', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #c084fc, #8b5cf6)', color: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Build proposal from scope →</button>
+        <button onClick={() => { showToast('Scope package exported — proposal draft created', 'ok'); onNav && onNav('proposals'); }} style={{ padding: '13px 0', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, var(--accent-2), var(--brand))', color: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Build proposal from scope →</button>
       </>}
     </div>
   );

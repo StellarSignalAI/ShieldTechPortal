@@ -24,7 +24,7 @@ function MSiteScan({ onNav }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.id}</span>
                 <MBadge color={p.status === 'complete' ? 'var(--status-ok)' : 'var(--status-warn)'}>{p.status}</MBadge>
-                {p.pushed && p.pushed.length > 0 && <MBadge color="#c084fc">→ studio</MBadge>}
+                {p.pushed && p.pushed.length > 0 && <MBadge color="var(--accent-2)">→ studio</MBadge>}
                 <span className="mono" style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-low)' }}>{p.created}</span>
               </div>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-high)', marginTop: 3 }}>{p.customer}</div>

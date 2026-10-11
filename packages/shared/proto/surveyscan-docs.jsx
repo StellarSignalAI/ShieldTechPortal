@@ -34,7 +34,7 @@ function SV2Docs({ project, floor, updateFloor }) {
 
   const media = floor.photos || [], issues = floor.issues || [], readings = floor.readings || [], zones = floor.zones || [];
   const pins =
-    sub === 'Media'    ? media.map(m => ({ id: m.id, x: m.x, y: m.y, c: m.kind === '360' ? '#c084fc' : m.kind === 'video' ? '#FBBF24' : 'var(--brand)', glyph: svMediaGlyph[m.kind || 'photo'] })) :
+    sub === 'Media'    ? media.map(m => ({ id: m.id, x: m.x, y: m.y, c: m.kind === '360' ? 'var(--accent-2)' : m.kind === 'video' ? '#FBBF24' : 'var(--brand)', glyph: svMediaGlyph[m.kind || 'photo'] })) :
     sub === 'Issues'   ? issues.map(i => ({ id: i.id, x: i.x, y: i.y, c: SV_SEV[i.sev].c, glyph: '!' })) :
     sub === 'Readings' ? readings.map(r => ({ id: r.id, x: r.x, y: r.y, c: svReading(r.kind).color, glyph: '·' })) :
     zones.map(z => ({ id: z.id, x: ssCentroid(z.poly)[0], y: ssCentroid(z.poly)[1], poly: z.poly, c: svZone(z.type).c }));
@@ -64,7 +64,7 @@ function SV2Docs({ project, floor, updateFloor }) {
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{m.label}</div>
               <div style={{ fontSize: 9.5, color: 'var(--text-low)' }}>{(m.kind || 'photo') === '360' ? '360° panorama · tap to walk it' : m.kind === 'video' ? `video · ${m.dur || '0:30'}` : 'photo · markup available'} · pinned on plan</div>
             </div>
-            <MBadge color={m.kind === '360' ? '#c084fc' : m.kind === 'video' ? '#FBBF24' : 'var(--brand)'}>{m.kind || 'photo'}</MBadge>
+            <MBadge color={m.kind === '360' ? 'var(--accent-2)' : m.kind === 'video' ? '#FBBF24' : 'var(--brand)'}>{m.kind || 'photo'}</MBadge>
           </div>
         ))}
       </>}

@@ -1,22 +1,22 @@
-/* ShieldTech — Shadow & motion tokens. UniFi pattern: flat surfaces, a thin
-   brand ring on focus/active, soft lift on hover — no neon glow. The glow
-   names stay so every surface keeps working. */
+/* ShieldTech — Glow, shadow & motion tokens. The neon signature: a soft blue
+   halo on focus/active and a faint glow on status dots, on otherwise flat
+   UniFi-pattern surfaces. */
 :root {
-  --glow-brand: 0 0 0 1px var(--brand);
-  --glow-brand-sm: 0 0 0 1px rgba(var(--brand-rgb),0.35);
+  --glow-brand: 0 0 0 1px var(--brand), 0 0 22px -6px var(--brand);
+  --glow-brand-sm: 0 0 0 1px rgba(var(--brand-rgb),0.35), 0 0 12px -4px var(--brand);
 
-  /* Hover lift — cards raise with a soft shadow + faint brand ring */
-  --shadow-hover: 0 6px 18px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(var(--brand-rgb),0.22);
+  /* Hover lift — cards raise with a deep shadow + faint brand ring */
+  --shadow-hover: 0 8px 22px -14px rgba(0,0,0,0.8), 0 0 0 1px rgba(var(--brand-rgb),0.22);
 
-  /* Focus — thin ring */
-  --glow-focus: 0 0 0 3px rgba(var(--brand-rgb),0.22);
+  /* Focus — glowing ring */
+  --glow-focus: 0 0 0 3px rgba(var(--brand-rgb),0.24);
 
-  /* Status rings (dots, badges) — flat */
-  --glow-ok: none;
-  --glow-warn: none;
-  --glow-critical: none;
+  /* Status glows (dots, badges) */
+  --glow-ok: 0 0 8px var(--status-ok);
+  --glow-warn: 0 0 8px var(--status-warn);
+  --glow-critical: 0 0 8px var(--status-critical);
 
-  /* Motion — short, one vocabulary everywhere */
+  /* Motion — short, springy, one vocabulary everywhere */
   --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-fast: 120ms;
   --dur: 180ms;

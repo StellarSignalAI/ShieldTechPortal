@@ -178,7 +178,7 @@ function StudioScreen({ onExportToProposal }) {
   const catIcons = { 'Cameras': 'cam-dome', 'NVR': 'nvr-box', 'Access': 'reader', 'Intrusion': 'alarm-panel', 'Network': 'switch-ports', 'Power': 'ups', 'Cabling': 'cable', 'Fire': 'fire-panel' };
   const subcatIcons = { 'Dome': 'cam-dome', 'Bullet': 'cam-bullet', 'PTZ': 'cam-ptz', 'Mini Dome': 'cam-mini', 'Turret': 'cam-turret', 'Fisheye': 'cam-fisheye', 'Reader': 'reader', 'Controller': 'controller', 'Switch': 'switch-ports', 'Access Point': 'ap-ceiling', 'UPS': 'ups', 'Power Supply': 'poe', 'Motion Sensor': 'motion-sensor', 'Panel': 'alarm-panel', 'Door Lock': 'door-strike', '8ch Recorder': 'nvr-box', '32ch Recorder': 'nvr-box', '64ch Recorder': 'nvr-box' };
 
-  const catColors = { 'Cameras': 'var(--brand)', 'NVR': 'var(--status-ok)', 'Access': '#c084fc', 'Intrusion': 'var(--status-warn)', 'Network': 'var(--status-ok)', 'Power': '#f59e0b', 'Cabling': 'var(--text-low)', 'Fire': 'var(--status-critical)' };
+  const catColors = { 'Cameras': 'var(--brand)', 'NVR': 'var(--status-ok)', 'Access': 'var(--accent-2)', 'Intrusion': 'var(--status-warn)', 'Network': 'var(--status-ok)', 'Power': '#f59e0b', 'Cabling': 'var(--text-low)', 'Fire': 'var(--status-critical)' };
   window.__studioSubcatIcons = subcatIcons;
   const studioTabs = [{ id: 'plan', l: 'Plan View' }, { id: 'interconnect', l: 'Interconnect' }, { id: 'rack', l: 'Rack Elevation' }, { id: 'photo', l: 'Image Quote' }];
 
@@ -592,8 +592,8 @@ function StudioScreen({ onExportToProposal }) {
 
       {/* SiteScan imports chip */}
       {ssInbox.length > 0 &&
-      <div onClick={() => setDrawingBuilderOpen(true)} style={{ position: 'fixed', bottom: 24, left: 24, zIndex: 800, display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', borderRadius: 10, background: 'var(--card)', border: '1px solid rgba(192,132,252,0.45)', cursor: 'pointer', boxShadow: '0 6px 24px rgba(0,0,0,0.4)' }}>
-          <span style={{ fontSize: 13, color: '#c084fc' }}>◉</span>
+      <div onClick={() => setDrawingBuilderOpen(true)} style={{ position: 'fixed', bottom: 24, left: 24, zIndex: 800, display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', borderRadius: 10, background: 'var(--card)', border: '1px solid rgba(25,227,236,0.45)', cursor: 'pointer', boxShadow: '0 6px 24px rgba(0,0,0,0.4)' }}>
+          <span style={{ fontSize: 13, color: 'var(--accent-2)' }}>◉</span>
           <span style={{ fontSize: 11.5, color: 'var(--text-high)', fontWeight: 500 }}>{ssInbox.length} SiteScan blueprint{ssInbox.length > 1 ? 's' : ''} imported</span>
           <span style={{ fontSize: 10, color: 'var(--brand)', fontWeight: 600 }}>Open →</span>
         </div>}

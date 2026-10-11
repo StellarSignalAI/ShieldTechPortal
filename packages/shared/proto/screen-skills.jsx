@@ -20,7 +20,7 @@ function SkillsMatrixScreen() {
       { id: 'ip-config',   name: 'IP Camera Config',  vendor: 'General' },
       { id: 'nvr-setup',   name: 'NVR/DVR Setup',     vendor: 'General' },
     ]},
-    { group: 'Access Control', color: '#c084fc', skills: [
+    { group: 'Access Control', color: 'var(--accent-2)', skills: [
       { id: 'hid-cert',    name: 'HID Certified',     vendor: 'HID' },
       { id: 'lenel-cert',  name: 'Lenel S2 Cert',     vendor: 'Lenel' },
       { id: 'door-hardware',name: 'Door Hardware',    vendor: 'General' },

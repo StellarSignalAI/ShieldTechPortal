@@ -5,7 +5,7 @@ function ProjectsScreen() {
   const columns = [
     { id: 'planning', label: 'Planning', color: 'var(--text-low)' },
     { id: 'in-progress', label: 'In Progress', color: 'var(--brand)' },
-    { id: 'review', label: 'Review', color: '#c084fc' },
+    { id: 'review', label: 'Review', color: 'var(--accent-2)' },
     { id: 'complete', label: 'Complete', color: 'var(--status-ok)' },
   ];
   const [wizardOpen, setWizardOpen] = React.useState(false);
@@ -870,7 +870,7 @@ function ReportsScreen() {
                 <span className="mono" style={{ fontSize: 12, fontWeight: 500 }}>${(r.value / 1000).toFixed(0)}K <span style={{ color: 'var(--text-low)', fontWeight: 400 }}>({r.pct}%)</span></span>
               </div>
               <div style={{ height: 6, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden' }}>
-                <div style={{ width: `${r.pct}%`, height: '100%', borderRadius: 3, background: i === 0 ? 'var(--brand)' : i === 1 ? 'var(--status-warn)' : i === 2 ? 'var(--status-ok)' : '#c084fc' }} />
+                <div style={{ width: `${r.pct}%`, height: '100%', borderRadius: 3, background: i === 0 ? 'var(--brand)' : i === 1 ? 'var(--status-warn)' : i === 2 ? 'var(--status-ok)' : 'var(--accent-2)' }} />
               </div>
             </div>
           ))}

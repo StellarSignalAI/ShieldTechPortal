@@ -80,7 +80,7 @@ function KnowledgeScreen() {
     return <div key={i} style={{ fontSize: 12, color: 'var(--text-mid)', lineHeight: 1.6, marginBottom: 2 }}>{line}</div>;
   });
 
-  const catColors = { install: 'var(--brand)', troubleshoot: 'var(--status-critical)', config: '#c084fc', compliance: 'var(--status-warn)', vendor: 'var(--status-ok)' };
+  const catColors = { install: 'var(--brand)', troubleshoot: 'var(--status-critical)', config: 'var(--accent-2)', compliance: 'var(--status-warn)', vendor: 'var(--status-ok)' };
 
   return (
     <div style={{ display: 'flex', gap: 12, height: 'calc(100vh - 76px)', overflow: 'hidden' }}>

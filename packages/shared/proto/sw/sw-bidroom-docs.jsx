@@ -116,7 +116,7 @@ function BrDrawingSheet({ opp, sheet, highlightRow, marked = true }) {
             {symFor === 'cam' && <><circle cx={d.x} cy={d.y} r="1.15" fill="none" stroke="#7D7CF5" strokeWidth="0.35" /><line x1={d.x} y1={d.y} x2={d.x + 1.7} y2={d.y - 1.2} stroke="#7D7CF5" strokeWidth="0.35" /></>}
             {symFor === 'door' && <rect x={d.x - 1} y={d.y - 1} width="2" height="2" fill="none" stroke="#6EE7B7" strokeWidth="0.35" transform={`rotate(45 ${d.x} ${d.y})`} />}
             {symFor === 'zone' && <path d={`M ${d.x} ${d.y - 1.3} L ${d.x + 1.2} ${d.y + 0.9} L ${d.x - 1.2} ${d.y + 0.9} Z`} fill="none" stroke="#FCD34D" strokeWidth="0.35" />}
-            {symFor === 'drop' && <><circle cx={d.x} cy={d.y} r="0.5" fill="#A78BFA" /><line x1={d.x} y1={d.y} x2={d.x} y2={d.y - 1.6} stroke="#A78BFA" strokeWidth="0.3" /></>}
+            {symFor === 'drop' && <><circle cx={d.x} cy={d.y} r="0.5" fill="var(--accent-2)" /><line x1={d.x} y1={d.y} x2={d.x} y2={d.y - 1.6} stroke="var(--accent-2)" strokeWidth="0.3" /></>}
             {symFor === 'net' && <rect x={d.x - 1} y={d.y - 0.7} width="2" height="1.4" fill="none" stroke="#7DD3FC" strokeWidth="0.35" />}
             {symFor === 'spk' && <path d={`M ${d.x - 1} ${d.y} L ${d.x} ${d.y} L ${d.x + 1} ${d.y - 1} L ${d.x + 1} ${d.y + 1} L ${d.x} ${d.y} Z`} fill="none" stroke="#FDBA74" strokeWidth="0.3" />}
           </g>

@@ -603,7 +603,7 @@ function MSurveyCloudFull({ onNav }) {
   const scans = (window.__shieldStores && window.__shieldStores.sitescans && window.__shieldStores.sitescans.get()) || [];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <OpsKpis items={[['AI SURVEYS', (surveys || []).length, 'var(--brand)'], ['SITE SCANS', scans.length, '#c084fc']]} />
+      <OpsKpis items={[['AI SURVEYS', (surveys || []).length, 'var(--brand)'], ['SITE SCANS', scans.length, 'var(--accent-2)']]} />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
         <MActionBtn label="New Survey Scan" icon="survey-ai" primary onClick={() => onNav && onNav('sitescan')} />
         <MActionBtn label="AI Estimator" icon="hermes" onClick={() => onNav && onNav('survey-ai')} />

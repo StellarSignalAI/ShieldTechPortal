@@ -2,7 +2,7 @@
    Open Tickets · Device Monitoring · Work Orders · Today's Schedule · Fleet Map · Approvals */
 
 const PRIO = { critical: '#F43F5E', high: '#FBBF24', medium: 'var(--brand)', low: '#5C6F86' };
-const TECH_COLORS = { MR: 'var(--brand)', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
+const TECH_COLORS = { MR: 'var(--brand)', JL: '#34D399', KW: '#FBBF24', DP: 'var(--accent-2)', TG: '#F43F5E' };
 const fmtH = h => `${((h + 11) % 12) + 1}${h < 12 ? 'AM' : 'PM'}`;
 
 /* ─────────── Open Tickets / SLA ─────────── */
@@ -119,7 +119,7 @@ function WWorkOrders({ size }) {
           { top: 'Active', color: '#34D399', bot: inProg.length },
           { top: 'Sched', color: 'var(--brand)', bot: sched },
           { top: 'Done', color: '#5C6F86', bot: done },
-          { top: 'Total', color: '#c084fc', bot: wos.length },
+          { top: 'Total', color: 'var(--accent-2)', bot: wos.length },
         ]} />
       </>}
       {size === 'large' && (
@@ -142,7 +142,7 @@ function WSchedule({ size }) {
   const next = today.find(j => j.start >= 9) || today[0];
   const revenue = today.reduce((s, j) => s + (j.value || 0), 0);
   return (
-    <WCard size={size} accent="#c084fc" title="Today" glyph="calendar"
+    <WCard size={size} accent="var(--accent-2)" title="Today" glyph="calendar"
       sub={size !== 'small' ? `${today.length} jobs · $${(revenue / 1000).toFixed(1)}k` : null}>
       {size === 'small' && next && (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -153,9 +153,9 @@ function WSchedule({ size }) {
       )}
       {size !== 'small' && <>
         <WDivide />
-        <WStrip accent="#c084fc" anchor={size === 'medium'} cells={today.slice(0, 6).map(j => ({
+        <WStrip accent="var(--accent-2)" anchor={size === 'medium'} cells={today.slice(0, 6).map(j => ({
           top: fmtH(Math.floor(j.start)),
-          color: { install: 'var(--brand)', repair: '#F43F5E', survey: '#c084fc', maintenance: '#FBBF24', meeting: '#34D399' }[j.type] || 'var(--brand)',
+          color: { install: 'var(--brand)', repair: '#F43F5E', survey: 'var(--accent-2)', maintenance: '#FBBF24', meeting: '#34D399' }[j.type] || 'var(--brand)',
           bot: (j.techs && j.techs[0]) || '—',
         }))} />
       </>}
@@ -163,8 +163,8 @@ function WSchedule({ size }) {
         <div style={{ marginTop: 14 }}>
           {today.slice(0, 4).map((j, i) => (
             <WRow key={j.id} last={i === Math.min(today.length, 4) - 1} label={j.title.split('—')[1] || j.title}
-              glyph="dispatch" glyphColor={TECH_COLORS[(j.techs || [])[0]] || '#c084fc'}
-              a={fmtH(Math.floor(j.start))} b={j.value ? `$${(j.value / 1000).toFixed(0)}k` : '—'} accent="#c084fc" />
+              glyph="dispatch" glyphColor={TECH_COLORS[(j.techs || [])[0]] || 'var(--accent-2)'}
+              a={fmtH(Math.floor(j.start))} b={j.value ? `$${(j.value / 1000).toFixed(0)}k` : '—'} accent="var(--accent-2)" />
           ))}
         </div>
       )}
@@ -244,7 +244,7 @@ function WApprovals({ size }) {
         <WStrip accent="#FBBF24" anchor={size === 'medium'} cells={[
           { top: 'Exp', color: 'var(--brand)', bot: byK('EXPENSE') },
           { top: 'Time', color: '#34D399', bot: byK('TIMESHEET') },
-          { top: 'PO', color: '#c084fc', bot: byK('PURCHASE ORDER') },
+          { top: 'PO', color: 'var(--accent-2)', bot: byK('PURCHASE ORDER') },
         ]} />
       </>}
       {size === 'large' && (
@@ -262,7 +262,7 @@ function WApprovals({ size }) {
 registerWidget('tickets',    { label: 'Open Tickets / SLA',     cat: 'Operations', accent: '#F43F5E', glyph: 'chat',      sizes: ['small', 'medium', 'large'], render: s => <WTickets size={s} /> });
 registerWidget('monitoring', { label: 'Device Monitoring',      cat: 'Operations', accent: '#34D399', glyph: 'topology',  sizes: ['small', 'medium', 'large'], render: s => <WMonitoring size={s} /> });
 registerWidget('workorders', { label: 'Work Orders',            cat: 'Operations', accent: '#34D399', glyph: 'clipboard', sizes: ['small', 'medium', 'large'], render: s => <WWorkOrders size={s} /> });
-registerWidget('schedule',   { label: "Today's Schedule",       cat: 'Operations', accent: '#c084fc', glyph: 'calendar',  sizes: ['small', 'medium', 'large'], render: s => <WSchedule size={s} /> });
+registerWidget('schedule',   { label: "Today's Schedule",       cat: 'Operations', accent: 'var(--accent-2)', glyph: 'calendar',  sizes: ['small', 'medium', 'large'], render: s => <WSchedule size={s} /> });
 registerWidget('fleet',      { label: 'Fleet Map / Locations',  cat: 'Operations', accent: 'var(--brand)', glyph: 'dispatch',  sizes: ['small', 'medium', 'large'], render: s => <WFleet size={s} /> });
 registerWidget('approvals',  { label: 'Approvals Pending',      cat: 'Operations', accent: '#FBBF24', glyph: 'check',     sizes: ['small', 'medium', 'large'], render: s => <WApprovals size={s} /> });
 

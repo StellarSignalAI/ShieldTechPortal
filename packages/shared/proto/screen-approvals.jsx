@@ -80,7 +80,7 @@ function ApprovalsScreen() {
   const tagColors = {
     pricing: { bg: 'rgba(var(--warn-rgb),0.12)', color: 'var(--status-warn)', border: 'rgba(var(--warn-rgb),0.25)' },
     comms: { bg: 'rgba(var(--brand-rgb),0.12)', color: 'var(--brand)', border: 'rgba(var(--brand-rgb),0.25)' },
-    contract: { bg: 'rgba(192,132,252,0.12)', color: '#c084fc', border: 'rgba(192,132,252,0.25)' },
+    contract: { bg: 'rgba(25,227,236,0.12)', color: 'var(--accent-2)', border: 'rgba(25,227,236,0.25)' },
     alarm: { bg: 'rgba(var(--critical-rgb),0.12)', color: 'var(--status-critical)', border: 'rgba(var(--critical-rgb),0.25)' },
     refund: { bg: 'rgba(var(--ok-rgb),0.12)', color: 'var(--status-ok)', border: 'rgba(var(--ok-rgb),0.25)' },
     timesheet: { bg: 'rgba(var(--ok-rgb),0.12)', color: 'var(--status-ok)', border: 'rgba(var(--ok-rgb),0.25)' },

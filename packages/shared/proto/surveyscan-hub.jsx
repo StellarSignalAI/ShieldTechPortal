@@ -191,13 +191,13 @@ function SV2Project({ project, onClose, onNav }) {
 
       {/* ShieldTech AI capture — hero */}
       {prefs.aiCapture && (
-        <button onClick={() => setAi(true)} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 13px', borderRadius: 12, border: '1px solid rgba(192,132,252,0.35)', background: 'linear-gradient(120deg, rgba(192,132,252,0.10), rgba(var(--brand-rgb),0.06))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-          <span style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, background: 'rgba(192,132,252,0.14)', border: '1px solid rgba(192,132,252,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#c084fc' }}>✦</span>
+        <button onClick={() => setAi(true)} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 13px', borderRadius: 12, border: '1px solid rgba(25,227,236,0.35)', background: 'linear-gradient(120deg, rgba(25,227,236,0.10), rgba(var(--brand-rgb),0.06))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+          <span style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, background: 'rgba(25,227,236,0.14)', border: '1px solid rgba(25,227,236,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--accent-2)' }}>✦</span>
           <span style={{ flex: 1 }}>
             <span style={{ display: 'block', fontSize: 12.5, fontWeight: 700, color: 'var(--text-high)' }}>Walk & talk with ShieldTech AI</span>
             <span style={{ display: 'block', fontSize: 9.5, color: 'var(--text-low)' }}>Speak as you scan — issues, scope & notes file themselves</span>
           </span>
-          <span style={{ color: '#c084fc', fontSize: 14 }}>›</span>
+          <span style={{ color: 'var(--accent-2)', fontSize: 14 }}>›</span>
         </button>
       )}
 

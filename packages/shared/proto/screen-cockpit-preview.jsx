@@ -142,8 +142,8 @@ function CockpitPreviewScreen() {
   return (
     <div style={{ padding: '22px 28px 40px', maxWidth: 1560, margin: '0 auto' }}>
       {/* Preview banner */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderRadius: 10, border: '1px dashed rgba(192,132,252,0.5)', background: 'rgba(192,132,252,0.06)', marginBottom: 18 }}>
-        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.1em', color: '#c084fc', border: '1px solid rgba(192,132,252,0.5)', borderRadius: 5, padding: '2px 7px' }}>PREVIEW</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderRadius: 10, border: '1px dashed rgba(25,227,236,0.5)', background: 'rgba(25,227,236,0.06)', marginBottom: 18 }}>
+        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.1em', color: 'var(--accent-2)', border: '1px solid rgba(25,227,236,0.5)', borderRadius: 5, padding: '2px 7px' }}>PREVIEW</span>
         <span style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>A sample of the bespoke desktop — one command center on your live data. Tell Claude “make this my desktop” or “delete the preview”.</span>
       </div>
 

@@ -23,7 +23,7 @@ const ucClock = (t) => new Date(t).toLocaleTimeString([], { hour: 'numeric', min
 const ucStatus = (a) => !a.status || a.status === 'online' ? 'online' : a.status === 'warning' ? 'warning' : 'offline';
 const ucKind = (a) => (typeof monitorNodeType === 'function' ? monitorNodeType(a.type) : 'device');
 const UC_KIND_LABEL = { gateway: 'Gateway', switch: 'Switch', ap: 'Access point', camera: 'Camera', access: 'Door / reader', alarm: 'Intrusion', fire: 'Fire alarm', intercom: 'Intercom', av: 'AV / paging', cabling: 'Rack / cabling', nvr: 'Recorder', server: 'Server', device: 'Device' };
-const UC_KIND_COLOR = { gateway: 'var(--brand)', switch: 'var(--brand)', ap: 'var(--brand)', camera: 'var(--disc-cctv)', access: 'var(--disc-access)', alarm: 'var(--disc-alarm)', fire: 'var(--disc-fire)', intercom: 'var(--disc-access)', av: 'var(--text-mid)', cabling: 'var(--disc-cabling)', nvr: 'var(--brand)', server: 'var(--text-mid)', device: 'var(--text-low)' };
+const UC_KIND_COLOR = { gateway: 'var(--brand)', switch: 'var(--brand)', ap: 'var(--accent-2)', camera: 'var(--disc-cctv)', access: 'var(--disc-access)', alarm: 'var(--disc-alarm)', fire: 'var(--disc-fire)', intercom: 'var(--disc-intercom)', av: 'var(--disc-av)', cabling: 'var(--disc-cabling)', nvr: 'var(--brand)', server: 'var(--text-mid)', device: 'var(--text-low)' };
 const UC_KIND_GLYPH = { gateway: '⌂', switch: '⊞', ap: '◠', camera: '◉', access: '⊠', alarm: '◬', fire: '△', intercom: '☏', av: '♫', cabling: '≣', nvr: '⊟', server: '▤', device: '▢' };
 
 /* One site record per (customer, site) seen in the registry or on the customer card. */

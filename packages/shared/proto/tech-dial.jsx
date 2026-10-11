@@ -31,7 +31,7 @@ const tdReduce = () => { try { return matchMedia('(prefers-reduced-motion: reduc
 /* ── service discipline from what the job says it is ── */
 const TD_DISC = {
   fire:    { label: 'Fire',               token: '--disc-fire',    fb: '#FF3B5C' },
-  alarm:   { label: 'Alarm',              token: '--disc-alarm',   fb: '#9B5CFF' },
+  alarm:   { label: 'Alarm',              token: '--disc-alarm',   fb: 'var(--disc-alarm)' },
   access:  { label: 'Access Control',     token: '--disc-access',  fb: '#19E3EC' },
   cctv:    { label: 'CCTV',               token: '--disc-cctv',    fb: '#1E80F0' },
   cabling: { label: 'Structured Cabling', token: '--disc-cabling', fb: '#27E39A' },

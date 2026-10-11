@@ -117,7 +117,7 @@ function SVSync({ project, onClose }) {
         </div>
         {feed.map((e, i) => (
           <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'baseline', padding: '6px 2px', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
-            <span style={{ fontSize: 11, color: e.dir === 'up' ? 'var(--brand)' : '#c084fc', flexShrink: 0 }}>{e.dir === 'up' ? '↑' : '↓'}</span>
+            <span style={{ fontSize: 11, color: e.dir === 'up' ? 'var(--brand)' : 'var(--accent-2)', flexShrink: 0 }}>{e.dir === 'up' ? '↑' : '↓'}</span>
             <span style={{ fontSize: 11.5, color: 'var(--text-mid)', flex: 1 }}>{e.t}</span>
             <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)', flexShrink: 0 }}>{e.who.split(' ')[0]} · {e.time}</span>
           </div>

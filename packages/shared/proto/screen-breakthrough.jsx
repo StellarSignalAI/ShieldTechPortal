@@ -226,8 +226,8 @@ function FloorPlanView() {
           {/* Access points */}
           {doors.map((d, i) => (
             <g key={i} transform={`translate(${d.x}, ${d.y})`}>
-              <rect x="-8" y="-8" width="16" height="16" rx="3" fill="rgba(192,132,252,0.15)" stroke="rgba(192,132,252,0.4)" strokeWidth="1" />
-              <text y="2" textAnchor="middle" fill="#c084fc" fontSize="10" dominantBaseline="central">⊠</text>
+              <rect x="-8" y="-8" width="16" height="16" rx="3" fill="rgba(25,227,236,0.15)" stroke="rgba(25,227,236,0.4)" strokeWidth="1" />
+              <text y="2" textAnchor="middle" fill="var(--accent-2)" fontSize="10" dominantBaseline="central">⊠</text>
               <text y="20" textAnchor="middle" fill="var(--text-low)" fontSize="7" fontFamily="var(--font-mono)">{d.label}</text>
             </g>
           ))}

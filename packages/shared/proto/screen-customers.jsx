@@ -226,7 +226,7 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
               ) : subCustomers.map((sc, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                   <span style={{ flex: 1, fontSize: 12, color: 'var(--text-mid)' }}>{sc.name}</span>
-                  <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: sc.role==='billing_entity'?'rgba(var(--warn-rgb),0.08)':sc.role==='estimate_recipient'?'rgba(var(--brand-rgb),0.08)':'rgba(192,132,252,0.08)', color: sc.role==='billing_entity'?'var(--status-warn)':sc.role==='estimate_recipient'?'var(--brand)':'#c084fc', fontWeight: 600, textTransform: 'uppercase' }}>{sc.role.replace(/_/g,' ')}</span>
+                  <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: sc.role==='billing_entity'?'rgba(var(--warn-rgb),0.08)':sc.role==='estimate_recipient'?'rgba(var(--brand-rgb),0.08)':'rgba(25,227,236,0.08)', color: sc.role==='billing_entity'?'var(--status-warn)':sc.role==='estimate_recipient'?'var(--brand)':'var(--accent-2)', fontWeight: 600, textTransform: 'uppercase' }}>{sc.role.replace(/_/g,' ')}</span>
                 </div>
               ))}
               {subCustomers.length > 0 && (
@@ -291,7 +291,7 @@ function CustomerDetail({ customer, subCustomers, onBack, showToast, toast }) {
 const CONTACT_DOCS = [
   { key: 'invoices', label: 'Invoices', short: 'INV', color: 'var(--status-warn)' },
   { key: 'estimates', label: 'Estimates', short: 'EST', color: 'var(--brand)' },
-  { key: 'proposals', label: 'Proposals', short: 'PROP', color: '#c084fc' },
+  { key: 'proposals', label: 'Proposals', short: 'PROP', color: 'var(--accent-2)' },
 ];
 function CustomerContacts({ customer, showToast }) {
   const [allContacts] = useShieldStore(contactsStore);

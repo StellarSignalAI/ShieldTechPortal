@@ -348,7 +348,7 @@ function DispatchScheduleBoard({ techs, showToast }) {
   const [detailModal, setDetailModal] = React.useState(null);
   const boardRef = React.useRef(null);
 
-  const typeColors = { install: 'var(--brand)', service: 'rgba(var(--brand-rgb),0.6)', pm: 'var(--status-ok)', internal: 'rgba(192,132,252,0.5)', open: 'rgba(92,111,134,0.2)', emergency: 'var(--status-critical)' };
+  const typeColors = { install: 'var(--brand)', service: 'rgba(var(--brand-rgb),0.6)', pm: 'var(--status-ok)', internal: 'rgba(25,227,236,0.5)', open: 'rgba(92,111,134,0.2)', emergency: 'var(--status-critical)' };
 
   /* ── Drag Handlers ── */
   const onBlockMouseDown = (e, techId, blockIdx) => {

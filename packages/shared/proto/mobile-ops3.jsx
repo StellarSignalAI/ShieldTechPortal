@@ -256,7 +256,7 @@ function MSubDetail({ id, onClose }) {
 }
 
 /* ══════════════ PROJECTS ══════════════ */
-const PRJ_STAGE = { planning:'var(--text-low)', 'in-progress':'var(--brand)', review:'#c084fc', complete:'var(--status-ok)' };
+const PRJ_STAGE = { planning:'var(--text-low)', 'in-progress':'var(--brand)', review:'var(--accent-2)', complete:'var(--status-ok)' };
 const PRJ_STAGE_LABEL = { planning:'Planning', 'in-progress':'In Progress', review:'Review', complete:'Complete' };
 const PROJECTS = [];
 function MProjects({ onNav }) {

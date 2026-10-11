@@ -27,7 +27,7 @@ function TechAppScreen({ onBack }) {
     showToast(wo.timerRunning ? `Timer stopped on ${wo.id}` : `Clocked onto ${wo.id} — timer running`);
   };
 
-  const typeColor = { install: 'var(--brand)', repair: 'var(--status-critical)', maintenance: 'var(--status-ok)', survey: '#c084fc', meeting: 'var(--text-low)' };
+  const typeColor = { install: 'var(--brand)', repair: 'var(--status-critical)', maintenance: 'var(--status-ok)', survey: 'var(--accent-2)', meeting: 'var(--text-low)' };
   const fmtH = h => { const hh = Math.floor(h), mm = Math.round((h - hh) * 60); return `${((hh + 11) % 12) + 1}:${String(mm).padStart(2, '0')}${hh >= 12 ? 'p' : 'a'}`; };
 
   return (

@@ -7,7 +7,7 @@ function CRMScreen() {
     { name: 'New', color: 'var(--text-low)' },
     { name: 'Contacted', color: 'var(--status-info)' },
     { name: 'Qualified', color: 'var(--status-warn)' },
-    { name: 'Proposal', color: '#c084fc' },
+    { name: 'Proposal', color: 'var(--accent-2)' },
     { name: 'Won', color: 'var(--status-ok)' },
   ];
 

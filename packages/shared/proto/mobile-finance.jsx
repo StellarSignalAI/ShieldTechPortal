@@ -80,7 +80,7 @@ function FinOverview({ go }) {
   const invoices = useMergedInvoices();
   const open = invoices.filter(i => i.status !== 'paid' && i.status !== 'draft' && i.status !== 'void');
   const bucket = (lo, hi) => open.filter(i => { const d = Number(i.days) || 0; return d >= lo && (hi == null || d <= hi); }).reduce((s, i) => s + i.amount, 0);
-  const ar = [['Current', bucket(0, 0), 'var(--status-ok)'], ['1–30', bucket(1, 30), 'var(--status-warn)'], ['31–60', bucket(31, 60), 'var(--status-critical)'], ['60+', bucket(61, null), '#c084fc']];
+  const ar = [['Current', bucket(0, 0), 'var(--status-ok)'], ['1–30', bucket(1, 30), 'var(--status-warn)'], ['31–60', bucket(31, 60), 'var(--status-critical)'], ['60+', bucket(61, null), 'var(--accent-2)']];
   const arTotal = ar.reduce((s, b) => s + b[1], 0);
   const lines = [];
   /* Revenue MTD = payments recorded this month on the same merged rows. */

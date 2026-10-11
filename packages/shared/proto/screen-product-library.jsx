@@ -9,17 +9,17 @@ const PL_BRANDS = [];
 const PL_CAT_META = {
   'Cameras':     { icon: 'cam-dome',    color: 'var(--brand)' },
   'NVR':         { icon: 'server',      color: 'var(--status-ok)' },
-  'Access':      { icon: 'reader',      color: '#c084fc' },
+  'Access':      { icon: 'reader',      color: 'var(--accent-2)' },
   'Intrusion':   { icon: 'alarm',       color: 'var(--status-warn)' },
   'Fire':        { icon: 'fire-panel',  color: 'var(--status-critical)' },
   'Network':     { icon: 'switch',      color: 'var(--status-ok)' },
   'Power':       { icon: 'ups',         color: '#f59e0b' },
   'Cabling':     { icon: 'cable',       color: 'var(--text-low)' },
   'Racks':       { icon: 'inventory',   color: '#9fb2c8' },
-  'Credentials': { icon: 'credential',  color: '#c084fc' },
+  'Credentials': { icon: 'credential',  color: 'var(--accent-2)' },
   'Sensors':     { icon: 'alarm',       color: '#34d399' },
   'Encoders':    { icon: 'server',      color: 'var(--brand)' },
-  'Analytics':   { icon: 'reports',     color: '#a78bfa' },
+  'Analytics':   { icon: 'reports',     color: 'var(--accent-2)' },
 };
 
 /* ── Catalog generator — expands real model lines into a deep SKU list ── */

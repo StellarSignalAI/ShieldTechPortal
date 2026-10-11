@@ -121,7 +121,7 @@ function AutoBidScreen() {
                     const selected = bid.selected_tier === k && status === 'proposal';
                     return (
                       <div key={k} className="glass" style={{ padding: 14, border: selected ? '1px solid var(--status-ok)' : k === 'medium' ? '1px solid var(--brand)' : '1px solid var(--border-subtle)', borderRadius: 10 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: k === 'low' ? 'var(--status-warn)' : k === 'medium' ? 'var(--brand)' : '#c084fc' }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: k === 'low' ? 'var(--status-warn)' : k === 'medium' ? 'var(--brand)' : 'var(--accent-2)' }}>
                           {k}{k === 'medium' ? ' · recommended' : ''}{selected ? ' · selected ✓' : ''}
                         </div>
                         <div className="mono" style={{ fontSize: 20, fontWeight: 700, margin: '6px 0 2px' }}>{fmt$(t.price)}</div>

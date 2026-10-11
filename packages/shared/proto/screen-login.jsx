@@ -2,7 +2,7 @@
 
    One shared credential screen rendered by ShieldAuthGate for EVERY app
    (portal, tech, customer, sales) and on mobile, so the sign-in experience is
-   identical everywhere. The palette is hardcoded dark-indigo (independent of
+   identical everywhere. The palette reads the shared navy + electric-blue tokens (independent of
    each app's light/dark theme) so the credential page always matches. */
 
 function LoginScreen() {

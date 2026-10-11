@@ -584,12 +584,12 @@ function normalizeJobDates(rec) {
    color, role }. Cached on window so all calendars share one fetch; the demo
    crew only appears when no backend/profiles exist, so screens never render
    an empty scheduler. */
-const TECH_PALETTE = ['var(--brand)', '#34D399', '#FBBF24', '#c084fc', '#F43F5E', '#22D3EE', '#A3E635', '#FB923C', '#818CF8', '#F472B6'];
+const TECH_PALETTE = ['var(--brand)', '#34D399', '#FBBF24', 'var(--accent-2)', '#F43F5E', '#22D3EE', '#A3E635', '#FB923C', 'var(--disc-av)', '#F472B6'];
 const DEMO_TECHS = [
   { id: 'MR', name: 'Mike Reyes', color: 'var(--brand)' },
   { id: 'JL', name: 'Jessica Liu', color: '#34D399' },
   { id: 'KW', name: 'Kevin White', color: '#FBBF24' },
-  { id: 'DP', name: 'Diana Patel', color: '#c084fc' },
+  { id: 'DP', name: 'Diana Patel', color: 'var(--accent-2)' },
   { id: 'TG', name: 'Tony Garcia', color: '#F43F5E' },
 ];
 function techInitialsOf(name, email) {
@@ -959,7 +959,7 @@ const PUNCH_STATUS = {
   done:     { c: '#34D399', label: 'Done' },
   verified: { c: 'var(--brand)', label: 'Verified' },
 };
-const PUNCH_TECHS = { MR: { name: 'Mike Reyes', color: 'var(--brand)' }, JL: { name: 'Jessica Liu', color: '#34D399' }, KW: { name: 'Kevin White', color: '#FBBF24' }, DP: { name: 'Diana Patel', color: '#c084fc' }, TG: { name: 'Tony Garcia', color: '#F43F5E' } };
+const PUNCH_TECHS = { MR: { name: 'Mike Reyes', color: 'var(--brand)' }, JL: { name: 'Jessica Liu', color: '#34D399' }, KW: { name: 'Kevin White', color: '#FBBF24' }, DP: { name: 'Diana Patel', color: 'var(--accent-2)' }, TG: { name: 'Tony Garcia', color: '#F43F5E' } };
 
 /* ── Toast helper ── */
 function showToast(msg, type = 'info') {

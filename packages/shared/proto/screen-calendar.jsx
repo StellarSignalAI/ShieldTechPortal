@@ -13,7 +13,7 @@ const CAL_TYPES = {
   install:     { bg: 'rgba(var(--brand-rgb),0.18)',  border: 'var(--brand)',  label: 'Install' },
   maintenance: { bg: 'rgba(var(--warn-rgb),0.18)',  border: '#FBBF24',  label: 'Maintenance' },
   repair:      { bg: 'rgba(var(--critical-rgb),0.18)',   border: '#F43F5E',  label: 'Repair' },
-  survey:      { bg: 'rgba(192,132,252,0.18)', border: '#c084fc',  label: 'Survey' },
+  survey:      { bg: 'rgba(25,227,236,0.18)', border: 'var(--accent-2)',  label: 'Survey' },
   meeting:     { bg: 'rgba(var(--ok-rgb),0.15)',  border: '#34D399',  label: 'Meeting' },
 };
 const CAL_UNASSIGNED = { bg: 'rgba(148,163,184,0.10)', border: '#94A3B8' };

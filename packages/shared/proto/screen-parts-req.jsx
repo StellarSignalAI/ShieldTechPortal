@@ -6,7 +6,7 @@ function PartsReqScreen() {
 
   const stages = [
     { id: 'requested', label: 'Requested',  color: 'var(--brand)',           action: 'Approve',           next: 'approved' },
-    { id: 'approved',  label: 'Approved',   color: '#c084fc',                action: 'Start Picking',     next: 'picking' },
+    { id: 'approved',  label: 'Approved',   color: 'var(--accent-2)',                action: 'Start Picking',     next: 'picking' },
     { id: 'picking',   label: 'Picking',    color: 'var(--status-warn)',     action: 'Mark Shipped',      next: 'shipped' },
     { id: 'shipped',   label: 'Shipped',    color: 'var(--brand)',           action: 'Confirm Delivery',  next: 'delivered' },
     { id: 'delivered', label: 'Delivered',  color: 'var(--status-ok)',       action: null,                next: null },

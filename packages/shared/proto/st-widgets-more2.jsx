@@ -247,7 +247,7 @@ function WPowerHour({ size }) {
   // peak
   let peak = { d: 0, b: 0, v: 0 };
   grid.forEach((row, d) => row.forEach((v, b) => { if (v > peak.v) peak = { d, b, v }; }));
-  const accent = '#c084fc';
+  const accent = 'var(--accent-2)';
   const cell = (v, sz) => (
     <div style={{ width: sz, height: sz, borderRadius: 4, background: v ? hexToRgba(accent, 0.18 + 0.6 * (v / max)) : 'rgba(255,255,255,0.04)', border: `1px solid ${v ? hexToRgba(accent, 0.35) : 'rgba(255,255,255,0.05)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: sz > 22 ? 11 : 0, color: 'var(--text-high)', fontWeight: 600 }}>{sz > 22 && v ? v : ''}</div>
   );
@@ -358,7 +358,7 @@ registerWidget('threat',    { label: 'Threat Level',      cat: 'Inventive', acce
 registerWidget('uptime',    { label: 'Device Uptime Wall',cat: 'Inventive', accent: '#34D399', glyph: 'camera-feed', sizes: ['small', 'medium', 'large'], render: s => <WUptime size={s} /> });
 registerWidget('kudos',     { label: 'Team Kudos',        cat: 'Inventive', accent: '#FCD34D', glyph: 'star',        sizes: ['small', 'medium', 'large'], render: s => <WKudos size={s} /> });
 registerWidget('certs',     { label: 'Cert Expiry',       cat: 'Inventive', accent: '#FBBF24', glyph: 'certs',       sizes: ['small', 'medium', 'large'], render: s => <WCerts size={s} /> });
-registerWidget('powerhour', { label: 'Install Heatmap',   cat: 'Inventive', accent: '#c084fc', glyph: 'bolt',        sizes: ['small', 'medium', 'large'], render: s => <WPowerHour size={s} /> });
+registerWidget('powerhour', { label: 'Install Heatmap',   cat: 'Inventive', accent: 'var(--accent-2)', glyph: 'bolt',        sizes: ['small', 'medium', 'large'], render: s => <WPowerHour size={s} /> });
 registerWidget('oncall',    { label: 'On-Call Rotation',  cat: 'Inventive', accent: 'var(--brand)', glyph: 'phone',       sizes: ['small', 'medium', 'large'], render: s => <WOnCall size={s} /> });
 
 /* Extend the gallery/picker order with all the new widgets */

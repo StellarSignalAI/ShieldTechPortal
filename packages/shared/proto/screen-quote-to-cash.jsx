@@ -8,7 +8,7 @@ function QuoteToCashScreen() {
   const stages = [
     { id: 'quote',     label: 'Quote Sent',    color: 'var(--text-low)' },
     { id: 'approved',  label: 'Approved',      color: 'var(--brand)' },
-    { id: 'po',        label: 'PO Issued',     color: '#c084fc' },
+    { id: 'po',        label: 'PO Issued',     color: 'var(--accent-2)' },
     { id: 'scheduled', label: 'Scheduled',     color: 'var(--status-warn)' },
     { id: 'installed', label: 'Installed',     color: 'var(--brand)' },
     { id: 'invoiced',  label: 'Invoiced',      color: 'var(--status-warn)' },

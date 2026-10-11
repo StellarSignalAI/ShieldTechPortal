@@ -1,112 +1,115 @@
-/* ShieldTech — Color tokens (UniFi-pattern console skin)
-   The look follows the Ubiquiti UniFi family: one saturated action blue on
-   neutral surfaces, flat status colors, hairline borders, no glow. Both
-   appearances are first-class; Light is the console default pattern, Dark is
-   the OLED-friendly night mode. Every surface reads these tokens only. */
+/* ShieldTech — Color tokens
+   ShieldTech's own palette on the UniFi-pattern layouts: electric blue as the
+   one action colour, neon cyan / green / amber accents for status and
+   disciplines, a deep navy base in Dark and cool white in Light. No purple
+   anywhere. Every surface reads these tokens only. */
 :root {
-  /* Brand — UniFi action blue (lifted slightly for contrast on dark) */
-  --brand: #3B8BFF;
-  --brand-hover: #5C9FFF;
-  --brand-pressed: #2370E6;
-  --brand-rgb: 59,139,255;
+  /* Brand — ShieldTech electric blue */
+  --brand: #3FA9F5;
+  --brand-hover: #5CB8F7;
+  --brand-pressed: #1C7ED6;
+  --brand-rgb: 63,169,245;
 
-  /* Secondary — soft blue highlight (active/accents, never a text color) */
-  --accent-2: #8DBBFF;
+  /* Secondary — neon cyan highlight (active/accents, never a text colour) */
+  --accent-2: #19E3EC;
 
-  /* Canvas & surfaces — neutral charcoal, three elevation steps */
-  --canvas: #0F1115;
-  --card: #171A1F;
-  --modal: #1E2228;
-  --canvas-rgb: 15,17,21;
-  --card-rgb: 23,26,31;
+  /* Canvas & surfaces — deep navy, three elevation steps */
+  --canvas: #0A0E14;
+  --card: #111722;
+  --modal: #161F2E;
+  --canvas-rgb: 10,14,20;
+  --card-rgb: 17,23,34;
 
-  /* Glass (kept for the few translucent overlays — flat elsewhere) */
-  --glass-bg: rgba(23,26,31,0.92);
-  --glass-blur: 12px;
+  /* Glass */
+  --glass-bg: rgba(17,23,34,0.88);
+  --glass-blur: 14px;
 
-  /* Borders — hairline white alpha */
-  --border-subtle: rgba(255,255,255,0.08);
-  --border-strong: rgba(255,255,255,0.16);
+  /* Borders — hairline cool alpha */
+  --border-subtle: rgba(159,176,195,0.14);
+  --border-strong: rgba(159,176,195,0.26);
 
-  /* Text — neutral grays, 3 steps */
-  --text-high: #F3F4F6;
-  --text-mid: #9CA3AF;
-  --text-low: #6B7280;
+  /* Text — cool grays, 3 steps */
+  --text-high: #E6EDF3;
+  --text-mid: #9FB0C3;
+  --text-low: #5C6F86;
 
-  /* Status — flat UniFi set */
-  --status-ok: #38CC65;
-  --status-warn: #F5A623;
-  --status-critical: #F03A47;
-  --status-info: #3B8BFF;
-  --ok-rgb: 56,204,101;
-  --warn-rgb: 245,166,35;
-  --critical-rgb: 240,58,71;
+  /* Status — neon set */
+  --status-ok: #27E39A;
+  --status-warn: #FFB020;
+  --status-critical: #FF3B5C;
+  --status-info: #3FA9F5;
+  --ok-rgb: 39,227,154;
+  --warn-rgb: 255,176,32;
+  --critical-rgb: 255,59,92;
 
-  /* Service disciplines — one hue per line of work (job blocks on the tech
-     Dial, chips, discipline badges). Swap here and every surface follows. */
-  --disc-cctv: #3B8BFF;
-  --disc-access: #19C8D6;
-  --disc-cabling: #38CC65;
-  --disc-alarm: #9B5CFF;
-  --disc-fire: #F03A47;
+  /* Service disciplines — one hue per line of work (blues + neons, no purple) */
+  --disc-cctv: #1E80F0;
+  --disc-access: #19E3EC;
+  --disc-cabling: #27E39A;
+  --disc-alarm: #FF9F1C;
+  --disc-fire: #FF3B5C;
+  --disc-intercom: #38D6FF;
+  --disc-av: #8AB4FF;
 
   /* Common alpha mixes (semantic aliases) */
-  --brand-tint-05: rgba(59,139,255,0.06);   /* row hover */
-  --brand-tint-12: rgba(59,139,255,0.14);   /* active tab / badge bg */
-  --ok-tint-12: rgba(56,204,101,0.14);
-  --warn-tint-12: rgba(245,166,35,0.14);
-  --critical-tint-12: rgba(240,58,71,0.14);
+  --brand-tint-05: rgba(63,169,245,0.06);   /* row hover */
+  --brand-tint-12: rgba(63,169,245,0.14);   /* active tab / badge bg */
+  --ok-tint-12: rgba(39,227,154,0.14);
+  --warn-tint-12: rgba(255,176,32,0.14);
+  --critical-tint-12: rgba(255,59,92,0.14);
 
-  /* Console rail — the UniFi OS left bar stays dark in both appearances */
-  --rail-bg: #0B0C0F;
-  --rail-fg: #C9CDD3;
+  /* Console rail — stays dark navy in both appearances */
+  --rail-bg: #070A0F;
+  --rail-fg: #B9C7D6;
 }
 
 /* ── Light appearance ──
    Applied when the account menu's Appearance is set to Light (shared-state.jsx
    stamps data-theme="light" on <html>; "System" resolves to light/dark from the
-   OS). The UniFi console pattern: white cards on a cool off-white canvas. */
+   OS). White cards on a cool off-white canvas, the same blue. */
 :root[data-theme="light"] {
-  --brand: #006FFF;
-  --brand-hover: #0059D6;
-  --brand-pressed: #004AB3;
-  --brand-rgb: 0,111,255;
+  --brand: #1A72C4;
+  --brand-hover: #2D8BE0;
+  --brand-pressed: #145A9C;
+  --brand-rgb: 26,114,196;
 
-  --accent-2: #006FFF;
+  --accent-2: #0E9FA8;
 
-  --canvas: #F4F5F7;
+  --canvas: #F4F7FA;
   --card: #FFFFFF;
   --modal: #FFFFFF;
-  --canvas-rgb: 244,245,247;
+  --canvas-rgb: 244,247,250;
   --card-rgb: 255,255,255;
 
   --glass-bg: rgba(255,255,255,0.92);
 
-  --border-subtle: rgba(16,24,40,0.10);
-  --border-strong: rgba(16,24,40,0.18);
+  --border-subtle: rgba(11,43,71,0.10);
+  --border-strong: rgba(11,43,71,0.20);
 
-  --text-high: #212327;
-  --text-mid: #50565E;
-  --text-low: #808893;
+  --text-high: #0B2B47;
+  --text-mid: #5C6F86;
+  --text-low: #8A9BB0;
 
-  --status-ok: #2DB852;
-  --status-warn: #E8960E;
-  --status-critical: #E0303D;
-  --status-info: #006FFF;
-  --ok-rgb: 45,184,82;
-  --warn-rgb: 232,150,14;
-  --critical-rgb: 224,48,61;
+  --status-ok: #16A36B;
+  --status-warn: #D98A00;
+  --status-critical: #E0304F;
+  --status-info: #1A72C4;
+  --ok-rgb: 22,163,107;
+  --warn-rgb: 217,138,0;
+  --critical-rgb: 224,48,79;
 
-  --brand-tint-05: rgba(0,111,255,0.05);
-  --brand-tint-12: rgba(0,111,255,0.12);
-  --ok-tint-12: rgba(45,184,82,0.14);
-  --warn-tint-12: rgba(232,150,14,0.14);
-  --critical-tint-12: rgba(224,48,61,0.14);
+  --brand-tint-05: rgba(26,114,196,0.05);
+  --brand-tint-12: rgba(26,114,196,0.12);
+  --ok-tint-12: rgba(22,163,107,0.14);
+  --warn-tint-12: rgba(217,138,0,0.14);
+  --critical-tint-12: rgba(224,48,79,0.14);
 
-  --disc-cctv: #006FFF;
+  --disc-cctv: #1D6FD1;
   --disc-access: #0E9FA8;
   --disc-cabling: #16A36B;
-  --disc-alarm: #7C4DDB;
+  --disc-alarm: #E08A00;
   --disc-fire: #E0304F;
+  --disc-intercom: #0A98C9;
+  --disc-av: #4A7FD6;
 }
 :root[data-theme="light"] body { background: var(--canvas); color: var(--text-high); }

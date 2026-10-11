@@ -88,7 +88,7 @@ function SSExport({ project, onNav, update }) {
       {/* actions */}
       <MSection title="Send it somewhere">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          {act('⬒', pushedStudio ? 'In Design Studio' : 'Upload to Design Studio', pushedStudio ? 'Blueprint available in Studio → Saved Drawings' : 'Blueprint + devices become an editable Studio drawing', pushToStudio, { done: pushedStudio, busy: pushing, color: '#c084fc' })}
+          {act('⬒', pushedStudio ? 'In Design Studio' : 'Upload to Design Studio', pushedStudio ? 'Blueprint available in Studio → Saved Drawings' : 'Blueprint + devices become an editable Studio drawing', pushToStudio, { done: pushedStudio, busy: pushing, color: 'var(--accent-2)' })}
           {act('▣', project.projectLink ? `Attached — ${project.projectLink}` : 'Add to a project', project.projectLink ? 'Linked to project record' : 'Attach the survey to an existing or new project', () => setAttach(true), { done: !!project.projectLink })}
           {act('⎙', 'PDF survey report', 'Plan, device schedule, photos & measurements', () => setReport(true))}
           {act('Σ', 'Send to AI Survey Estimator', 'Geometry-accurate BOM → margin, pricing & proposal', toEstimator, { color: 'var(--status-ok)' })}

@@ -20,7 +20,7 @@ function useSupportTickets() {
 const TKT_STATUS = {
   'open':        { color: 'var(--brand)', label: 'Open' },
   'in-progress': { color: 'var(--status-warn)', label: 'In Progress' },
-  'waiting':     { color: '#c084fc', label: 'Waiting on You' },
+  'waiting':     { color: 'var(--accent-2)', label: 'Waiting on You' },
   'resolved':    { color: 'var(--status-ok)', label: 'Resolved' },
   'closed':      { color: 'var(--text-low)', label: 'Closed' },
 };

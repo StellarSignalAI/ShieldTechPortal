@@ -1,5 +1,5 @@
 /* ShieldTech Mobile — native screens I: Home, Dispatch, Customers */
-const MN_TECH = { MR: 'var(--brand)', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
+const MN_TECH = { MR: 'var(--brand)', JL: '#34D399', KW: '#FBBF24', DP: 'var(--accent-2)', TG: '#F43F5E' };
 const firstName = () => {
   const n = (window.__shieldUser && window.__shieldUser.name) || '';
   const f = String(n).trim().split(/\s+/)[0];
@@ -70,10 +70,10 @@ function MHomeView({ onNav }) {
           <MActionBtn label="Approve" icon="approvals" onClick={() => onNav('approvals')} />
         </div>
       </MSection>
-      <button onClick={() => onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(var(--brand-rgb),0.10), rgba(192,132,252,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+      <button onClick={() => onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(var(--brand-rgb),0.10), rgba(25,227,236,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
         <span style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(var(--brand-rgb),0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
         <span style={{ flex: 1 }}>
-          <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Survey Scan <span style={{ fontSize: 8, fontWeight: 700, color: '#c084fc', border: '1px solid rgba(192,132,252,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
+          <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Survey Scan <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--accent-2)', border: '1px solid rgba(25,227,236,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
           <span style={{ display: 'block', fontSize: 10, color: 'var(--text-low)' }}>Scan · document · estimate · report — the whole site visit in one walk</span>
         </span>
         <span style={{ color: 'var(--text-low)', fontSize: 14 }}>›</span>

@@ -25,7 +25,7 @@ function IncidentScreen() {
 
   const timelineColors = {
     alert: 'var(--status-critical)', ai: 'var(--brand)', tech: 'var(--status-ok)',
-    mgmt: '#c084fc', customer: 'var(--status-warn)', user: 'var(--text-mid)'
+    mgmt: 'var(--accent-2)', customer: 'var(--status-warn)', user: 'var(--text-mid)'
   };
 
   const getDuration = (inc) => fmtDuration(now - inc.openedAt);
