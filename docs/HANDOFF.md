@@ -731,6 +731,36 @@ ShieldTech's own data and tools.
   follow, tab bar fixed at the viewport bottom; portal applies remote rows (position, trail,
   dispatch status) with no page errors.
 
+### 2z. Bottom gap — the measured, permanent fix (supersedes the 2y status-bar theory)
+- A pixel scan of the user's iPhone 16 Pro Max screenshots (1320×2868, 3px/pt) after 2y shipped:
+  rows 0–186 (62pt) are **canvas `#0A0E14`**, i.e. the page still paints under the status bar
+  (iOS bakes `apple-mobile-web-app-status-bar-style` into the web clip at install time, so the
+  opaque meta never reached the installed app); the tab bar ends at 2682 and rows 2682–2868
+  (**exactly 62pt = the top safe-area inset**) are canvas too. So the web view DOES reach the
+  screen bottom — only the **layout viewport is 62pt short** (`position: fixed; bottom: 0`,
+  100vh/100dvh, innerHeight all stop there). That is WebKit 301108 on iOS 26.0; Safari 26.1
+  notes a fix ("bottom gap on layouts with viewport-sized fixed containers").
+- Fix (`viewport-lock.css` + `orientation.js`, all four apps), two independent sources, the
+  larger wins, both 0 where the bug is absent:
+  - `--st-vgap-css: max(0px, min(100lvh, 100dvh + env(safe-area-inset-top)) - 100dvh)` inside
+    `@media (display-mode: standalone)` + `@supports (-webkit-touch-callout: none)` — `lvh`
+    reads the full screen in a standalone iOS app while `dvh` reads the short viewport
+    (device-verified by AltanS/collie#355; the `min()` guards releases where lvh overshoots).
+  - `--st-vgap-js`: screen height − innerHeight when standalone + portrait + phone + page under
+    the status bar (top inset > 0, measured with a fixed probe), capped at 120px, never
+    re-measured while a field has focus; re-run on resize / orientation / pageshow / visibility
+    and after the keyboard closes.
+  - Consumers: `body { height: calc(100% + var(--st-vgap)) }` (top+height beat bottom, so the
+    fixed body grows past the short viewport), the shell is 100% of it, the tab bar is
+    `bottom: calc(-1 * var(--st-vgap))`, and inline `position: fixed` overlays with `inset: 0`,
+    `; bottom: 0` or `bottom: calc(64px + env(...))` absorb it. Landscape forces 0.
+  - Status bar meta is **back to `black-translucent`**: the fix lives in the page, so the
+    installed apps need no re-add, and translucent is the mode the fix is verified for.
+- Verified with Playwright: no-bug phone → gap 0, nothing moves; emulated bug (standalone,
+  top inset 62, screen 62px taller than innerHeight) → body/shell/tab bar/overlays extend
+  exactly 62px past the short viewport; gap held while typing; dropped in landscape; no page
+  errors. Service worker cache `shieldtech-v32`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 
