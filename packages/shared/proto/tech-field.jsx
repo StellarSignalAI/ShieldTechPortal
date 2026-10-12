@@ -371,13 +371,10 @@ function TechSearchView({ setTab, setSelectedJob, setCtx }) {
 
 /* ══════════════ More ══════════════ */
 function TechMoreView({ setTab }) {
+  /* Work only — the things a technician does on a job. */
   const groups = [
-    ['Work', [['jobs', 'All jobs', 'Full job list and history'], ['photos', 'Site photos', 'Capture and job documentation'], ['devices', 'Devices', 'Site devices — status, IPs, adopt'], ['assets', 'Assets & vault', 'Configs, passwords, docs, networks'], ['punch', 'Punch list', 'Assigned fix-it items'], ['parts', 'Parts request', 'Request parts from the warehouse'], ['truck', 'My truck', 'Van stock and restock'], ['vehicle', 'Vehicle inspection', 'Daily pre-trip checklist'], ['route', 'My route', 'Smart day plan, traffic-aware']]],
-    ['Money', [['quotes', 'Quotes', 'Send, approve and schedule'], ['invoices', 'Invoices', 'Issue, resend, collect payment'], ['expenses', 'Receipts & expenses', 'Snap receipts, mileage, reimbursements'], ['time', 'Timesheet', 'Clock, drafts, submit the week'], ['health', 'Business health', 'Clients, quotes, jobs, invoices — past 30 days']]],
-    ['Tools', [['ai', 'ShieldTech AI', 'Wiring, RTSP/ONVIF, panel programming help'], ['voice', 'Voice notes', 'Dictate → work order'], ['scanner', 'Model scanner', 'Scan stickers → specs and manuals'], ['ar', 'AR wire-mapper', 'Tag ports and cable runs'], ['upsell', 'Upsell spotter', 'Quote opportunities on site'], ['resources', 'Resources', 'Guides, diagrams, SOPs'], ['toolbox', 'Toolbox talk', 'Daily safety briefing'], ['skills', 'Skill tree', 'Certs, XP, leaderboard']]],
-    ['Safety & system', [['safety', 'Lone-worker safety', 'Check-in timer and man-down'], ['messages', 'Message dispatch', 'Chat with the office'], ['sync', 'Sync queue', 'Offline capture status']]],
+    ['Work', [['jobs', 'All jobs', 'Full job list and history'], ['route', 'My route', 'Today’s stops with directions'], ['photos', 'Site photos', 'Capture and job documentation'], ['punch', 'Punch list', 'Assigned fix-it items'], ['devices', 'Devices', 'Site devices — status, IPs, adopt'], ['assets', 'Assets & vault', 'Configs, passwords, docs, networks'], ['parts', 'Parts request', 'Request parts from the warehouse'], ['truck', 'My truck', 'Van stock and restock'], ['vehicle', 'Vehicle inspection', 'Daily pre-trip checklist'], ['time', 'Timesheet', 'Clock, drafts, submit the week'], ['messages', 'Message dispatch', 'Chat with the office']]],
   ];
-  const appUrls = window.__shieldAppUrls || {};
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, color: 'var(--text-high)' }}>
       <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', padding: '0 2px' }}>More</div>
@@ -390,12 +387,7 @@ function TechMoreView({ setTab }) {
         </div>
       ))}
       <div style={{ background: 'var(--card)', border: '1px solid var(--border-subtle)', borderRadius: 18, overflow: 'hidden' }}>
-        {[['Profile', () => shieldToast(`${(window.__shieldUser || {}).name || 'You'} · ${(window.__shieldUser || {}).email || ''}`, 'info')], ['Manage team', () => setTab('messages')], ['Company details', () => { window.location.href = appUrls.portal || '#'; }], ['Preferences', () => { const m = document.querySelector('[data-tech-avatar-menu]'); if (m) m.click(); else shieldToast('Appearance is in the avatar menu, top right', 'info'); }]].map(([l, fn], i) => <button key={l} onClick={fn} style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', width: '100%', padding: '13px 16px', background: 'none', border: 'none', borderTop: i ? '1px solid var(--border-subtle)' : 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)', color: 'var(--text-high)', fontSize: 14.5, fontWeight: 600 }}>{l}<span style={{ color: 'var(--text-low)' }}>›</span></button>)}
-        <button onClick={() => window.__shieldAuth && window.__shieldAuth.signOut()} style={{ width: '100%', padding: '13px 16px', background: 'none', border: 'none', borderTop: '1px solid var(--border-subtle)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)', color: 'var(--status-critical)', fontSize: 14.5, fontWeight: 600 }}>Logout</button>
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <a href={appUrls.portal || '#'} style={{ flex: 1, textAlign: 'center', padding: '12px', borderRadius: 14, border: '1px solid var(--border-subtle)', color: 'var(--brand)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>Owner portal →</a>
-        <a href={appUrls.customer || '#'} style={{ flex: 1, textAlign: 'center', padding: '12px', borderRadius: 14, border: '1px solid var(--border-subtle)', color: 'var(--brand)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>Customer portal →</a>
+        <button onClick={() => window.__shieldAuth && window.__shieldAuth.signOut()} style={{ width: '100%', padding: '13px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)', color: 'var(--status-critical)', fontSize: 14.5, fontWeight: 600 }}>Logout</button>
       </div>
     </div>
   );

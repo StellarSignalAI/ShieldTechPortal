@@ -149,13 +149,14 @@ function DvWoDrawer({ wo, onClose, roster, isMobile }) {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
         <UcBtn small kind="soft" onClick={setValue}>{value ? 'Edit value' : 'Set value'}</UcBtn>
         <UcBtn small kind="soft" onClick={invoice}>Invoice</UcBtn>
-        {wo.site && <UcBtn small kind="ghost" onClick={() => window.open('https://www.google.com/maps/search/' + encodeURIComponent(wo.site), '_blank')}>Map</UcBtn>}
+        {wo.site && <UcBtn small kind="ghost" onClick={() => shieldDirections({ address: wo.site, lat: wo.lat, lng: wo.lng, label: wo.customer })}>Directions</UcBtn>}
         <UcBtn small kind="ghost" onClick={() => { if (window.__shieldNav) window.__shieldNav('helpdesk'); }}>Ticket</UcBtn>
         <UcBtn small kind="danger" onClick={remove}>Delete</UcBtn>
       </div>
       <UcTabs tabs={tabs} value={tab} onChange={setTab} />
       {tab === 'details' && (
         <div>
+          {window.ShieldLocationCard && <ShieldLocationCard address={wo.site} lat={wo.lat} lng={wo.lng} label={wo.customer} sub={wo.scheduled ? `${wo.tech && wo.tech !== 'Unassigned' ? wo.tech + ' · ' : ''}${dvDate(wo.scheduled)}${wo.window ? ' · ' + wo.window : ''}` : (wo.tech && wo.tech !== 'Unassigned' ? wo.tech : 'Not scheduled yet')} height={150} style={{ marginBottom: 12 }} onPin={(pt) => patch({ lat: pt.lat, lng: pt.lng, geocodedAddr: pt.address })} />}
           <UcCard title="Job" pad={12} style={{ marginBottom: 12 }}>
             <UcProp k="Customer" v={wo.customer} />
             <UcProp k="Site" v={wo.site || '—'} />

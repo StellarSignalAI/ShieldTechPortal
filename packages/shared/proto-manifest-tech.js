@@ -3,6 +3,7 @@ import './proto/icons.jsx';
 import './proto/shared-components.jsx';
 import './proto/shared-state.jsx';
 import './proto/shared-context.jsx';
+import './proto/shield-location.jsx';
 import './proto/blueprint.jsx';
 import './proto/photos-shared.jsx';
 import './proto/shell.jsx';
