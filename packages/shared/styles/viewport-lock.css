@@ -3,11 +3,39 @@
    scroll containers move. Safe-area insets keep the design clear of notches,
    home indicators, and gesture bars without altering the design itself. */
 html { height: 100%; }
+
+/* ── iOS 26 home-screen apps: the layout viewport is SHORTER than the screen ──
+   Measured on the user's iPhone (pixel scan of the screenshots): with the
+   translucent status bar + viewport-fit=cover, iOS 26 starts the web view at
+   the very top of the screen but lays the page out one status-bar inset short
+   at the bottom (WebKit 301108): the page's own background paints the last
+   62pt, yet `position: fixed; bottom: 0`, 100vh, 100dvh and innerHeight all stop
+   62pt above the real edge. The gap is recovered two independent ways and the
+   larger wins — both are 0 everywhere the bug is absent (Safari, Android,
+   desktop, iOS 26.1+ where Apple fixed it):
+     --st-vgap-css  pure CSS, applied at first paint: in a standalone iOS app
+                    `100lvh` reads the full screen while `100dvh` reads the short
+                    layout viewport (device-verified by others); `min()` with
+                    dvh + top inset guards releases where lvh overshoots.
+     --st-vgap-js   orientation.js measures screen height − innerHeight in a
+                    standalone portrait phone app whose page sits under the
+                    status bar (top inset > 0), capped at 120px.
+   body, the shell, the fixed tab bar and full-screen overlays all absorb it. */
+:root { --st-vgap-css: 0px; --st-vgap-js: 0px; }
+@media (display-mode: standalone) {
+  @supports (-webkit-touch-callout: none) {
+    :root { --st-vgap-css: max(0px, min(100lvh, 100dvh + env(safe-area-inset-top, 0px)) - 100dvh); }
+  }
+}
+:root { --st-vgap: max(var(--st-vgap-css), var(--st-vgap-js)); }
+
 body {
   position: fixed;
   inset: 0;
   width: 100%;
-  height: 100%;
+  /* top + height win over bottom: the body grows past the short layout
+     viewport down to the real screen edge when --st-vgap > 0. */
+  height: calc(100% + var(--st-vgap, 0px));
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
@@ -43,7 +71,10 @@ body {
    the bottom safe-area inset so its background runs under the home indicator. */
 .m-app-shell > :is(nav, footer):last-of-type {
   position: fixed !important;
-  left: 0; right: 0; bottom: 0;
+  left: 0; right: 0;
+  /* bottom: 0 of the (possibly short) layout viewport, pushed down by the
+     measured gap so the bar lands on the physical bottom edge. */
+  bottom: calc(-1 * var(--st-vgap, 0px));
   z-index: 900;
   margin: 0 auto;
   width: 100%;
@@ -54,6 +85,12 @@ body {
 /* On wide screens the phone shells sit in a centered device frame (mobile.css);
    keep the fixed bar inside that frame. */
 @media (min-width: 500px) { .m-app-shell > :is(nav, footer):last-of-type { max-width: 460px; } }
+/* Full-screen overlays, sheets and bars positioned from the viewport bottom
+   (menus, modals, the directions sheet, the login layer, action bars that
+   float above the tab bar) reach the real edge too. No-ops when the gap is 0. */
+[style*="position: fixed"][style*="inset: 0"] { bottom: calc(-1 * var(--st-vgap, 0px)) !important; }
+[style*="position: fixed"][style*="; bottom: 0"] { bottom: calc(-1 * var(--st-vgap, 0px)) !important; }
+[style*="position: fixed"][style*="bottom: calc(64px + env(safe-area-inset-bottom"] { bottom: calc(64px + env(safe-area-inset-bottom, 0px) - var(--st-vgap, 0px)) !important; }
 .m-app-shell [style*="overflow: auto"],
 .m-app-shell [style*="overflow-y: auto"] {
   -webkit-overflow-scrolling: touch;
@@ -83,6 +120,9 @@ body {
     transform: rotate(-90deg) translateX(-100%);
   }
   html[data-rot="cw"] body { transform: rotate(90deg) translateY(-100%); }
+  /* The rotated body is sized explicitly (100vh × 100vw) and becomes the
+     containing block for fixed children, so the gap does not apply here. */
+  :root { --st-vgap: 0px; }
   /* The rotated shell's "top" inset is now the phone's physical top edge;
      safe-area values describe the landscape frame, so drop them. */
   .m-app-shell { padding-top: 0 !important; padding-bottom: var(--m-nav-h, 62px) !important; }
