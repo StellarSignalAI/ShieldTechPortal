@@ -45,7 +45,12 @@ function useTfPins(jobs) {
   React.useEffect(() => {
     let alive = true;
     const sites = [...new Set(jobs.map(j => j.site).filter(Boolean))];
-    sites.forEach(s => { const c = tfGeoCache(); if (c[s]) { setPins(p => ({ ...p, [s]: c[s] })); return; } tfGeocode(s).then(pt => { if (alive && pt) setPins(p => ({ ...p, [s]: pt })); }); });
+    // A work order / calendar job the office already pinned carries lat/lng — use it
+    // straight away instead of waiting on a geocode round-trip.
+    const known = {};
+    jobs.forEach(j => { const src = j._wo || j._cal || {}; if (j.site && src.lat != null && src.lng != null) known[j.site] = [Number(src.lat), Number(src.lng)]; });
+    if (Object.keys(known).length) setPins(p => ({ ...p, ...known }));
+    sites.forEach(s => { if (known[s]) return; const c = tfGeoCache(); if (c[s]) { setPins(p => ({ ...p, [s]: c[s] })); return; } tfGeocode(s).then(pt => { if (alive && pt) setPins(p => ({ ...p, [s]: pt })); }); });
     return () => { alive = false; };
   }, [key]);
   return pins;
@@ -121,7 +126,6 @@ function TfJobRow({ j, onOpen, showDate }) {
 function TfQuickSheet({ onClose, setTab, onRequest }) {
   const items = [
     ['Request a job', 'Ask dispatch to schedule new work', () => { onClose(); onRequest(); }],
-    ['Snap a receipt', 'Tag it to the job on the clock', () => { onClose(); if (window.openTechReceipt) window.openTechReceipt({}); setTab('expenses'); }],
     ['Log time', 'Start the clock or add hours', () => { onClose(); setTab('time'); }],
     ['Take a photo', 'Before / during / after', () => { onClose(); setTab('capture'); }],
     ['Message dispatch', 'Chat with the office', () => { onClose(); setTab('messages'); }],
@@ -182,8 +186,6 @@ function TechHomeView({ setTab, setSelectedJob, setCtx }) {
     else if (id === 'job') setSheet('job');
     else if (id === 'task') setSheet('task');
     else if (id === 'client') setSheet('client');
-    else if (id === 'expense') { if (window.openTechReceipt) window.openTechReceipt({}); setTab('expenses'); }
-    else if (id === 'invoice' || id === 'quote') { if (setCtx) setCtx({ kind: id === 'quote' ? 'estimate' : 'invoice', prefill: {} }); setTab(id === 'quote' ? 'new-quote' : 'new-invoice'); }
   };
   /* this week */
   const mon = tmMonday(); const weekKeys = Array.from({ length: 7 }, (_, i) => tfIso(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
@@ -206,7 +208,7 @@ function TechHomeView({ setTab, setSelectedJob, setCtx }) {
         <TfMap jobs={segs} height={230} focusId={next && next.id} onPick={open} />
         <div style={{ position: 'absolute', left: 12, right: 12, bottom: 12, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', zIndex: 400, pointerEvents: 'none' }}>
           <div style={{ background: 'rgba(var(--card-rgb),0.88)', border: '1px solid var(--border-subtle)', borderRadius: 14, padding: '9px 12px', backdropFilter: 'blur(8px)' }}>
-            <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em' }}>{segs.length} {segs.length === 1 ? 'visit' : 'visits'}{worth > 0 ? ` worth ${tfMoney(worth)}` : ''}</div>
+            <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em' }}>{segs.length} {segs.length === 1 ? 'visit' : 'visits'}</div>
             <div style={{ fontSize: 12, color: 'var(--text-mid)' }}>{done} of {segs.length} complete{crewView ? ' · crew view' : ''}</div>
           </div>
           <button onClick={() => setTab('schedule')} style={{ pointerEvents: 'auto', background: 'rgba(var(--card-rgb),0.88)', border: '1px solid var(--border-subtle)', borderRadius: 999, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View all ›</button>
@@ -337,7 +339,6 @@ function TechSearchView({ setTab, setSelectedJob, setCtx }) {
   const [cal] = useShieldStore(jobStore);
   const [custs] = useShieldStore(customerStore);
   const [assets] = useShieldStore(assetStore);
-  const invoices = useMergedInvoices();
   const me = tdMe();
   const norm = (s) => String(s || '').toLowerCase();
   const hit = (...xs) => xs.some(x => norm(x).includes(norm(q)));
@@ -349,22 +350,20 @@ function TechSearchView({ setTab, setSelectedJob, setCtx }) {
     ].slice(0, 12).map(j => ({ ...j, s: j.startMin != null ? j.startMin : 8 * 60, e: (j.startMin != null ? j.startMin : 8 * 60) + (j.durMin || 90), anytime: j.startMin == null }));
     const customers = (custs || []).filter(c => hit(c.name, c.contact, c.phone, c.email, c.address, c.site)).slice(0, 8);
     const assetsHit = (assets || []).filter(a => hit(a.name, a.model, a.serial, a.ip, a.customer, a.site, a.location)).slice(0, 8);
-    const inv = invoices.filter(i => hit(i.num, i.customer, i.amount)).slice(0, 6);
-    return { jobs, customers, assets: assetsHit, inv };
-  }, [q, wos, cal, custs, assets, invoices]);
+    return { jobs, customers, assets: assetsHit, inv: [] };
+  }, [q, wos, cal, custs, assets]);
   const open = (j) => { setSelectedJob(j); setTab('job-detail'); };
   const row = (title, sub, right, fn) => <button onClick={fn} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'center', width: '100%', padding: '11px 14px', borderRadius: 14, border: '1px solid var(--border-subtle)', background: 'var(--card)', cursor: fn ? 'pointer' : 'default', textAlign: 'left', fontFamily: 'var(--font-body)', color: 'var(--text-high)' }}><span style={{ minWidth: 0 }}><span style={{ display: 'block', fontSize: 14, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>{sub && <span style={{ display: 'block', fontSize: 11.5, color: 'var(--text-low)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 }}>{sub}</span>}</span><span className="mono" style={{ fontSize: 12, color: 'var(--text-mid)' }}>{right}</span></button>;
   const group = (title, items) => items.length > 0 && <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><div className="mono" style={{ fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-low)', margin: '6px 2px 2px' }}>{title} · {items.length}</div>{items}</div>;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, color: 'var(--text-high)' }}>
       <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', padding: '0 2px' }}>Search</div>
-      <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Jobs, customers, sites, devices, invoices…" style={{ ...tmInput, fontSize: 16, padding: '14px 16px', borderRadius: 16 }} />
-      {!res && (window.TjRecent ? <TjRecent setTab={setTab} setSelectedJob={setSelectedJob} setCtx={setCtx} /> : <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>{[['All jobs', 'jobs'], ['Photos', 'photos'], ['Assets', 'assets'], ['Receipts', 'expenses'], ['Punch list', 'punch'], ['My truck', 'truck']].map(([l, id]) => <button key={id} onClick={() => setTab(id)} style={{ padding: '14px', borderRadius: 14, border: '1px solid var(--border-subtle)', background: 'var(--card)', color: 'var(--text-high)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>{l} ›</button>)}</div>)}
+      <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Jobs, customers, sites, devices…" style={{ ...tmInput, fontSize: 16, padding: '14px 16px', borderRadius: 16 }} />
+      {!res && (window.TjRecent ? <TjRecent setTab={setTab} setSelectedJob={setSelectedJob} setCtx={setCtx} /> : <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>{[['All jobs', 'jobs'], ['Photos', 'photos'], ['Assets', 'assets'], ['Punch list', 'punch'], ['My truck', 'truck'], ['My route', 'route']].map(([l, id]) => <button key={id} onClick={() => setTab(id)} style={{ padding: '14px', borderRadius: 14, border: '1px solid var(--border-subtle)', background: 'var(--card)', color: 'var(--text-high)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>{l} ›</button>)}</div>)}
       {res && !res.jobs.length && !res.customers.length && !res.assets.length && !res.inv.length && <div style={{ padding: '22px 16px', textAlign: 'center', color: 'var(--text-low)', fontSize: 12.5, border: '1px dashed var(--border-subtle)', borderRadius: 14 }}>Nothing matches "{q}".</div>}
       {res && group('Jobs', res.jobs.map(j => row(`${j.woId ? j.woId + ' · ' : ''}${j.customer}`, [j.site, j.desc].filter(Boolean).join(' · '), j.date ? tfDayLabel(j.date, { month: 'short', day: 'numeric' }) : '', () => open(j))))}
       {res && group('Customers', res.customers.map(c => row(c.name, [c.contact, c.phone, c.address || c.site].filter(Boolean).join(' · '), '', () => { if (c.phone) { try { navigator.clipboard.writeText(c.phone); } catch { /* noop */ } shieldToast(`${c.phone} copied`, 'ok'); } })))}
       {res && group('Devices', res.assets.map(a => row(a.name || a.model || 'Device', [a.customer, a.site || a.location, a.ip, a.serial].filter(Boolean).join(' · '), a.status || '', () => setTab('assets'))))}
-      {res && group('Invoices', res.inv.map(i => row(`${i.num} · ${i.customer}`, `${i.status}${i.days > 0 ? ` · ${i.days}d overdue` : ''}`, tfMoney(i.amount), null)))}
     </div>
   );
 }
@@ -435,7 +434,6 @@ function TechJobView({ job: raw, setTab }) {
     ['Navigate', () => tdNavigate(job)],
     phone ? [`Call ${contact || 'site'}`, () => { try { navigator.clipboard.writeText(phone); } catch { /* noop */ } shieldToast(`${phone} copied`, 'ok'); }] : null,
     ['Take a photo', () => openCamera('progress')],
-    ['Snap a receipt', () => { if (window.openTechReceipt) window.openTechReceipt({ jobRef: woId || job.id, label: job.customer }); setTab('expenses'); }],
     ['Message dispatch', () => setTab('messages')],
     ['Ask ShieldTech AI', () => setTab('ai')],
   ].filter(Boolean);
@@ -451,7 +449,7 @@ function TechJobView({ job: raw, setTab }) {
         </span>
       </div>
       <TfStatusPill job={job} />
-      <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{woId || 'Job'} for {job.customer}{value > 0 ? ` for ${tfMoney(value)}` : ''}</div>
+      <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{woId || 'Job'} for {job.customer}</div>
       <div style={{ fontSize: 15, color: 'var(--text-mid)', fontWeight: 600 }}>{job.desc}</div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
         <div style={{ fontSize: 14, lineHeight: 1.4 }}>{job.site || <span style={{ color: 'var(--text-low)' }}>No address on file</span>}</div>
@@ -464,7 +462,7 @@ function TechJobView({ job: raw, setTab }) {
       </div>
       {/* tabs */}
       <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)', marginTop: 4 }}>
-        {['Job', 'Flow', 'Notes', 'Money'].map(t => <button key={t} onClick={() => setTab2(t)} style={{ flex: 1, padding: '10px 0', background: 'none', border: 'none', borderBottom: `2px solid ${tab === t ? c : 'transparent'}`, marginBottom: -1, color: tab === t ? 'var(--text-high)' : 'var(--text-low)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t}</button>)}
+        {['Job', 'Flow', 'Notes'].map(t => <button key={t} onClick={() => setTab2(t)} style={{ flex: 1, padding: '10px 0', background: 'none', border: 'none', borderBottom: `2px solid ${tab === t ? c : 'transparent'}`, marginBottom: -1, color: tab === t ? 'var(--text-high)' : 'var(--text-low)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t}</button>)}
       </div>
 
       {tab === 'Job' && (
@@ -480,7 +478,6 @@ function TechJobView({ job: raw, setTab }) {
       )}
       {tab === 'Flow' && window.JobFlowView && <div style={{ paddingTop: 6 }}><JobFlowView job={job} setTab={setTab} embedded /></div>}
       {tab === 'Notes' && <TfNotes jobKey={key} job={job} />}
-      {tab === 'Money' && <TfMoney job={job} woId={woId} projectId={projectId} />}
 
       {more && (
         <TmSheet title={job.customer} onClose={() => setMore(false)}>

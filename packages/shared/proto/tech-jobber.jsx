@@ -35,7 +35,7 @@ const tjStatus = (kind, d) => {
 
 /* ── speed dial (Jobber's +) ── */
 function TfSpeedDial({ onClose, onPick }) {
-  const items = [['request', 'Request', '⇩'], ['task', 'Task', '☑'], ['expense', 'Expense', '▤'], ['invoice', 'Invoice', '$'], ['quote', 'Quote', '◎'], ['job', 'Job', '⚒'], ['client', 'Client', '◉']];
+  const items = [['request', 'Request', '⇩'], ['task', 'Task', '☑'], ['job', 'Job', '⚒'], ['client', 'Client', '◉']];
   return ReactDOM.createPortal(
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 4500, background: 'color-mix(in srgb, var(--canvas) 82%, transparent)', backdropFilter: 'blur(6px)' }}>
       <div style={{ position: 'absolute', right: 'max(16px, calc(50% - 199px))', bottom: 'calc(76px + env(safe-area-inset-bottom, 0px))', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
@@ -292,7 +292,7 @@ function TjRequestView({ ctx, setTab, setCtx }) {
   const cust = (custs || []).find(c => c.name === w.customer) || {};
   const patch = (p) => workOrderStore.set(list => (list || []).map(x => x.id === w.id ? { ...x, ...p } : x));
   const confirm = () => { if (cust.email) { const ok = tjMail({ to: cust.email, customer: w.customer, subject: `ShieldTech — your assessment is booked for ${tjFmt(w.scheduled)}`, body: `Hi ${cust.contact || w.customer},\n\nWe've scheduled an on-site assessment for ${tjFmt(w.scheduled)} at ${w.site || 'your location'}.\n\nScope: ${w.scope}\n\nReply to this email with any questions.\n\nShieldTech Security`, kind: 'booking' }); patch({ confirmedAt: Date.now() }); shieldToast(ok ? `Booking confirmation sent to ${cust.email}` : 'Email backend not configured — the office can confirm', ok ? 'ok' : 'warn'); } else shieldToast('No email on file — ask the office to confirm', 'warn'); };
-  const items = [['Complete assessment', () => { patch({ assessed: true }); shieldToast('Assessment marked complete', 'ok'); }], ['Convert to quote', () => { setCtx({ kind: 'estimate', prefill: { customer: w.customer, address: w.site, title: w.scope, wo: w.id } }); setTab('new-quote'); }], ['Convert to job', () => { patch({ status: 'open' }); shieldToast(`${w.id} is now a scheduled job`, 'ok'); setTab('schedule'); }], ['Archive', () => { patch({ status: 'archived' }); setTab('today'); }], ['Delete', () => shieldModal({ kind: 'confirm', title: `Delete ${w.id}?`, confirmLabel: 'Delete', onConfirm: () => { workOrderStore.set(list => (list || []).filter(x => x.id !== w.id)); setTab('today'); } })]];
+  const items = [['Complete assessment', () => { patch({ assessed: true }); shieldToast('Assessment marked complete', 'ok'); }], ['Convert to job', () => { patch({ status: 'open' }); shieldToast(`${w.id} is now a scheduled job`, 'ok'); setTab('schedule'); }], ['Archive', () => { patch({ status: 'archived' }); setTab('today'); }], ['Delete', () => shieldModal({ kind: 'confirm', title: `Delete ${w.id}?`, confirmLabel: 'Delete', onConfirm: () => { workOrderStore.set(list => (list || []).filter(x => x.id !== w.id)); setTab('today'); } })]];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, color: 'var(--text-high)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><button onClick={() => setTab('today')} style={{ background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 20, cursor: 'pointer', padding: 0 }}>‹</button><button onClick={() => setTab('ai')} style={{ width: 36, height: 36, borderRadius: 12, border: '1px solid var(--border-subtle)', background: 'var(--card)', color: 'var(--brand)', cursor: 'pointer', fontSize: 15 }}>✦</button></div>
@@ -344,23 +344,20 @@ function TjBusinessHealth({ setTab }) {
 
 /* ── search: recently active + chips ── */
 function TjRecent({ setTab, setSelectedJob, setCtx }) {
-  const inv = useMergedInvoices(); const est = useMergedEstimates();
   const [wos] = useShieldStore(workOrderStore); const [custs] = useShieldStore(customerStore);
   const me = tdMe();
   const ts = (x) => x ? new Date(String(x).length === 10 ? x + 'T12:00:00' : x).getTime() : 0;
   const items = [
     ...(wos || []).map(w => ({ t: w.status === 'requested' ? ts(w.createdAt) || ts(w.scheduled) : ts(w.scheduled), icon: w.status === 'requested' ? '⇩' : '⚒', title: w.customer, sub: `${w.site ? w.site + ' · ' : ''}${w.scope || w.type || ''}`, tag: w.status === 'requested' ? 'Request' : w.fieldStatus === 'complete' ? 'Done' : (w.scheduled === tjIso() ? 'Today' : ''), color: w.status === 'requested' ? 'var(--status-warn)' : 'var(--brand)', go: () => { if (w.status === 'requested') { setCtx({ id: w.id }); setTab('request'); } else { setSelectedJob({ ...tdJobFromWo(w, me), s: (w.start != null ? w.start : 8) * 60, e: ((w.start != null ? w.start : 8) + (w.dur || 1.5)) * 60, anytime: w.start == null }); setTab('job-detail'); } } })),
-    ...est.map(e => ({ t: ts((e._raw || {}).txn_date), icon: '◎', title: e.customer, sub: `${tjMoney(e.amount)} · ${(e._raw || {}).title || e.num}`, tag: tjStatus('estimate', e)[0], color: tjStatus('estimate', e)[1], go: () => { setCtx({ kind: 'estimate', num: e.num }); setTab('doc-view'); } })),
-    ...inv.map(i => ({ t: ts((i._raw || {}).txn_date), icon: '$', title: i.customer, sub: `${tjMoney(i.amount)} · ${i.num}`, tag: tjStatus('invoice', i)[0], color: tjStatus('invoice', i)[1], go: () => { setCtx({ kind: 'invoice', num: i.num }); setTab('doc-view'); } })),
     ...(custs || []).map(c => ({ t: c.createdAt || ts(c.created_at) || 0, icon: '◉', title: c.name, sub: c.address || c.site || c.phone || '', tag: c.leadSource ? 'Lead' : '', color: 'var(--text-low)', go: () => setTab('search') })),
   ].sort((a, b) => b.t - a.t).slice(0, 12);
-  const chips = [['Requests', () => setTab('today')], ['Quotes', () => setTab('quotes')], ['Jobs', () => setTab('jobs')], ['Invoices', () => setTab('invoices')], ['Clients', () => setTab('search')], ['Health', () => setTab('health')]];
+  const chips = [['Requests', () => setTab('today')], ['Jobs', () => setTab('jobs')], ['Clients', () => setTab('search')], ['Photos', () => setTab('photos')], ['Punch list', () => setTab('punch')]];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>{chips.map(([l, fn]) => <button key={l} onClick={fn} style={{ padding: '7px 12px', borderRadius: 999, fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap', background: 'var(--card)', color: 'var(--text-high)', border: '1px solid var(--border-subtle)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{l}</button>)}</div>
       <div className="mono" style={{ fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-low)', margin: '4px 2px 0' }}>Recently active</div>
       {items.map((it, i) => <button key={i} onClick={it.go} style={{ display: 'grid', gridTemplateColumns: '28px 1fr auto', gap: 10, alignItems: 'center', width: '100%', padding: '10px 4px', background: 'none', border: 'none', borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)', color: 'var(--text-high)' }}><span style={{ color: 'var(--text-mid)', fontSize: 15 }}>{it.icon}</span><span style={{ minWidth: 0 }}><span style={{ display: 'block', fontSize: 14, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.title}</span><span style={{ display: 'block', fontSize: 11.5, color: 'var(--text-low)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.t ? new Date(it.t).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' | ' : ''}{it.sub}</span></span>{it.tag && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5, fontWeight: 700, color: 'var(--text-mid)', whiteSpace: 'nowrap' }}>{it.tag}<span style={{ width: 8, height: 8, borderRadius: 2, background: it.color }} /></span>}</button>)}
-      {!items.length && <div style={{ fontSize: 12.5, color: 'var(--text-low)', textAlign: 'center', padding: 14 }}>Nothing yet — requests, quotes, jobs and invoices show up here as they happen.</div>}
+      {!items.length && <div style={{ fontSize: 12.5, color: 'var(--text-low)', textAlign: 'center', padding: 14 }}>Nothing yet — requests, jobs and clients show up here as they happen.</div>}
     </div>
   );
 }

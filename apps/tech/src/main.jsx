@@ -315,13 +315,7 @@ function TechApp() {
     today: () => TechHomeView ? <TechHomeView setTab={setTab} setSelectedJob={setSelectedJob} setCtx={setCtx} /> : TechDialHome ? <TechDialHome setTab={setTab} setSelectedJob={setSelectedJob} /> : <TodayView setTab={setTab} setSelectedJob={setSelectedJob} />,
     schedule: () => TechScheduleView ? <TechScheduleView setTab={setTab} setSelectedJob={setSelectedJob} setCtx={setCtx} /> : <TodayView setTab={setTab} setSelectedJob={setSelectedJob} />,
     search: () => TechSearchView ? <TechSearchView setTab={setTab} setSelectedJob={setSelectedJob} setCtx={setCtx} /> : <MoreMenu setTab={setTab} />,
-    quotes: () => TjDocList ? <React.Fragment>{back('more')}<TjDocList kind="estimate" setTab={setTab} setCtx={setCtx} /></React.Fragment> : <MoreMenu setTab={setTab} />,
-    invoices: () => TjDocList ? <React.Fragment>{back('more')}<TjDocList kind="invoice" setTab={setTab} setCtx={setCtx} /></React.Fragment> : <MoreMenu setTab={setTab} />,
-    'doc-view': () => TjDocView ? <TjDocView ctx={ctx} setTab={setTab} setCtx={setCtx} /> : <MoreMenu setTab={setTab} />,
-    'new-quote': () => TjDocBuilder ? <TjDocBuilder kind="estimate" ctx={ctx} setTab={setTab} setCtx={setCtx} /> : <MoreMenu setTab={setTab} />,
-    'new-invoice': () => TjDocBuilder ? <TjDocBuilder kind="invoice" ctx={ctx} setTab={setTab} setCtx={setCtx} /> : <MoreMenu setTab={setTab} />,
     request: () => TjRequestView ? <TjRequestView ctx={ctx} setTab={setTab} setCtx={setCtx} /> : <MoreMenu setTab={setTab} />,
-    health: () => TjBusinessHealth ? <TjBusinessHealth setTab={setTab} /> : <MoreMenu setTab={setTab} />,
     photos: () => <React.Fragment>{TechHomeView && back('more')}<TechPhotosView setTab={setTab} /></React.Fragment>,
     capture: () => <TechCaptureView setTab={setTab} />,
     punch: () => <React.Fragment><button onClick={() => setTab('more')} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0, marginBottom: 12 }}>← Back</button><TechPunchView setTab={setTab} /></React.Fragment>,
@@ -330,7 +324,6 @@ function TechApp() {
     time: () => TechClockView ? <TechClockView /> : <TimeViewV2 />,
     assets: () => <React.Fragment>{TechHomeView && back('more')}<TechAssetsView /></React.Fragment>,
     devices: () => <React.Fragment>{TechHomeView && back('more')}{window.TechDevicesView ? <window.TechDevicesView setTab={setTab} /> : <TechAssetsView />}</React.Fragment>,
-    expenses: () => <React.Fragment>{TechHomeView && back('more')}{TechReceiptsView ? <TechReceiptsView /> : <ExpenseView />}</React.Fragment>,
     ai: () => <React.Fragment>{TechHomeView && back('more')}<TechCopilotView /></React.Fragment>,
     route: () => <BackWrap setTab={setTab}><TechRouteView /></BackWrap>,
     voice: () => <BackWrap setTab={setTab}><TechVoiceView /></BackWrap>,
@@ -351,7 +344,7 @@ function TechApp() {
 
   const ViewFn = views[tab] || views.today;
   const mainTab = TechHomeView
-    ? (['today', 'schedule', 'time', 'search', 'more'].includes(tab) ? tab : ['job-detail', 'request', 'new-quote', 'new-invoice', 'doc-view'].includes(tab) ? 'today' : 'more')
+    ? (['today', 'schedule', 'time', 'search', 'more'].includes(tab) ? tab : ['job-detail', 'request'].includes(tab) ? 'today' : 'more')
     : (['today', 'photos', 'time', 'assets', 'expenses', 'ai', 'more'].includes(tab) ? tab : tab === 'capture' ? 'photos' : ['vehicle', 'parts', 'resources', 'jobs', 'punch', 'truck', 'route', 'voice', 'scanner', 'ar', 'sync', 'upsell', 'safety', 'skills', 'toolbox', 'messages'].includes(tab) ? 'more' : 'today');
 
   const { TweaksPanel, TweakSection, TweakSelect, ShieldToastHost } = window;
@@ -373,7 +366,7 @@ function TechApp() {
           <TweaksPanel>
             <TweakSection label="Navigation" />
             <TweakSelect label="Tab" value={tab}
-        options={['today', 'schedule', 'search', 'quotes', 'invoices', 'health', 'devices', 'photos', 'capture', 'punch', 'truck', 'route', 'voice', 'scanner', 'ar', 'sync', 'upsell', 'safety', 'skills', 'toolbox', 'job-detail', 'time', 'expenses', 'ai', 'more', 'vehicle', 'parts', 'resources']}
+        options={['today', 'schedule', 'search', 'devices', 'photos', 'capture', 'punch', 'truck', 'route', 'voice', 'scanner', 'ar', 'sync', 'upsell', 'safety', 'skills', 'toolbox', 'job-detail', 'time', 'ai', 'more', 'vehicle', 'parts', 'resources']}
         onChange={(v) => setTab(v)} />
           </TweaksPanel>
           <ShieldToastHost />

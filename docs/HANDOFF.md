@@ -661,6 +661,40 @@ ShieldTech's own data and tools.
   More → only WORK + Logout; `shieldDirections` sheet in the tech app. Service worker cache
   `shieldtech-v28`.
 
+### 2v. Maps: key-free tiles (the "Missing API Key" fix)
+- The CARTO basemap every map used started requiring an API key and stamps "Missing API
+  Key" on each tile served without one — that is what the tech app showed. `live-map.js`
+  now uses **OpenStreetMap standard tiles** (no key, zoom 19) with a CSS darkening filter
+  in the dark theme (`.leaflet-layer.st-tiles`; light theme untouched), and falls back to
+  **Esri World Street Map** (also key-free) after three tile errors. The service worker
+  never touched cross-origin tiles, and no CSP is in place, so nothing else gates them.
+  Fleet, dispatch, the tech day map and every location card share this layer.
+- Verified with Playwright: tech Home and portal Dispatch mount Leaflet, request
+  OpenStreetMap tiles, no CARTO; with the tile host blocked (sandbox) the layer swaps to
+  Esri on its own. Service worker cache `shieldtech-v29`.
+
+### 2w. Phone tab bar: position: fixed (the second, real fix)
+- The 2t change sized the shell from the fixed body; installed iOS web apps still showed
+  the bar floating a home-indicator's height above the screen edge. The bar is now
+  **`position: fixed; bottom: 0`** (`.m-app-shell > :is(nav, footer):last-of-type` in
+  `viewport-lock.css`), owns the bottom safe-area inset, and the shell reserves
+  `--m-nav-h` (62px; the customer footer sets 34px) + inset of bottom padding so content
+  never hides under it. In the rotated-landscape case the transformed body is the
+  containing block, so the bar lands on the phone's physical bottom edge. On wide
+  screens it stays inside the 460px device frame.
+- Verified with Playwright on all four apps at 390×844, 390×700 and rotated 844×390: bar
+  bottom == viewport bottom, scroll area ends at the bar's top, no page errors. Service
+  worker cache `shieldtech-v30`.
+
+### 2x. Tech app: no finance anywhere
+- Search no longer indexes invoices (placeholder "Jobs, customers, sites, devices…"); the
+  recents chips are Requests · Jobs · Clients · Photos · Punch list; the speed dial is
+  Request · Task · Job · Client; the job page is Job · Flow · Notes (no Money tab, no price
+  in the title, no "Snap a receipt"); Home no longer shows the day's dollar value; the
+  request page lost "Convert to quote"; the quotes / invoices / health / expenses /
+  doc-builder routes are unrouted (they fall back to More). The builder components stay
+  in the bundle unused.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

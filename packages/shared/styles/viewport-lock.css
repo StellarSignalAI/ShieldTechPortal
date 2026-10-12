@@ -29,12 +29,31 @@ body {
   min-height: 100% !important;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top);
+  /* Room for the fixed tab bar below (see next rule). */
+  padding-bottom: calc(var(--m-nav-h, 62px) + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
 }
-/* The bottom tab bar / footer is the shell's last child: pin it to the bottom
-   edge of the shell no matter what the content above it does. */
-.m-app-shell > nav:last-of-type { margin-top: auto; flex-shrink: 0; }
+/* The bottom tab bar / footer is FIXED to the screen's bottom edge, not laid
+   out in the flex column. Installed iOS web apps size html/body shorter than
+   the screen by the home-indicator inset, which left the bar floating above a
+   dead band whenever it was positioned by layout; position: fixed; bottom: 0
+   always lands on the physical bottom edge (the rotated-body landscape case
+   included, since a transformed body is the containing block). The bar owns
+   the bottom safe-area inset so its background runs under the home indicator. */
+.m-app-shell > :is(nav, footer):last-of-type {
+  position: fixed !important;
+  left: 0; right: 0; bottom: 0;
+  z-index: 900;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
+.m-app-shell > nav:last-of-type { min-height: calc(var(--m-nav-h, 62px) + env(safe-area-inset-bottom, 0px)); }
+/* On wide screens the phone shells sit in a centered device frame (mobile.css);
+   keep the fixed bar inside that frame. */
+@media (min-width: 500px) { .m-app-shell > :is(nav, footer):last-of-type { max-width: 460px; } }
 .m-app-shell [style*="overflow: auto"],
 .m-app-shell [style*="overflow-y: auto"] {
   -webkit-overflow-scrolling: touch;
@@ -66,6 +85,7 @@ body {
   html[data-rot="cw"] body { transform: rotate(90deg) translateY(-100%); }
   /* The rotated shell's "top" inset is now the phone's physical top edge;
      safe-area values describe the landscape frame, so drop them. */
-  .m-app-shell { padding-top: 0 !important; }
-  .m-app-shell > nav:last-of-type { padding-bottom: 0 !important; }
+  .m-app-shell { padding-top: 0 !important; padding-bottom: var(--m-nav-h, 62px) !important; }
+  .m-app-shell > :is(nav, footer):last-of-type { padding-bottom: 0 !important; max-width: none; }
+  .m-app-shell > nav:last-of-type { min-height: var(--m-nav-h, 62px); }
 }
