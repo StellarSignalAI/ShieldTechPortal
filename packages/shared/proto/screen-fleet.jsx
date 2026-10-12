@@ -54,7 +54,7 @@ const fleetStore = createShieldStore('fleet', fleetSeed());
      };
 */
 const FleetTransport = {
-  publish(techId, { lat, lng, accuracy, source }) {
+  publish(techId, { lat, lng, accuracy, heading, speed, source }) {
     const { x, y } = fleetProject(lat, lng);
     fleetStore.set(prev => {
       let t = prev.techs[techId];
@@ -64,30 +64,80 @@ const FleetTransport = {
       }
       const now = Date.now();
       const trail = [...(t.trail || []), { x, y, lat, lng, t: now }].slice(-FLEET_TRAIL_MAX);
-      return { ...prev, techs: { ...prev.techs, [techId]: { ...t, x, y, lat, lng, accuracy, updatedAt: now, trail, sharing: true, source: source || 'geolocation' } } };
+      return { ...prev, techs: { ...prev.techs, [techId]: { ...t, x, y, lat, lng, accuracy, heading, speed, onDuty: true, updatedAt: now, trail, sharing: true, source: source || 'geolocation' } } };
     });
+    // The real feed: one row per tech in Supabase (fleet-live.js), which every
+    // portal / tech surface subscribes to. Local store above = instant on this device.
+    try { if (window.__shieldFleetLive) window.__shieldFleetLive.publish({ lat, lng, accuracy, heading, speed, source }); } catch { /* noop */ }
   },
 };
+
+/* Remote → local: a tech_locations row (another device, or this one echoed back)
+   lands in the shared fleet store so Dispatch / Fleet / work orders render it. */
+function fleetApplyRemote(row) {
+  const key = row.tech_key || row.tech_id;
+  const lat = Number(row.lat), lng = Number(row.lng);
+  if (!key || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
+  const at = row.updated_at ? new Date(row.updated_at).getTime() : Date.now();
+  const { x, y } = fleetProject(lat, lng);
+  fleetStore.set(prev => {
+    const t = prev.techs[key] || { x: 50, y: 50, status: 'on-site', job: '—', trail: [] };
+    if (t.updatedAt && at < t.updatedAt) return prev; // older than what we have
+    const last = (t.trail || [])[t.trail.length - 1];
+    const moved = !last || last.lat !== lat || last.lng !== lng;
+    const trail = moved ? [...(t.trail || []), { x, y, lat, lng, t: at }].slice(-FLEET_TRAIL_MAX) : (t.trail || []);
+    return { ...prev, techs: { ...prev.techs, [key]: {
+      ...t, id: row.tech_id, name: row.name || t.name || key, role: row.role || t.role || 'Technician',
+      x, y, lat, lng, accuracy: row.accuracy, heading: row.heading, speed: row.speed,
+      onDuty: row.on_duty !== false, status: row.status || t.status || 'on-site',
+      sharing: row.on_duty !== false, source: row.source || 'geolocation', updatedAt: at, trail,
+    } } };
+  });
+}
+function fleetRemoveRemote(row) {
+  const key = (row && (row.tech_key || row.tech_id)) || null;
+  if (!key) return;
+  fleetStore.set(prev => { if (!prev.techs[key]) return prev; const techs = { ...prev.techs }; delete techs[key]; return { ...prev, techs }; });
+}
 
 /* ── Tech-side geolocation streaming ──
    Runs while the surface is open; stops on permission revoke or page close —
    that boundary is the OS's, not ours (see header note). */
-let __fleetWatchId = null;
+let __fleetWatchId = null, __fleetWatchdog = null, __fleetLastFixAt = 0, __fleetArgs = null;
+const FLEET_WATCHDOG_MS = 30000;   // check this often…
+const FLEET_SILENT_MS = 90000;     // …and re-arm the watch if no fix for this long (iOS stalls watches silently)
 function startFleetSharing(techId, onStatus) {
   if (!navigator.geolocation) { onStatus?.('unsupported'); return; }
   onStatus?.('requesting');
-  stopFleetSharing();
-  __fleetWatchId = navigator.geolocation.watchPosition(
-    pos => {
-      onStatus?.('live');
-      FleetTransport.publish(techId, { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy, source: 'geolocation' });
-    },
-    err => onStatus?.(err.code === 1 ? 'denied' : 'error'),
-    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
-  );
+  stopFleetSharing(true);
+  __fleetArgs = [techId, onStatus];
+  const onFix = pos => {
+    __fleetLastFixAt = Date.now();
+    onStatus?.('live');
+    const c = pos.coords;
+    const fix = { lat: c.latitude, lng: c.longitude, accuracy: c.accuracy, heading: c.heading, speed: c.speed, source: 'geolocation', at: __fleetLastFixAt };
+    window.__shieldLastFix = fix;
+    try { window.dispatchEvent(new CustomEvent('shield:gps', { detail: fix })); } catch { /* noop */ }
+    FleetTransport.publish(techId, fix);
+  };
+  const onErr = err => { onStatus?.(err.code === 1 ? 'denied' : 'error'); };
+  __fleetWatchId = navigator.geolocation.watchPosition(onFix, onErr, { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 });
+  // A watch that has gone quiet (phone slept, radio reset) is torn down and
+  // re-armed so the stream is continuous for as long as the app is running.
+  clearInterval(__fleetWatchdog);
+  __fleetWatchdog = setInterval(() => {
+    if (__fleetWatchId == null) return;
+    if (Date.now() - __fleetLastFixAt > FLEET_SILENT_MS) {
+      try { navigator.geolocation.clearWatch(__fleetWatchId); } catch { /* noop */ }
+      __fleetWatchId = navigator.geolocation.watchPosition(onFix, onErr, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+      navigator.geolocation.getCurrentPosition(onFix, () => {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+    }
+  }, FLEET_WATCHDOG_MS);
 }
-function stopFleetSharing() {
+function stopFleetSharing(restarting) {
   if (__fleetWatchId != null) { navigator.geolocation?.clearWatch(__fleetWatchId); __fleetWatchId = null; }
+  clearInterval(__fleetWatchdog); __fleetWatchdog = null;
+  if (!restarting) { try { window.__shieldFleetLive && window.__shieldFleetLive.offDuty(); } catch { /* noop */ } }
   fleetStore.set(prev => prev); // nudge subscribers
 }
 
@@ -278,5 +328,5 @@ function deriveDispatchTechs(fleetTechs, now = Date.now()) {
   });
 }
 
-Object.assign(window, { fleetStore, FleetTransport, startFleetSharing, stopFleetSharing, startFleetSim, FleetMapScreen, FleetStreetMap, fleetIsStale, fleetAge, FLEET_STALE_MS, deriveDispatchTechs });
+Object.assign(window, { fleetStore, FleetTransport, fleetApplyRemote, fleetRemoveRemote, startFleetSharing, stopFleetSharing, startFleetSim, FleetMapScreen, FleetStreetMap, fleetIsStale, fleetAge, FLEET_STALE_MS, deriveDispatchTechs });
 

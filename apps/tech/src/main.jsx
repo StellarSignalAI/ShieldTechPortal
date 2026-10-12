@@ -39,6 +39,7 @@ import '@shared/email.js';
 import '@shared/pdf.js';
 import '@shared/proto-manifest-tech.js';
 import '@shared/store-sync.js';
+import '@shared/fleet-live.js';
 
 const React = window.React;
 const ReactDOM = window.ReactDOM;

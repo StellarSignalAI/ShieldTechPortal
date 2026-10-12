@@ -13,6 +13,11 @@ import { supabase, supabaseConfigured } from './supabase.js';
 //   ss/svprefs — this user's Site/Survey scan preferences
 //   wofocus    — this user's transient work-order deep-link
 const PERSONAL_KEYS = new Set(['userprefs', 'appcontext', 'mobiletabs', 'ssprefs', 'svprefs', 'wofocus']);
+// Stores with their own realtime feed — never mirrored through app_state.
+//   fleet — live tech positions stream row-per-tech via tech_locations
+//           (fleet-live.js); pushing the whole blob here made two techs
+//           overwrite each other's positions.
+const LOCAL_ONLY = new Set(['fleet']);
 
 const muted = new Set();          // keys currently applying a remote value
 const oversizedWarned = new Set();// keys we've already warned about (too big to sync)
@@ -26,7 +31,7 @@ const rowId = (key) => (PERSONAL_KEYS.has(key) ? `${key}:${uid}` : key);
 function applyRow(row) {
   const stores = window.__shieldStores || {};
   const store = stores[row.key];
-  if (!store) return;
+  if (!store || LOCAL_ONLY.has(row.key)) return;
   if (PERSONAL_KEYS.has(row.key) && row.owner !== uid) return;
   if (lastSeen.get(row.key) === row.updated_at) return;
   lastSeen.set(row.key, row.updated_at);
@@ -73,7 +78,7 @@ function push(key) {
 function watchStores() {
   const stores = window.__shieldStores || {};
   Object.entries(stores).forEach(([key, store]) => {
-    if (store.__syncWatched) return;
+    if (store.__syncWatched || LOCAL_ONLY.has(key)) return;
     store.__syncWatched = true;
     store.subscribe(() => {
       if (muted.has(key) || !uid) return;
