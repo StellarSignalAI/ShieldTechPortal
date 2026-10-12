@@ -222,7 +222,7 @@ function TechRouteView() {
                   <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', textDecoration: s.status === 'done' ? 'line-through' : 'none' }}>{s.job}</div>
                   <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{s.addr} · {s.dur}</div>
                 </div>
-                {s.status !== 'done' && <button onClick={() => { const dest = s.addr || s.job; if (dest) window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest), '_blank'); else showToast('No address on this stop', 'warn'); }} style={{ padding: '5px 12px', background: 'rgba(var(--ok-rgb),0.1)', border: '1px solid rgba(var(--ok-rgb),0.3)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Navigate</button>}
+                {s.status !== 'done' && <button onClick={() => { const dest = s.addr || s.job; if (dest) shieldDirections({ address: dest }); else showToast('No address on this stop', 'warn'); }} style={{ padding: '5px 12px', background: 'rgba(var(--ok-rgb),0.1)', border: '1px solid rgba(var(--ok-rgb),0.3)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Navigate</button>}
               </div>
             </div>
           </div>

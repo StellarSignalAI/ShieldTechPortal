@@ -149,9 +149,11 @@ function tdPrimary(job) {
   }
 }
 function tdNavigate(job) {
-  const dest = job.site || job.customer || '';
-  if (!dest) { shieldToast('No site address on this job — ask dispatch', 'warn'); return; }
-  window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest), '_blank');
+  const dest = job.site || '';
+  const src = (job && job._wo) || (job && job._cal) || {};
+  if (!dest && src.lat == null) { shieldToast('No site address on this job — ask dispatch', 'warn'); return; }
+  /* Apple Maps / Google Maps / default app / Waze / copy — the shared sheet. */
+  shieldDirections({ address: dest, lat: src.lat, lng: src.lng, label: job.customer });
 }
 
 /* ══════════════ The Dial ══════════════ */

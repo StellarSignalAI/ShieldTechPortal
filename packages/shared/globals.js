@@ -85,3 +85,8 @@ try { window.__shieldBuild = typeof __SHIELD_BUILD__ !== 'undefined' ? __SHIELD_
   }, { passive: true });
   window.addEventListener('touchcancel', reset, { passive: true });
 })();
+
+/* Optional Google Maps key (VITE_GOOGLE_MAPS_KEY): when set, location cards in
+   apps without the bundled live map render a Google static map. Directions
+   links never need a key. */
+try { window.__shieldMapsKey = import.meta.env.VITE_GOOGLE_MAPS_KEY || ''; } catch { window.__shieldMapsKey = ''; }

@@ -207,6 +207,23 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
           <span className="mono" style={{ fontSize: 14, fontWeight: 600 }}>${contract.toLocaleString()}</span>
         </div>
 
+        {/* Site location — pinned map, schedule / crew line, Directions (Apple Maps,
+            Google Maps, Waze, copy) that works from any phone or desktop */}
+        {window.ShieldLocationCard && (() => {
+          const wos = (workOrderStore.get() || []).filter(w => w.projectId === p.number && w.status !== 'completed');
+          const crew = [...new Set(wos.map(w => w.tech).filter(t => t && t !== 'Unassigned'))];
+          const nextWo = wos.filter(w => w.scheduled).sort((a, b) => String(a.scheduled).localeCompare(String(b.scheduled)))[0];
+          const when = nextWo ? new Date(String(nextWo.scheduled).length === 10 ? nextWo.scheduled + 'T12:00:00' : nextWo.scheduled) : (p.startDate ? new Date(p.startDate + 'T12:00:00') : null);
+          const sub = [crew.length ? `Assigned: ${crew.join(', ')}` : (p.status === 'planning' ? 'No crew assigned yet' : null), when && !isNaN(when) ? `Scheduled ${when.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}` : null].filter(Boolean).join(' · ');
+          return (
+            <div style={{ marginBottom: 16 }}>
+              <div className="label-sm" style={{ marginBottom: 8 }}>SITE LOCATION</div>
+              <ShieldLocationCard address={p.siteAddr} lat={p.lat} lng={p.lng} label={p.name} sub={sub || undefined} height={170} onPin={(pt) => updateProject(p.number, { lat: pt.lat, lng: pt.lng, geocodedAddr: pt.address })} />
+              {!p.siteAddr && <button onClick={() => shieldModal({ kind: 'form', title: 'Site address', fields: [{ key: 'addr', label: 'Street, city, state', required: true, full: true, value: p.siteAddr || '' }], submitLabel: 'Save', onSubmit: (v) => updateProject(p.number, { siteAddr: String(v.addr || '').trim(), lat: null, lng: null, geocodedAddr: null }) })} style={{ marginTop: 6, background: 'none', border: 'none', color: 'var(--brand)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', padding: 0 }}>+ Add the site address</button>}
+            </div>
+          );
+        })()}
+
         {/* Scope of work (carried from the accepted proposal) */}
         {scope && (
           <div className="glass" style={{ padding: 14, marginBottom: 16 }}>

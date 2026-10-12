@@ -613,6 +613,54 @@ ShieldTech's own data and tools.
   render with no overflow. Portal desktop + phone re-checked after the primitives moved.
   All four apps build. Service worker cache `shieldtech-v26`.
 
+### 2t. Phones: tab bar on the bottom edge, portrait only
+- `viewport-lock.css`: `.m-app-shell` is 100% of the fixed body (pinned to every edge of
+  the visual viewport) instead of 100vh / 100dvh — installed iOS web apps report a dvh
+  shorter than the screen, which floated the tab bar above a dead band. The shell is a
+  flex column and its last `nav` is pinned to the bottom (`margin-top: auto`).
+- Portrait only on phones, three layers: every manifest declares `"orientation":
+  "portrait"`; `packages/shared/orientation.js` (imported by the four mobile entries)
+  calls `screen.orientation.lock('portrait')` where allowed (Android) and stamps
+  `<html data-rot="ccw|cw">` from the turn direction; `viewport-lock.css` rotates
+  `body` (portals included) back upright on `(orientation: landscape) and (pointer:
+  coarse) and (max-height: 520px)` so iOS, which ignores both, still shows the app
+  portrait with "up" at the phone's physical top. Tablets / desktops untouched.
+- Verified with Playwright (touch emulation) on portal, tech, customer, sales: portrait
+  → tab bar bottom == viewport bottom; landscape 844×390 → body rotated, fills the
+  screen exactly, no page errors. Service worker cache `shieldtech-v27`.
+
+### 2u. Site location + directions, the portal menu redone, tech app work-only
+- `packages/shared/proto/shield-location.jsx` (loaded by every app): **`shieldDirections({ address,
+  lat, lng, label })`** opens a directions sheet — Apple Maps (iPhone / iPad / Mac), Google
+  Maps (everywhere), the phone's default maps app on Android (`geo:` intent), Waze, Copy
+  address, View on map (desktop). Phones navigate same-window so the OS hands the link to
+  the installed app; desktops open a tab. **`<ShieldLocationCard>`**: pinned Leaflet map
+  where the live map is bundled (portal, tech), Google Static Map when
+  `VITE_GOOGLE_MAPS_KEY` is set (`window.__shieldMapsKey`, see `.env.example`), address,
+  assignment / schedule line, Directions + Copy; an address without a pin is geocoded once
+  (Nominatim) and saved back through `onPin`.
+- Where it shows: **Projects › drawer › SITE LOCATION** (crew assigned + next scheduled
+  work order; "+ Add the site address" when the project has none), **Work Orders › drawer ›
+  Details**, the tech app's job page / dial / route "Navigate" and "Directions", dispatch
+  queue "View address". The old raw Google links are gone.
+- Portal menu (`shell.jsx`): groups HOME (Dashboard, ShieldTech AI, Messages) · SELL ·
+  DELIVER · MONEY · SHIELDTECH OS · CARE · ADMIN with every multi-page entry's pages as
+  children and no duplicate "mobile-only" rows. New rail: 236px, **Jump to…** filter across
+  entries and children, rounded active rows, 15px icons, group chevrons, Tech / Customer
+  links in the footer beside the collapse button. `NAV_LEGACY_IDS` maps the retired ids
+  (autobid, incidents, nps, photos, punchlist, timesheets, payroll, …) to the entry that
+  owns them so deep links, saved screens and the phone directory still resolve and the
+  rail highlights the right row.
+- Tech app **More** is work-only: All jobs, My route, Site photos, Punch list, Devices,
+  Assets & vault, Parts request, My truck, Vehicle inspection, Timesheet, Message dispatch,
+  Logout. Money / Tools / Safety groups and the portal links are gone from the menu (the
+  job page keeps its own actions).
+- Verified with Playwright: desktop Projects › list › drawer → location card with Leaflet
+  pin + "Assigned: Dana Field · Scheduled …" → Directions → sheet (Google Maps, Waze,
+  Copy, View); Work Orders drawer → card + Directions; phone project drawer → sheet; tech
+  More → only WORK + Logout; `shieldDirections` sheet in the tech app. Service worker cache
+  `shieldtech-v28`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

@@ -121,7 +121,7 @@ function TodayView({ setTab, setSelectedJob }) {
                       e.stopPropagation();
                       const dest = job.site || job.customer || '';
                       if (!dest) { showToast('No site address on this job — ask dispatch', 'warn'); return; }
-                      window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest), '_blank');
+                      shieldDirections({ address: dest });
                     }} style={{ marginLeft: 'auto', padding: '4px 11px', background: 'rgba(var(--brand-rgb),0.12)', border: '1px solid rgba(var(--brand-rgb),0.3)', borderRadius: 100, color: ACC_LT, fontSize: 10, cursor: 'pointer', fontFamily: F, flex: 'none' }}>Navigate →</button>
                   )}
                 </div>
@@ -294,7 +294,7 @@ function JobDetailView({ job, setTab }) {
           ⌖ {job.site || 'No address on file'} · {job._cal && job._cal.date ? `${new Date(job._cal.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} · ` : ''}{job.time}
         </p>
         {job.site && (
-          <button onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(job.site), '_blank')}
+          <button onClick={() => shieldDirections({ address: job.site })}
             style={{ marginTop: 8, padding: '6px 14px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Navigate →</button>
         )}
 

@@ -2,6 +2,7 @@
    Loaded by main.jsx when a mobile device is detected on the portal domain. */
 import '@shared/styles/mobile.css';
 import '@shared/styles/viewport-lock.css';
+import '@shared/orientation.js';
 import '@shared/proto-manifest-mobile.js';
 import '@shared/store-sync.js';
 

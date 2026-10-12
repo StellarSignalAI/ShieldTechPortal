@@ -6,8 +6,9 @@
    re-cluttering the desktop rail. */
 const NAV_GROUPS = [
 { id: 'home', label: 'HOME', collapsible: false, items: [
-  { id: 'custom-dashboard', icon: 'dashboard', label: 'My Dashboard', useSvg: true },
-  { id: 'shieldtech-ai', icon: 'hermes', label: 'ShieldTech AI', useSvg: true }]
+  { id: 'custom-dashboard', icon: 'dashboard', label: 'Dashboard', useSvg: true },
+  { id: 'shieldtech-ai', icon: 'hermes', label: 'ShieldTech AI', useSvg: true },
+  { id: 'messages', icon: 'chat', label: 'Messages', useSvg: true }]
 },
 { id: 'sell', label: 'SELL', collapsible: true, items: [
   { id: 'crm', icon: 'pipeline', label: 'Bid Board', useSvg: true, children: [
@@ -15,19 +16,16 @@ const NAV_GROUPS = [
     { sub: 'list', label: 'All bids' },
     { sub: 'leads', label: 'AI leads' },
     { sub: 'autobid', label: 'Auto-Bid' }] },
-  { id: 'autobid', icon: 'proposals', label: 'Auto-Bid', useSvg: true, mobileOnly: true },
-  { id: 'secret-weapon', icon: 'anomaly', label: 'Secret Weapon', useSvg: true, mobileOnly: true },
   { id: 'proposals', icon: 'proposals', label: 'Proposals', useSvg: true, children: [
     { sub: 'all', label: 'Proposals' },
     { sub: 'tools', label: 'Calculators' }] },
   { id: 'studio', icon: 'topology', label: 'Design Studio', useSvg: true },
-  { id: 'survey-cloud', icon: 'floorplan', label: 'Survey Cloud', useSvg: true, mobileOnly: true }]
+  { id: 'survey-cloud', icon: 'floorplan', label: 'Survey Cloud', useSvg: true }]
 },
 { id: 'deliver', label: 'DELIVER', collapsible: true, items: [
-  { id: 'calendar', icon: 'calendar', label: 'Calendar & Copilot', useSvg: true, children: [
+  { id: 'calendar', icon: 'calendar', label: 'Calendar', useSvg: true, children: [
     { sub: 'calendar', label: 'Calendar' },
     { sub: 'copilot', label: 'Scheduling Copilot' }] },
-  { id: 'copilot', icon: 'hermes', label: 'Scheduling Copilot', useSvg: true, mobileOnly: true },
   { id: 'dispatch', icon: 'dispatch', label: 'Dispatch & Fleet', useSvg: true, children: [
     { sub: 'map', label: 'Live map' },
     { sub: 'schedule', label: 'Schedule board' },
@@ -40,8 +38,6 @@ const NAV_GROUPS = [
     { sub: 'requested', label: 'Requests' },
     { sub: 'photos', label: 'Site photos' },
     { sub: 'punch', label: 'Punch lists' }] },
-  { id: 'photos', icon: 'cameras', label: 'Site Photos', useSvg: true, mobileOnly: true },
-  { id: 'punchlist', icon: 'approvals', label: 'Punch Lists', useSvg: true, mobileOnly: true },
   { id: 'projects', icon: 'projects', label: 'Projects', useSvg: true, children: [
     { sub: 'board', label: 'Board' },
     { sub: 'list', label: 'List' }] },
@@ -50,43 +46,36 @@ const NAV_GROUPS = [
 { id: 'collect', label: 'MONEY', collapsible: true, items: [
   /* The QuickBooks-pattern Finance suite: its pages are children of ONE sidebar
      entry (no second rail inside the screen). `sub` is the finance page id. */
-  { id: 'finance', icon: 'finance', label: 'Finance (QuickBooks)', useSvg: true, children: [
+  { id: 'finance', icon: 'finance', label: 'Finance', useSvg: true, children: [
     { sub: 'overview', label: 'Home' },
-    { sub: 'bank-transactions', label: 'Bank transactions' },
-    { sub: 'receipts', label: 'Receipts' },
-    { sub: 'reconcile', label: 'Reconcile' },
-    { sub: 'accounts', label: 'Chart of accounts' },
-    { sub: 'expenses', label: 'Expenses' },
-    { sub: 'ap', label: 'Bills' },
-    { sub: 'vendors', label: 'Suppliers' },
-    { sub: 'sales-overview', label: 'Sales' },
     { sub: 'invoices', label: 'Invoices' },
     { sub: 'estimates', label: 'Estimates' },
     { sub: 'customers', label: 'Customers' },
+    { sub: 'bank-transactions', label: 'Bank transactions' },
+    { sub: 'expenses', label: 'Expenses' },
+    { sub: 'receipts', label: 'Receipts' },
+    { sub: 'ap', label: 'Bills' },
+    { sub: 'vendors', label: 'Suppliers' },
+    { sub: 'reconcile', label: 'Reconcile' },
+    { sub: 'accounts', label: 'Chart of accounts' },
     { sub: 'products', label: 'Products & services' },
     { sub: 'payroll', label: 'Payroll' },
     { sub: 'sales-tax', label: 'Sales tax' },
     { sub: 'reports-center', label: 'Reports' },
     { sub: 'settings', label: 'Settings' }] },
-  { id: 'revops', icon: 'finance', label: 'Revenue Ops', useSvg: true },
-  { id: 'invoices', icon: 'expenses', label: 'Invoices', useSvg: true, mobileOnly: true },
-  { id: 'estimates', icon: 'proposals', label: 'Proposal Pipeline', useSvg: true, mobileOnly: true },
-  { id: 'outbox', icon: 'chat', label: 'Email Outbox', useSvg: true, mobileOnly: true },
-  { id: 'purchase-orders', icon: 'cart', label: 'Inventory & Purchasing', useSvg: true, children: [
-    { sub: 'pos', label: 'Purchase orders' },
-    { sub: 'req', label: 'Parts requisitions' },
-    { sub: 'inventory', label: 'Inventory' }] },
-  { id: 'parts-req', icon: 'parts', label: 'Parts Requisition', useSvg: true, mobileOnly: true },
+  { id: 'revops', icon: 'forecast', label: 'Revenue Ops', useSvg: true },
   { id: 'mrr', icon: 'roi', label: 'Recurring Revenue', useSvg: true, children: [
     { sub: 'contracts', label: 'Contracts' },
     { sub: 'builder', label: 'RR Builder' }] },
-  { id: 'rr-builder', icon: 'roi', label: 'RR Builder', useSvg: true, mobileOnly: true },
-  { id: 'expenses', icon: 'expenses', label: 'Expenses & Receipts', useSvg: true, mobileOnly: true }]
+  { id: 'purchase-orders', icon: 'cart', label: 'Inventory & Purchasing', useSvg: true, children: [
+    { sub: 'pos', label: 'Purchase orders' },
+    { sub: 'req', label: 'Parts requisitions' },
+    { sub: 'inventory', label: 'Inventory' }] }]
 },
 { id: 'os', label: 'SHIELDTECH OS', collapsible: true, items: [
   /* Every low-voltage discipline the company installs and monitors, as children
      of ONE entry. `sub` is the console app id. */
-  { id: 'cameras', icon: 'topology', label: 'Sites', useSvg: true, children: [
+  { id: 'cameras', icon: 'topology', label: 'Sites & Systems', useSvg: true, children: [
     { sub: 'sites', label: 'All sites' },
     { sub: 'network', label: 'Network' },
     { sub: 'protect', label: 'Video (CCTV)' },
@@ -97,25 +86,21 @@ const NAV_GROUPS = [
     { sub: 'cabling', label: 'Cabling & racks' },
     { sub: 'alerts', label: 'Alerts' },
     { sub: 'assets', label: 'Assets' },
-    { sub: 'settings', label: 'Controllers & settings' }] },
-  { id: 'assets', icon: 'assets', label: 'Assets', useSvg: true, mobileOnly: true }]
+    { sub: 'settings', label: 'Controllers & settings' }] }]
 },
 { id: 'care', label: 'CARE', collapsible: true, items: [
   { id: 'customers-list', icon: 'customers', label: 'Customers', useSvg: true, children: [
     { sub: 'all', label: 'Directory' },
     { sub: 'nps', label: 'NPS & feedback' }] },
-  { id: 'helpdesk', icon: 'chat', label: 'Help Desk', useSvg: true, children: [
+  { id: 'helpdesk', icon: 'notification', label: 'Help Desk', useSvg: true, children: [
     { sub: 'tickets', label: 'Tickets' },
-    { sub: 'incidents', label: 'Incidents' }] },
-  { id: 'incidents', icon: 'warroom', label: 'Incidents', useSvg: true, mobileOnly: true },
-  { id: 'nps', icon: 'star', label: 'NPS & Feedback', useSvg: true, mobileOnly: true },
-  { id: 'messages', icon: 'hermes', label: 'Messages', useSvg: true }]
+    { sub: 'incidents', label: 'Incidents' }] }]
 },
 { id: 'admin', label: 'ADMIN', collapsible: true, items: [
-  { id: 'employees', icon: 'employees', label: 'Team & Skills', useSvg: true, children: [
-    { sub: 'team', label: 'Team' },
+  { id: 'employees', icon: 'employees', label: 'Team', useSvg: true, children: [
+    { sub: 'team', label: 'Team & skills' },
     { sub: 'skills', label: 'Skills matrix' }] },
-  { id: 'hr', icon: 'employees', label: 'HR Center', useSvg: true, children: [
+  { id: 'hr', icon: 'onboarding', label: 'HR Center', useSvg: true, children: [
     { sub: 'people', label: 'People' },
     { sub: 'paycenter', label: 'Payroll Center' },
     { sub: 'projects', label: 'Project labor' },
@@ -123,17 +108,14 @@ const NAV_GROUPS = [
     { sub: 'insights', label: 'Insights' },
     { sub: 'audit', label: 'Audit' },
     { sub: 'setup', label: 'Setup' }] },
-  { id: 'skills', icon: 'certs', label: 'Skills Matrix', useSvg: true, mobileOnly: true },
-  { id: 'users', icon: 'credential', label: 'Users & Invites', useSvg: true },
-  { id: 'approvals', icon: 'check', label: 'Approvals & Expenses', useSvg: true, children: [
+  { id: 'approvals', icon: 'check', label: 'Approvals', useSvg: true, children: [
     { sub: 'appr', label: 'Approvals' },
     { sub: 'time', label: 'Timesheets' },
     { sub: 'pay', label: 'Payroll' },
     { sub: 'exp', label: 'Expenses & receipts' }] },
-  { id: 'timesheets', icon: 'timesheets', label: 'Timesheets', useSvg: true, mobileOnly: true },
-  { id: 'payroll', icon: 'finance', label: 'Payroll', useSvg: true, mobileOnly: true },
   { id: 'documents', icon: 'note', label: 'Documents', useSvg: true },
-  { id: 'portal-settings', icon: 'compliance', label: 'Portal Settings', useSvg: true, children: [
+  { id: 'users', icon: 'credential', label: 'Users & Invites', useSvg: true },
+  { id: 'portal-settings', icon: 'settings', label: 'Settings', useSvg: true, children: [
     { sub: 'users', label: 'Users & roles' },
     { sub: 'account', label: 'Account' },
     { sub: 'billing', label: 'Billing' },
@@ -144,6 +126,14 @@ const NAV_GROUPS = [
     { sub: 'updates', label: "What's new" },
     { sub: 'help', label: 'Help' }] }]
 }];
+/* Screen ids that used to be separate menu entries. They still resolve (deep
+   links, the phone directory, saved screens) — the menu just no longer lists
+   them, because each one is a tab inside the entry that owns it now. */
+const NAV_LEGACY_IDS = {
+  autobid: ['crm', 'autobid'], 'secret-weapon': ['crm', 'board'], copilot: ['calendar', 'copilot'], photos: ['workorder', 'photos'], punchlist: ['workorder', 'punch'],
+  invoices: ['finance', 'invoices'], estimates: ['finance', 'estimates'], outbox: ['finance', 'invoices'], 'parts-req': ['purchase-orders', 'req'], 'rr-builder': ['mrr', 'builder'], expenses: ['approvals', 'exp'],
+  assets: ['cameras', 'assets'], incidents: ['helpdesk', 'incidents'], nps: ['customers-list', 'nps'], skills: ['employees', 'skills'], timesheets: ['approvals', 'time'], payroll: ['approvals', 'pay'],
+};
 
 /* ── Sub-navigation bus ──
    A screen with children (Finance, ShieldTech OS) tells the sidebar which page
@@ -179,193 +169,107 @@ function ShieldLogo({ size = 32 }) {
 }
 
 /* ── Nav Rail (Collapsible Groups) ── */
-function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
+function NavRail({ current: rawCurrent, onNav, collapsed = false, onToggleCollapse }) {
   const navSub = useNavSub();
+  // A legacy screen id highlights the entry that owns it now.
+  const current = NAV_LEGACY_IDS[rawCurrent] ? NAV_LEGACY_IDS[rawCurrent][0] : rawCurrent;
+  const [q, setQ] = React.useState('');
   const [openItems, setOpenItems] = React.useState(() => ({ [current]: true }));
   React.useEffect(() => { setOpenItems(o => o[current] ? o : { ...o, [current]: true }); }, [current]);
   const [openGroups, setOpenGroups] = React.useState(() => {
-    // Auto-open the group containing the current screen
-    const active = NAV_GROUPS.find((g) => g.items.some((i) => i.id === current));
     const defaults = { home: true, sell: true, deliver: true, collect: true, os: true, care: true, admin: true };
     try { Object.assign(defaults, JSON.parse(localStorage.getItem('st2:nav-groups') || '{}')); } catch { /* noop */ }
+    const active = NAV_GROUPS.find((g) => g.items.some((i) => i.id === current));
     if (active) defaults[active.id] = true;
     return defaults;
   });
-
-  // Keep active group open when current changes
   React.useEffect(() => {
     const active = NAV_GROUPS.find((g) => g.items.some((i) => i.id === current));
-    if (active && !openGroups[active.id]) {
-      setOpenGroups((prev) => ({ ...prev, [active.id]: true }));
-    }
+    if (active && !openGroups[active.id]) setOpenGroups((prev) => ({ ...prev, [active.id]: true }));
   }, [current]);
+  const toggleGroup = (gid) => setOpenGroups((prev) => { const n = { ...prev, [gid]: !prev[gid] }; try { localStorage.setItem('st2:nav-groups', JSON.stringify(n)); } catch { /* noop */ } return n; });
 
-  const toggleGroup = (gid) => {
-    setOpenGroups((prev) => { const n = { ...prev, [gid]: !prev[gid] }; try { localStorage.setItem('st2:nav-groups', JSON.stringify(n)); } catch { /* noop */ } return n; });
-  };
-  const childCount = (items) => items.reduce((n, i) => n + 1 + ((i.children && openItems[i.id]) ? i.children.length : 0), 0);
+  /* Quick jump: typing filters every entry and child across the groups. */
+  const qn = q.trim().toLowerCase();
+  const matches = (item) => !qn || item.label.toLowerCase().includes(qn) || (item.children || []).some(k => k.label.toLowerCase().includes(qn));
+  const kidsOf = (item) => !qn ? (item.children || []) : (item.children || []).filter(k => k.label.toLowerCase().includes(qn) || item.label.toLowerCase().includes(qn));
 
+  const rowBase = { display: 'flex', alignItems: 'center', gap: 9, width: 'calc(100% - 16px)', margin: '1px 8px', padding: collapsed ? '9px 0' : '7px 10px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', cursor: 'pointer', borderRadius: 8, fontFamily: 'var(--font-body)', textAlign: 'left', transition: 'background 0.12s, color 0.12s', position: 'relative' };
   return (
-    <nav style={{
-      width: collapsed ? 56 : 220, height: '100vh', flexShrink: 0,
-      background: 'var(--card)', borderRight: '1px solid var(--border-subtle)',
-      display: 'flex', flexDirection: 'column', padding: '16px 0',
-      transition: 'width 0.2s ease', overflow: 'hidden', zIndex: 100
-    }}>
-      {/* Logo */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '0 12px', marginBottom: 20, minHeight: 40
-      }}>
+    <nav style={{ width: collapsed ? 60 : 236, height: '100vh', flexShrink: 0, background: 'var(--card)', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', transition: 'width 0.2s ease', overflow: 'hidden', zIndex: 100 }}>
+      {/* Brand */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '18px 12px 12px', minHeight: 40 }}>
         {collapsed
           ? <img src="uploads/ShieldTech Emblem Transparent MK1 .png" alt="ShieldTech" style={{ height: 26, objectFit: 'contain' }} />
-          : <img src="uploads/ShieldTech Logo Transparent MK3.png" alt="ShieldTech" style={{ height: 30, objectFit: 'contain' }} />
-        }
+          : <img src="uploads/ShieldTech Logo Transparent MK3.png" alt="ShieldTech" style={{ height: 30, objectFit: 'contain' }} />}
       </div>
+      {/* Quick jump */}
+      {!collapsed && (
+        <div style={{ padding: '0 12px 8px' }}>
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Jump to…" style={{ width: '100%', boxSizing: 'border-box', padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)', color: 'var(--text-high)', fontSize: 12.5, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        </div>
+      )}
 
-      {/* Nav groups */}
-      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 8 }} data-comment-anchor="2bc11fa906-div-125-7">
-        {NAV_GROUPS.map((rawGroup) => {
-          /* mobileOnly items keep their bespoke mobile tiles but stay off the
-             desktop rail — on desktop they live as tabs inside their hub. */
-          const group = { ...rawGroup, items: rawGroup.items.filter((i) => !i.mobileOnly) };
-          const isOpen = openGroups[group.id] || !group.collapsible;
-          const hasActive = rawGroup.items.some((i) => i.id === current);
-          const itemCount = group.items.length;
-
+      {/* Groups */}
+      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '2px 0 8px' }}>
+        {NAV_GROUPS.map((group) => {
+          const items = group.items.filter((i) => !i.mobileOnly && matches(i));
+          if (!items.length) return null;
+          const isOpen = openGroups[group.id] || !group.collapsible || !!qn;
+          const hasActive = group.items.some((i) => i.id === current);
           return (
-            <div key={group.id} style={{ marginBottom: 2 }}>
-              {/* Group header */}
-              {!collapsed ?
-              <button
-                onClick={() => group.collapsible && toggleGroup(group.id)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  width: '100%', padding: '8px 16px 4px',
-                  background: 'none', border: 'none',
-                  cursor: group.collapsible ? 'pointer' : 'default',
-                  fontFamily: 'var(--font-body)',
-                  color: hasActive ? 'var(--brand)' : 'var(--text-low)',
-                  transition: 'color 0.15s'
-                }}>
-
-                  {group.collapsible &&
-                <span style={{
-                  fontSize: 8, transition: 'transform 0.2s',
-                  transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
-                  display: 'inline-block', width: 10
-                }}>▶</span>
-                }
-                  <span style={{
-                  fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
-                  letterSpacing: '0.1em', whiteSpace: 'nowrap'
-                }}>{group.label}</span>
-                  {!isOpen && hasActive &&
-                <div style={{
-                  width: 5, height: 5, borderRadius: '50%',
-                  background: 'var(--brand)', marginLeft: 4,
-                  boxShadow: '0 0 6px var(--brand)'
-                }} />
-                }
-                  {group.collapsible && !isOpen &&
-                <span style={{
-                  fontSize: 9, color: 'var(--text-low)', marginLeft: 'auto',
-                  opacity: 0.5
-                }}>{itemCount}</span>
-                }
-                </button> :
-
-              <div style={{ height: 8 }} />
-              }
-
-              {/* Group items — animate open/close */}
-              <div style={{
-                overflow: 'hidden',
-                maxHeight: isOpen || collapsed ? `${childCount(group.items) * 36 + 4}px` : '0px',
-                opacity: isOpen || collapsed ? 1 : 0,
-                transition: 'max-height 0.25s ease, opacity 0.2s ease'
-              }}>
-                {group.items.map((item) => {
-                  const active = current === item.id;
-                  const kids = item.children || null;
-                  const kidsOpen = kids && !collapsed && openItems[item.id];
-                  const activeSub = active && navSub && navSub.screen === item.id ? navSub.sub : null;
-                  return (
-                    <React.Fragment key={item.id}>
-                    <button onClick={() => { if (kids) { setOpenItems(o => ({ ...o, [item.id]: active ? !o[item.id] : true })); if (!active) onNav(item.id, kids[0].sub); } else onNav(item.id); }} title={item.label} style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      width: '100%',
-                      padding: collapsed ? '8px 0' : '6px 16px 6px 28px',
-                      justifyContent: collapsed ? 'center' : 'flex-start',
-                      background: active ? 'rgba(var(--brand-rgb),0.08)' : 'transparent',
-                      border: 'none', cursor: 'pointer', position: 'relative',
-                      color: active ? 'var(--brand)' : 'var(--text-mid)',
-                      fontSize: 12, fontFamily: 'var(--font-body)',
-                      transition: 'all 0.12s', borderRadius: 0, textAlign: 'left'
-                    }}
-                    onMouseEnter={(e) => {if (!active) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)';}}
-                    onMouseLeave={(e) => {if (!active) e.currentTarget.style.background = 'transparent';}}>
-
-                      {active &&
-                      <div style={{
-                        position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
-                        width: 3, height: 18, borderRadius: '0 2px 2px 0',
-                        background: 'var(--brand)',
-                        boxShadow: '0 0 10px var(--brand)'
-                      }} />
-                      }
-                      {item.useSvg ? <Icon name={item.icon} size={14} color={active ? 'var(--brand)' : 'var(--text-mid)'} style={{ flexShrink: 0, width: 20, opacity: active ? 1 : 0.7 }} /> : <span style={{ fontSize: 13, width: 20, textAlign: 'center', flexShrink: 0, opacity: active ? 1 : 0.6 }}>{item.icon}</span>}
-                      {!collapsed && <span style={{ whiteSpace: 'nowrap', fontSize: 13, flex: 1 }}>{item.label}</span>}
-                      {!collapsed && kids && <span style={{ fontSize: 9, color: 'var(--text-low)', transition: 'transform 0.2s', transform: kidsOpen ? 'rotate(90deg)' : 'none' }}>▶</span>}
+            <div key={group.id} style={{ marginBottom: 6 }}>
+              {!collapsed ? (
+                <button onClick={() => group.collapsible && toggleGroup(group.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%', padding: '10px 18px 4px', background: 'none', border: 'none', cursor: group.collapsible ? 'pointer' : 'default', fontFamily: 'var(--font-body)', color: hasActive ? 'var(--brand)' : 'var(--text-low)' }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>{group.label}</span>
+                  {group.collapsible && <span style={{ marginLeft: 'auto', fontSize: 9, opacity: 0.7, transition: 'transform 0.2s', transform: isOpen ? 'rotate(90deg)' : 'none', display: 'inline-block' }}>▶</span>}
+                  {!isOpen && hasActive && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--brand)', boxShadow: '0 0 6px var(--brand)' }} />}
+                </button>
+              ) : <div style={{ height: 1, background: 'var(--border-subtle)', margin: '6px 14px' }} />}
+              {(isOpen || collapsed) && items.map((item) => {
+                const active = current === item.id;
+                const kids = kidsOf(item);
+                const kidsOpen = kids.length > 0 && !collapsed && (openItems[item.id] || !!qn);
+                const activeSub = active && navSub && navSub.screen === item.id ? navSub.sub : null;
+                return (
+                  <React.Fragment key={item.id}>
+                    <button title={item.label}
+                      onClick={() => { if (item.children) { setOpenItems(o => ({ ...o, [item.id]: active ? !o[item.id] : true })); if (!active) onNav(item.id, item.children[0].sub); } else onNav(item.id); }}
+                      style={{ ...rowBase, background: active ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', color: active ? 'var(--brand)' : 'var(--text-high)', fontSize: 13.5, fontWeight: active ? 600 : 500 }}
+                      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.05)'; }}
+                      onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
+                      {item.useSvg ? <Icon name={item.icon} size={15} color={active ? 'var(--brand)' : 'var(--text-mid)'} style={{ flexShrink: 0, width: 18 }} /> : <span style={{ fontSize: 13, width: 18, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>}
+                      {!collapsed && <span style={{ whiteSpace: 'nowrap', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>}
+                      {!collapsed && item.children && <span style={{ fontSize: 9, color: 'var(--text-low)', transition: 'transform 0.2s', transform: kidsOpen ? 'rotate(90deg)' : 'none', display: 'inline-block' }}>▶</span>}
                     </button>
                     {kidsOpen && kids.map((k) => {
-                      const on = active && (activeSub === k.sub || (!activeSub && k === kids[0]));
+                      const on = active && (activeSub === k.sub || (!activeSub && k === (item.children || [])[0]));
                       return (
-                        <button key={k.sub} onClick={() => onNav(item.id, k.sub)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '5px 16px 5px 52px', background: on ? 'rgba(var(--brand-rgb),0.08)' : 'transparent', border: 'none', cursor: 'pointer', color: on ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12.5, fontFamily: 'var(--font-body)', textAlign: 'left', position: 'relative', fontWeight: on ? 600 : 400 }}
+                        <button key={k.sub} onClick={() => onNav(item.id, k.sub)} style={{ ...rowBase, padding: '5px 10px 5px 38px', background: on ? 'rgba(var(--brand-rgb),0.08)' : 'transparent', color: on ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12.5, fontWeight: on ? 600 : 400 }}
                           onMouseEnter={(e) => { if (!on) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)'; }}
                           onMouseLeave={(e) => { if (!on) e.currentTarget.style.background = 'transparent'; }}>
-                          <span style={{ position: 'absolute', left: 36, top: '50%', width: 5, height: 5, borderRadius: '50%', transform: 'translateY(-50%)', background: on ? 'var(--brand)' : 'var(--border-strong)' }} />
+                          <span style={{ position: 'absolute', left: 25, top: '50%', width: 5, height: 5, borderRadius: '50%', transform: 'translateY(-50%)', background: on ? 'var(--brand)' : 'var(--border-strong)' }} />
                           <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.label}</span>
                         </button>);
                     })}
-                    </React.Fragment>);
-
-                })}
-              </div>
+                  </React.Fragment>);
+              })}
             </div>);
-
         })}
+        {qn && !NAV_GROUPS.some(g => g.items.some(i => !i.mobileOnly && matches(i))) && <div style={{ padding: '14px 18px', fontSize: 12, color: 'var(--text-low)' }}>Nothing matches “{q}”.</div>}
       </div>
 
-      {/* Footer links */}
-      {!collapsed &&
-      <div style={{ padding: '8px 16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <a href={(window.__shieldAppUrls && window.__shieldAppUrls.tech) || '#'} style={{ fontSize: 11, color: 'var(--text-low)', textDecoration: 'none', padding: '4px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Icon name="phone" size={12} color="var(--text-low)" /> Tech App
-          </a>
-          <a href={(window.__shieldAppUrls && window.__shieldAppUrls.customer) || '#'} style={{ fontSize: 11, color: 'var(--text-low)', textDecoration: 'none', padding: '4px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Icon name="customers" size={12} color="var(--text-low)" /> Customer Portal
-          </a>
-        </div>
-      }
-
-      {/* Collapse toggle button */}
-      <div style={{ padding: '8px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: collapsed ? 'center' : 'flex-end' }}>
-        <button onClick={onToggleCollapse} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} style={{
-          width: 28, height: 28, borderRadius: 6,
-          background: 'rgba(var(--brand-rgb),0.04)',
-          border: '1px solid var(--border-subtle)',
-          color: 'var(--text-low)', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'all 0.15s'
-        }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.1)'; e.currentTarget.style.color = 'var(--brand)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)'; e.currentTarget.style.color = 'var(--text-low)'; }}>
+      {/* Other apps + collapse */}
+      <div style={{ padding: '8px 10px', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
+        {!collapsed && <>
+          <a href={(window.__shieldAppUrls && window.__shieldAppUrls.tech) || '#'} title="Tech app" style={{ flex: 1, fontSize: 11.5, color: 'var(--text-mid)', textDecoration: 'none', padding: '6px 8px', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="phone" size={12} color="var(--text-low)" /> Tech</a>
+          <a href={(window.__shieldAppUrls && window.__shieldAppUrls.customer) || '#'} title="Customer portal" style={{ flex: 1, fontSize: 11.5, color: 'var(--text-mid)', textDecoration: 'none', padding: '6px 8px', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="customers" size={12} color="var(--text-low)" /> Customer</a>
+        </>}
+        <button onClick={onToggleCollapse} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', color: 'var(--text-low)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: collapsed ? 'auto' : 0, marginRight: collapsed ? 'auto' : 0 }}>
           <Icon name={collapsed ? 'chevron-right' : 'chevron-down'} size={12} color="currentColor" style={{ transform: collapsed ? 'none' : 'rotate(90deg)' }} />
         </button>
       </div>
     </nav>);
-
 }
 
 /* ── Top Bar ── */
@@ -788,4 +692,4 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
 
 }
 
-Object.assign(window, { ShieldLogo, NavRail, TopBar, AppShell, NAV_ITEMS, NAV_GROUPS, navSubSet, useNavSub });
+Object.assign(window, { ShieldLogo, NavRail, TopBar, AppShell, NAV_ITEMS, NAV_GROUPS, NAV_LEGACY_IDS, navSubSet, useNavSub });

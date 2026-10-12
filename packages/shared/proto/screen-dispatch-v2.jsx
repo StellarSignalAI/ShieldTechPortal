@@ -800,7 +800,7 @@ function DispatchQueue({ jobs, techs, showToast }) {
             <div style={{ padding: '6px 14px', fontSize: 11, fontWeight: 600, color: 'var(--text-low)' }}>{queueCtx.job.id} — {queueCtx.job.customer}</div>
             {[
               { label: 'Schedule on Calendar', action: () => { if (window.navTo) window.navTo('calendar'); else showToast('Open Calendar & Copilot to schedule this job'); } },
-              { label: 'View address in Maps', action: () => { if (queueCtx.job.addr && queueCtx.job.addr !== '—') window.open(`https://www.google.com/maps/search/${encodeURIComponent(queueCtx.job.addr)}`, '_blank'); else showToast('No address on file for this job'); } },
+              { label: 'View address in Maps', action: () => { if (queueCtx.job.addr && queueCtx.job.addr !== '—') shieldDirections({ address: queueCtx.job.addr, label: queueCtx.job.customer }); else showToast('No address on file for this job'); } },
               { label: 'Copy job ref', action: () => { try { navigator.clipboard.writeText(queueCtx.job.id); showToast(`${queueCtx.job.id} copied`); } catch { showToast('Copy failed'); } } },
             ].map((item, i) => (
               <button key={i} onClick={() => { item.action(); setQueueCtx(null); }} style={{ display: 'block', width: '100%', padding: '7px 14px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}
