@@ -613,6 +613,22 @@ ShieldTech's own data and tools.
   render with no overflow. Portal desktop + phone re-checked after the primitives moved.
   All four apps build. Service worker cache `shieldtech-v26`.
 
+### 2t. Phones: tab bar on the bottom edge, portrait only
+- `viewport-lock.css`: `.m-app-shell` is 100% of the fixed body (pinned to every edge of
+  the visual viewport) instead of 100vh / 100dvh — installed iOS web apps report a dvh
+  shorter than the screen, which floated the tab bar above a dead band. The shell is a
+  flex column and its last `nav` is pinned to the bottom (`margin-top: auto`).
+- Portrait only on phones, three layers: every manifest declares `"orientation":
+  "portrait"`; `packages/shared/orientation.js` (imported by the four mobile entries)
+  calls `screen.orientation.lock('portrait')` where allowed (Android) and stamps
+  `<html data-rot="ccw|cw">` from the turn direction; `viewport-lock.css` rotates
+  `body` (portals included) back upright on `(orientation: landscape) and (pointer:
+  coarse) and (max-height: 520px)` so iOS, which ignores both, still shows the app
+  portrait with "up" at the phone's physical top. Tablets / desktops untouched.
+- Verified with Playwright (touch emulation) on portal, tech, customer, sales: portrait
+  → tab bar bottom == viewport bottom; landscape 844×390 → body rotated, fills the
+  screen exactly, no page errors. Service worker cache `shieldtech-v27`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

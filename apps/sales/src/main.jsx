@@ -20,6 +20,7 @@ import '@fontsource/jetbrains-mono/500.css';
 import '@shared/styles/styles.css';
 import '@shared/styles/mobile.css';
 import '@shared/styles/viewport-lock.css';
+import '@shared/orientation.js';
 import './sales.css';
 import '@shared/supabase.js';
 import '@shared/auth.js';

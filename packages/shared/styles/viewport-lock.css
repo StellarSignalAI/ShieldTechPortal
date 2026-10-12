@@ -18,20 +18,54 @@ body {
 /* Top inset only: the shell's bottom-most element (tab bar / footer) owns
    env(safe-area-inset-bottom) itself so its background extends to the true
    screen edge. Padding here too would double the inset and float the bar
-   above the home indicator by a model-dependent gap. */
+   above the home indicator by a model-dependent gap.
+
+   Height is 100% of the fixed body (which is pinned to every edge of the
+   visual viewport) — NOT 100vh / 100dvh. Installed (standalone) PWAs on iOS
+   report a dvh/vh that is shorter than the screen, which left a dead band
+   under the tab bar; the fixed body is always the exact screen. */
 .m-app-shell {
   height: 100% !important;
+  min-height: 100% !important;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top);
+  display: flex;
+  flex-direction: column;
 }
-/* Dynamic viewport height where supported: tracks Android URL-bar collapse
-   and iOS toolbar show/hide exactly. */
-@supports (height: 100dvh) {
-  .m-app-shell { height: 100dvh !important; }
-}
+/* The bottom tab bar / footer is the shell's last child: pin it to the bottom
+   edge of the shell no matter what the content above it does. */
+.m-app-shell > nav:last-of-type { margin-top: auto; flex-shrink: 0; }
 .m-app-shell [style*="overflow: auto"],
 .m-app-shell [style*="overflow-y: auto"] {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
 .m-app-shell { -webkit-tap-highlight-color: transparent; }
+
+/* ── Portrait only on phones ──
+   The manifests ask for portrait and orientation.js calls
+   screen.orientation.lock() where the platform honours it (Android). iOS
+   ignores both, so when a phone is turned sideways the whole page (body —
+   portals included) is rotated back upright: the app stays portrait no matter
+   how the device is held. html[data-rot] (set by orientation.js) says which way
+   the phone was turned so "up" stays at the phone's physical top. Tablets and
+   desktops (tall landscape viewports) are untouched. */
+@media (orientation: landscape) and (pointer: coarse) and (max-height: 520px) {
+  body {
+    width: 100vh !important;
+    height: 100vw !important;
+    max-width: none !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: 0 !important;
+    top: 0 !important;
+    margin: 0 !important;
+    transform-origin: 0 0;
+    transform: rotate(-90deg) translateX(-100%);
+  }
+  html[data-rot="cw"] body { transform: rotate(90deg) translateY(-100%); }
+  /* The rotated shell's "top" inset is now the phone's physical top edge;
+     safe-area values describe the landscape frame, so drop them. */
+  .m-app-shell { padding-top: 0 !important; }
+  .m-app-shell > nav:last-of-type { padding-bottom: 0 !important; }
+}
