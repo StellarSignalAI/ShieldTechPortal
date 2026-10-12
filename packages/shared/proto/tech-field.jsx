@@ -45,7 +45,12 @@ function useTfPins(jobs) {
   React.useEffect(() => {
     let alive = true;
     const sites = [...new Set(jobs.map(j => j.site).filter(Boolean))];
-    sites.forEach(s => { const c = tfGeoCache(); if (c[s]) { setPins(p => ({ ...p, [s]: c[s] })); return; } tfGeocode(s).then(pt => { if (alive && pt) setPins(p => ({ ...p, [s]: pt })); }); });
+    // A work order / calendar job the office already pinned carries lat/lng — use it
+    // straight away instead of waiting on a geocode round-trip.
+    const known = {};
+    jobs.forEach(j => { const src = j._wo || j._cal || {}; if (j.site && src.lat != null && src.lng != null) known[j.site] = [Number(src.lat), Number(src.lng)]; });
+    if (Object.keys(known).length) setPins(p => ({ ...p, ...known }));
+    sites.forEach(s => { if (known[s]) return; const c = tfGeoCache(); if (c[s]) { setPins(p => ({ ...p, [s]: c[s] })); return; } tfGeocode(s).then(pt => { if (alive && pt) setPins(p => ({ ...p, [s]: pt })); }); });
     return () => { alive = false; };
   }, [key]);
   return pins;
