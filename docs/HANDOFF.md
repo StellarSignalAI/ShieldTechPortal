@@ -761,6 +761,23 @@ ShieldTech's own data and tools.
   exactly 62px past the short viewport; gap held while typing; dropped in landscape; no page
   errors. Service worker cache `shieldtech-v32`.
 
+### 2aa. Bottom gap — final answer (supersedes 2y and 2z)
+- 2z's in-page extension shipped and the next screenshots proved it wrong: the tab bar moved
+  down 62pt but the **paint region ended on exactly the same pixel row (2682 of 2868)** and
+  cut the labels off. iOS fills the band with the page background colour, which is why it
+  looked page-painted; it is OUTSIDE the web view. No CSS/JS can reach it. Reverted.
+- Mechanism that fits every measurement: on iOS 26.0 a home-screen app installed with the
+  translucent status bar gets a web view of height (screen − status bar) placed at y=0.
+  With the OPAQUE status bar the same-sized view is placed below the status bar and ends on
+  the real screen edge (the fix several projects reported). iOS reads
+  `apple-mobile-web-app-status-bar-style` only when the icon is added, so the installed
+  apps must be **removed from the home screen and added again** once after this deploy.
+  All four `index.html`s are on `black`. Service worker cache `shieldtech-v33`.
+- Diagnostics: `orientation.js` exports `window.__shieldViewportInfo()` and the avatar menus
+  (tech app, mobile portal) print it under the build line:
+  `vp W×H · screen W×H · inset top/bottom · home-screen app|browser`. Translucent install =
+  vp height ≈ screen − 60 with top inset > 0; opaque install = top inset 0.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

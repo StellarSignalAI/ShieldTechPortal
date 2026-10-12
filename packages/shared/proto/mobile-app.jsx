@@ -212,7 +212,7 @@ function MobileDirectory({ onNav }) {
         <a href="?desktop=1" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Desktop Portal →</a>
         <a href={appUrls.tech || '#'} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Technician App →</a>
         <a href={appUrls.customer || '#'} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Customer Portal →</a>
-        <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)', paddingTop: 10, opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}</div>
+        <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)', paddingTop: 10, opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}{window.__shieldViewportInfo ? ` · ${window.__shieldViewportInfo()}` : ''}</div>
       </div>
     </div>
   );
@@ -266,7 +266,7 @@ function MAvatarMenu({ onNav }) {
 
             <div style={{ height: 1, background: 'var(--border-subtle)', margin: '5px 12px' }} />
             {u && <button style={{ ...item, color: 'var(--status-critical)' }} onClick={() => { setOpen(false); if (window.__shieldAuth) window.__shieldAuth.signOut(); if (onNav) onNav('login'); }}>← Sign out</button>}
-            <div className="mono" style={{ padding: '6px 14px 10px', fontSize: 9, color: 'var(--text-low)', opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}</div>
+            <div className="mono" style={{ padding: '6px 14px 10px', fontSize: 9, color: 'var(--text-low)', opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}{window.__shieldViewportInfo ? ` · ${window.__shieldViewportInfo()}` : ''}</div>
           </div>
         </>
       ), document.body)}
