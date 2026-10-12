@@ -661,6 +661,18 @@ ShieldTech's own data and tools.
   More → only WORK + Logout; `shieldDirections` sheet in the tech app. Service worker cache
   `shieldtech-v28`.
 
+### 2v. Maps: key-free tiles (the "Missing API Key" fix)
+- The CARTO basemap every map used started requiring an API key and stamps "Missing API
+  Key" on each tile served without one — that is what the tech app showed. `live-map.js`
+  now uses **OpenStreetMap standard tiles** (no key, zoom 19) with a CSS darkening filter
+  in the dark theme (`.leaflet-layer.st-tiles`; light theme untouched), and falls back to
+  **Esri World Street Map** (also key-free) after three tile errors. The service worker
+  never touched cross-origin tiles, and no CSP is in place, so nothing else gates them.
+  Fleet, dispatch, the tech day map and every location card share this layer.
+- Verified with Playwright: tech Home and portal Dispatch mount Leaflet, request
+  OpenStreetMap tiles, no CARTO; with the tile host blocked (sandbox) the layer swaps to
+  Esri on its own. Service worker cache `shieldtech-v29`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 
