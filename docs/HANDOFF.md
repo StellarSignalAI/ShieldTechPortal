@@ -695,6 +695,42 @@ ShieldTech's own data and tools.
   doc-builder routes are unrouted (they fall back to More). The builder components stay
   in the bundle unused.
 
+### 2y. Bottom gap on iOS 26 home-screen apps (the real cause) + constant live location
+- **Tab bar still floating** on the installed iPhone apps even with `position: fixed; bottom: 0`:
+  the user's screenshots show the whole web view ending ~55pt above the screen bottom, while
+  `env(safe-area-inset-bottom)` still reports 34pt. That is an iOS 26 WebKit bug with
+  `apple-mobile-web-app-status-bar-style=black-translucent` + `viewport-fit=cover` in
+  standalone mode: the web view starts at the top of the screen but is laid out one
+  status-bar height short at the bottom (WebKit 301108; Safari 26.1 notes a fix for "a bottom
+  gap on layouts with viewport-sized fixed containers"). Fix shipped: the status bar style is
+  **`black`** (opaque) in all four `index.html`s — iOS keeps its own strip at the top and runs
+  the web view to the real bottom edge, so the fixed bar lands on the home-indicator edge.
+  `orientation.js` also nudges a reflow on `focusout` (iOS can leave the viewport shrunk after
+  the keyboard closes). Service worker cache `shieldtech-v31`.
+- **Live location was device-local.** `FleetTransport.publish` only wrote the local `fleet`
+  store, which reached other devices as a whole-blob `app_state` row (last write wins — two
+  techs overwrote each other). Now:
+  - `supabase/migrations/0039_tech_locations.sql` (**applied to prod**): one row per tech
+    (`tech_id` PK → profiles, `tech_key` initials, lat/lng/accuracy/heading/speed, `on_duty`,
+    `status`, `updated_at`), RLS = Admin/Staff/Technician read all, a tech writes own row,
+    realtime publication + `replica identity full`.
+  - `packages/shared/fleet-live.js` (portal desktop + mobile, tech): publishes every fix
+    (≤ 1 write / 4s) plus a 45s **heartbeat** so the row only goes stale when the phone really
+    stopped; subscribes to realtime, refetches on focus / visibility / pageshow and polls every
+    60s; `offDuty()` on sign-out marks the row `on_duty=false`. `__shieldFleetLive`.
+  - `screen-fleet.jsx`: `fleetApplyRemote(row)` / `fleetRemoveRemote(row)` merge rows into the
+    shared fleet store (older rows ignored, trail appended on movement); `startFleetSharing`
+    now also sets `window.__shieldLastFix`, dispatches **`shield:gps`** on every fix, and runs
+    a 30s watchdog that re-arms the watch if iOS silently stalls it for 90s.
+  - `store-sync.js`: `LOCAL_ONLY = {fleet}` — never mirrored through `app_state` again.
+  - Tech day map (`tech-field.jsx` `TfMap`): the me-dot is created once and **moved on every
+    `shield:gps` fix** (no re-fit), seeded from the last fix.
+  - Web limit still applies: streaming runs while the app is open / foregrounded; iOS has no
+    background location for web apps (native wrapper needed for that).
+- Verified with Playwright: tech app streams two mocked fixes → `shield:gps`, store + me-dot
+  follow, tab bar fixed at the viewport bottom; portal applies remote rows (position, trail,
+  dispatch status) with no page errors.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

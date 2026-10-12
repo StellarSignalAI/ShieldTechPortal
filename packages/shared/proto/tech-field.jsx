@@ -60,13 +60,30 @@ function useTfPins(jobs) {
 function TfMap({ jobs, height = 220, focusId, onPick, style }) {
   const elRef = React.useRef(null), apiRef = React.useRef(null), layerRef = React.useRef(null), meRef = React.useRef(null);
   const pins = useTfPins(jobs);
-  const [gps, setGps] = React.useState(null);
-  React.useEffect(() => { if (navigator.geolocation) navigator.geolocation.getCurrentPosition(p => setGps([p.coords.latitude, p.coords.longitude]), () => {}, { timeout: 5000, maximumAge: 120000 }); }, []);
+  // The tech's own position: the live GPS stream (screen-fleet.jsx) feeds
+  // `shield:gps` on every fix, so the dot moves constantly; the last fix seeds
+  // it instantly and a one-shot read covers the first open before the stream.
+  const [gps, setGps] = React.useState(() => { const f = window.__shieldLastFix; return f ? [f.lat, f.lng] : null; });
+  React.useEffect(() => {
+    const onFix = (e) => { const d = e.detail || {}; if (d.lat != null) setGps([d.lat, d.lng]); };
+    window.addEventListener('shield:gps', onFix);
+    if (!window.__shieldLastFix && navigator.geolocation) navigator.geolocation.getCurrentPosition(p => setGps([p.coords.latitude, p.coords.longitude]), () => {}, { timeout: 8000, maximumAge: 30000 });
+    return () => window.removeEventListener('shield:gps', onFix);
+  }, []);
   React.useEffect(() => {
     const lm = window.__shieldLiveMap; if (!elRef.current || !lm || apiRef.current) return;
     try { apiRef.current = lm.mount(elRef.current, { center: gps || [39.95, -75.16], zoom: 11 }); } catch { /* no map */ }
-    return () => { try { apiRef.current && apiRef.current.destroy(); } catch { /* noop */ } apiRef.current = null; };
+    return () => { try { apiRef.current && apiRef.current.destroy(); } catch { /* noop */ } apiRef.current = null; meRef.current = null; };
   }, []);
+  // Me-dot: created once, then only moved — a new fix never re-fits the map.
+  React.useEffect(() => {
+    const api = apiRef.current, L = window.__shieldLiveMap && window.__shieldLiveMap.L; if (!api || !L || !gps) return;
+    if (!meRef.current) {
+      const html = '<div style="width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--brand,#3B8BFF);box-shadow:0 0 12px rgba(var(--brand-rgb),0.8)"></div>';
+      meRef.current = L.marker(gps, { icon: L.divIcon({ html, className: 'tf-me', iconSize: [14, 14], iconAnchor: [7, 7] }), zIndexOffset: 1000, interactive: false }).addTo(api.map);
+      if (!jobs.some(j => pins[j.site])) api.map.setView(gps, 13);
+    } else meRef.current.setLatLng(gps);
+  }, [gps]);
   React.useEffect(() => {
     const api = apiRef.current, L = window.__shieldLiveMap && window.__shieldLiveMap.L; if (!api || !L) return;
     if (layerRef.current) { layerRef.current.remove(); }
@@ -79,10 +96,10 @@ function TfMap({ jobs, height = 220, focusId, onPick, style }) {
       const m = L.marker(pt, { icon: L.divIcon({ html, className: '', iconSize: [120, 50], iconAnchor: [60, 17] }) }).addTo(group);
       if (onPick) m.on('click', () => onPick(j));
     });
-    if (gps) { const html = '<div style="width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--brand,#3B8BFF);box-shadow:0 0 12px rgba(var(--brand-rgb),0.8)"></div>'; L.marker(gps, { icon: L.divIcon({ html, className: '', iconSize: [14, 14], iconAnchor: [7, 7] }) }).addTo(group); pts.push(gps); }
+    const here = meRef.current ? meRef.current.getLatLng() : null;
+    if (here) pts.push([here.lat, here.lng]);
     if (pts.length) { try { api.map.fitBounds(L.latLngBounds(pts).pad(0.35), { maxZoom: 14, animate: false }); } catch { /* noop */ } }
-    else if (gps) api.map.setView(gps, 12);
-  }, [jobs, pins, gps, focusId]);
+  }, [jobs, pins, focusId]);
   const located = jobs.filter(j => pins[j.site]).length;
   return (
     <div className="tf-map" style={{ position: 'relative', height, borderRadius: 18, overflow: 'hidden', border: '1px solid var(--border-subtle)', background: 'var(--card)', ...(style || {}) }}>

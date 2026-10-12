@@ -5,6 +5,7 @@ import '@shared/styles/viewport-lock.css';
 import '@shared/orientation.js';
 import '@shared/proto-manifest-mobile.js';
 import '@shared/store-sync.js';
+import '@shared/fleet-live.js';
 
 const React = window.React;
 const ReactDOM = window.ReactDOM;

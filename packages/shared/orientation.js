@@ -32,4 +32,18 @@
   lock();
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') lock(); });
   window.addEventListener('pointerdown', lock, { once: true });
+
+  /* iOS home-screen apps can leave the layout viewport shrunk after the
+     on-screen keyboard closes (a dead band appears under the tab bar for the
+     rest of the session). Nudging a reflow right after focus leaves an input
+     restores the full-height viewport. */
+  document.addEventListener('focusout', () => {
+    setTimeout(() => {
+      try {
+        window.scrollTo(0, 0);
+        const b = document.body; b.style.minHeight = '100.01%';
+        requestAnimationFrame(() => { b.style.minHeight = ''; });
+      } catch { /* noop */ }
+    }, 80);
+  });
 })();
