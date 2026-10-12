@@ -7,18 +7,18 @@ const surveyPrefsStore = createShieldStore('svprefs', { hubLayout: 'workflow', r
 
 /* ── Signal reading kinds (magicplan's instrument readings → RF/network site readings) ── */
 const SV_READINGS = [
-  { kind: 'wifi', label: 'Wi-Fi RSSI',   unit: 'dBm',  color: '#6366F1', good: v => v >= -65 },
-  { kind: 'lte',  label: 'LTE signal',   unit: 'dBm',  color: '#c084fc', good: v => v >= -95 },
+  { kind: 'wifi', label: 'Wi-Fi RSSI',   unit: 'dBm',  color: 'var(--brand)', good: v => v >= -65 },
+  { kind: 'lte',  label: 'LTE signal',   unit: 'dBm',  color: 'var(--accent-2)', good: v => v >= -95 },
   { kind: 'link', label: 'Drop test',    unit: 'Mbps', color: '#34D399', good: v => v >= 900 },
   { kind: 'poe',  label: 'PoE budget',   unit: 'W',    color: '#FBBF24', good: v => v >= 15 },
 ];
 const svReading = k => SV_READINGS.find(r => r.kind === k) || SV_READINGS[0];
 
-const SV_SEV = { high: { label: 'Blocker', c: '#F43F5E' }, med: { label: 'Attention', c: '#FBBF24' }, low: { label: 'Note', c: '#6366F1' } };
+const SV_SEV = { high: { label: 'Blocker', c: '#F43F5E' }, med: { label: 'Attention', c: '#FBBF24' }, low: { label: 'Note', c: 'var(--brand)' } };
 
 /* ── Coverage zone types (magicplan "affected areas" → device coverage w/ auto quantities) ── */
 const SV_ZONES = [
-  { type: 'camera', label: 'Camera FOV',      c: '#6366F1' },
+  { type: 'camera', label: 'Camera FOV',      c: 'var(--brand)' },
   { type: 'motion', label: 'Motion coverage', c: '#FBBF24' },
   { type: 'reader', label: 'Access zone',     c: '#34D399' },
   { type: 'gap',    label: 'Coverage gap',    c: '#F43F5E' },
@@ -58,7 +58,7 @@ function svEstimate(project) {
   return { ...t, extras, extrasTotal, tm, base, markup, discount, tax, total: Math.round(taxable + tax), status: est.status || 'draft' };
 }
 const SV_EST_STATUSES = ['draft', 'sent', 'approved', 'rejected'];
-const svStatusColor = s => ({ draft: '#94A3B8', sent: '#6366F1', approved: '#34D399', rejected: '#F43F5E' }[s] || '#94A3B8');
+const svStatusColor = s => ({ draft: '#94A3B8', sent: 'var(--brand)', approved: '#34D399', rejected: '#F43F5E' }[s] || '#94A3B8');
 
 /* ── One-time seed: enrich the demo project with Survey Scan fields ── */
 (() => {

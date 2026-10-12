@@ -165,11 +165,11 @@ function WShieldAI({ size }) {
   /* No scheduled AI briefing exists yet, so no invented findings — the widget
      is an honest gateway to the real assistant. */
   return (
-    <WCard size={size} accent="#6366F1" title="ShieldTech AI" glyph="hermes" sub={size !== 'small' ? 'your AI assistant' : null}>
+    <WCard size={size} accent="var(--brand)" title="ShieldTech AI" glyph="hermes" sub={size !== 'small' ? 'your AI assistant' : null}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 8, textAlign: 'center', padding: 6 }}>
         <span style={{ fontSize: size === 'small' ? 18 : 22 }}>⟡</span>
         {size !== 'small' && <div style={{ fontSize: 11, color: 'var(--text-mid)', lineHeight: 1.5 }}>Ask about finances, dispatch, customers or reports — answers come from your live data.</div>}
-        <button onClick={() => { if (window.__shieldNav) window.__shieldNav('shieldtech-ai'); }} style={{ padding: '5px 14px', borderRadius: 100, fontSize: 11, fontWeight: 600, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.4)', color: '#6366F1', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Ask ShieldTech AI</button>
+        <button onClick={() => { if (window.__shieldNav) window.__shieldNav('shieldtech-ai'); }} style={{ padding: '5px 14px', borderRadius: 100, fontSize: 11, fontWeight: 600, background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid rgba(var(--brand-rgb),0.4)', color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Ask ShieldTech AI</button>
       </div>
     </WCard>
   );
@@ -184,7 +184,7 @@ function WClock({ size }) {
   /* Just the (real) clock — no invented on-call rotation or always-green
      service status board; there's no status feed to back either. */
   return (
-    <WCard size={size} accent="#6366F1" title="Ops Center" glyph="statuspage">
+    <WCard size={size} accent="var(--brand)" title="Ops Center" glyph="statuspage">
       {size === 'small' && (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <div className="mono" style={{ fontSize: 30, fontWeight: 600, color: 'var(--text-high)', letterSpacing: '0.02em' }}>{time}</div>
@@ -204,8 +204,8 @@ registerWidget('weather',     { label: 'Field Weather',      cat: 'Inventive', a
 registerWidget('leaderboard', { label: 'Tech Leaderboard',   cat: 'Inventive', accent: '#FCD34D', glyph: 'star',       sizes: ['small', 'medium', 'large'], render: s => <WLeaderboard size={s} /> });
 registerWidget('nps',         { label: 'NPS Pulse',          cat: 'Inventive', accent: '#34D399', glyph: 'star',       sizes: ['small', 'medium', 'large'], render: s => <WNPS size={s} /> });
 registerWidget('safety',      { label: 'Safety Streak',      cat: 'Inventive', accent: '#34D399', glyph: 'check',      sizes: ['small', 'medium', 'large'], render: s => <WSafety size={s} /> });
-registerWidget('hermes',      { label: 'ShieldTech AI Briefing',    cat: 'Inventive', accent: '#6366F1', glyph: 'hermes',     sizes: ['small', 'medium', 'large'], render: s => <WShieldAI size={s} /> });
-registerWidget('clock',       { label: 'Ops Center Clock',   cat: 'Inventive', accent: '#6366F1', glyph: 'statuspage', sizes: ['small', 'medium', 'large'], render: s => <WClock size={s} /> });
+registerWidget('hermes',      { label: 'ShieldTech AI Briefing',    cat: 'Inventive', accent: 'var(--brand)', glyph: 'hermes',     sizes: ['small', 'medium', 'large'], render: s => <WShieldAI size={s} /> });
+registerWidget('clock',       { label: 'Ops Center Clock',   cat: 'Inventive', accent: 'var(--brand)', glyph: 'statuspage', sizes: ['small', 'medium', 'large'], render: s => <WClock size={s} /> });
 
 /* ── Master display order for the gallery ── */
 const ST_ORDER = ['tickets', 'monitoring', 'workorders', 'schedule', 'fleet', 'approvals', 'mrr', 'pipeline', 'revenue', 'health', 'renewals', 'weather', 'leaderboard', 'nps', 'safety', 'hermes', 'clock'];

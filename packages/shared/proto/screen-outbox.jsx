@@ -55,7 +55,7 @@ function PayPageScreen({ onBack }) {
           </div>
           <div style={{ fontSize: 13, color: 'var(--text-mid)', marginBottom: 12 }}>Billed to <b style={{ color: 'var(--text-high)' }}>{inv.customer}</b> · due {inv.due}</div>
           {(inv.lines || []).map((li, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', fontSize: 12 }}>
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)', fontSize: 12 }}>
               <span style={{ color: 'var(--text-mid)' }}>{li.desc}</span>
               <span className="mono" style={{ color: 'var(--text-high)' }}>${(li.qty * li.rate).toLocaleString()}</span>
             </div>
@@ -69,7 +69,7 @@ function PayPageScreen({ onBack }) {
         {/* Payment */}
         {(alreadyPaid || state === 'paid') ? (
           <div className="glass" style={{ padding: 26, textAlign: 'center' }}>
-            <div style={{ width: 46, height: 46, margin: '0 auto 10px', borderRadius: '50%', background: 'rgba(52,211,153,0.12)', border: '2px solid var(--status-ok)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--status-ok)' }}>✓</div>
+            <div style={{ width: 46, height: 46, margin: '0 auto 10px', borderRadius: '50%', background: 'rgba(var(--ok-rgb),0.12)', border: '2px solid var(--status-ok)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: 'var(--status-ok)' }}>✓</div>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-high)' }}>Payment received</div>
             <div style={{ fontSize: 11, color: 'var(--text-mid)', marginTop: 4 }}>{inv.num} · ${inv.amount.toLocaleString()} · marked paid on {inv.customer}'s account (no receipt email is sent from this demo checkout)</div>
             <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 10 }}>Thank you for your business — {brand.company}</div>
@@ -83,7 +83,7 @@ function PayPageScreen({ onBack }) {
               <input value={card.exp} onChange={e => set('exp', e.target.value)} placeholder="MM / YY" style={{ ...payInput(), flex: 1 }} />
               <input value={card.cvc} onChange={e => set('cvc', e.target.value.replace(/\D/g, ''))} placeholder="CVC" inputMode="numeric" style={{ ...payInput(), flex: 1 }} />
             </div>
-            <button onClick={pay} disabled={state === 'processing'} style={{ width: '100%', marginTop: 12, padding: '12px 0', background: state === 'processing' ? 'rgba(99,102,241,0.3)' : 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 9, color: '#fff', fontSize: 14, fontWeight: 700, cursor: state === 'processing' ? 'default' : 'pointer', fontFamily: 'var(--font-body)' }}>
+            <button onClick={pay} disabled={state === 'processing'} style={{ width: '100%', marginTop: 12, padding: '12px 0', background: state === 'processing' ? 'rgba(var(--brand-rgb),0.3)' : 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 9, color: '#fff', fontSize: 14, fontWeight: 700, cursor: state === 'processing' ? 'default' : 'pointer', fontFamily: 'var(--font-body)' }}>
               {state === 'processing' ? 'Processing…' : `Pay $${inv.amount.toLocaleString()}`}
             </button>
             <div style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 10, textAlign: 'center', lineHeight: 1.5 }}>
@@ -96,7 +96,7 @@ function PayPageScreen({ onBack }) {
   );
 }
 function payInput() {
-  return { width: '100%', boxSizing: 'border-box', marginBottom: 8, padding: '11px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
+  return { width: '100%', boxSizing: 'border-box', marginBottom: 8, padding: '11px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
 }
 
 /* ── Outbox — every merged email, with clickable pay links ── */
@@ -118,10 +118,10 @@ function OutboxScreen() {
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.subject}</div>
               <div style={{ fontSize: 10, color: 'var(--text-low)' }}>To {m.to} · {m.customer}{m.invoice ? ` · ${m.invoice}` : ''}</div>
             </div>
-            <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', color: 'var(--status-warn)', fontWeight: 700 }}>QUEUED</span>
+            <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 10, background: 'rgba(var(--warn-rgb),0.1)', border: '1px solid rgba(var(--warn-rgb),0.3)', color: 'var(--status-warn)', fontWeight: 700 }}>QUEUED</span>
           </div>
           {open === m.id && (
-            <div style={{ marginTop: 10, padding: '12px 14px', borderRadius: 8, background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ marginTop: 10, padding: '12px 14px', borderRadius: 8, background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)' }}>
               <pre style={{ margin: 0, fontSize: 11, color: 'var(--text-mid)', whiteSpace: 'pre-wrap', fontFamily: 'var(--font-body)', lineHeight: 1.6 }}>
                 {m.payLink ? m.body.split(m.payLink).map((part, i, arr) => (
                   <React.Fragment key={i}>

@@ -51,7 +51,7 @@ function FinanceAP({ setDrawer, setModal, showToast }) {
     <div style={{ maxWidth: 1400 }}>
       <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
         {['bills','vendors','purchase-orders'].map(t => (
-          <button key={t} onClick={() => setApTab(t)} style={{ padding: '5px 14px', borderRadius: 6, fontSize: 11, background: apTab===t?'rgba(99,102,241,0.12)':'transparent', border: `1px solid ${apTab===t?'var(--brand)':'var(--border-subtle)'}`, color: apTab===t?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{t.replace('-',' ')}</button>
+          <button key={t} onClick={() => setApTab(t)} style={{ padding: '5px 14px', borderRadius: 6, fontSize: 11, background: apTab===t?'rgba(var(--brand-rgb),0.12)':'transparent', border: `1px solid ${apTab===t?'var(--brand)':'var(--border-subtle)'}`, color: apTab===t?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'capitalize' }}>{t.replace('-',' ')}</button>
         ))}
         <div style={{ flex: 1 }} />
         <button onClick={() => setModal({ type: apTab==='bills'?'new-bill':apTab==='vendors'?'new-vendor':'new-po' })} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New {apTab==='bills'?'Bill':apTab==='vendors'?'Vendor':'PO'}</button>
@@ -64,16 +64,16 @@ function FinanceAP({ setDrawer, setModal, showToast }) {
               <th key={i} style={{ textAlign: i===3?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
             ))}</tr></thead>
             <tbody>{bills.map((b,i) => (
-              <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--brand)' }}>{b.num}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{b.vendor}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{b.cat}</td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${b.amount.toLocaleString()}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={b.status==='paid'?'paid':b.status==='overdue'?'overdue':'pending'} /></td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: b.status==='overdue'?'var(--status-critical)':'var(--text-mid)' }}>{b.due}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: b.is1099?'var(--status-warn)':'var(--text-low)' }}>{b.is1099?'Yes':'—'}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
-                  {b.status !== 'paid' && <button onClick={()=>{ if (b.qbo && window.openQboNew) window.openQboNew('billpayment', { bill: b.qbo }); else showToast('Connect QuickBooks to pay bills from here'); }} style={{ padding: '3px 8px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Pay</button>}
+              <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(var(--brand-rgb),0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, color: 'var(--brand)' }}>{b.num}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12 }}>{b.vendor}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-low)' }}>{b.cat}</td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${b.amount.toLocaleString()}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><StatusBadge status={b.status==='paid'?'paid':b.status==='overdue'?'overdue':'pending'} /></td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: b.status==='overdue'?'var(--status-critical)':'var(--text-mid)' }}>{b.due}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: b.is1099?'var(--status-warn)':'var(--text-low)' }}>{b.is1099?'Yes':'—'}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
+                  {b.status !== 'paid' && <button onClick={()=>{ if (b.qbo && window.openQboNew) window.openQboNew('billpayment', { bill: b.qbo }); else showToast('Connect QuickBooks to pay bills from here'); }} style={{ padding: '3px 8px', background: 'rgba(var(--ok-rgb),0.08)', border: '1px solid rgba(var(--ok-rgb),0.2)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Pay</button>}
                 </td>
               </tr>
             ))}</tbody>
@@ -88,13 +88,13 @@ function FinanceAP({ setDrawer, setModal, showToast }) {
               <th key={i} style={{ textAlign: i>=3?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
             ))}</tr></thead>
             <tbody>{vendors.map((v,i) => (
-              <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500 }}>{v.name}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{v.cat}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{v.terms}</td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right', color: v.balance>0?'var(--status-warn)':'var(--text-low)' }}>{v.balance>0?`$${v.balance.toLocaleString()}`:'—'}</td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right' }}>${v.ytdSpend.toLocaleString()}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, textAlign: 'right', color: v.is1099?'var(--status-warn)':'var(--text-low)' }}>{v.is1099?'1099':'—'}</td>
+              <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(var(--brand-rgb),0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 13, fontWeight: 500 }}>{v.name}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-low)' }}>{v.cat}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{v.terms}</td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right', color: v.balance>0?'var(--status-warn)':'var(--text-low)' }}>{v.balance>0?`$${v.balance.toLocaleString()}`:'—'}</td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right' }}>${v.ytdSpend.toLocaleString()}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, textAlign: 'right', color: v.is1099?'var(--status-warn)':'var(--text-low)' }}>{v.is1099?'1099':'—'}</td>
               </tr>
             ))}</tbody>
           </table>
@@ -108,16 +108,16 @@ function FinanceAP({ setDrawer, setModal, showToast }) {
               <th key={i} style={{ textAlign: i===3?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
             ))}</tr></thead>
             <tbody>{pos.map((p,i) => (
-              <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--brand)' }}>{p.num}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{p.vendor}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.items}</td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${p.total.toLocaleString()}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={p.status==='received'?'online':'info'} label={p.status} /></td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{p.date}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
-                  {p.status==='ordered' && <button onClick={()=>showToast('Marked as received → inventory updated')} style={{ padding: '3px 8px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Receive</button>}
-                  {p.status==='received' && <button onClick={()=>showToast('Converted to Bill')} style={{ padding: '3px 8px', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.15)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>→ Bill</button>}
+              <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(var(--brand-rgb),0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, color: 'var(--brand)' }}>{p.num}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12 }}>{p.vendor}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-mid)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.items}</td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${p.total.toLocaleString()}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><StatusBadge status={p.status==='received'?'online':'info'} label={p.status} /></td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{p.date}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
+                  {p.status==='ordered' && <button onClick={()=>showToast('Marked as received → inventory updated')} style={{ padding: '3px 8px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Receive</button>}
+                  {p.status==='received' && <button onClick={()=>showToast('Converted to Bill')} style={{ padding: '3px 8px', background: 'rgba(var(--ok-rgb),0.06)', border: '1px solid rgba(var(--ok-rgb),0.15)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>→ Bill</button>}
                 </td>
               </tr>
             ))}</tbody>
@@ -152,7 +152,7 @@ function FinanceExpenses({ setModal, showToast }) {
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <SectionHeader title="Expenses" icon="◈" count={expenses.length} />
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setOcrDemo(true)} style={{ padding: '6px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <button onClick={() => setOcrDemo(true)} style={{ padding: '6px 14px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 5 }}>
             <span>⟡</span> Upload Receipt (AI OCR)
           </button>
           <button onClick={() => setModal({ type: 'new-expense' })} style={{ padding: '6px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Expense</button>
@@ -168,7 +168,7 @@ function FinanceExpenses({ setModal, showToast }) {
             <button onClick={() => setOcrDemo(false)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 14 }}>✕</button>
           </div>
           <div style={{ display: 'flex', gap: 16 }}>
-            <div style={{ width: 160, height: 120, borderRadius: 8, border: '2px dashed var(--border-strong)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', background: 'rgba(99,102,241,0.03)' }} onClick={() => { setOcrDemo(false); showToast('Receipt scanned — expense auto-filled'); }}>
+            <div style={{ width: 160, height: 120, borderRadius: 8, border: '2px dashed var(--border-strong)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, cursor: 'pointer', background: 'rgba(var(--brand-rgb),0.03)' }} onClick={() => { setOcrDemo(false); showToast('Receipt scanned — expense auto-filled'); }}>
               <span style={{ fontSize: 24, opacity: 0.5 }}>◉</span>
               <span style={{ fontSize: 11, color: 'var(--brand)' }}>Drop receipt here</span>
               <span style={{ fontSize: 9, color: 'var(--text-low)' }}>or click to browse</span>
@@ -197,17 +197,17 @@ function FinanceExpenses({ setModal, showToast }) {
             <tr><td colSpan={9} style={{ padding: '24px 14px', fontSize: 12, color: 'var(--text-low)', textAlign: 'center' }}>No expenses yet — they appear here after the first QuickBooks sync or when you add one.</td></tr>
           )}
           {expenses.map((e,i) => (
-            <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={ev=>ev.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
-              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--brand)' }}>{e.id}</td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{e.employee}</td>
-              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{e.date}</td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{e.vendor}</td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{e.cat}</td>
-              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${e.amount.toLocaleString()}</td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: e.receipt?'var(--status-ok)':'var(--status-warn)' }}>{e.receipt?'✓ Attached':'Missing'}</td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={e.status==='approved'?'online':'pending'} label={e.status} /></td>
-              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
-                {e.status === 'pending' && <button onClick={()=>showToast(`${e.id} approved`)} style={{ padding: '3px 8px', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Approve</button>}
+            <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={ev=>ev.currentTarget.style.background='rgba(var(--brand-rgb),0.03)'} onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
+              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--brand)' }}>{e.id}</td>
+              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12 }}>{e.employee}</td>
+              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{e.date}</td>
+              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12 }}>{e.vendor}</td>
+              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-low)' }}>{e.cat}</td>
+              <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${e.amount.toLocaleString()}</td>
+              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: e.receipt?'var(--status-ok)':'var(--status-warn)' }}>{e.receipt?'✓ Attached':'Missing'}</td>
+              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><StatusBadge status={e.status==='approved'?'online':'pending'} label={e.status} /></td>
+              <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
+                {e.status === 'pending' && <button onClick={()=>showToast(`${e.id} approved`)} style={{ padding: '3px 8px', background: 'rgba(var(--ok-rgb),0.08)', border: '1px solid rgba(var(--ok-rgb),0.2)', borderRadius: 4, color: 'var(--status-ok)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Approve</button>}
               </td>
             </tr>
           ))}</tbody>
@@ -255,7 +255,7 @@ function FinanceCOA({ setModal, showToast }) {
     const q = window.__shieldQBO; if (!q) return;
     q.accounts(500).then(r => { if (r && r.ok && r.data && r.data.length) setAccounts(r.data.map(mapAcct)); });
   }, []);
-  const typeColors = { Asset: 'var(--brand)', Liability: 'var(--status-warn)', Equity: '#c084fc', Income: 'var(--status-ok)', Expense: 'var(--status-critical)' };
+  const typeColors = { Asset: 'var(--brand)', Liability: 'var(--status-warn)', Equity: 'var(--accent-2)', Income: 'var(--status-ok)', Expense: 'var(--status-critical)' };
 
   return (
     <div style={{ maxWidth: 1200 }}>
@@ -269,14 +269,14 @@ function FinanceCOA({ setModal, showToast }) {
             <th key={i} style={{ textAlign: i===4?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
           ))}</tr></thead>
           <tbody>{accounts.map((a,i) => (
-            <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--brand)' }}>{a.num}</td>
-              <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500 }}>{a.name}</td>
-              <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+            <tr key={i} style={{ cursor: 'pointer' }} onMouseEnter={e=>e.currentTarget.style.background='rgba(var(--brand-rgb),0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, color: 'var(--brand)' }}>{a.num}</td>
+              <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 13, fontWeight: 500 }}>{a.name}</td>
+              <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                 <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: `${typeColors[a.type]}12`, color: typeColors[a.type], fontWeight: 600, textTransform: 'uppercase' }}>{a.type}</span>
               </td>
-              <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{a.sub || '—'}</td>
-              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right', color: a.balance<0?'var(--status-ok)':'var(--text-high)' }}>{a.balance<0?`($${Math.abs(a.balance).toLocaleString()})`:`$${a.balance.toLocaleString()}`}</td>
+              <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-low)' }}>{a.sub || '—'}</td>
+              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right', color: a.balance<0?'var(--status-ok)':'var(--text-high)' }}>{a.balance<0?`($${Math.abs(a.balance).toLocaleString()})`:`$${a.balance.toLocaleString()}`}</td>
             </tr>
           ))}</tbody>
         </table>
@@ -303,7 +303,7 @@ function FinanceGL() {
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
         <SectionHeader title="General Ledger" icon="⊞" />
         <div style={{ display: 'flex', gap: 8 }}>
-          <input placeholder="Filter by account..." style={{ padding: '5px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 180 }} />
+          <input placeholder="Filter by account..." style={{ padding: '5px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', width: 180 }} />
           <button onClick={() => shieldToast('New journal entry — opening editor', 'info')} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Journal Entry</button>
         </div>
       </div>
@@ -313,14 +313,14 @@ function FinanceGL() {
             <th key={i} style={{ textAlign: i===5?'right':'left', padding: '9px 14px', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)', borderBottom: '1px solid var(--border-subtle)' }}>{h}</th>
           ))}</tr></thead>
           <tbody>{entries.map((e,i) => (
-            <tr key={i} onMouseEnter={ev=>ev.currentTarget.style.background='rgba(99,102,241,0.03)'} onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
-              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{e.date}</td>
-              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--brand)' }}>{e.ref}</td>
-              <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{e.desc}</td>
-              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{e.debit}</td>
-              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{e.credit}</td>
-              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${e.amount.toLocaleString()}</td>
-              <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: e.auto?'var(--brand)':'var(--text-low)' }}>{e.auto?'Auto-posted':'Manual'}</td>
+            <tr key={i} onMouseEnter={ev=>ev.currentTarget.style.background='rgba(var(--brand-rgb),0.03)'} onMouseLeave={ev=>ev.currentTarget.style.background='transparent'}>
+              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-low)' }}>{e.date}</td>
+              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--brand)' }}>{e.ref}</td>
+              <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12 }}>{e.desc}</td>
+              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{e.debit}</td>
+              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{e.credit}</td>
+              <td className="mono" style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>${e.amount.toLocaleString()}</td>
+              <td style={{ padding: '8px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, color: e.auto?'var(--brand)':'var(--text-low)' }}>{e.auto?'Auto-posted':'Manual'}</td>
             </tr>
           ))}</tbody>
         </table>
@@ -339,12 +339,12 @@ function FinanceStatements() {
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{ display: 'flex', gap: 6 }}>
           {[{id:'pl',label:'P&L'},{id:'bs',label:'Balance Sheet'},{id:'cf',label:'Cash Flow'},{id:'tb',label:'Trial Balance'}].map(s => (
-            <button key={s.id} onClick={()=>setStmt(s.id)} style={{ padding: '5px 12px', borderRadius: 6, fontSize: 11, background: stmt===s.id?'rgba(99,102,241,0.12)':'transparent', border: `1px solid ${stmt===s.id?'var(--brand)':'var(--border-subtle)'}`, color: stmt===s.id?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s.label}</button>
+            <button key={s.id} onClick={()=>setStmt(s.id)} style={{ padding: '5px 12px', borderRadius: 6, fontSize: 11, background: stmt===s.id?'rgba(var(--brand-rgb),0.12)':'transparent', border: `1px solid ${stmt===s.id?'var(--brand)':'var(--border-subtle)'}`, color: stmt===s.id?'var(--brand)':'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{s.label}</button>
           ))}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           {['mtd','qtd','ytd'].map(p => (
-            <button key={p} onClick={()=>setPeriod(p)} style={{ padding: '4px 10px', borderRadius: 4, fontSize: 10, background: period===p?'rgba(99,102,241,0.1)':'transparent', border: '1px solid var(--border-subtle)', color: period===p?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'uppercase' }}>{p}</button>
+            <button key={p} onClick={()=>setPeriod(p)} style={{ padding: '4px 10px', borderRadius: 4, fontSize: 10, background: period===p?'rgba(var(--brand-rgb),0.1)':'transparent', border: '1px solid var(--border-subtle)', color: period===p?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'uppercase' }}>{p}</button>
           ))}
           <button onClick={() => shieldToast('Exporting statement as PDF…')} style={{ padding: '4px 10px', borderRadius: 4, fontSize: 10, background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export PDF</button>
         </div>
@@ -474,12 +474,12 @@ function TBStatement() {
         ))}</tr></thead>
         <tbody>
           {accts.map((a,i) => (
-            <tr key={i}><td className="mono" style={{ padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--brand)' }}>{a.num}</td><td style={{ padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{a.name}</td><td className="mono" style={{ padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right' }}>{a.debit?`$${a.debit.toLocaleString()}`:''}</td><td className="mono" style={{ padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right' }}>{a.credit?`$${a.credit.toLocaleString()}`:''}</td></tr>
+            <tr key={i}><td className="mono" style={{ padding: '6px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--brand)' }}>{a.num}</td><td style={{ padding: '6px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12 }}>{a.name}</td><td className="mono" style={{ padding: '6px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right' }}>{a.debit?`$${a.debit.toLocaleString()}`:''}</td><td className="mono" style={{ padding: '6px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right' }}>{a.credit?`$${a.credit.toLocaleString()}`:''}</td></tr>
           ))}
           <tr style={{ borderTop: '2px solid var(--border-strong)' }}><td colSpan="2" style={{ padding: '8px 12px', fontWeight: 600, fontSize: 12 }}>Totals</td><td className="mono" style={{ padding: '8px 12px', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>${totalD.toLocaleString()}</td><td className="mono" style={{ padding: '8px 12px', fontSize: 13, fontWeight: 600, textAlign: 'right' }}>${totalC.toLocaleString()}</td></tr>
         </tbody>
       </table>
-      <div style={{ marginTop: 8, padding: '6px 12px', borderRadius: 4, background: totalD===totalC?'rgba(52,211,153,0.06)':'rgba(244,63,94,0.06)', textAlign: 'center', fontSize: 11, color: totalD===totalC?'var(--status-ok)':'var(--status-critical)', fontWeight: 600 }}>
+      <div style={{ marginTop: 8, padding: '6px 12px', borderRadius: 4, background: totalD===totalC?'rgba(var(--ok-rgb),0.06)':'rgba(var(--critical-rgb),0.06)', textAlign: 'center', fontSize: 11, color: totalD===totalC?'var(--status-ok)':'var(--status-critical)', fontWeight: 600 }}>
         {totalD===totalC?'✓ Trial balance is in balance':'✗ Trial balance is out of balance'}
       </div>
     </div>
@@ -530,7 +530,7 @@ function FinanceReconcile({ showToast }) {
           Check items that have cleared the bank
         </div>
         {txns.map(t => (
-          <div key={t.id} onClick={() => setCleared(prev => ({...prev, [t.id]: !prev[t.id]}))} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid rgba(99,102,241,0.04)', cursor: 'pointer', background: cleared[t.id]?'rgba(52,211,153,0.03)':'transparent' }}>
+          <div key={t.id} onClick={() => setCleared(prev => ({...prev, [t.id]: !prev[t.id]}))} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', cursor: 'pointer', background: cleared[t.id]?'rgba(var(--ok-rgb),0.03)':'transparent' }}>
             <div style={{ width: 18, height: 18, borderRadius: 4, border: cleared[t.id]?'none':'1.5px solid var(--border-strong)', background: cleared[t.id]?'var(--status-ok)':'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#fff', flexShrink: 0 }}>{cleared[t.id]?'✓':''}</div>
             <span className="mono" style={{ fontSize: 11, color: 'var(--text-low)', width: 48 }}>{t.date}</span>
             <span style={{ flex: 1, fontSize: 12 }}>{t.desc}</span>

@@ -91,7 +91,7 @@ function AutoBidScreen() {
                 </span>
               )}
               {status === 'none' || status === 'error' ? (
-                <button onClick={(e) => { e.stopPropagation(); buildOne(opp); }} disabled={!!b} style={{ padding: '5px 14px', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--brand)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                <button onClick={(e) => { e.stopPropagation(); buildOne(opp); }} disabled={!!b} style={{ padding: '5px 14px', background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--brand)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                   {b === 'build' ? 'Building…' : status === 'error' ? 'Retry build' : 'Build bid'}
                 </button>
               ) : status === 'building' ? (
@@ -121,13 +121,13 @@ function AutoBidScreen() {
                     const selected = bid.selected_tier === k && status === 'proposal';
                     return (
                       <div key={k} className="glass" style={{ padding: 14, border: selected ? '1px solid var(--status-ok)' : k === 'medium' ? '1px solid var(--brand)' : '1px solid var(--border-subtle)', borderRadius: 10 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: k === 'low' ? 'var(--status-warn)' : k === 'medium' ? 'var(--brand)' : '#c084fc' }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: k === 'low' ? 'var(--status-warn)' : k === 'medium' ? 'var(--brand)' : 'var(--accent-2)' }}>
                           {k}{k === 'medium' ? ' · recommended' : ''}{selected ? ' · selected ✓' : ''}
                         </div>
                         <div className="mono" style={{ fontSize: 20, fontWeight: 700, margin: '6px 0 2px' }}>{fmt$(t.price)}</div>
                         <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: 8 }}>{t.marginPct}% margin · cost {fmt$(bid.cost_total)}</div>
                         <div style={{ fontSize: 11, color: 'var(--text-mid)', minHeight: 42, lineHeight: 1.45 }}>{t.pitch}</div>
-                        <button onClick={() => pickTier(opp, bid, k)} disabled={!!b} style={{ width: '100%', marginTop: 10, padding: '8px', background: selected ? 'rgba(52,211,153,0.12)' : 'var(--brand)', border: 'none', borderRadius: 6, color: selected ? 'var(--status-ok)' : '#fff', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                        <button onClick={() => pickTier(opp, bid, k)} disabled={!!b} style={{ width: '100%', marginTop: 10, padding: '8px', background: selected ? 'rgba(var(--ok-rgb),0.12)' : 'var(--brand)', border: 'none', borderRadius: 6, color: selected ? 'var(--status-ok)' : '#fff', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                           {b === 'proposal' ? 'Generating…' : selected ? 'View proposal' : 'Select → generate proposal'}
                         </button>
                       </div>
@@ -140,7 +140,7 @@ function AutoBidScreen() {
                   <div>
                     <div className="label-sm" style={{ marginBottom: 4 }}>LINE ITEMS ({(bid.line_items || []).length}) · {bid.labor_hours}h labor</div>
                     {(bid.line_items || []).slice(0, 8).map((l, i) => (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
                         <span style={{ color: 'var(--text-mid)' }}>{l.qty}× {l.desc}</span>
                         <span className="mono" style={{ color: 'var(--text-low)' }}>{fmt$((l.qty || 0) * (l.unitCost || 0))}</span>
                       </div>
@@ -164,7 +164,7 @@ function AutoBidScreen() {
                 </div>
 
                 {status === 'proposal' && bid.proposal_html && (
-                  <button onClick={() => setViewer({ opp, bid })} style={{ marginTop: 12, padding: '7px 16px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                  <button onClick={() => setViewer({ opp, bid })} style={{ marginTop: 12, padding: '7px 16px', background: 'rgba(var(--ok-rgb),0.1)', border: '1px solid rgba(var(--ok-rgb),0.3)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                     Open generated proposal ({(bid.selected_tier || '').toUpperCase()} tier) →
                   </button>
                 )}
@@ -232,7 +232,7 @@ function ProposalViewer({ opp, bid, onClose }) {
   };
 
   const btn = { padding: '8px 18px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
-  const inputStyle = { width: '100%', padding: '8px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inputStyle = { width: '100%', padding: '8px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
@@ -243,7 +243,7 @@ function ProposalViewer({ opp, bid, onClose }) {
             <div style={{ fontSize: 10.5, color: 'var(--text-mid)' }}>{(bid.selected_tier || '').toUpperCase()} tier {bid.sent_at ? `· sent to ${bid.sent_to}` : ''}</div>
           </div>
           <button onClick={() => setEmailOpen(true)} style={{ ...btn, background: 'var(--brand)', border: 'none', color: '#fff' }}>✉ Email</button>
-          <button onClick={download} style={{ ...btn, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', color: 'var(--brand)' }}>⭳ Download</button>
+          <button onClick={download} style={{ ...btn, background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', color: 'var(--brand)' }}>⭳ Download</button>
           <button onClick={share} style={{ ...btn, background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)' }}>⇪ Share</button>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
         </div>

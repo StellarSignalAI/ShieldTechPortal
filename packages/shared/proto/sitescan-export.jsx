@@ -88,7 +88,7 @@ function SSExport({ project, onNav, update }) {
       {/* actions */}
       <MSection title="Send it somewhere">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          {act('⬒', pushedStudio ? 'In Design Studio' : 'Upload to Design Studio', pushedStudio ? 'Blueprint available in Studio → Saved Drawings' : 'Blueprint + devices become an editable Studio drawing', pushToStudio, { done: pushedStudio, busy: pushing, color: '#c084fc' })}
+          {act('⬒', pushedStudio ? 'In Design Studio' : 'Upload to Design Studio', pushedStudio ? 'Blueprint available in Studio → Saved Drawings' : 'Blueprint + devices become an editable Studio drawing', pushToStudio, { done: pushedStudio, busy: pushing, color: 'var(--accent-2)' })}
           {act('▣', project.projectLink ? `Attached — ${project.projectLink}` : 'Add to a project', project.projectLink ? 'Linked to project record' : 'Attach the survey to an existing or new project', () => setAttach(true), { done: !!project.projectLink })}
           {act('⎙', 'PDF survey report', 'Plan, device schedule, photos & measurements', () => setReport(true))}
           {act('Σ', 'Send to AI Survey Estimator', 'Geometry-accurate BOM → margin, pricing & proposal', toEstimator, { color: 'var(--status-ok)' })}
@@ -122,7 +122,7 @@ function SSAttach({ project, update, onClose }) {
           </button>
         ))}
         <div style={{ display: 'flex', gap: 7, marginTop: 4 }}>
-          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="…or new project name" style={{ flex: 1, padding: '11px 12px', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 12.5, fontFamily: 'var(--font-body)', outline: 'none', minWidth: 0 }} />
+          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="…or new project name" style={{ flex: 1, padding: '11px 12px', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 12.5, fontFamily: 'var(--font-body)', outline: 'none', minWidth: 0 }} />
           <button onClick={() => newName.trim() && link(newName.trim())} style={{ padding: '0 16px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Create</button>
         </div>
       </div>

@@ -7,9 +7,9 @@ function NPSScreen() {
   const [replyText, setReplyText] = React.useState('');
 
   const categoryStyle = {
-    promoter:  { color: 'var(--status-ok)',      bg: 'rgba(52,211,153,0.12)',  label: 'Promoter' },
-    passive:   { color: 'var(--status-warn)',     bg: 'rgba(251,191,36,0.12)', label: 'Passive' },
-    detractor: { color: 'var(--status-critical)', bg: 'rgba(244,63,94,0.1)',   label: 'Detractor' },
+    promoter:  { color: 'var(--status-ok)',      bg: 'rgba(var(--ok-rgb),0.12)',  label: 'Promoter' },
+    passive:   { color: 'var(--status-warn)',     bg: 'rgba(var(--warn-rgb),0.12)', label: 'Passive' },
+    detractor: { color: 'var(--status-critical)', bg: 'rgba(var(--critical-rgb),0.1)',   label: 'Detractor' },
   };
 
   const promoters  = responses.filter(r => r.category === 'promoter').length;
@@ -88,7 +88,7 @@ function NPSScreen() {
               return (
                 <div key={d.score} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
                   {d.count > 0 && <span style={{ fontSize:8, color:col }}>{d.count}</span>}
-                  <div style={{ width:'100%', height:h, background:h > 2 ? col : 'rgba(99,102,241,0.08)', borderRadius:'2px 2px 0 0', opacity:h>2?0.85:0.3 }} />
+                  <div style={{ width:'100%', height:h, background:h > 2 ? col : 'rgba(var(--brand-rgb),0.08)', borderRadius:'2px 2px 0 0', opacity:h>2?0.85:0.3 }} />
                   <span style={{ fontSize:8, color:'var(--text-low)' }}>{d.score}</span>
                 </div>
               );
@@ -108,15 +108,15 @@ function NPSScreen() {
 
       {/* Filter + alert */}
       <div style={{ display:'flex', gap:8, alignItems:'center', flexShrink:0 }}>
-        <div style={{ display:'flex', gap:2, background:'rgba(99,102,241,0.06)', borderRadius:8, padding:3, border:'1px solid var(--border-subtle)' }}>
+        <div style={{ display:'flex', gap:2, background:'rgba(var(--brand-rgb),0.06)', borderRadius:8, padding:3, border:'1px solid var(--border-subtle)' }}>
           {['all','promoter','passive','detractor'].map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{ padding:'4px 14px', borderRadius:6, fontSize:11, fontFamily:'var(--font-body)', border:'none', cursor:'pointer', background:filter===f?'rgba(99,102,241,0.18)':'transparent', color:filter===f?'var(--brand)':'var(--text-low)', fontWeight:filter===f?600:400, transition:'all 0.15s', textTransform:'capitalize' }}>
+            <button key={f} onClick={() => setFilter(f)} style={{ padding:'4px 14px', borderRadius:6, fontSize:11, fontFamily:'var(--font-body)', border:'none', cursor:'pointer', background:filter===f?'rgba(var(--brand-rgb),0.18)':'transparent', color:filter===f?'var(--brand)':'var(--text-low)', fontWeight:filter===f?600:400, transition:'all 0.15s', textTransform:'capitalize' }}>
               {f}{f!=='all'?' ('+responses.filter(r=>r.category===f).length+')':''}
             </button>
           ))}
         </div>
         {needsFollowUp > 0 && (
-          <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:6, background:'rgba(244,63,94,0.06)', border:'1px solid rgba(244,63,94,0.2)', borderRadius:8, padding:'5px 14px' }}>
+          <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:6, background:'rgba(var(--critical-rgb),0.06)', border:'1px solid rgba(var(--critical-rgb),0.2)', borderRadius:8, padding:'5px 14px' }}>
             <div style={{ width:7, height:7, borderRadius:'50%', background:'var(--status-critical)' }} />
             <span style={{ fontSize:11, color:'var(--status-critical)', fontWeight:600 }}>{needsFollowUp} detractor{needsFollowUp>1?'s':''} need follow-up</span>
           </div>
@@ -141,21 +141,21 @@ function NPSScreen() {
                     <span style={{ fontSize:11, color:'var(--text-low)' }}>{r.contact}</span>
                     <span style={{ fontSize:9, fontWeight:600, color:cs.color, background:cs.bg, padding:'1px 7px', borderRadius:100 }}>{cs.label}</span>
                     <span style={{ marginLeft:'auto', fontSize:10, color:'var(--text-low)' }}>{r.date}</span>
-                    {sel.followedUp && <span style={{ fontSize:9, color:'var(--status-ok)', background:'rgba(52,211,153,0.1)', padding:'1px 6px', borderRadius:100 }}>check Followed up</span>}
+                    {sel.followedUp && <span style={{ fontSize:9, color:'var(--status-ok)', background:'rgba(var(--ok-rgb),0.1)', padding:'1px 6px', borderRadius:100 }}>check Followed up</span>}
                   </div>
                   <div style={{ fontSize:11, color:'var(--brand)', marginBottom:5, opacity:0.7 }}>{r.job}</div>
                   <p style={{ fontSize:13, color:'var(--text-mid)', lineHeight:1.55, margin:0 }}>{isSelected ? r.comment : r.comment.length > 140 ? r.comment.slice(0,140)+'...' : r.comment}</p>
-                  {sel.reply && <div style={{ marginTop:8, padding:'8px 12px', background:'rgba(52,211,153,0.06)', border:'1px solid rgba(52,211,153,0.15)', borderRadius:6, fontSize:11, color:'var(--status-ok)' }}>Reply sent: {sel.reply}</div>}
+                  {sel.reply && <div style={{ marginTop:8, padding:'8px 12px', background:'rgba(var(--ok-rgb),0.06)', border:'1px solid rgba(var(--ok-rgb),0.15)', borderRadius:6, fontSize:11, color:'var(--status-ok)' }}>Reply sent: {sel.reply}</div>}
 
                   {isSelected && (
                     <div onClick={e => e.stopPropagation()} style={{ marginTop:10 }}>
                       {r.category === 'detractor' && !sel.followedUp && (
                         <>
-                          <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Draft a reply to this customer..." style={{ width:'100%', height:64, background:'rgba(99,102,241,0.04)', border:'1px solid var(--border-subtle)', borderRadius:7, padding:'8px 12px', color:'var(--text-high)', fontSize:12, fontFamily:'var(--font-body)', outline:'none', resize:'none', lineHeight:1.5, marginBottom:8 }} />
+                          <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Draft a reply to this customer..." style={{ width:'100%', height:64, background:'rgba(var(--brand-rgb),0.04)', border:'1px solid var(--border-subtle)', borderRadius:7, padding:'8px 12px', color:'var(--text-high)', fontSize:12, fontFamily:'var(--font-body)', outline:'none', resize:'none', lineHeight:1.5, marginBottom:8 }} />
                           <div style={{ display:'flex', gap:6 }}>
-                            <button onClick={() => sendReply(r.id)} style={{ padding:'6px 14px', fontSize:11, fontWeight:600, color:'var(--status-ok)', background:'rgba(52,211,153,0.08)', border:'1px solid rgba(52,211,153,0.2)', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-body)' }}>Send Reply</button>
-                            <button onClick={() => markFollowedUp(r.id)} style={{ padding:'6px 14px', fontSize:11, fontWeight:600, color:'var(--brand)', background:'rgba(99,102,241,0.08)', border:'1px solid var(--border-strong)', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-body)' }}>Mark Followed Up</button>
-                            <button onClick={() => createTicket(r)} style={{ padding:'6px 14px', fontSize:11, fontWeight:600, color:'var(--status-warn)', background:'rgba(251,191,36,0.06)', border:'1px solid rgba(251,191,36,0.2)', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-body)' }}>Create Ticket</button>
+                            <button onClick={() => sendReply(r.id)} style={{ padding:'6px 14px', fontSize:11, fontWeight:600, color:'var(--status-ok)', background:'rgba(var(--ok-rgb),0.08)', border:'1px solid rgba(var(--ok-rgb),0.2)', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-body)' }}>Send Reply</button>
+                            <button onClick={() => markFollowedUp(r.id)} style={{ padding:'6px 14px', fontSize:11, fontWeight:600, color:'var(--brand)', background:'rgba(var(--brand-rgb),0.08)', border:'1px solid var(--border-strong)', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-body)' }}>Mark Followed Up</button>
+                            <button onClick={() => createTicket(r)} style={{ padding:'6px 14px', fontSize:11, fontWeight:600, color:'var(--status-warn)', background:'rgba(var(--warn-rgb),0.06)', border:'1px solid rgba(var(--warn-rgb),0.2)', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-body)' }}>Create Ticket</button>
                           </div>
                         </>
                       )}

@@ -23,7 +23,7 @@ function MCerts({ onNav }) {
             <span className="mono" style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-low)' }}>{t.certs.length} active</span>
           </div>
           {t.certs.map((c, j) => (
-            <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: j < t.certs.length - 1 ? '1px solid rgba(99,102,241,0.05)' : 'none' }}>
+            <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: j < t.certs.length - 1 ? '1px solid rgba(var(--brand-rgb),0.05)' : 'none' }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: certColor(c.days), flexShrink: 0 }}></span>
               <span style={{ flex: 1, fontSize: 12, color: 'var(--text-high)' }}>{c.name}</span>
               <span className="mono" style={{ fontSize: 10.5, color: certColor(c.days) }}>{c.exp} ({c.days}d)</span>
@@ -63,7 +63,7 @@ function MPoECalc({ onNav }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div className="glass" style={{ padding: '14px', borderRadius: 13, border: over ? '1px solid rgba(244,63,94,0.4)' : undefined }}>
+      <div className="glass" style={{ padding: '14px', borderRadius: 13, border: over ? '1px solid rgba(var(--critical-rgb),0.4)' : undefined }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
           <span style={{ fontSize: 11, color: 'var(--text-low)' }}>POWER BUDGET</span>
           <span className="mono" style={{ fontSize: 12, fontWeight: 700, color: over ? 'var(--status-critical)' : 'var(--status-ok)' }}>{load.toFixed(1)}W / {sw.budget}W</span>
@@ -79,7 +79,7 @@ function MPoECalc({ onNav }) {
 
       <div>
         <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.1em', color: 'var(--text-low)', textTransform: 'uppercase', marginBottom: 6 }}>Switch</div>
-        <select value={sw.model} onChange={e => setSw(POE_SWITCHES.find(s => s.model === e.target.value))} style={{ width: '100%', padding: '11px 13px', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', appearance: 'none' }}>
+        <select value={sw.model} onChange={e => setSw(POE_SWITCHES.find(s => s.model === e.target.value))} style={{ width: '100%', padding: '11px 13px', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', appearance: 'none' }}>
           {POE_SWITCHES.map(s => <option key={s.model} value={s.model}>{s.model} — {s.ports}p · {s.budget}W</option>)}
         </select>
       </div>
@@ -98,7 +98,7 @@ function MPoECalc({ onNav }) {
           </div>
         </div>
       ))}
-      <button onClick={() => setPicker(true)} style={{ padding: '11px 0', background: 'rgba(99,102,241,0.06)', border: '1px dashed var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add device</button>
+      <button onClick={() => setPicker(true)} style={{ padding: '11px 0', background: 'rgba(var(--brand-rgb),0.06)', border: '1px dashed var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add device</button>
       <button onClick={() => {
         if (devices.length === 0) { showToast('Add devices before exporting a plan', 'warn'); return; }
         // Real export — lands in the Design Studio inbox (same store SiteScan pushes to).
@@ -127,7 +127,7 @@ function MPoECalc({ onNav }) {
     </div>
   );
 }
-const poeStep = { width: 30, height: 30, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', fontSize: 16, cursor: 'pointer', fontFamily: 'var(--font-body)' };
+const poeStep = { width: 30, height: 30, borderRadius: 8, background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', fontSize: 16, cursor: 'pointer', fontFamily: 'var(--font-body)' };
 
 /* ══════════════ JOB COSTING ══════════════ */
 const COSTING_JOBS = [];
@@ -184,14 +184,14 @@ function MCostingDetail({ id, onClose }) {
             );
           })}
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-mid)', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 13px' }}>
+        <div style={{ fontSize: 11, color: 'var(--text-mid)', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 13px' }}>
           {j.actCost > j.estCost ? `Cost ran $${(j.actCost - j.estCost).toLocaleString()} over estimate (${j.actHours - j.estHours}h extra labor).` : 'Job came in at or under budget.'}
         </div>
       </div>
     </MSheet>
   );
 }
-const hCell = { padding: '8px 11px', fontSize: 9, fontWeight: 600, letterSpacing: '0.05em', color: 'var(--text-low)', background: 'rgba(10,14,20,0.5)', textTransform: 'uppercase' };
+const hCell = { padding: '8px 11px', fontSize: 9, fontWeight: 600, letterSpacing: '0.05em', color: 'var(--text-low)', background: 'rgba(var(--card-rgb),0.5)', textTransform: 'uppercase' };
 const bCell = { padding: '9px 11px', fontSize: 12, color: 'var(--text-high)', borderTop: '1px solid var(--border-subtle)' };
 
 /* ══════════════ AUDIT TRAIL ══════════════ */
@@ -202,7 +202,7 @@ function MAudit({ onNav }) {
   const list = AUDIT_LOGS.filter(l => (role === 'All' || l.role === role) && (l.user + l.action + l.target).toLowerCase().includes(q.toLowerCase()));
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search audit log…" style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search audit log…" style={{ background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       <MSegment options={['All', 'Admin', 'Tech', 'Customer', 'System']} value={role} onChange={setRole} />
       {list.map((l, i) => (
         <div key={i} className="glass" style={{ padding: '11px 13px', borderRadius: 11, borderLeft: `3px solid ${OPS4_SEV[l.severity]}` }}>
@@ -310,7 +310,7 @@ function MContractDetail({ id, onClose }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
           {specs.map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
+            <div key={k} style={{ background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</div>
               <div className="mono" style={{ fontSize: 12, color: 'var(--text-mid)' }}>{v}</div>
             </div>

@@ -28,8 +28,8 @@ function DailyDigestScreen() {
           <div style={{ fontSize: 11, color: 'var(--text-low)', marginTop: 3 }}>Auto-compiled by ShieldTech AI from field activity · refreshes live, sends at 6:00 PM</div>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-          <button onClick={() => showToast('Digest emailed to jmitchell@shieldtech.com', 'ok')} style={digestBtn('var(--brand)', 'rgba(99,102,241,0.08)', 'var(--border-strong)')}>Email now</button>
-          <button onClick={() => showToast('Posted to #field-ops', 'ok')} style={digestBtn('var(--text-mid)', 'rgba(99,102,241,0.03)', 'var(--border-subtle)')}>Send to Slack</button>
+          <button onClick={() => showToast('Digest emailed to jmitchell@shieldtech.com', 'ok')} style={digestBtn('var(--brand)', 'rgba(var(--brand-rgb),0.08)', 'var(--border-strong)')}>Email now</button>
+          <button onClick={() => showToast('Posted to #field-ops', 'ok')} style={digestBtn('var(--text-mid)', 'rgba(var(--brand-rgb),0.03)', 'var(--border-subtle)')}>Send to Slack</button>
         </div>
       </div>
 
@@ -51,11 +51,11 @@ function DailyDigestScreen() {
 
       {/* Flagged issues */}
       {issues.length > 0 && (
-        <div className="glass" style={{ padding: 16, border: '1px solid rgba(244,63,94,0.25)' }}>
+        <div className="glass" style={{ padding: 16, border: '1px solid rgba(var(--critical-rgb),0.25)' }}>
           <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--status-critical)', marginBottom: 10 }}>⚑ Flagged in the field today</div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {issues.map(p => (
-              <div key={p.id} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '8px 12px 8px 8px', borderRadius: 8, background: 'rgba(244,63,94,0.05)', border: '1px solid rgba(244,63,94,0.15)' }}>
+              <div key={p.id} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '8px 12px 8px 8px', borderRadius: 8, background: 'rgba(var(--critical-rgb),0.05)', border: '1px solid rgba(var(--critical-rgb),0.15)' }}>
                 <MockPhoto photo={p} stamp={false} style={{ width: 56, height: 42, borderRadius: 6 }} />
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-high)' }}>{p.label}</div>
@@ -103,11 +103,11 @@ function DailyDigestScreen() {
           {tomorrowJobs.map(j => {
             const unassigned = !j.techs || j.techs.length === 0;
             return (
-              <div key={j.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 7, background: 'rgba(5,7,10,0.4)', border: `1px solid ${unassigned ? 'rgba(251,191,36,0.3)' : 'var(--border-subtle)'}` }}>
+              <div key={j.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 7, background: 'rgba(var(--canvas-rgb),0.4)', border: `1px solid ${unassigned ? 'rgba(var(--warn-rgb),0.3)' : 'var(--border-subtle)'}` }}>
                 <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', width: 76, flexShrink: 0 }}>{`${Math.floor(j.start)}:${j.start % 1 ? '30' : '00'} · ${j.dur}h`}</span>
                 <span style={{ fontSize: 12, color: 'var(--text-high)', flex: 1 }}>{j.title}</span>
                 {unassigned
-                  ? <button onClick={() => navTo('calendar')} style={{ padding: '3px 10px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 5, color: 'var(--status-warn)', fontSize: 9, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⚠ UNASSIGNED — fix in calendar</button>
+                  ? <button onClick={() => navTo('calendar')} style={{ padding: '3px 10px', background: 'rgba(var(--warn-rgb),0.1)', border: '1px solid rgba(var(--warn-rgb),0.3)', borderRadius: 5, color: 'var(--status-warn)', fontSize: 9, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⚠ UNASSIGNED — fix in calendar</button>
                   : <span style={{ fontSize: 10, color: 'var(--text-mid)' }}>{(j.techs || []).map(t => techNames[t] || t).join(' + ')}</span>}
               </div>
             );

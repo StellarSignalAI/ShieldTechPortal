@@ -60,7 +60,7 @@ function ShieldAIScreen() {
         borderLeft: '1px solid var(--border-strong)',
         borderRadius: 'var(--radius-lg) 0 0 var(--radius-lg)',
         display: 'flex', flexDirection: 'column',
-        boxShadow: '-20px 0 60px -20px rgba(0,0,0,0.5), 0 0 40px -10px rgba(99,102,241,0.1)',
+        boxShadow: '-20px 0 60px -20px rgba(0,0,0,0.5), 0 0 40px -10px rgba(var(--brand-rgb),0.1)',
         animation: 'hermes-slide 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
         overflow: 'hidden'
       }}>
@@ -71,7 +71,7 @@ function ShieldAIScreen() {
         }}>
           <div style={{
             width: 32, height: 32, borderRadius: 8,
-            background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)',
+            background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 18, boxShadow: 'var(--glow-brand-sm)'
           }}>⟡</div>
@@ -80,14 +80,14 @@ function ShieldAIScreen() {
             <div style={{ fontSize: 11, color: 'var(--text-low)' }}>AI Assistant · Online</div>
           </div>
           <span className="mono" style={{
-            fontSize: 10, color: 'var(--text-low)', background: 'rgba(99,102,241,0.06)',
+            fontSize: 10, color: 'var(--text-low)', background: 'rgba(var(--brand-rgb),0.06)',
             padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border-subtle)'
           }}>⌘K</span>
         </div>
 
         {/* Context bar */}
         <div style={{
-          padding: '8px 20px', background: 'rgba(99,102,241,0.03)',
+          padding: '8px 20px', background: 'rgba(var(--brand-rgb),0.03)',
           borderBottom: '1px solid var(--border-subtle)',
           display: 'flex', alignItems: 'center', gap: 6
         }}>
@@ -99,14 +99,14 @@ function ShieldAIScreen() {
         <div ref={scrollRef} style={{ flex: 1, overflow: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {thread.map((m, i) => (
             <div key={i} style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%', display: 'flex', gap: 8 }}>
-              {m.role !== 'user' && <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>⟡</div>}
-              <div style={{ padding: '10px 14px', borderRadius: m.role === 'user' ? '12px 12px 3px 12px' : '12px 12px 12px 3px', background: m.role === 'user' ? 'rgba(99,102,241,0.14)' : 'rgba(5,7,10,0.55)', border: '1px solid var(--border-subtle)', fontSize: 13, color: 'var(--text-high)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{m.role === 'assistant' && window.AIMessage ? <window.AIMessage content={m.content} /> : m.content}</div>
+              {m.role !== 'user' && <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>⟡</div>}
+              <div style={{ padding: '10px 14px', borderRadius: m.role === 'user' ? '12px 12px 3px 12px' : '12px 12px 12px 3px', background: m.role === 'user' ? 'rgba(var(--brand-rgb),0.14)' : 'rgba(var(--canvas-rgb),0.55)', border: '1px solid var(--border-subtle)', fontSize: 13, color: 'var(--text-high)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{m.role === 'assistant' && window.AIMessage ? <window.AIMessage content={m.content} /> : m.content}</div>
             </div>
           ))}
           {busy && <div style={{ alignSelf: 'flex-start', fontSize: 12, color: 'var(--brand)', paddingLeft: 34 }}>ShieldTech AI is thinking…</div>}
           {/* Empty conversation state */}
           {thread.length === 0 && <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 220 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>⟡</div>
+            <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>⟡</div>
             <div style={{ fontSize: 13, color: 'var(--text-high)', fontWeight: 500 }}>Ask ShieldTech AI anything</div>
             <div style={{ fontSize: 11.5, color: 'var(--text-low)', maxWidth: 320, textAlign: 'center', lineHeight: 1.5 }}>Grounded answers about your customers, tickets, jobs, and bids — once your data and AI key are configured.</div>
             <div className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{window.__shieldAIModel || 'model not configured'}</div>
@@ -117,12 +117,12 @@ function ShieldAIScreen() {
             {['Summarize site health', 'Score this lead', 'Check warranty status', 'Draft follow-up'].map((chip, i) => (
               <button key={i} style={{
                 padding: '5px 12px', borderRadius: 100,
-                background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)',
+                background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)',
                 color: 'var(--brand)', fontSize: 11, cursor: 'pointer',
                 fontFamily: 'var(--font-body)', transition: 'all 0.15s'
               }}
-              onMouseEnter={e => { e.target.style.background = 'rgba(99,102,241,0.12)'; e.target.style.borderColor = 'var(--border-strong)'; }}
-              onMouseLeave={e => { e.target.style.background = 'rgba(99,102,241,0.06)'; e.target.style.borderColor = 'var(--border-subtle)'; }}
+              onMouseEnter={e => { e.target.style.background = 'rgba(var(--brand-rgb),0.12)'; e.target.style.borderColor = 'var(--border-strong)'; }}
+              onMouseLeave={e => { e.target.style.background = 'rgba(var(--brand-rgb),0.06)'; e.target.style.borderColor = 'var(--border-subtle)'; }}
               onClick={() => send(chip)}
               >{chip}</button>
             ))}
@@ -135,7 +135,7 @@ function ShieldAIScreen() {
         {attachments.length > 0 && (
           <div style={{ padding: '8px 20px 0', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {attachments.map((a, i) => (
-              <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 6, background: 'rgba(99,102,241,0.08)', border: `1px solid ${a.error ? 'var(--status-warn)' : 'var(--border-subtle)'}`, fontSize: 11, color: a.error ? 'var(--status-warn)' : 'var(--text-mid)' }}>
+              <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 6, background: 'rgba(var(--brand-rgb),0.08)', border: `1px solid ${a.error ? 'var(--status-warn)' : 'var(--border-subtle)'}`, fontSize: 11, color: a.error ? 'var(--status-warn)' : 'var(--text-mid)' }}>
                 {a.dataUrl ? '🖼' : '📄'} {a.name}{a.error ? ` — ${a.error}` : a.note ? ' — ⚠' : ''}
                 <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 12, padding: 0, lineHeight: 1 }}>✕</button>
               </span>
@@ -150,13 +150,13 @@ function ShieldAIScreen() {
         }}>
           <input ref={fileRef} type="file" multiple accept="image/*,text/*,.txt,.md,.csv,.json,.log,.yaml,.yml" style={{ display: 'none' }} onChange={e => { pickFiles(e.target.files); e.target.value = ''; }} />
           <button onClick={() => fileRef.current && fileRef.current.click()} title="Attach a file or image" style={{
-            background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8,
+            background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 8,
             width: 38, height: 38, color: 'var(--text-mid)', fontSize: 16, cursor: 'pointer', flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>📎</button>
           <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(); }} placeholder="Ask ShieldTech AI anything…" style={{
             flex: 1, padding: '10px 14px',
-            background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
+            background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)',
             borderRadius: 8, color: 'var(--text-high)', fontSize: 13,
             fontFamily: 'var(--font-body)', outline: 'none'
           }} />
@@ -164,7 +164,7 @@ function ShieldAIScreen() {
             background: 'var(--brand)', border: 'none', borderRadius: 8,
             padding: '8px 16px', color: '#fff', fontSize: 13, cursor: 'pointer',
             fontFamily: 'var(--font-body)', fontWeight: 500,
-            boxShadow: '0 0 12px -4px rgba(99,102,241,0.3)'
+            boxShadow: '0 0 12px -4px rgba(var(--brand-rgb),0.3)'
           }}>Send</button>
         </div>
       </div>

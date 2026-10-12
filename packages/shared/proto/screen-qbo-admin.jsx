@@ -1,8 +1,10 @@
 /* QBO Handoff — Portal Settings, Team Plus (Payroll/Time/Contractors), Inventory Plus */
 
 /* ════ Portal Settings ════ */
-function PortalSettingsScreen() {
-  const [section, setSection] = React.useState((window.__qboParams && window.__qboParams.section) || 'users');
+function PortalSettingsScreen({ section: sectionProp, embedded }) {
+  const [sectionState, setSectionState] = React.useState((window.__qboParams && window.__qboParams.section) || 'users');
+  const section = sectionProp || sectionState;
+  const setSection = (id) => { if (embedded && window.navSubSet) window.navSubSet('portal-settings', id, 'nav'); else setSectionState(id); };
   const [toast, setToast] = React.useState(null);
   const me = window.__shieldUser || {};
   /* Real QuickBooks connection light (qbo-sync status endpoint) */
@@ -46,21 +48,21 @@ function PortalSettingsScreen() {
   );
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      {!embedded && <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <h2 className="display" style={{ fontSize: 20, fontWeight: 300, marginRight: 'auto' }}>Portal Settings</h2>
         <span style={{ fontSize: 10.5, color: 'var(--text-mid)', fontFamily: 'var(--font-mono)' }}>{me.name ? `Signed in as ${me.name}${me.role ? ' · ' + me.role : ''}` : 'Not signed in'}</span>
-      </div>
+      </div>}
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-        <GlassPanel style={{ width: 190, flexShrink: 0, padding: 8 }}>
+        {!embedded && <GlassPanel style={{ width: 190, flexShrink: 0, padding: 8 }}>
           {sections.map((s) => (
             <button key={s.id} onClick={() => setSection(s.id)} style={{
               display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', borderRadius: 7, border: 'none',
-              background: section === s.id ? 'rgba(99,102,241,0.12)' : 'transparent',
+              background: section === s.id ? 'rgba(var(--brand-rgb),0.12)' : 'transparent',
               color: section === s.id ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11.5, fontWeight: section === s.id ? 600 : 400,
               cursor: 'pointer', fontFamily: 'var(--font-body)'
             }}>{s.label}</button>
           ))}
-        </GlassPanel>
+        </GlassPanel>}
         <div style={{ flex: 1, minWidth: 0 }}>
           {section === 'users' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -263,7 +265,7 @@ function TeamScreenPlus() {
             <StatCard label="EST. PAYROLL TAX (ROUGH ~24.5%)" value={estGross > 0 ? qboMoney(Math.round(estGross * 0.245)) : '—'} mono={false} delay={120} />
             <StatCard label="PENDING TIME APPROVALS" value={pendingCount} delay={180} />
           </div>
-          <GlassPanel style={{ borderColor: 'rgba(99,102,241,0.3)' }}>
+          <GlassPanel style={{ borderColor: 'rgba(var(--brand-rgb),0.3)' }}>
             <SectionHeader title={`Pay run — ending ${nextPayRun}`} icon="dollar" />
             <div style={{ fontSize: 11.5, color: 'var(--text-mid)', marginBottom: 12 }}>{employeeCount} technician{employeeCount === 1 ? '' : 's'} with hours · {pendingCount} timesheet{pendingCount === 1 ? '' : 's'} still pending approval. Approving time first keeps job costing accurate.</div>
             <div style={{ display: 'flex', gap: 8 }}>

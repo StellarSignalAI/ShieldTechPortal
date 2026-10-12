@@ -6,15 +6,15 @@ const ssPrefsStore = createShieldStore('ssprefs', { theme: 'dark', icons: 'glyph
 
 /* ── Device palette: generic plan symbols mapped to Price Book SKUs ── */
 const SS_DEVICES = [
-  { type: 'dome',    label: 'Dome Camera',    glyph: 'M12 4a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8Zm0 4a4 4 0 0 1 4 4H8a4 4 0 0 1 4-4Z', letter: 'D', color: '#6366F1', sku: 'P3245-V',   desc: 'Axis P3245-V Indoor Dome',        unit: 285,  hrs: 1.5 },
+  { type: 'dome',    label: 'Dome Camera',    glyph: 'M12 4a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8Zm0 4a4 4 0 0 1 4 4H8a4 4 0 0 1 4-4Z', letter: 'D', color: 'var(--brand)', sku: 'P3245-V',   desc: 'Axis P3245-V Indoor Dome',        unit: 285,  hrs: 1.5 },
   { type: 'bullet',  label: 'Bullet Camera',  glyph: 'M4 10h12l4 2-4 2H4a2 2 0 0 1 0-4Zm2 6v3M14 16v3', letter: 'B', color: '#38BDF8', sku: 'P1468-LE',  desc: 'Axis P1468-LE Outdoor Bullet 4K', unit: 412,  hrs: 2 },
-  { type: 'ptz',     label: 'PTZ Camera',     glyph: 'M12 3a6 6 0 0 1 6 6c0 4-6 12-6 12S6 13 6 9a6 6 0 0 1 6-6Zm0 3.5A2.5 2.5 0 1 0 12 11a2.5 2.5 0 0 0 0-5Z', letter: 'P', color: '#818CF8', sku: 'Q6135-LE',  desc: 'Axis Q6135-LE PTZ 32x',           unit: 2890, hrs: 2.5 },
+  { type: 'ptz',     label: 'PTZ Camera',     glyph: 'M12 3a6 6 0 0 1 6 6c0 4-6 12-6 12S6 13 6 9a6 6 0 0 1 6-6Zm0 3.5A2.5 2.5 0 1 0 12 11a2.5 2.5 0 0 0 0-5Z', letter: 'P', color: 'var(--disc-av)', sku: 'Q6135-LE',  desc: 'Axis Q6135-LE PTZ 32x',           unit: 2890, hrs: 2.5 },
   { type: 'reader',  label: 'Access Reader',  glyph: 'M7 3h10v18H7zM9 6h6M9 9h6M12 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z', letter: 'R', color: '#34D399', sku: 'RP40',      desc: 'HID RP40 Multi-Tech Reader',      unit: 165,  hrs: 1 },
   { type: 'contact', label: 'Door Contact',   glyph: 'M5 4h6v16H5zM13 8h6v8h-6z', letter: 'C', color: '#4ADE80', sku: 'DC-101',    desc: 'Recessed Door Contact',           unit: 28,   hrs: 0.5 },
   { type: 'motion',  label: 'Motion Sensor',  glyph: 'M12 4 4 20h16L12 4Zm0 5 4.5 9h-9L12 9Z', letter: 'M', color: '#FBBF24', sku: 'LC-104',    desc: 'DSC LC-104 PIR Motion',           unit: 46,   hrs: 0.75 },
   { type: 'keypad',  label: 'Alarm Keypad',   glyph: 'M5 4h14v16H5zM8 8h2v2H8zM11 8h2v2h-2zM14 8h2v2h-2zM8 12h2v2H8zM11 12h2v2h-2zM14 12h2v2h-2z', letter: 'K', color: '#F59E0B', sku: 'HS2LCD',    desc: 'DSC HS2LCD Keypad',               unit: 118,  hrs: 0.75 },
   { type: 'panel',   label: 'Control Panel',  glyph: 'M4 5h16v14H4zM7 9h10M7 12h10M7 15h6', letter: 'CP', color: '#F43F5E', sku: 'LP4502',    desc: 'Mercury LP4502 2-Door Controller',unit: 1300, hrs: 3 },
-  { type: 'nvr',     label: 'NVR / Recorder', glyph: 'M3 8h18v8H3zM6 12h.01M9 12h.01M15 11h3v2h-3z', letter: 'N', color: '#c084fc', sku: 'XNR-6410',  desc: 'Hanwha XNR-6410 32ch NVR',        unit: 1960, hrs: 2 },
+  { type: 'nvr',     label: 'NVR / Recorder', glyph: 'M3 8h18v8H3zM6 12h.01M9 12h.01M15 11h3v2h-3z', letter: 'N', color: 'var(--accent-2)', sku: 'XNR-6410',  desc: 'Hanwha XNR-6410 32ch NVR',        unit: 1960, hrs: 2 },
 ];
 const ssDev = t => SS_DEVICES.find(d => d.type === t) || SS_DEVICES[0];
 
@@ -26,12 +26,12 @@ const SS_OBJECTS = [
   { type: 'table',     label: 'Table',          cat: 'furniture',  color: '#94A3B8', zh: 2.5 },
   { type: 'couch',     label: 'Couch',          cat: 'furniture',  color: '#94A3B8', zh: 2.2 },
   { type: 'shelf',     label: 'Shelving',       cat: 'furniture',  color: '#94A3B8', zh: 6 },
-  { type: 'rack',      label: 'Equipment rack', cat: 'appliance',  color: '#c084fc', zh: 6 },
-  { type: 'appliance', label: 'Appliance',      cat: 'appliance',  color: '#c084fc', zh: 4 },
+  { type: 'rack',      label: 'Equipment rack', cat: 'appliance',  color: 'var(--accent-2)', zh: 6 },
+  { type: 'appliance', label: 'Appliance',      cat: 'appliance',  color: 'var(--accent-2)', zh: 4 },
   { type: 'sink',      label: 'Sink',           cat: 'plumbing',   color: '#38BDF8', zh: 2.8 },
   { type: 'wc',        label: 'Toilet',         cat: 'plumbing',   color: '#38BDF8', zh: 1.5 },
   { type: 'outlet',    label: 'Outlet',         cat: 'electrical', color: '#FBBF24', zh: 1.2 },
-  { type: 'radiator',  label: 'Radiator',       cat: 'appliance',  color: '#c084fc', zh: 2 },
+  { type: 'radiator',  label: 'Radiator',       cat: 'appliance',  color: 'var(--accent-2)', zh: 2 },
 ];
 const ssObj = t => SS_OBJECTS.find(o => o.type === t) || SS_OBJECTS[0];
 const SS_OBJ_CATS = ['furniture', 'appliance', 'plumbing', 'electrical'];

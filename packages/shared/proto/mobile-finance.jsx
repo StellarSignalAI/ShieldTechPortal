@@ -80,7 +80,7 @@ function FinOverview({ go }) {
   const invoices = useMergedInvoices();
   const open = invoices.filter(i => i.status !== 'paid' && i.status !== 'draft' && i.status !== 'void');
   const bucket = (lo, hi) => open.filter(i => { const d = Number(i.days) || 0; return d >= lo && (hi == null || d <= hi); }).reduce((s, i) => s + i.amount, 0);
-  const ar = [['Current', bucket(0, 0), 'var(--status-ok)'], ['1–30', bucket(1, 30), 'var(--status-warn)'], ['31–60', bucket(31, 60), 'var(--status-critical)'], ['60+', bucket(61, null), '#c084fc']];
+  const ar = [['Current', bucket(0, 0), 'var(--status-ok)'], ['1–30', bucket(1, 30), 'var(--status-warn)'], ['31–60', bucket(31, 60), 'var(--status-critical)'], ['60+', bucket(61, null), 'var(--accent-2)']];
   const arTotal = ar.reduce((s, b) => s + b[1], 0);
   const lines = [];
   /* Revenue MTD = payments recorded this month on the same merged rows. */
@@ -125,7 +125,7 @@ function FinOverview({ go }) {
       </MSection>
       <MSection title="Profitability by service line">
         {lines.map(([l, rev, m]) => (
-          <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+          <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
             <span style={{ flex: 1, fontSize: 12, color: 'var(--text-high)' }}>{l}</span>
             <span className="mono" style={{ fontSize: 11, color: 'var(--text-mid)', width: 48, textAlign: 'right' }}>${(rev / 1000).toFixed(0)}K</span>
             <div style={{ width: 50 }}><MBar pct={m / 70 * 100} color={m >= 30 ? 'var(--status-ok)' : m >= 20 ? 'var(--status-warn)' : 'var(--status-critical)'} /></div>
@@ -158,10 +158,10 @@ function FinInvoices() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <FinKpis items={[['OUTSTANDING', `$${(outstanding / 1000).toFixed(1)}K`, null, 'var(--status-warn)'], ['OVERDUE', `$${(overdue / 1000).toFixed(1)}K`, null, 'var(--status-critical)']]} />
       <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search invoices — number, customer, amount…"
-        style={{ width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        style={{ width: '100%', padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       <div style={{ display: 'flex', gap: 8 }}>
         <div style={{ flex: 1, overflowX: 'auto' }}><MSegment options={['All', 'Paid', 'Pending', 'Overdue', 'Draft']} value={filter} onChange={setFilter} /></div>
-        <button onClick={() => setCreating(true)} style={{ padding: '0 14px', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 18, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>+</button>
+        <button onClick={() => setCreating(true)} style={{ padding: '0 14px', background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 18, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>+</button>
       </div>
       {list.map(inv => (
         <div key={inv.num} onClick={() => setOpenNum(inv.num)} className="glass" style={{ padding: '12px 13px', borderRadius: 12, cursor: 'pointer', borderLeft: `3px solid ${FIN_STATUS[inv.status]}` }}>
@@ -192,7 +192,7 @@ function MNewInvoiceSheet({ onClose }) {
   const [attached, setAttached] = React.useState(null);
   const estRows = useMergedEstimates();
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
-  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
   const lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
   const ok = f.customer.trim() && Number(f.amount) > 0;
   /* Attaching a proposal pre-fills the invoice from it. */
@@ -229,7 +229,7 @@ function MNewInvoiceSheet({ onClose }) {
         <div>
           <span style={lbl}>Attach proposal (optional)</span>
           {attached ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 13px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 13px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 10 }}>
               <span className="mono" style={{ fontSize: 13, color: 'var(--brand)' }}>◇ {attached.num}</span>
               <span style={{ flex: 1, fontSize: 12, color: 'var(--text-mid)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{attached.customer} · ${attached.amount.toLocaleString()}</span>
               <button onClick={() => setAttached(null)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 14, cursor: 'pointer' }}>✕</button>
@@ -238,7 +238,7 @@ function MNewInvoiceSheet({ onClose }) {
             <>
               <input value={estQ} onChange={e => setEstQ(e.target.value)} placeholder="Search proposals — number, customer…" style={inp} />
               {estMatches.map(e => (
-                <div key={e.num} onClick={() => attach(e)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 13px', marginTop: 6, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, cursor: 'pointer' }}>
+                <div key={e.num} onClick={() => attach(e)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 13px', marginTop: 6, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, cursor: 'pointer' }}>
                   <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{e.num}</span>
                   <span style={{ flex: 1, fontSize: 12, color: 'var(--text-mid)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.customer}</span>
                   <span className="mono" style={{ fontSize: 12, color: 'var(--text-high)' }}>${e.amount.toLocaleString()}</span>
@@ -286,7 +286,7 @@ function MDocEditor({ kind, doc, onClose }) {
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
   const setLine = (i, k, v) => setF(p => ({ ...p, lines: p.lines.map((l, ix) => ix === i ? { ...l, [k]: v } : l) }));
   const total = f.lines.reduce((s, l) => s + (Number(l.qty) || 1) * (Number(l.rate) || 0), 0);
-  const inp = { width: '100%', padding: '12px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inp = { width: '100%', padding: '12px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
   const lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
   const lineInp = (w) => ({ ...inp, padding: '9px 10px', fontSize: 13, width: w, borderRadius: 9 });
   const save = () => {
@@ -307,7 +307,7 @@ function MDocEditor({ kind, doc, onClose }) {
           <span style={lbl}>Status</span>
           <div style={{ display: 'flex', gap: 6 }}>
             {STATUS_OPTS.map(([v, label]) => (
-              <button key={v} onClick={() => setF(p => ({ ...p, status: v }))} style={{ flex: 1, padding: '10px 0', borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', background: f.status === v ? 'rgba(99,102,241,0.16)' : 'transparent', border: `1px solid ${f.status === v ? 'var(--brand)' : 'var(--border-subtle)'}`, color: f.status === v ? 'var(--brand)' : 'var(--text-low)' }}>{label}</button>
+              <button key={v} onClick={() => setF(p => ({ ...p, status: v }))} style={{ flex: 1, padding: '10px 0', borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', background: f.status === v ? 'rgba(var(--brand-rgb),0.16)' : 'transparent', border: `1px solid ${f.status === v ? 'var(--brand)' : 'var(--border-subtle)'}`, color: f.status === v ? 'var(--brand)' : 'var(--text-low)' }}>{label}</button>
             ))}
           </div>
         </div>
@@ -329,7 +329,7 @@ function MDocEditor({ kind, doc, onClose }) {
             <button onClick={() => setF(p => ({ ...p, lines: [...p.lines, { desc: '', qty: 1, rate: 0 }] }))} style={{ padding: '10px 0', borderRadius: 10, border: '1px dashed var(--border-strong)', background: 'transparent', color: 'var(--brand)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add line item</button>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 11 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 11 }}>
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-low)' }}>TOTAL</span>
           <span className="mono" style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-high)' }}>${total.toLocaleString()}</span>
         </div>
@@ -355,12 +355,12 @@ function FinInvoiceDetail({ inv, onClose, onEdit }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           {[['Due', inv.due], ['Terms', inv.terms], ['Source', inv.source || 'portal'], ['Lines', (inv.lines || []).length]].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '7px 10px' }}><div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase' }}>{k}</div><div className="mono" style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{v}</div></div>
+            <div key={k} style={{ background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '7px 10px' }}><div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase' }}>{k}</div><div className="mono" style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{v}</div></div>
           ))}
         </div>
         {/* Project attachment — invoices ↔ projects, both directions (parity with desktop) */}
         {inv.project_id ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '9px 12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(var(--brand-rgb),0.05)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '9px 12px' }}>
             <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-low)', letterSpacing: '0.06em' }}>PROJECT</span>
             <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{inv.project_id}</span>
             <span style={{ fontSize: 11, color: 'var(--text-low)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{((projects || []).find(p => p.number === inv.project_id) || {}).name || ''}</span>
@@ -371,14 +371,14 @@ function FinInvoiceDetail({ inv, onClose, onEdit }) {
             attachInvoiceToProject(num, inv.num);
             showToast(`${inv.num} attached to ${num}`, 'ok');
             onClose();
-          }} style={{ width: '100%', padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, fontFamily: 'var(--font-body)' }}>
+          }} style={{ width: '100%', padding: '10px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, fontFamily: 'var(--font-body)' }}>
             <option value="">Attach to a project…</option>
             {(projects || []).map(p => <option key={p.number} value={p.number}>{p.number} — {p.name}</option>)}
           </select>
         )}
         <MSection title="Line items">
           {(inv.lines || []).map((li, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '7px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
               <span style={{ fontSize: 12, color: 'var(--text-mid)', flex: 1 }}>{li.desc}</span>
               {li.qty > 1 && <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{li.qty}×${li.rate}</span>}
               <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>${(li.qty * li.rate).toLocaleString()}</span>
@@ -416,7 +416,7 @@ function FinRecurring() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <FinKpis items={[['TOTAL MRR', `$${(mrr / 1000).toFixed(1)}K`, null, 'var(--brand)'], ['AUTOPAY RATE', `${autopay}%`, null, 'var(--status-ok)']]} />
-      <button onClick={() => showToast('New subscriptions aren\'t wired up yet — create one in the desktop Finance Suite', 'warn')} style={{ padding: '11px 0', background: 'rgba(99,102,241,0.06)', border: '1px dashed var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Subscription</button>
+      <button onClick={() => showToast('New subscriptions aren\'t wired up yet — create one in the desktop Finance Suite', 'warn')} style={{ padding: '11px 0', background: 'rgba(var(--brand-rgb),0.06)', border: '1px dashed var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Subscription</button>
       {FIN_RECURRING.map(r => (
         <div key={r.customer} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${r.status === 'active' ? 'var(--status-ok)' : 'var(--status-critical)'}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -428,7 +428,7 @@ function FinRecurring() {
             <span style={{ fontSize: 10, color: 'var(--text-low)' }}>· next {r.next}</span>
             {r.status === 'past_due'
               ? <span style={{ marginLeft: 'auto' }}><MBadge color="var(--status-critical)">past due</MBadge></span>
-              : <button onClick={() => showToast(r.stripe ? 'Subscription management isn\'t wired up yet — use the desktop Finance Suite' : 'AutoPay enrollment isn\'t wired up yet — use the desktop Finance Suite', 'warn')} style={{ marginLeft: 'auto', padding: '4px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{r.stripe ? 'Manage' : 'Enroll AutoPay'}</button>}
+              : <button onClick={() => showToast(r.stripe ? 'Subscription management isn\'t wired up yet — use the desktop Finance Suite' : 'AutoPay enrollment isn\'t wired up yet — use the desktop Finance Suite', 'warn')} style={{ marginLeft: 'auto', padding: '4px 10px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 7, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{r.stripe ? 'Manage' : 'Enroll AutoPay'}</button>}
           </div>
         </div>
       ))}
@@ -504,7 +504,7 @@ function FinEstimates({ onNav }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <FinKpis items={[['AWAITING ACCEPT', `$${(outstanding / 1000).toFixed(0)}K`, null, 'var(--brand)'], ['ACCEPTED', wonCount, `of ${rows.length} estimates`, 'var(--status-ok)']]} />
       <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search proposals — number, customer, amount…"
-        style={{ width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        style={{ width: '100%', padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       <MSegment options={['All', 'Draft', 'Sent', 'Accepted', 'Declined']} value={filter} onChange={setFilter} />
       {list.map(e => (
         <div key={e.num} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${FIN_STATUS[e.display]}` }}>
@@ -517,14 +517,14 @@ function FinEstimates({ onNav }) {
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{e.customer}</div>
           <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: 8 }}>created {e.date} · expires {e.expires}</div>
           <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
-            <button onClick={() => setEditing(e)} style={actBtn('rgba(99,102,241,0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>✎ Edit</button>
+            <button onClick={() => setEditing(e)} style={actBtn('rgba(var(--brand-rgb),0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>✎ Edit</button>
             {e.display !== 'accepted' && <>
-              <button onClick={() => doAccept(e)} style={actBtn('rgba(52,211,153,0.08)', '1px solid rgba(52,211,153,0.25)', 'var(--status-ok)')}>✓ Accept → Project</button>
-              <button onClick={() => doEmailAccept(e)} style={actBtn('rgba(99,102,241,0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>✉ Email accept link</button>
+              <button onClick={() => doAccept(e)} style={actBtn('rgba(var(--ok-rgb),0.08)', '1px solid rgba(var(--ok-rgb),0.25)', 'var(--status-ok)')}>✓ Accept → Project</button>
+              <button onClick={() => doEmailAccept(e)} style={actBtn('rgba(var(--brand-rgb),0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>✉ Email accept link</button>
             </>}
             {e.display === 'accepted' && (e.project
-              ? <button onClick={() => onNav && onNav('projects')} style={actBtn('rgba(99,102,241,0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>→ {e.project.number}{e.project.name ? ` · ${e.project.name.slice(0, 24)}` : ''}</button>
-              : <button onClick={() => doAccept(e)} style={actBtn('rgba(52,211,153,0.08)', '1px solid rgba(52,211,153,0.25)', 'var(--status-ok)')}>→ Create Project</button>)}
+              ? <button onClick={() => onNav && onNav('projects')} style={actBtn('rgba(var(--brand-rgb),0.06)', '1px solid var(--border-subtle)', 'var(--brand)')}>→ {e.project.number}{e.project.name ? ` · ${e.project.name.slice(0, 24)}` : ''}</button>
+              : <button onClick={() => doAccept(e)} style={actBtn('rgba(var(--ok-rgb),0.08)', '1px solid rgba(var(--ok-rgb),0.25)', 'var(--status-ok)')}>→ Create Project</button>)}
           </div>
         </div>
       ))}
@@ -564,7 +564,7 @@ function FinBills() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', flex: 1 }}>{b.vendor_name || 'Vendor'}</span>
             <span style={{ fontSize: 10, color: b.status === 'overdue' ? 'var(--status-critical)' : 'var(--text-low)' }}>due {fmtD(b.due_date)}</span>
-            {Number(b.balance) > 0 && <button onClick={() => window.openQboNew('billpayment', { bill: b })} style={{ padding: '4px 10px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Pay</button>}
+            {Number(b.balance) > 0 && <button onClick={() => window.openQboNew('billpayment', { bill: b })} style={{ padding: '4px 10px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Pay</button>}
           </div>
         </div>
       ))}
@@ -598,7 +598,7 @@ function FinExpenses() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ flex: 1 }}><div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--text-high)' }}>{e.desc}</div><div style={{ fontSize: 9.5, color: 'var(--text-low)' }}>{e.who} · {e.date}</div></div>
-            {e.status === 'pending' && <button onClick={() => approve(e.id)} style={{ padding: '6px 12px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 8, color: 'var(--status-ok)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>}
+            {e.status === 'pending' && <button onClick={() => approve(e.id)} style={{ padding: '6px 12px', background: 'rgba(var(--ok-rgb),0.1)', border: '1px solid rgba(var(--ok-rgb),0.3)', borderRadius: 8, color: 'var(--status-ok)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Approve</button>}
           </div>
         </div>
       ))}
@@ -615,7 +615,7 @@ function FinReports() {
       <FinKpis items={[['NET INCOME MTD', '$0', null, 'var(--status-ok)'], ['GROSS PROFIT', '$0', null, null]]} />
       <MSection title="P&L Summary (MTD)">
         {[['Revenue', '$0', false], ['Cost of Goods', '$0', false], ['Gross Profit', '$0', true], ['Operating Expenses', '$0', false], ['Net Income', '$0', true]].map(([l, v, bold]) => (
-          <div key={l} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: bold ? '1px solid var(--border-subtle)' : '1px solid rgba(99,102,241,0.04)' }}>
+          <div key={l} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: bold ? '1px solid var(--border-subtle)' : '1px solid rgba(var(--brand-rgb),0.04)' }}>
             <span style={{ fontSize: 12, fontWeight: bold ? 600 : 400, color: l === 'Net Income' ? 'var(--status-ok)' : 'var(--text-high)' }}>{l}</span>
             <span className="mono" style={{ fontSize: 12, fontWeight: bold ? 700 : 400, color: l === 'Net Income' ? 'var(--status-ok)' : 'var(--text-high)' }}>{v}</span>
           </div>
@@ -636,15 +636,18 @@ function FinReports() {
 }
 
 /* ── Finance suite shell ── */
+const MFIN_SUB = { overview: 'Overview', invoices: 'Invoices', estimates: 'Proposals', ap: 'Bills', vendors: 'Bills', expenses: 'Expenses', receipts: 'Expenses', recurring: 'Recurring', 'sales-tax': 'Sales Tax', 'reports-center': 'Reports', settings: 'More', 'bank-transactions': 'More', reconcile: 'More', accounts: 'More', customers: 'More', products: 'More', payroll: 'More', 'sales-overview': 'Overview' };
 function MFinance({ onNav }) {
-  const [tab, setTab] = React.useState('Overview');
+  const subInit = window.__navSub && window.__navSub.screen === 'finance' ? window.__navSub.sub : null;
+  const [tab, setTab] = React.useState(MFIN_SUB[subInit] || 'Overview');
+  React.useEffect(() => { const h = (e) => { if (e.detail.screen === 'finance' && e.detail.source !== 'screen' && MFIN_SUB[e.detail.sub]) setTab(MFIN_SUB[e.detail.sub]); }; window.addEventListener('st2:subnav', h); return () => window.removeEventListener('st2:subnav', h); }, []);
   const tabs = ['Overview', 'AI Queue', 'Invoices', 'Recurring', 'Proposals', 'Bills', 'Expenses', 'Sales Tax', 'Lending', 'Reports', 'More'];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2, margin: '0 -2px', alignItems: 'center' }}>
         {window.QboNewButton && <span style={{ flexShrink: 0 }}><QboNewButton compact /></span>}
         {tabs.map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ padding: '7px 14px', borderRadius: 9, fontSize: 12, fontWeight: tab === t ? 600 : 500, background: tab === t ? 'rgba(99,102,241,0.14)' : 'transparent', border: `1px solid ${tab === t ? 'var(--brand)' : 'var(--border-subtle)'}`, color: tab === t ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', flexShrink: 0 }}>{t}</button>
+          <button key={t} onClick={() => setTab(t)} style={{ padding: '7px 14px', borderRadius: 9, fontSize: 12, fontWeight: tab === t ? 600 : 500, background: tab === t ? 'rgba(var(--brand-rgb),0.14)' : 'transparent', border: `1px solid ${tab === t ? 'var(--brand)' : 'var(--border-subtle)'}`, color: tab === t ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', flexShrink: 0 }}>{t}</button>
         ))}
       </div>
       {tab === 'Overview' && (window.MoneyHome ? <MoneyHome go={setTab} /> : <FinOverview go={setTab} />)}
@@ -663,8 +666,8 @@ function MFinance({ onNav }) {
 }
 
 const finBtnPrimary = { width: '100%', padding: '11px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 9, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
-const finBtnSecondary = { width: '100%', padding: '11px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
-const finBtnSuccess = { width: '100%', padding: '11px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' };
+const finBtnSecondary = { width: '100%', padding: '11px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
+const finBtnSuccess = { width: '100%', padding: '11px', background: 'rgba(var(--ok-rgb),0.1)', border: '1px solid rgba(var(--ok-rgb),0.3)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' };
 const finBtnGhost = { flex: 1, padding: '9px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' };
 
 Object.assign(window, { MFinance, MDocEditor });

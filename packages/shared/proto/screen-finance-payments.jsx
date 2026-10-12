@@ -37,7 +37,7 @@ function FinanceStripe() {
           </>}
         </div>
         {conn !== null && !(conn && conn.stripe) && (
-          <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 8, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.7 }}>
+          <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 8, background: 'rgba(var(--brand-rgb),0.05)', border: '1px solid var(--border-subtle)', fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.7 }}>
             <b style={{ color: 'var(--text-high)' }}>Connect Stripe (one-time):</b> in your Supabase dashboard → Edge Functions → Secrets, add
             <span className="mono" style={{ color: 'var(--brand)' }}> STRIPE_SECRET_KEY</span> (from Stripe → Developers → API keys) and
             <span className="mono" style={{ color: 'var(--brand)' }}> STRIPE_WEBHOOK_SECRET</span> (Stripe → Webhooks → add endpoint
@@ -46,7 +46,7 @@ function FinanceStripe() {
           </div>
         )}
         {qbo !== null && !(qbo && qbo.connected) && (
-          <div style={{ marginTop: 8, padding: '10px 14px', borderRadius: 8, background: 'rgba(52,211,153,0.04)', border: '1px solid var(--border-subtle)', fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.7 }}>
+          <div style={{ marginTop: 8, padding: '10px 14px', borderRadius: 8, background: 'rgba(var(--ok-rgb),0.04)', border: '1px solid var(--border-subtle)', fontSize: 11.5, color: 'var(--text-mid)', lineHeight: 1.7 }}>
             <b style={{ color: 'var(--text-high)' }}>Connect QuickBooks (one-time):</b> in Supabase → Edge Functions → Secrets, add
             <span className="mono" style={{ color: 'var(--brand)' }}> QBO_CLIENT_ID</span>, <span className="mono" style={{ color: 'var(--brand)' }}>QBO_CLIENT_SECRET</span> (Intuit developer app),
             <span className="mono" style={{ color: 'var(--brand)' }}> QBO_REALM_ID</span> (your company id) and a one-time
@@ -58,7 +58,7 @@ function FinanceStripe() {
       <GlassPanel style={{ padding: 0 }}>
         <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <SectionHeader title="Payment links sent" icon="reports" count={links ? links.length : undefined} />
-          <button onClick={refresh} style={{ padding: '4px 12px', fontSize: 11, borderRadius: 6, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Refresh</button>
+          <button onClick={refresh} style={{ padding: '4px 12px', fontSize: 11, borderRadius: 6, background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Refresh</button>
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead><tr>{['Invoice','Customer','Amount','Status','Reminders','Sent',''].map((h,i) => (
@@ -69,13 +69,13 @@ function FinanceStripe() {
             {links && links.length === 0 && <tr><td colSpan={7} style={{ padding: 24, fontSize: 12, color: 'var(--text-low)', textAlign: 'center' }}>No payment links yet — send an invoice from the Invoices tab and it lands here with a live customer pay page.</td></tr>}
             {(links || []).map(l => (
               <tr key={l.id}>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, color: 'var(--brand)' }}>{l.invoice_ref}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{l.customer_name || '—'}</td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{money(l.amount)}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><StatusBadge status={l.status === 'paid' ? 'online' : 'info'} label={l.status === 'paid' ? `paid · ${l.paid_via || ''}` : 'awaiting payment'} /></td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{l.reminder_count || 0}</td>
-                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-low)' }}>{l.created_at ? new Date(l.created_at).toLocaleDateString() : '—'}</td>
-                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, color: 'var(--brand)' }}>{l.invoice_ref}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12 }}>{l.customer_name || '—'}</td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{money(l.amount)}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><StatusBadge status={l.status === 'paid' ? 'online' : 'info'} label={l.status === 'paid' ? `paid · ${l.paid_via || ''}` : 'awaiting payment'} /></td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{l.reminder_count || 0}</td>
+                <td className="mono" style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-low)' }}>{l.created_at ? new Date(l.created_at).toLocaleDateString() : '—'}</td>
+                <td style={{ padding: '9px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                   <button onClick={() => { const base = window.__shieldSupabaseUrl || ''; if (base) window.open(`${base}/functions/v1/invoice-pay?token=${l.token}`, '_blank'); else showToast('Backend URL unavailable'); }} style={{ background: 'none', border: 'none', padding: 0, fontSize: 11, color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open page →</button>
                 </td>
               </tr>
@@ -143,7 +143,7 @@ function FinanceCopilot() {
       {/* Preset chips */}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
         {presets.map((p, i) => (
-          <button key={i} onClick={() => handleSend(p)} style={{ padding: '4px 12px', borderRadius: 100, fontSize: 11, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>{p}</button>
+          <button key={i} onClick={() => handleSend(p)} style={{ padding: '4px 12px', borderRadius: 100, fontSize: 11, background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>{p}</button>
         ))}
       </div>
 
@@ -152,7 +152,7 @@ function FinanceCopilot() {
         {convo.map((msg, i) => (
           <div key={i} style={{ display: 'flex', gap: 10, maxWidth: msg.role === 'user' ? '70%' : '100%', alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
             {msg.role === 'ai' && (
-              <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>⟡</div>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>⟡</div>
             )}
             <div style={{ padding: '10px 14px', borderRadius: 10, background: msg.role === 'user' ? 'var(--brand)' : 'var(--glass-bg)', border: msg.role === 'ai' ? '1px solid var(--border-subtle)' : 'none' }}>
               <div style={{ fontSize: 12, color: msg.role === 'user' ? '#fff' : 'var(--text-high)', lineHeight: 1.6, whiteSpace: 'pre-line' }}>{msg.text.replace(/\*\*(.*?)\*\*/g, '$1')}</div>
@@ -175,7 +175,7 @@ function FinanceCopilot() {
         ))}
         {loading && (
           <div style={{ display: 'flex', gap: 10 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>⟡</div>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>⟡</div>
             <div style={{ padding: '10px 14px', borderRadius: 10, background: 'var(--glass-bg)', border: '1px solid var(--border-subtle)' }}>
               <div style={{ display: 'flex', gap: 4 }}>
                 {[0,1,2].map(d => <div key={d} style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--brand)', opacity: 0.4, animation: `pulse-online 1s ease ${d*0.2}s infinite` }} />)}
@@ -187,7 +187,7 @@ function FinanceCopilot() {
 
       {/* Input */}
       <div style={{ display: 'flex', gap: 8, padding: '12px 0 0', borderTop: '1px solid var(--border-subtle)' }}>
-        <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} placeholder="Ask about your finances..." style={{ flex: 1, padding: '10px 16px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} placeholder="Ask about your finances..." style={{ flex: 1, padding: '10px 16px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={() => handleSend()} style={{ padding: '10px 20px', background: 'var(--brand)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Ask</button>
       </div>
     </div>

@@ -14,13 +14,13 @@ function WarRoomView() {
       {/* Incident Banner */}
       <div style={{
         padding: '14px 20px', borderRadius: 'var(--radius-md)',
-        background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.25)',
+        background: 'rgba(var(--critical-rgb),0.06)', border: '1px solid rgba(var(--critical-rgb),0.25)',
         display: 'flex', alignItems: 'center', gap: 16,
         animation: 'fade-up 0.4s ease both'
       }}>
         <div style={{
           width: 48, height: 48, borderRadius: 12,
-          background: 'rgba(244,63,94,0.12)', border: '1px solid rgba(244,63,94,0.3)',
+          background: 'rgba(var(--critical-rgb),0.12)', border: '1px solid rgba(var(--critical-rgb),0.3)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           animation: 'pulse-critical 2s ease-in-out infinite'
         }}>
@@ -57,7 +57,7 @@ function WarRoomView() {
             ))}
           </div>
           {/* AI Root Cause */}
-          <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 6, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)' }}>
+          <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 6, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
               <span>⟡</span>
               <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--brand)' }}>SHIELDTECH AI ROOT CAUSE ANALYSIS</span>
@@ -83,7 +83,7 @@ function WarRoomView() {
               { time: '12:32 PM', event: 'Kevin White dispatched — ETA 45 min', type: 'info', auto: false },
               { time: '12:45 PM', event: 'Kevin White en route', type: 'info', auto: false },
             ].map((ev, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+              <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                 <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)', width: 60, flexShrink: 0 }}>{ev.time}</span>
                 <StatusDot status={ev.type === 'critical' ? 'critical' : ev.type === 'warn' ? 'warning' : 'info'} size={5} />
                 <span style={{ fontSize: 11, color: 'var(--text-high)', lineHeight: 1.4, flex: 1 }}>{ev.event}</span>
@@ -106,7 +106,7 @@ function WarRoomView() {
               { action: 'Verify all recordings resumed', status: 'blocked', assignee: 'KW' },
               { action: 'Post-incident report', status: 'blocked', assignee: 'JM' },
             ].map((a, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 4, background: a.status === 'done' ? 'rgba(52,211,153,0.04)' : 'transparent' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 4, background: a.status === 'done' ? 'rgba(var(--ok-rgb),0.04)' : 'transparent' }}>
                 <div style={{
                   width: 18, height: 18, borderRadius: 4, fontSize: 10,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -121,7 +121,7 @@ function WarRoomView() {
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <button onClick={() => shieldToast('Customer notified of incident status', 'ok')} style={{ flex: 1, padding: '8px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Notify Customer</button>
-            <button onClick={() => shieldToast('Incident marked resolved', 'ok')} style={{ flex: 1, padding: '8px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Resolve Incident</button>
+            <button onClick={() => shieldToast('Incident marked resolved', 'ok')} style={{ flex: 1, padding: '8px', background: 'rgba(var(--ok-rgb),0.1)', border: '1px solid rgba(var(--ok-rgb),0.25)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Resolve Incident</button>
           </div>
         </GlassPanel>
       </div>
@@ -165,10 +165,10 @@ function FloorPlanView() {
       </div>
 
       <GlassPanel style={{ padding: 0, overflow: 'hidden' }}>
-        <svg width="100%" height="420" viewBox="0 0 620 420" style={{ display: 'block', background: 'rgba(5,7,10,0.6)' }}>
+        <svg width="100%" height="420" viewBox="0 0 620 420" style={{ display: 'block', background: 'rgba(var(--canvas-rgb),0.6)' }}>
           <defs>
             <pattern id="fpGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(99,102,241,0.03)" strokeWidth="0.5"/>
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(var(--brand-rgb),0.03)" strokeWidth="0.5"/>
             </pattern>
           </defs>
           <rect width="620" height="420" fill="url(#fpGrid)" />
@@ -182,7 +182,7 @@ function FloorPlanView() {
             <line x1="30" y1="180" x2="200" y2="180" />
             <line x1="400" y1="200" x2="590" y2="200" />
             {/* Door gaps */}
-            <line x1="200" y1="140" x2="200" y2="180" stroke="rgba(99,102,241,0.15)" strokeWidth="1" strokeDasharray="3 3" />
+            <line x1="200" y1="140" x2="200" y2="180" stroke="rgba(var(--brand-rgb),0.15)" strokeWidth="1" strokeDasharray="3 3" />
           </g>
 
           {/* Room labels */}
@@ -195,8 +195,8 @@ function FloorPlanView() {
           {/* Motion zones (heatmap) */}
           {motionZones.map((z, i) => (
             <rect key={i} x={z.x} y={z.y} width={z.w} height={z.h} rx="4"
-              fill={`rgba(99,102,241,${z.activity * 0.12})`}
-              stroke={`rgba(99,102,241,${z.activity * 0.2})`} strokeWidth="0.5" />
+              fill={`rgba(var(--brand-rgb),${z.activity * 0.12})`}
+              stroke={`rgba(var(--brand-rgb),${z.activity * 0.2})`} strokeWidth="0.5" />
           ))}
 
           {/* Camera FOV cones */}
@@ -210,8 +210,8 @@ function FloorPlanView() {
             const x2 = cam.x + Math.cos(a2) * r;
             const y2 = cam.y + Math.sin(a2) * r;
             const large = cam.fov > 180 ? 1 : 0;
-            const color = cam.status === 'offline' ? 'rgba(244,63,94,0.08)' : selectedCam === i ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.06)';
-            const stroke = cam.status === 'offline' ? 'rgba(244,63,94,0.2)' : 'rgba(99,102,241,0.15)';
+            const color = cam.status === 'offline' ? 'rgba(var(--critical-rgb),0.08)' : selectedCam === i ? 'rgba(var(--brand-rgb),0.15)' : 'rgba(var(--brand-rgb),0.06)';
+            const stroke = cam.status === 'offline' ? 'rgba(var(--critical-rgb),0.2)' : 'rgba(var(--brand-rgb),0.15)';
 
             return (
               <path key={i}
@@ -226,8 +226,8 @@ function FloorPlanView() {
           {/* Access points */}
           {doors.map((d, i) => (
             <g key={i} transform={`translate(${d.x}, ${d.y})`}>
-              <rect x="-8" y="-8" width="16" height="16" rx="3" fill="rgba(192,132,252,0.15)" stroke="rgba(192,132,252,0.4)" strokeWidth="1" />
-              <text y="2" textAnchor="middle" fill="#c084fc" fontSize="10" dominantBaseline="central">⊠</text>
+              <rect x="-8" y="-8" width="16" height="16" rx="3" fill="rgba(25,227,236,0.15)" stroke="rgba(25,227,236,0.4)" strokeWidth="1" />
+              <text y="2" textAnchor="middle" fill="var(--accent-2)" fontSize="10" dominantBaseline="central">⊠</text>
               <text y="20" textAnchor="middle" fill="var(--text-low)" fontSize="7" fontFamily="var(--font-mono)">{d.label}</text>
             </g>
           ))}
@@ -238,7 +238,7 @@ function FloorPlanView() {
             return (
               <g key={i} transform={`translate(${cam.x}, ${cam.y})`} style={{ cursor: 'pointer' }}
                 onClick={() => setSelectedCam(i === selectedCam ? null : i)}>
-                <circle r="10" fill="rgba(10,14,20,0.9)" stroke={c} strokeWidth="1.5"
+                <circle r="10" fill="rgba(var(--card-rgb),0.9)" stroke={c} strokeWidth="1.5"
                   style={{ filter: selectedCam === i ? `drop-shadow(0 0 6px ${c})` : 'none' }} />
                 <text y="1" textAnchor="middle" fill={c} fontSize="10" dominantBaseline="central">◉</text>
                 <text y="-16" textAnchor="middle" fill="var(--text-mid)" fontSize="7" fontFamily="var(--font-mono)" fontWeight="600">{cam.id}</text>
@@ -254,7 +254,7 @@ function FloorPlanView() {
         {selectedCam !== null && (
           <div style={{
             padding: '12px 20px', borderTop: '1px solid var(--border-subtle)',
-            display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(99,102,241,0.03)',
+            display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(var(--brand-rgb),0.03)',
             animation: 'fade-up 0.2s ease both'
           }}>
             <div>
@@ -268,7 +268,7 @@ function FloorPlanView() {
               <div><span className="label-sm">RANGE</span><div className="mono" style={{ fontSize: 13 }}>{cameras[selectedCam].range}ft</div></div>
               <div><span className="label-sm">HEADING</span><div className="mono" style={{ fontSize: 13 }}>{cameras[selectedCam].angle}°</div></div>
             </div>
-            <button onClick={() => shieldToast('Opening live feed — ' + cameras[selectedCam].name)} style={{ padding: '6px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View Feed →</button>
+            <button onClick={() => shieldToast('Opening live feed — ' + cameras[selectedCam].name)} style={{ padding: '6px 14px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>View Feed →</button>
           </div>
         )}
       </GlassPanel>
@@ -308,7 +308,7 @@ function AnomalyView() {
               <span style={{
                 fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
                 padding: '3px 10px', borderRadius: 4,
-                background: `${a.score >= 80 ? 'rgba(244,63,94,0.1)' : a.score >= 60 ? 'rgba(251,191,36,0.1)' : 'rgba(99,102,241,0.1)'}`,
+                background: `${a.score >= 80 ? 'rgba(var(--critical-rgb),0.1)' : a.score >= 60 ? 'rgba(var(--warn-rgb),0.1)' : 'rgba(var(--brand-rgb),0.1)'}`,
                 color: a.score >= 80 ? 'var(--status-critical)' : a.score >= 60 ? 'var(--status-warn)' : 'var(--brand)'
               }}>{a.type}</span>
               <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-high)', flex: 1 }}>{a.title}</span>
@@ -323,7 +323,7 @@ function AnomalyView() {
             </div>
             <p style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.55, marginBottom: 10 }}>{a.desc}</p>
             {/* AI Suggestion */}
-            <div style={{ padding: '10px 12px', borderRadius: 6, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', marginBottom: 10 }}>
+            <div style={{ padding: '10px 12px', borderRadius: 6, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                 <span style={{ fontSize: 12 }}>⟡</span>
                 <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--brand)', textTransform: 'uppercase' }}>ShieldTech AI Suggestion</span>
@@ -332,7 +332,7 @@ function AnomalyView() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', gap: 6 }}>
-                <button onClick={() => shieldToast('Investigating ' + a.id + '…', 'info')} style={{ padding: '5px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Investigate</button>
+                <button onClick={() => shieldToast('Investigating ' + a.id + '…', 'info')} style={{ padding: '5px 14px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Investigate</button>
                 <button onClick={() => shieldToast(a.id + ' dismissed')} style={{ padding: '5px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Dismiss</button>
                 <button onClick={() => shieldToast('Ticket created from ' + a.id, 'ok')} style={{ padding: '5px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-low)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create Ticket</button>
               </div>

@@ -79,11 +79,11 @@ function SecretWeaponScreen() {
         <span style={{ font: '600 10px/1 var(--font-mono)', letterSpacing: '0.12em', color: 'var(--brand)' }}>⟡ SECRET WEAPON</span>
         <div style={{ display: 'flex', gap: 2, marginLeft: 'auto' }}>
           {tabs.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '5px 14px', fontSize: 11, fontWeight: tab === t.id ? 600 : 400, borderRadius: 6, background: tab === t.id ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${tab === t.id ? 'var(--brand)' : 'transparent'}`, color: tab === t.id ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.l}</button>
+            <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '5px 14px', fontSize: 11, fontWeight: tab === t.id ? 600 : 400, borderRadius: 6, background: tab === t.id ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', border: `1px solid ${tab === t.id ? 'var(--brand)' : 'transparent'}`, color: tab === t.id ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.l}</button>
           ))}
         </div>
         {activeOpp && tab !== 'board' && (
-          <select value={activeOpp.id} onChange={e => setOppId(e.target.value)} style={{ padding: '4px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', maxWidth: 260 }}>
+          <select value={activeOpp.id} onChange={e => setOppId(e.target.value)} style={{ padding: '4px 8px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', maxWidth: 260 }}>
             {opps.map(o => <option key={o.id} value={o.id}>{o.title}</option>)}
           </select>
         )}

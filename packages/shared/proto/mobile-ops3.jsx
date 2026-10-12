@@ -24,7 +24,7 @@ function MPhotos({ onNav }) {
       <MSegment options={['All', 'Before', 'Progress', 'After', 'Issues']} value={phase} onChange={setPhase} />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
         {list.map(p => (
-          <div key={p.id} onClick={() => setOpenId(p.id)} className="glass" style={{ padding: 0, overflow: 'hidden', cursor: 'pointer', borderColor: p.phase === 'issue' ? 'rgba(244,63,94,0.35)' : 'var(--border-subtle)' }}>
+          <div key={p.id} onClick={() => setOpenId(p.id)} className="glass" style={{ padding: 0, overflow: 'hidden', cursor: 'pointer', borderColor: p.phase === 'issue' ? 'rgba(var(--critical-rgb),0.35)' : 'var(--border-subtle)' }}>
             {(p.url || p.dataUrl)
               ? <MockPhoto photo={p} stamp={false} style={{ height: 96, borderRadius: 0 }}>
                   <span style={{ position: 'absolute', top: 6, left: 6, fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#fff', background: `${PH_PHASE[p.phase]}cc`, borderRadius: 6, padding: '2px 7px' }}>{p.phase}</span>
@@ -71,7 +71,7 @@ function MPhotoDetail({ id, onClose, onNav }) {
         ))}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
           {[['WO', p.wo], ['Tech', p.techName], ['Customer', p.customer], ['Site', p.site], ['Slot', p.slot || '—'], ['Taken', `${p.day} ${p.time}`]].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
+            <div key={k} style={{ background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</div>
               <div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{v}</div>
             </div>
@@ -150,14 +150,14 @@ function MPunchDetail({ id, onClose }) {
         {i.detail && <div style={{ fontSize: 12.5, color: 'var(--text-mid)', lineHeight: 1.45 }}>{i.detail}</div>}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
           {[['Customer', i.customer], ['Site', i.site], ['Assignee', tech ? tech.name : '—'], ['Linked photo', i.photoId || '—']].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
+            <div key={k} style={{ background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k}</div>
               <div style={{ fontSize: 11.5, color: 'var(--text-mid)' }}>{v}</div>
             </div>
           ))}
         </div>
         {next && <button onClick={advance} style={{ padding: '13px 0', background: i.status === 'open' ? 'linear-gradient(135deg, var(--status-ok), #1f9d6b)' : 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{i.status === 'open' ? '✓ Mark Done' : 'Mark Verified'}</button>}
-        {!next && <div style={{ padding: '13px 0', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', borderRadius: 11 }}>✓ Verified & closed</div>}
+        {!next && <div style={{ padding: '13px 0', textAlign: 'center', fontSize: 13, fontWeight: 600, color: 'var(--brand)', background: 'rgba(var(--brand-rgb),0.08)', borderRadius: 11 }}>✓ Verified & closed</div>}
       </div>
     </MSheet>
   );
@@ -193,7 +193,7 @@ function MSubcontractors({ onNav }) {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 }}>
-              {s.specialty.map(sp => <span key={sp} style={{ fontSize: 9, color: 'var(--brand)', background: 'rgba(99,102,241,0.06)', borderRadius: 7, padding: '2px 7px' }}>{sp}</span>)}
+              {s.specialty.map(sp => <span key={sp} style={{ fontSize: 9, color: 'var(--brand)', background: 'rgba(var(--brand-rgb),0.06)', borderRadius: 7, padding: '2px 7px' }}>{sp}</span>)}
             </div>
             {certIssue && <div style={{ fontSize: 10, color: 'var(--status-warn)', marginTop: 6 }}>⚠ Certification expiring/expired — review</div>}
           </div>
@@ -219,12 +219,12 @@ function MSubDetail({ id, onClose }) {
           <div className="mono" style={{ fontSize: 16, fontWeight: 700, color: 'var(--status-warn)' }}>★ {s.rating}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => { if (s.phone) window.location.href = `tel:${s.phone}`; else showToast('No phone number on file for this subcontractor', 'warn'); }} style={{ flex: 1, padding: '10px 0', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Call</button>
-          <button onClick={() => { if (s.email) window.location.href = `mailto:${s.email}`; else showToast('No email address on file for this subcontractor', 'warn'); }} style={{ flex: 1, padding: '10px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Email</button>
+          <button onClick={() => { if (s.phone) window.location.href = `tel:${s.phone}`; else showToast('No phone number on file for this subcontractor', 'warn'); }} style={{ flex: 1, padding: '10px 0', background: 'rgba(var(--ok-rgb),0.1)', border: '1px solid rgba(var(--ok-rgb),0.3)', borderRadius: 9, color: 'var(--status-ok)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Call</button>
+          <button onClick={() => { if (s.email) window.location.href = `mailto:${s.email}`; else showToast('No email address on file for this subcontractor', 'warn'); }} style={{ flex: 1, padding: '10px 0', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Email</button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
           {[['JOBS', s.jobs], ['REVENUE', `$${(s.revenue / 1000).toFixed(0)}K`], ['YTD PAID', `$${(s.ytdPaid / 1000).toFixed(0)}K`]].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '9px 10px', textAlign: 'center' }}>
+            <div key={k} style={{ background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '9px 10px', textAlign: 'center' }}>
               <div className="mono" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-high)' }}>{v}</div>
               <div style={{ fontSize: 8, color: 'var(--text-low)', letterSpacing: '0.05em' }}>{k}</div>
             </div>
@@ -244,7 +244,7 @@ function MSubDetail({ id, onClose }) {
           <div style={{ display: 'flex', gap: 5 }}>
             {s.availability.map((av, i) => (
               <div key={i} style={{ flex: 1, textAlign: 'center' }}>
-                <div style={{ height: 28, borderRadius: 7, background: av ? 'rgba(52,211,153,0.15)' : 'rgba(244,63,94,0.08)', border: `1px solid ${av ? 'rgba(52,211,153,0.35)' : 'rgba(244,63,94,0.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: av ? 'var(--status-ok)' : 'var(--status-critical)', fontSize: 11 }}>{av ? '✓' : '—'}</div>
+                <div style={{ height: 28, borderRadius: 7, background: av ? 'rgba(var(--ok-rgb),0.15)' : 'rgba(var(--critical-rgb),0.08)', border: `1px solid ${av ? 'rgba(var(--ok-rgb),0.35)' : 'rgba(var(--critical-rgb),0.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: av ? 'var(--status-ok)' : 'var(--status-critical)', fontSize: 11 }}>{av ? '✓' : '—'}</div>
                 <div style={{ fontSize: 8, color: 'var(--text-low)', marginTop: 2 }}>{days[i]}</div>
               </div>
             ))}
@@ -256,7 +256,7 @@ function MSubDetail({ id, onClose }) {
 }
 
 /* ══════════════ PROJECTS ══════════════ */
-const PRJ_STAGE = { planning:'var(--text-low)', 'in-progress':'var(--brand)', review:'#c084fc', complete:'var(--status-ok)' };
+const PRJ_STAGE = { planning:'var(--text-low)', 'in-progress':'var(--brand)', review:'var(--accent-2)', complete:'var(--status-ok)' };
 const PRJ_STAGE_LABEL = { planning:'Planning', 'in-progress':'In Progress', review:'Review', complete:'Complete' };
 const PROJECTS = [];
 function MProjects({ onNav }) {
@@ -289,7 +289,7 @@ function MProjects({ onNav }) {
       <OpsKpis items={[['ACTIVE', active, 'var(--brand)'], ['PIPELINE', `$${(value / 1000).toFixed(0)}K`, 'var(--text-high)'], ['COMPLETE', ALL.filter(p => p.stage === 'complete').length, 'var(--status-ok)']]} />
       <button onClick={() => setCreateOpen(true)} style={{ width: '100%', padding: '12px', borderRadius: 11, background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', color: '#fff', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer' }}>+ New Project</button>
       <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search projects — name, customer, number…"
-        style={{ width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        style={{ width: '100%', padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 11, color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       <MSegment options={['All', 'Planning', 'Active', 'Review', 'Done']} value={filter} onChange={setFilter} />
       {list.map(p => (
         <div key={p.id} className="glass" style={{ padding: '12px 13px', borderRadius: 12, borderLeft: `3px solid ${PRJ_STAGE[p.stage]}` }}>
@@ -312,7 +312,7 @@ function MProjects({ onNav }) {
               </div>
             )}
           </div>
-          <button onClick={() => setInvoiceFor(p)} style={{ marginTop: 9, width: '100%', padding: '8px', borderRadius: 9, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer' }}>+ Create Invoice</button>
+          <button onClick={() => setInvoiceFor(p)} style={{ marginTop: 9, width: '100%', padding: '8px', borderRadius: 9, background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', color: 'var(--brand)', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer' }}>+ Create Invoice</button>
         </div>
       ))}
       {list.length === 0 && <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 12, borderRadius: 12 }}>No projects yet.</div>}
@@ -327,7 +327,7 @@ function MProjects({ onNav }) {
 function MProjectCreate({ onClose }) {
   const [f, setF] = React.useState({ name: '', customer: '', type: 'Install', estimatedValue: '' });
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
-  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
   const lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
   const save = () => {
     if (!f.name.trim()) return;
@@ -360,7 +360,7 @@ function MProjectCreate({ onClose }) {
 function MQuickInvoice({ project, onClose }) {
   const [f, setF] = React.useState({ amount: project.value ? String(project.value) : '', desc: project.name || '', due: '' });
   const set = (k) => (e) => setF(p => ({ ...p, [k]: e.target.value }));
-  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inp = { width: '100%', padding: '11px 13px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-high)', fontSize: 15, fontFamily: 'var(--font-body)', outline: 'none' };
   const lbl = { fontSize: 10, fontWeight: 600, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5, display: 'block' };
   const save = () => {
     const amt = Number(f.amount) || 0;
@@ -415,9 +415,9 @@ function MRealProjectDetail({ number, onClose }) {
     } else showToast(r.error, 'warn');
   };
 
-  const pctBtn = { padding: '9px 13px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
-  const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', fontSize: 12 };
-  const selStyle = { width: '100%', padding: '10px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, fontFamily: 'var(--font-body)' };
+  const pctBtn = { padding: '9px 13px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
+  const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '7px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)', fontSize: 12 };
+  const selStyle = { width: '100%', padding: '10px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, fontFamily: 'var(--font-body)' };
 
   return (
     <MSheet title={p.name} onClose={onClose}>
@@ -445,11 +445,11 @@ function MRealProjectDetail({ number, onClose }) {
             <>
               <div style={{ display: 'flex', gap: 7, marginBottom: 8, flexWrap: 'wrap' }}>
                 {[10, 25, 50].map(x => <button key={x} onClick={() => cutInvoice(x)} style={pctBtn}>{x}%</button>)}
-                {remainingPct > 0 && <button onClick={() => cutInvoice(remainingPct)} style={{ ...pctBtn, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: 'var(--status-ok)' }}>Remaining {remainingPct}%</button>}
+                {remainingPct > 0 && <button onClick={() => cutInvoice(remainingPct)} style={{ ...pctBtn, background: 'rgba(var(--ok-rgb),0.08)', border: '1px solid rgba(var(--ok-rgb),0.2)', color: 'var(--status-ok)' }}>Remaining {remainingPct}%</button>}
               </div>
               <div style={{ display: 'flex', gap: 7 }}>
                 <input value={pctInput} onChange={e => setPctInput(e.target.value)} placeholder="Custom %" inputMode="decimal"
-                  style={{ flex: 1, minWidth: 0, padding: '9px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-mono)', outline: 'none' }} />
+                  style={{ flex: 1, minWidth: 0, padding: '9px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-mono)', outline: 'none' }} />
                 <button onClick={() => cutInvoice(Number(pctInput))} style={{ ...pctBtn, background: 'var(--brand)', color: '#fff', border: 'none' }}>Invoice it</button>
               </div>
               {billedPct > 100 && <div style={{ fontSize: 10, color: 'var(--status-warn)', marginTop: 6 }}>⚠ Billed over 100% of contract</div>}
@@ -528,7 +528,7 @@ function MProjectDetail({ id, rec, onClose }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
           {[['PM', p.pm.split(' ')[0]], ['TIMELINE', `${p.start}–${p.end}`], ['TEAM', p.techs.join(',') || '—']].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
+            <div key={k} style={{ background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '8px 10px' }}>
               <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</div>
               <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>{v}</div>
             </div>
@@ -537,7 +537,7 @@ function MProjectDetail({ id, rec, onClose }) {
         <MSection title={`Milestones · ${doneCount}/${milestones.length}`}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {milestones.map((m, i) => (
-              <button key={i} onClick={() => toggle(i)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: m[1] ? 'rgba(52,211,153,0.06)' : 'var(--glass-bg)', border: `1px solid ${m[1] ? 'rgba(52,211,153,0.25)' : 'var(--border-subtle)'}`, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left', width: '100%' }}>
+              <button key={i} onClick={() => toggle(i)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: m[1] ? 'rgba(var(--ok-rgb),0.06)' : 'var(--glass-bg)', border: `1px solid ${m[1] ? 'rgba(var(--ok-rgb),0.25)' : 'var(--border-subtle)'}`, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left', width: '100%' }}>
                 <span style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0, border: `1.5px solid ${m[1] ? 'var(--status-ok)' : 'var(--border-strong)'}`, background: m[1] ? 'var(--status-ok)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#06281c', fontSize: 12, fontWeight: 800 }}>{m[1] ? '✓' : ''}</span>
                 <span style={{ fontSize: 12.5, color: m[1] ? 'var(--text-low)' : 'var(--text-high)', textDecoration: m[1] ? 'line-through' : 'none' }}>{m[0]}</span>
               </button>
@@ -594,18 +594,18 @@ function MProposalDetail({ id, onClose }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
           {[['SECTIONS', p.sections], ['CREATED', p.created], ['VIEW TIME', p.viewTime]].map(([k, v]) => (
-            <div key={k} style={{ background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '9px 10px', textAlign: 'center' }}>
+            <div key={k} style={{ background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', borderRadius: 9, padding: '9px 10px', textAlign: 'center' }}>
               <div className="mono" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>{v}</div>
               <div style={{ fontSize: 8, color: 'var(--text-low)', letterSpacing: '0.04em' }}>{k}</div>
             </div>
           ))}
         </div>
-        <div style={{ background: p.viewed ? 'rgba(52,211,153,0.06)' : 'rgba(148,163,184,0.05)', border: `1px solid ${p.viewed ? 'rgba(52,211,153,0.25)' : 'var(--border-subtle)'}`, borderRadius: 11, padding: '11px 13px', fontSize: 12, color: 'var(--text-mid)' }}>
+        <div style={{ background: p.viewed ? 'rgba(var(--ok-rgb),0.06)' : 'rgba(148,163,184,0.05)', border: `1px solid ${p.viewed ? 'rgba(var(--ok-rgb),0.25)' : 'var(--border-subtle)'}`, borderRadius: 11, padding: '11px 13px', fontSize: 12, color: 'var(--text-mid)' }}>
           {p.viewed ? `✓ Client opened this proposal and spent ${p.viewTime} reviewing it.` : 'Client has not opened this proposal yet.'}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           {p.status === 'draft' && <button onClick={() => { showToast(`${p.id} sent to ${p.customer}`, 'ok'); onClose(); }} style={{ flex: 2, padding: '12px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send to Client</button>}
-          {p.status === 'sent' && <button onClick={() => { showToast('Reminder sent', 'ok'); }} style={{ flex: 2, padding: '12px 0', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send Reminder</button>}
+          {p.status === 'sent' && <button onClick={() => { showToast('Reminder sent', 'ok'); }} style={{ flex: 2, padding: '12px 0', background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)', borderRadius: 10, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Send Reminder</button>}
           <button onClick={() => showToast('Duplicated to draft', 'ok')} style={{ flex: 1, padding: '12px 0', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 10, color: 'var(--text-mid)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Duplicate</button>
         </div>
       </div>

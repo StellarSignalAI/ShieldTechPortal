@@ -3,7 +3,7 @@
 
 const PHOTO_PHASES = {
   before:   { c: '#94A3B8', label: 'Before' },
-  progress: { c: '#6366F1', label: 'Progress' },
+  progress: { c: 'var(--brand)', label: 'Progress' },
   after:    { c: '#34D399', label: 'After' },
   issue:    { c: '#F43F5E', label: 'Issue' },
 };
@@ -21,8 +21,8 @@ function photoBg(look) {
   } else if (p === 'rack') {
     layers.push(`repeating-linear-gradient(0deg, rgba(0,0,0,0.5) 0 3px, transparent 3px ${10 + Math.round(rnd() * 6)}px)`);
     layers.push(`linear-gradient(90deg, rgba(0,0,0,0.55) 0 12%, transparent 12% 88%, rgba(0,0,0,0.55) 88%)`);
-    layers.push(`radial-gradient(circle at ${Math.round(70 + rnd() * 15)}% ${Math.round(20 + rnd() * 20)}%, rgba(52,211,153,0.8) 1.5px, transparent 3px)`);
-    layers.push(`radial-gradient(circle at ${Math.round(70 + rnd() * 15)}% ${Math.round(45 + rnd() * 20)}%, rgba(251,191,36,0.8) 1.5px, transparent 3px)`);
+    layers.push(`radial-gradient(circle at ${Math.round(70 + rnd() * 15)}% ${Math.round(20 + rnd() * 20)}%, rgba(var(--ok-rgb),0.8) 1.5px, transparent 3px)`);
+    layers.push(`radial-gradient(circle at ${Math.round(70 + rnd() * 15)}% ${Math.round(45 + rnd() * 20)}%, rgba(var(--warn-rgb),0.8) 1.5px, transparent 3px)`);
   } else if (p === 'wall') {
     layers.push(`linear-gradient(${Math.round(rnd() * 30 + 60)}deg, transparent 55%, rgba(0,0,0,0.35))`);
     layers.push(`radial-gradient(ellipse 80% 100% at ${Math.round(20 + rnd() * 60)}% 0%, rgba(255,255,255,0.07), transparent 55%)`);
@@ -33,7 +33,7 @@ function photoBg(look) {
   } else if (p === 'panel') {
     layers.push(`linear-gradient(0deg, transparent 20%, rgba(255,255,255,0.05) 50%, transparent 80%)`);
     layers.push(`repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 8px)`);
-    layers.push(`radial-gradient(circle at ${Math.round(25 + rnd() * 10)}% ${Math.round(30 + rnd() * 10)}%, rgba(244,63,94,0.7) 1.5px, transparent 3px)`);
+    layers.push(`radial-gradient(circle at ${Math.round(25 + rnd() * 10)}% ${Math.round(30 + rnd() * 10)}%, rgba(var(--critical-rgb),0.7) 1.5px, transparent 3px)`);
   }
   layers.push('radial-gradient(ellipse 140% 120% at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%)');
   return [...layers, base].join(', ');
@@ -144,7 +144,7 @@ function PhotoLightbox({ photoId, onClose, canAnnotate }) {
             {photo.annotations.map((a, i) => <PhotoMarker key={i} x={a.x} y={a.y} n={i + 1} />)}
           </MockPhoto>
           {annotating && (
-            <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', background: 'rgba(244,63,94,0.15)', border: '1px solid rgba(244,63,94,0.4)', borderRadius: 14, padding: '4px 14px', fontSize: 10, fontWeight: 600, color: '#F43F5E' }}>Tap the photo to drop a marker</div>
+            <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', background: 'rgba(var(--critical-rgb),0.15)', border: '1px solid rgba(var(--critical-rgb),0.4)', borderRadius: 14, padding: '4px 14px', fontSize: 10, fontWeight: 600, color: '#F43F5E' }}>Tap the photo to drop a marker</div>
           )}
         </div>
         {/* Meta sidebar */}
@@ -169,7 +169,7 @@ function PhotoLightbox({ photoId, onClose, canAnnotate }) {
             <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               Annotations
               {canAnnotate && (
-                <button onClick={() => setAnnotating(a => !a)} style={{ background: annotating ? 'rgba(244,63,94,0.15)' : 'rgba(99,102,241,0.06)', border: `1px solid ${annotating ? 'rgba(244,63,94,0.4)' : 'var(--border-subtle)'}`, borderRadius: 5, padding: '2px 8px', fontSize: 9, fontWeight: 600, color: annotating ? '#F43F5E' : 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'none', letterSpacing: 0 }}>{annotating ? 'Done' : '+ Annotate'}</button>
+                <button onClick={() => setAnnotating(a => !a)} style={{ background: annotating ? 'rgba(var(--critical-rgb),0.15)' : 'rgba(var(--brand-rgb),0.06)', border: `1px solid ${annotating ? 'rgba(var(--critical-rgb),0.4)' : 'var(--border-subtle)'}`, borderRadius: 5, padding: '2px 8px', fontSize: 9, fontWeight: 600, color: annotating ? '#F43F5E' : 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)', textTransform: 'none', letterSpacing: 0 }}>{annotating ? 'Done' : '+ Annotate'}</button>
               )}
             </div>
             {photo.annotations.length === 0 && <div style={{ fontSize: 10, color: 'var(--text-low)', fontStyle: 'italic' }}>No markers on this photo</div>}
@@ -178,7 +178,7 @@ function PhotoLightbox({ photoId, onClose, canAnnotate }) {
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                   <span style={{ width: 16, height: 16, borderRadius: '50%', border: '1.5px solid #F43F5E', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#F43F5E', flexShrink: 0 }}>{i + 1}</span>
                   {canAnnotate
-                    ? <input value={a.label} onChange={e => setMarkerLabel(i, e.target.value)} style={{ flex: 1, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 5, padding: '4px 8px', color: 'var(--text-high)', fontSize: 10, fontFamily: 'var(--font-body)', outline: 'none', minWidth: 0 }} />
+                    ? <input value={a.label} onChange={e => setMarkerLabel(i, e.target.value)} style={{ flex: 1, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 5, padding: '4px 8px', color: 'var(--text-high)', fontSize: 10, fontFamily: 'var(--font-body)', outline: 'none', minWidth: 0 }} />
                     : <span style={{ fontSize: 10, color: 'var(--text-mid)' }}>{a.label}</span>}
                   {canAnnotate && <button onClick={() => removeMarker(i)} style={{ background: 'none', border: 'none', color: 'var(--text-low)', cursor: 'pointer', fontSize: 12, padding: 0 }}>×</button>}
                 </div>
@@ -187,9 +187,9 @@ function PhotoLightbox({ photoId, onClose, canAnnotate }) {
           </div>
           {/* Actions */}
           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 8 }}>
-            <button onClick={() => showToast('Shared to customer portal', 'ok')} style={{ padding: '7px 0', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Share to customer</button>
-            <button onClick={() => showToast('Added to service report', 'ok')} style={{ padding: '7px 0', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Add to report</button>
-            {canAnnotate && <button onClick={deletePhoto} style={{ padding: '7px 0', background: 'transparent', border: '1px solid rgba(244,63,94,0.25)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Delete photo</button>}
+            <button onClick={() => showToast('Shared to customer portal', 'ok')} style={{ padding: '7px 0', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Share to customer</button>
+            <button onClick={() => showToast('Added to service report', 'ok')} style={{ padding: '7px 0', background: 'rgba(var(--ok-rgb),0.08)', border: '1px solid rgba(var(--ok-rgb),0.2)', borderRadius: 6, color: 'var(--status-ok)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Add to report</button>
+            {canAnnotate && <button onClick={deletePhoto} style={{ padding: '7px 0', background: 'transparent', border: '1px solid rgba(var(--critical-rgb),0.25)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Delete photo</button>}
           </div>
         </div>
       </div>

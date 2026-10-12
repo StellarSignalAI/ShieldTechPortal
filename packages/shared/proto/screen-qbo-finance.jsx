@@ -7,7 +7,7 @@ function QboSubTabs({ tabs, val, set }) {
       {tabs.map((t) => (
         <button key={t.id} onClick={() => set(t.id)} style={{
           padding: '5px 14px', borderRadius: 20, fontSize: 11, fontWeight: val === t.id ? 600 : 400,
-          background: val === t.id ? 'rgba(99,102,241,0.12)' : 'transparent',
+          background: val === t.id ? 'rgba(var(--brand-rgb),0.12)' : 'transparent',
           border: `1px solid ${val === t.id ? 'var(--brand)' : 'var(--border-subtle)'}`,
           color: val === t.id ? 'var(--brand)' : 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', flexShrink: 0
         }}>{t.label}{t.count != null && <span style={{ marginLeft: 6, fontSize: 9.5, fontFamily: 'var(--font-mono)', opacity: 0.7 }}>{t.count}</span>}</button>
@@ -243,7 +243,7 @@ function FinanceInvoicesPlus(props) {
       )}
       {sub === 'reminders' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.05)', fontSize: 11.5, color: 'var(--text-mid)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'rgba(var(--brand-rgb),0.05)', fontSize: 11.5, color: 'var(--text-mid)' }}>
             <span style={{ color: 'var(--brand)' }}>⟡</span> Drafted by the Finance Co-pilot from A/R aging. Nothing sends without your approval — every draft cites its source rows.
             <LinkChip screen="finance" params={{ financeTab: 'copilot' }} label="Co-pilot" />
           </div>

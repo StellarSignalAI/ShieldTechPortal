@@ -7,7 +7,7 @@ const TWEAK_DEFAULTS = {
   "mscreen": "custom-dashboard"
 };
 
-const M_TECH_COLORS = { MR: '#6366F1', JL: '#34D399', KW: '#FBBF24', DP: '#c084fc', TG: '#F43F5E' };
+const M_TECH_COLORS = { MR: 'var(--brand)', JL: '#34D399', KW: '#FBBF24', DP: 'var(--accent-2)', TG: '#F43F5E' };
 const mFmtH = h => `${Math.floor(h)}:${h % 1 ? '30' : '00'}`;
 
 /* Same screen map as the desktop portal — 100% parity */
@@ -24,7 +24,7 @@ const M_SCREEN_MAP = {
   dashboard: () => <DashboardScreen />,
   assets: () => <AssetsScreen />,
   'shieldtech-ai': () => <ShieldAIScreen />,
-  crm: () => <BidBoardScreen />,
+  crm: () => (window.SellBoardScreen ? <SellBoardScreen /> : <BidBoardScreen />),
   studio: () => <StudioScreen />,
   'product-library': () => <ProductLibraryScreen />,
   'service-plans': () => <ServicePlansScreen />,
@@ -98,6 +98,30 @@ const M_SCREEN_MAP = {
   autobid: () => <AutoBidScreen />,
 };
 
+/* Unified SELL / DELIVER / CARE / ADMIN / MONEY screens — the same UniFi-pattern
+   frames the desktop uses, sized to the phone (frame fills the content area,
+   drawers go full-screen, tabs render inline). One codebase, one truth. */
+const M_UNIFIED = {
+  crm: 'SellBoardScreen', autobid: 'SellBoardScreen', 'secret-weapon': 'SellBoardScreen',
+  proposals: 'SellProposalsScreen',
+  workorder: 'DeliverWorkOrdersScreen', photos: 'DeliverWorkOrdersScreen', punchlist: 'DeliverWorkOrdersScreen',
+  projects: 'DeliverProjectsScreen',
+  dispatch: 'DeliverDispatchScreen',
+  calendar: 'DeliverCalendarScreen', copilot: 'DeliverCalendarScreen',
+  'customers-list': 'CareCustomersScreen', nps: 'CareCustomersScreen',
+  helpdesk: 'CareHelpdeskScreen', incidents: 'CareHelpdeskScreen',
+  messages: 'CareMessagesScreen',
+  employees: 'AdminTeamScreen', skills: 'AdminTeamScreen',
+  users: 'AdminUsersScreen', hr: 'AdminHRScreen',
+  approvals: 'AdminApprovalsScreen', timesheets: 'AdminApprovalsScreen', payroll: 'AdminApprovalsScreen', expenses: 'AdminApprovalsScreen',
+  documents: 'AdminDocumentsScreen', 'portal-settings': 'AdminSettingsScreen',
+  revops: 'MoneyRevOpsScreen',
+  'purchase-orders': 'MoneyPurchasingScreen', 'parts-req': 'MoneyPurchasingScreen', inventory: 'MoneyPurchasingScreen',
+  mrr: 'MoneyRecurringScreen', 'rr-builder': 'MoneyRecurringScreen',
+  'plan-room': 'MoneyBlueShieldScreen',
+};
+const mUnified = (id) => (M_UNIFIED[id] && window[M_UNIFIED[id]]) || null;
+
 /* Ids resolved by purpose-built touch-native views (branches below). */
 const M_NATIVE_IDS = ['m-more','calendar','login','helpdesk','incidents','quote-cash','purchase-orders','parts-req','mrr','nps','skills','knowledge','warranty','photos','punchlist','subcontractors','projects','proposals','finance','certs','tools','costing','audit','reports','contracts','sla','commissions','compliance','survey-ai','sitescan','fleet'];
 
@@ -105,6 +129,8 @@ function screenLabel(id) {
   if (id === 'sitescan') return 'Survey Scan';
   if (id === 'autobid') return 'Auto-Bid';
   if (id === 'm-more') return 'Everything';
+  if (id === 'cameras') return 'ShieldTech OS';
+  if (id === 'finance') return 'Money';
   const item = NAV_ITEMS.find(i => i.id === id);
   return item ? item.label : 'ShieldTech';
 }
@@ -114,30 +140,31 @@ function MobileDirectory({ onNav }) {
   const [q, setQ] = useState('');
   const groups = NAV_GROUPS.map(g => ({
     ...g,
-    items: g.items.filter(i => !i.hidden && i.label.toLowerCase().includes(q.toLowerCase())),
+    items: g.items.filter(i => !i.hidden && (i.label.toLowerCase().includes(q.toLowerCase()) || (i.children || []).some(c => c.label.toLowerCase().includes(q.toLowerCase())))),
   })).filter(g => g.items.length > 0);
+  const goSub = (item, sub) => { if (window.navSubSet) window.navSubSet(item.id, sub, 'nav'); onNav(item.id); };
   const appUrls = window.__shieldAppUrls || {};
   const qn = q.trim().toLowerCase();
   const promoMatch = (keywords) => qn.length > 0 && keywords.some(k => k.includes(qn));
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search all screens…"
-        style={{ background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
+        style={{ background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
       {promoMatch(['auto bid', 'autobid', 'auto-bid', 'bids', 'proposals', 'leads', 'secret weapon']) && (
-        <button onClick={() => onNav('autobid')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(99,102,241,0.10), rgba(52,211,153,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(99,102,241,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>⟡</span>
+        <button onClick={() => onNav('autobid')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(var(--brand-rgb),0.10), rgba(var(--ok-rgb),0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(var(--brand-rgb),0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>⟡</span>
           <span style={{ flex: 1 }}>
-            <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Auto-Bid <span style={{ fontSize: 8, fontWeight: 700, color: '#34D399', border: '1px solid rgba(52,211,153,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
+            <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Auto-Bid <span style={{ fontSize: 8, fontWeight: 700, color: '#34D399', border: '1px solid rgba(var(--ok-rgb),0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
             <span style={{ display: 'block', fontSize: 10, color: 'var(--text-low)' }}>AI-built bids for every scraped lead — pick a tier, send the proposal</span>
           </span>
           <span style={{ color: 'var(--text-low)', fontSize: 14 }}>›</span>
         </button>
       )}
       {promoMatch(['survey scan', 'surveyscan', 'site scan', '3d', 'lidar']) && (
-        <button onClick={() => onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(99,102,241,0.10), rgba(192,132,252,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(99,102,241,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
+        <button onClick={() => onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(var(--brand-rgb),0.10), rgba(25,227,236,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(var(--brand-rgb),0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
           <span style={{ flex: 1 }}>
-            <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Survey Scan <span style={{ fontSize: 8, fontWeight: 700, color: '#c084fc', border: '1px solid rgba(192,132,252,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
+            <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Survey Scan <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--accent-2)', border: '1px solid rgba(25,227,236,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
             <span style={{ display: 'block', fontSize: 10, color: 'var(--text-low)' }}>Scan · document · estimate · report — the whole site visit</span>
           </span>
           <span style={{ color: 'var(--text-low)', fontSize: 14 }}>›</span>
@@ -148,15 +175,23 @@ function MobileDirectory({ onNav }) {
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--text-low)', margin: '4px 0 8px' }}>{g.label}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {g.items.map(item => (
-              <button key={item.id} onClick={() => onNav(item.id)} className="glass" style={{
+              <React.Fragment key={item.id}>
+              <button onClick={() => item.children ? goSub(item, item.children[0].sub) : onNav(item.id)} className="glass" style={{
                 padding: '12px 12px', display: 'flex', alignItems: 'center', gap: 9,
                 border: '1px solid var(--border-subtle)', cursor: 'pointer',
                 background: 'var(--glass-bg)', borderRadius: 10,
-                textAlign: 'left', fontFamily: 'var(--font-body)'
+                textAlign: 'left', fontFamily: 'var(--font-body)', gridColumn: item.children ? '1 / -1' : undefined
               }}>
                 <Icon name={item.icon} size={16} color="var(--brand)" />
-                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', lineHeight: 1.25 }}>{item.label}</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', lineHeight: 1.25 }}>{item.id === 'cameras' ? 'ShieldTech OS' : item.label}</span>
               </button>
+              {item.children && (
+                <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 6, flexWrap: 'wrap', padding: '0 2px 4px' }}>
+                  {item.children.filter(c => !qn || c.label.toLowerCase().includes(qn) || item.label.toLowerCase().includes(qn)).map(c => (
+                    <button key={c.sub} onClick={() => goSub(item, c.sub)} style={{ padding: '6px 11px', borderRadius: 14, fontSize: 11.5, fontWeight: 600, background: 'var(--card)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c.label}</button>
+                  ))}
+                </div>)}
+              </React.Fragment>
             ))}
           </div>
         </div>
@@ -194,7 +229,7 @@ function MAvatarMenu({ onNav }) {
   const setStatus = (s) => setPrefs(p => ({ ...(p || {}), status: s }));
   const go = (id) => { setOpen(false); onNav(id); };
   const item = { display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '11px 14px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 13.5, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' };
-  const seg = (active, c) => ({ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', background: active ? (c ? `${c}22` : 'rgba(99,102,241,0.14)') : 'transparent', border: `1px solid ${active ? (c || 'var(--brand)') : 'var(--border-subtle)'}`, color: active ? (c || 'var(--brand)') : 'var(--text-low)' });
+  const seg = (active, c) => ({ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', background: active ? (c ? `${c}22` : 'rgba(var(--brand-rgb),0.14)') : 'transparent', border: `1px solid ${active ? (c || 'var(--brand)') : 'var(--border-subtle)'}`, color: active ? (c || 'var(--brand)') : 'var(--text-low)' });
   const label = { fontSize: 9, fontWeight: 700, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '4px 14px 6px' };
   return (
     <div style={{ position: 'relative' }}>
@@ -283,9 +318,15 @@ function MobilePortalApp() {
   const cancelLP = () => { clearTimeout(lpTimer.current); };
 
   let content;
+  const Unified = mUnified(screen);
   if (screen === 'm-more') content = <MobileDirectory onNav={nav} />;
+  else if (Unified) {
+    // Legacy id → the unified screen opens on the matching tab (same hand-off the desktop uses).
+    window.__hubScreenId = screen;
+    content = <div className="m-unified" style={{ height: '100%', '--uf-h': '100%', '--uf-m': '0', '--uf-r': '0', '--uf-b': 'none' }}><Unified key={M_UNIFIED[screen]} /></div>;
+  }
   else if (screen === 'calendar') content = <MobileCalendar onNav={nav} />;
-  else if (screen === 'cameras' || screen === 'topology' || screen === 'warroom' || screen === 'floorplan' || screen === 'anomaly') content = <MonitoringConsole />;
+  else if (screen === 'cameras' || screen === 'topology' || screen === 'warroom' || screen === 'floorplan' || screen === 'anomaly' || screen === 'assets') content = window.MobileOS ? <MobileOS onNav={nav} /> : <MonitoringConsole />;
   else if (screen === 'helpdesk') content = <MHelpdesk onNav={nav} />;
   else if (screen === 'incidents') content = <MIncidents onNav={nav} />;
   else if (screen === 'quote-cash') content = <MQuoteToCash onNav={nav} />;
@@ -331,7 +372,7 @@ function MobilePortalApp() {
       <header style={{
         padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
         borderBottom: '1px solid var(--border-subtle)',
-        background: 'rgba(10,14,20,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0
+        background: 'rgba(var(--card-rgb),0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0
       }}>
         {histBack.length > 0 && (
           <button onClick={goBack} aria-label="Back" title="Back" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, width: 26, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-high)', fontSize: 22, lineHeight: 1, fontFamily: 'var(--font-body)' }}>‹</button>
@@ -343,21 +384,21 @@ function MobilePortalApp() {
         </button>
         <img src="uploads/ShieldTech Logo Transparent MK3.png" alt="ShieldTech" style={{ height: 24 }} />
         <div style={{ flex: 1 }} />
-        <button onClick={() => nav('shieldtech-ai')} title="ShieldTech AI" style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 8, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+        <button onClick={() => nav('shieldtech-ai')} title="ShieldTech AI" style={{ background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', borderRadius: 8, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
           <Icon name="hermes" size={15} color="var(--brand)" />
         </button>
         <MAvatarMenu onNav={nav} />
       </header>
 
       {/* Content */}
-      <div className="m-screen" data-desk={!(M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen] || !!(window.M_OPS5 && window.M_OPS5[screen]))} style={{ flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
+      <div className="m-screen" data-desk={Unified ? 'unified' : !(M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen] || !!(window.M_OPS5 && window.M_OPS5[screen]))} style={Unified ? { flex: 1, minHeight: 0, overflow: 'hidden', padding: 0 } : { flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
         {content}
       </div>
 
       {/* Bottom tabs */}
       <nav onPointerDown={startLP} onPointerUp={cancelLP} onPointerLeave={cancelLP} onPointerCancel={cancelLP} style={{
         display: 'flex', borderTop: '1px solid var(--border-subtle)',
-        background: 'rgba(10,14,20,0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        background: 'rgba(var(--card-rgb),0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
         flexShrink: 0, paddingBottom: 'env(safe-area-inset-bottom, 0px)'
       }}>
         {liveTabs.map(tb => {

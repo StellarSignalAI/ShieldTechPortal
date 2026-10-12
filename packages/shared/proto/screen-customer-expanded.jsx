@@ -20,7 +20,7 @@ function useSupportTickets() {
 const TKT_STATUS = {
   'open':        { color: 'var(--brand)', label: 'Open' },
   'in-progress': { color: 'var(--status-warn)', label: 'In Progress' },
-  'waiting':     { color: '#c084fc', label: 'Waiting on You' },
+  'waiting':     { color: 'var(--accent-2)', label: 'Waiting on You' },
   'resolved':    { color: 'var(--status-ok)', label: 'Resolved' },
   'closed':      { color: 'var(--text-low)', label: 'Closed' },
 };
@@ -52,7 +52,7 @@ function CustomerExpandedScreen() {
         ].map(tab => (
           <button key={tab.id} onClick={() => setView(tab.id)} style={{
             padding: '8px 16px', borderRadius: 8,
-            background: view === tab.id ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.03)',
+            background: view === tab.id ? 'rgba(var(--brand-rgb),0.12)' : 'rgba(var(--brand-rgb),0.03)',
             border: `1px solid ${view === tab.id ? 'var(--border-strong)' : 'var(--border-subtle)'}`,
             color: view === tab.id ? 'var(--brand)' : 'var(--text-mid)',
             fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)',
@@ -100,7 +100,7 @@ function CustomerDashboardView({ onNavigate }) {
           { label: 'A camera is offline', icon: '◉', action: () => onNavigate('new-ticket') },
           { label: 'I need footage', icon: '▶', action: () => onNavigate('new-ticket') },
           { label: 'Add access user', icon: '⊠', action: () => onNavigate('new-ticket') },
-          { label: 'Schedule service', icon: '⚙', action: () => onNavigate('new-ticket') },
+          { label: 'Schedule service', icon: '⚙', action: () => onNavigate(window.CuRequestView ? 'request' : 'new-ticket') },
           { label: 'Ask AI assistant', icon: '⟡', action: goAI },
         ].map((qa, i) => (
           <button key={i} onClick={qa.action} className="glass" style={{
@@ -139,7 +139,7 @@ function CustomerDashboardView({ onNavigate }) {
           {recent.map(t => {
             const st = TKT_STATUS[t.status] || TKT_STATUS.open;
             return (
-              <div key={t.id} onClick={() => onNavigate('tickets')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', cursor: 'pointer' }}>
+              <div key={t.id} onClick={() => onNavigate('tickets')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)', cursor: 'pointer' }}>
                 <span className="mono" style={{ fontSize: 11, color: 'var(--brand)' }}>{t.ref}</span>
                 <span style={{ flex: 1, fontSize: 13, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.subject}</span>
                 <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', padding: '2px 8px', borderRadius: 4, background: `${st.color}15`, color: st.color }}>{st.label}</span>
@@ -198,9 +198,9 @@ function NewTicketView({ onNavigate }) {
       <div style={{ textAlign: 'center', padding: '60px 0', animation: 'fade-up 0.5s ease both' }}>
         <div style={{
           width: 72, height: 72, borderRadius: '50%', margin: '0 auto 24px',
-          background: 'rgba(52,211,153,0.1)', border: '2px solid var(--status-ok)',
+          background: 'rgba(var(--ok-rgb),0.1)', border: '2px solid var(--status-ok)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 32, boxShadow: '0 0 24px rgba(52,211,153,0.15)'
+          fontSize: 32, boxShadow: '0 0 24px rgba(var(--ok-rgb),0.15)'
         }}>✓</div>
         <h2 className="display" style={{ fontSize: 22, fontWeight: 300, marginBottom: 8 }}>Ticket Submitted</h2>
         <p className="mono" style={{ fontSize: 16, color: 'var(--brand)', marginBottom: 8 }}>{created.ref}</p>
@@ -208,7 +208,7 @@ function NewTicketView({ onNavigate }) {
           Our team has been notified by email and will respond as soon as possible. You can track replies on the Tickets tab.
         </p>
         <button onClick={() => onNavigate('tickets')} style={{
-          background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)',
+          background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)',
           borderRadius: 8, padding: '10px 24px', color: 'var(--brand)',
           fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-body)'
         }}>View My Tickets</button>
@@ -228,7 +228,7 @@ function NewTicketView({ onNavigate }) {
             <button key={i} onClick={() => { setCategory(qp.cat); setPriority(qp.pri); if (!subject) setSubject(qp.label); }} className="glass" style={{
               padding: '12px 14px', cursor: 'pointer', textAlign: 'left',
               border: `1px solid ${category === qp.cat ? 'var(--border-strong)' : 'var(--border-subtle)'}`,
-              background: category === qp.cat ? 'rgba(99,102,241,0.08)' : 'var(--glass-bg)',
+              background: category === qp.cat ? 'rgba(var(--brand-rgb),0.08)' : 'var(--glass-bg)',
               display: 'flex', alignItems: 'center', gap: 8,
               fontSize: 12, color: 'var(--text-high)', fontFamily: 'var(--font-body)',
               borderRadius: 'var(--radius-sm)', transition: 'all 0.15s'
@@ -271,7 +271,7 @@ function NewTicketView({ onNavigate }) {
             borderRadius: 'var(--radius-sm)', color: '#fff', fontSize: 14,
             fontWeight: 600, cursor: busy ? 'default' : 'pointer', fontFamily: 'var(--font-body)',
             opacity: busy ? 0.6 : 1,
-            boxShadow: '0 0 20px -4px rgba(99,102,241,0.4)'
+            boxShadow: '0 0 20px -4px rgba(var(--brand-rgb),0.4)'
           }}>{busy ? 'Submitting…' : 'Submit Ticket'}</button>
         </div>
       </GlassPanel>
@@ -320,11 +320,11 @@ function TicketListView({ onNavigate, selectedTicket, setSelectedTicket }) {
           const isSel = selectedTicket === t.id;
           return (
             <div key={t.id} onClick={() => setSelectedTicket(t.id)} style={{
-              padding: '14px 20px', borderBottom: '1px solid rgba(99,102,241,0.04)',
-              cursor: 'pointer', background: isSel ? 'rgba(99,102,241,0.06)' : 'transparent',
+              padding: '14px 20px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)',
+              cursor: 'pointer', background: isSel ? 'rgba(var(--brand-rgb),0.06)' : 'transparent',
               transition: 'background 0.15s'
             }}
-            onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(99,102,241,0.03)'; }}
+            onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.03)'; }}
             onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
@@ -362,7 +362,7 @@ function TicketListView({ onNavigate, selectedTicket, setSelectedTicket }) {
                 const idx = ['open','in-progress','waiting','resolved','closed'].indexOf(sel.status);
                 const done = i <= idx;
                 return (
-                  <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: done ? (TKT_STATUS[s] || {}).color : 'rgba(99,102,241,0.08)' }} />
+                  <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: done ? (TKT_STATUS[s] || {}).color : 'rgba(var(--brand-rgb),0.08)' }} />
                 );
               })}
             </div>
@@ -388,7 +388,7 @@ function TicketListView({ onNavigate, selectedTicket, setSelectedTicket }) {
               <input placeholder="Type a message…" value={draft} onChange={e => setDraft(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') send(); }}
                 style={{
-                  flex: 1, padding: '8px 12px', background: 'rgba(5,7,10,0.5)',
+                  flex: 1, padding: '8px 12px', background: 'rgba(var(--canvas-rgb),0.5)',
                   border: '1px solid var(--border-subtle)', borderRadius: 6,
                   color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none'
                 }} />
@@ -439,7 +439,7 @@ function RemoteSessionView() {
           background: 'var(--brand)', border: 'none', borderRadius: 8,
           padding: '8px 18px', color: '#fff', fontSize: 13, fontWeight: 500,
           cursor: 'pointer', fontFamily: 'var(--font-body)',
-          boxShadow: '0 0 16px -4px rgba(99,102,241,0.3)'
+          boxShadow: '0 0 16px -4px rgba(var(--brand-rgb),0.3)'
         }}>Request Remote Session</button>
       </div>
 
@@ -482,7 +482,7 @@ function RemoteSessionView() {
         {remoteTickets.map(t => {
           const st = TKT_STATUS[t.status] || TKT_STATUS.open;
           return (
-            <div key={t.id} style={{ padding: '12px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', display: 'flex', gap: 12 }}>
+            <div key={t.id} style={{ padding: '12px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)', display: 'flex', gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   <span className="mono" style={{ fontSize: 12, color: 'var(--brand)' }}>{t.ref}</span>
@@ -517,7 +517,7 @@ function MessageBubble({ from, time, text, isUser }) {
       <div style={{
         maxWidth: '85%', padding: '10px 14px',
         borderRadius: isUser ? '12px 12px 4px 12px' : '4px 12px 12px 12px',
-        background: isUser ? 'rgba(99,102,241,0.12)' : 'rgba(10,14,20,0.6)',
+        background: isUser ? 'rgba(var(--brand-rgb),0.12)' : 'rgba(var(--card-rgb),0.6)',
         border: `1px solid ${isUser ? 'var(--border-strong)' : 'var(--border-subtle)'}`,
         fontSize: 13, color: 'var(--text-high)', lineHeight: 1.55
       }}>
@@ -531,7 +531,7 @@ function MessageBubble({ from, time, text, isUser }) {
 function FormField({ label, placeholder, textarea, value, onChange }) {
   const style = {
     width: '100%', padding: textarea ? '10px 14px' : '9px 14px',
-    background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
+    background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)',
     borderRadius: 'var(--radius-sm)', color: 'var(--text-high)',
     fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none',
     resize: textarea ? 'vertical' : 'none'
@@ -554,7 +554,7 @@ function FormSelect({ label, value, onChange, options }) {
       <div className="label-sm" style={{ marginBottom: 6 }}>{label}</div>
       <select value={value} onChange={e => onChange(e.target.value)} style={{
         width: '100%', padding: '9px 14px',
-        background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
+        background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)',
         borderRadius: 'var(--radius-sm)', color: 'var(--text-high)',
         fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none',
         appearance: 'none', cursor: 'pointer'

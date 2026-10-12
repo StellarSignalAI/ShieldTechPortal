@@ -15,9 +15,9 @@ function BrStepper({ opp, state, step, onStep, isMobile }) {
           const color = p.done ? 'var(--status-ok)' : active ? 'var(--brand)' : 'var(--text-low)';
           return (
             <React.Fragment key={p.id}>
-              {i > 0 && <div style={{ flex: 1, minWidth: 10, height: 2, borderRadius: 2, background: phases[i - 1].done ? 'rgba(52,211,153,0.5)' : 'rgba(99,102,241,0.14)' }} />}
-              <button onClick={() => onStep(p.id)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: isMobile ? '6px 8px' : '7px 12px', borderRadius: 999, cursor: 'pointer', flexShrink: 0, background: active ? 'rgba(99,102,241,0.12)' : 'transparent', border: '1px solid ' + (active ? 'var(--border-strong)' : 'transparent') }}>
-                <span style={{ width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: p.done ? 'var(--status-ok)' : active ? 'rgba(99,102,241,0.16)' : 'rgba(99,102,241,0.06)', border: p.done ? 'none' : `1px solid ${active ? 'var(--brand)' : 'var(--border-subtle)'}` }}>
+              {i > 0 && <div style={{ flex: 1, minWidth: 10, height: 2, borderRadius: 2, background: phases[i - 1].done ? 'rgba(var(--ok-rgb),0.5)' : 'rgba(var(--brand-rgb),0.14)' }} />}
+              <button onClick={() => onStep(p.id)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: isMobile ? '6px 8px' : '7px 12px', borderRadius: 999, cursor: 'pointer', flexShrink: 0, background: active ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', border: '1px solid ' + (active ? 'var(--border-strong)' : 'transparent') }}>
+                <span style={{ width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: p.done ? 'var(--status-ok)' : active ? 'rgba(var(--brand-rgb),0.16)' : 'rgba(var(--brand-rgb),0.06)', border: p.done ? 'none' : `1px solid ${active ? 'var(--brand)' : 'var(--border-subtle)'}` }}>
                   {p.done ? <Icon name="check" size={11} color="#03121F" /> : <span style={{ font: '700 10px/1 var(--font-mono)', color }}>{i + 1}</span>}
                 </span>
                 {(!isMobile || active) && <span style={{ font: `600 12px/1 var(--font-body)`, color: active ? 'var(--brand)' : p.done ? 'var(--text-mid)' : 'var(--text-low)', whiteSpace: 'nowrap' }}>{p.label}</span>}
@@ -26,7 +26,7 @@ function BrStepper({ opp, state, step, onStep, isMobile }) {
           );
         })}
         <div style={{ flexShrink: 0, marginLeft: 12, display: 'flex', alignItems: 'center', gap: 9, minWidth: 130 }}>
-          <div style={{ flex: 1, height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.12)', overflow: 'hidden', minWidth: 70 }}>
+          <div style={{ flex: 1, height: 5, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.12)', overflow: 'hidden', minWidth: 70 }}>
             <div style={{ width: pct + '%', height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, var(--brand), var(--status-ok))', transition: 'width 0.4s ease' }} />
           </div>
           <span style={{ font: '600 11.5px/1 var(--font-mono)', color: 'var(--text-mid)' }}>{pct}%</span>
@@ -51,14 +51,14 @@ function BrGuide({ opp, state, step }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <GlassCard style={{ padding: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <span style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(99,102,241,0.14)', border: '1px solid var(--border-strong)' }}><Icon name="sparkles" size={13} color="var(--brand)" /></span>
+          <span style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(var(--brand-rgb),0.14)', border: '1px solid var(--border-strong)' }}><Icon name="sparkles" size={13} color="var(--brand)" /></span>
           <div>
             <div style={{ font: '700 12px/1 var(--font-display)', color: 'var(--text-high)', letterSpacing: '0.04em' }}>SHIELDTECH AI</div>
             <div style={{ font: '500 9px/1 var(--font-body)', color: 'var(--brand)', letterSpacing: '0.12em', marginTop: 2 }}>PHASE {BR_PHASES.findIndex(p => p.id === step) + 1} GUIDE</div>
           </div>
         </div>
         <div style={{ font: '400 12.5px/1.6 var(--font-body)', color: 'var(--text-mid)' }}>{phase.blurb}</div>
-        <div style={{ font: '400 12px/1.6 var(--font-body)', color: 'var(--text-high)', marginTop: 9, padding: '9px 11px', borderRadius: 9, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)' }}>{hints[step]}</div>
+        <div style={{ font: '400 12px/1.6 var(--font-body)', color: 'var(--text-high)', marginTop: 9, padding: '9px 11px', borderRadius: 9, background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)' }}>{hints[step]}</div>
       </GlassCard>
       <Card style={{ padding: 14 }}>
         <Eyebrow>Phase gate</Eyebrow>
@@ -112,7 +112,7 @@ function BidRoom({ oppId, onClose }) {
     <BrStepSubmit opp={opp} state={state} update={update} />;
 
   return (
-    <div className="sw-fade" style={{ position: 'fixed', inset: 0, zIndex: 130, display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 80% -10%, rgba(99,102,241,0.09), transparent 45%), var(--canvas)' }} data-screen-label={'Bid Room — ' + opp.title}>
+    <div className="sw-fade" style={{ position: 'fixed', inset: 0, zIndex: 130, display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 80% -10%, rgba(var(--brand-rgb),0.09), transparent 45%), var(--canvas)' }} data-screen-label={'Bid Room — ' + opp.title}>
       {/* Header */}
       <header style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 14, padding: isMobile ? '10px 14px' : '12px 22px', borderBottom: '1px solid var(--border-subtle)', background: 'rgba(8,11,18,0.85)', backdropFilter: 'blur(14px)' }}>
         <Btn kind="secondary" size="sm" icon="back" onClick={onClose}>{isMobile ? 'Bids' : 'All bids'}</Btn>

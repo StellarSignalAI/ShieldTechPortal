@@ -17,15 +17,15 @@ function IncidentScreen() {
   const inc = incidents.find(i => i.id === selectedId) || incidents[0];
 
   const severityStyle = {
-    P1: { color: 'var(--status-critical)', bg: 'rgba(244,63,94,0.15)', label: 'Critical' },
-    P2: { color: 'var(--status-warn)',     bg: 'rgba(251,191,36,0.12)', label: 'High' },
-    P3: { color: 'var(--brand)',           bg: 'rgba(99,102,241,0.12)', label: 'Medium' },
+    P1: { color: 'var(--status-critical)', bg: 'rgba(var(--critical-rgb),0.15)', label: 'Critical' },
+    P2: { color: 'var(--status-warn)',     bg: 'rgba(var(--warn-rgb),0.12)', label: 'High' },
+    P3: { color: 'var(--brand)',           bg: 'rgba(var(--brand-rgb),0.12)', label: 'Medium' },
     P4: { color: 'var(--text-low)',        bg: 'rgba(92,111,134,0.15)', label: 'Low' },
   };
 
   const timelineColors = {
     alert: 'var(--status-critical)', ai: 'var(--brand)', tech: 'var(--status-ok)',
-    mgmt: '#c084fc', customer: 'var(--status-warn)', user: 'var(--text-mid)'
+    mgmt: 'var(--accent-2)', customer: 'var(--status-warn)', user: 'var(--text-mid)'
   };
 
   const getDuration = (inc) => fmtDuration(now - inc.openedAt);
@@ -34,7 +34,7 @@ function IncidentScreen() {
   const resolveIncident = (id) => {
     setIncidents(prev => prev.map(i => {
       if (i.id !== id) return i;
-      const entry = { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), actor: 'John Mitchell', msg: `Incident resolved. Duration: ${fmtDuration(now - i.openedAt)}.`, type: 'mgmt' };
+      const entry = { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), actor: (window.__shieldUser && window.__shieldUser.name) || 'Staff', msg: `Incident resolved. Duration: ${fmtDuration(now - i.openedAt)}.`, type: 'mgmt' };
       return { ...i, status: 'resolved', timeline: [...(i.timeline || []), entry] };
     }));
     showToast('Incident resolved', 'ok');
@@ -52,7 +52,7 @@ function IncidentScreen() {
     if (!newEventText.trim() || !inc) return;
     const entry = {
       time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      actor: 'John Mitchell', msg: newEventText.trim(), type: 'user'
+      actor: (window.__shieldUser && window.__shieldUser.name) || 'Staff', msg: newEventText.trim(), type: 'user'
     };
     setIncidents(prev => prev.map(i => i.id === inc.id ? { ...i, timeline: [...(i.timeline || []), entry] } : i));
     setNewEventText('');
@@ -95,12 +95,12 @@ function IncidentScreen() {
   const autoEscAlert = inc && isAutoEscalate(inc);
 
   return (
-    <div style={{ display: 'flex', gap: 12, height: 'calc(100vh - 76px)', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', gap: 12, height: 'var(--inc-h, calc(100vh - 76px))', overflow: 'hidden' }}>
       {/* Left: list */}
       <div className="glass" style={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
         <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>Incidents</span>
-          <button onClick={declareNew} style={{ fontSize: 11, color: 'var(--status-critical)', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 5, padding: '3px 9px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Declare</button>
+          <button onClick={declareNew} style={{ fontSize: 11, color: 'var(--status-critical)', background: 'rgba(var(--critical-rgb),0.08)', border: '1px solid rgba(var(--critical-rgb),0.2)', borderRadius: 5, padding: '3px 9px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Declare</button>
         </div>
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {incidents.map(i => {
@@ -110,7 +110,7 @@ function IncidentScreen() {
             return (
               <div key={i.id} onClick={() => setSelectedId(i.id)} style={{
                 padding: '12px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border-subtle)',
-                background: selectedId === i.id ? 'rgba(99,102,241,0.06)' : 'transparent',
+                background: selectedId === i.id ? 'rgba(var(--brand-rgb),0.06)' : 'transparent',
                 borderLeft: `3px solid ${selectedId === i.id ? s.color : 'transparent'}`, transition: 'all 0.15s'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
@@ -119,14 +119,14 @@ function IncidentScreen() {
                     <span style={{ fontSize: 9, fontWeight: 700, color: s.color }}>{i.severity}</span>
                   </div>
                   <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{i.id}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 9, color: i.status === 'resolved' ? 'var(--status-ok)' : 'var(--status-warn)', background: i.status === 'resolved' ? 'rgba(52,211,153,0.1)' : 'rgba(251,191,36,0.1)', padding: '1px 6px', borderRadius: 100 }}>{i.status}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 9, color: i.status === 'resolved' ? 'var(--status-ok)' : 'var(--status-warn)', background: i.status === 'resolved' ? 'rgba(var(--ok-rgb),0.1)' : 'rgba(var(--warn-rgb),0.1)', padding: '1px 6px', borderRadius: 100 }}>{i.status}</span>
                 </div>
                 <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-high)', lineHeight: 1.3, marginBottom: 3 }}>{i.title}</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 10, color: 'var(--text-low)' }}>{i.customer}</span>
                   <span className="mono" style={{ fontSize: 10, color: i.status === 'active' ? s.color : 'var(--text-low)' }}>{dur}</span>
                 </div>
-                {escalate && <div style={{ marginTop: 5, fontSize: 9, color: 'var(--status-critical)', background: 'rgba(244,63,94,0.1)', padding: '2px 6px', borderRadius: 4 }}>⚠ Auto-escalation threshold exceeded</div>}
+                {escalate && <div style={{ marginTop: 5, fontSize: 9, color: 'var(--status-critical)', background: 'rgba(var(--critical-rgb),0.1)', padding: '2px 6px', borderRadius: 4 }}>⚠ Auto-escalation threshold exceeded</div>}
               </div>
             );
           })}
@@ -138,10 +138,10 @@ function IncidentScreen() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, overflow: 'hidden' }}>
           {/* Auto-escalation alert */}
           {autoEscAlert && (
-            <div style={{ padding: '10px 16px', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.3)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, animation: 'fade-up 0.2s ease' }}>
+            <div style={{ padding: '10px 16px', background: 'rgba(var(--critical-rgb),0.08)', border: '1px solid rgba(var(--critical-rgb),0.3)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, animation: 'fade-up 0.2s ease' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--status-critical)', boxShadow: '0 0 8px var(--status-critical)', animation: 'pulse-critical 1s infinite', flexShrink: 0 }} />
               <span style={{ fontSize: 12, color: 'var(--status-critical)', fontWeight: 600 }}>P1 Incident exceeds 1-hour threshold — escalation to on-call manager required</span>
-              <button onClick={() => shieldToast("On-call paging isn't wired up yet — call the on-call manager directly", 'warn')} style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--status-critical)', background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Page Manager</button>
+              <button onClick={() => shieldToast("On-call paging isn't wired up yet — call the on-call manager directly", 'warn')} style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--status-critical)', background: 'rgba(var(--critical-rgb),0.1)', border: '1px solid rgba(var(--critical-rgb),0.2)', borderRadius: 5, padding: '3px 10px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Page Manager</button>
             </div>
           )}
 
@@ -159,14 +159,14 @@ function IncidentScreen() {
 
               {/* Severity selector */}
               <select value={inc.severity} onChange={e => changeSeverity(inc.id, e.target.value)}
-                style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, padding: '3px 8px', cursor: 'pointer', fontFamily: 'var(--font-body)', outline: 'none' }}>
+                style={{ background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, padding: '3px 8px', cursor: 'pointer', fontFamily: 'var(--font-body)', outline: 'none' }}>
                 {['P1','P2','P3','P4'].map(s => <option key={s} value={s}>{s}</option>)}
               </select>
 
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                {inc.status === 'active' && <button onClick={() => resolveIncident(inc.id)} style={{ fontSize: 11, color: 'var(--status-ok)', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600 }}>✓ Resolve</button>}
-                {inc.status === 'resolved' && <button onClick={() => setShowPostMortem(true)} style={{ fontSize: 11, color: 'var(--brand)', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Post-Mortem</button>}
-                {inc.relatedTicket && <button onClick={() => navTo('helpdesk')} style={{ fontSize: 11, color: 'var(--text-mid)', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>← {inc.relatedTicket}</button>}
+                {inc.status === 'active' && <button onClick={() => resolveIncident(inc.id)} style={{ fontSize: 11, color: 'var(--status-ok)', background: 'rgba(var(--ok-rgb),0.08)', border: '1px solid rgba(var(--ok-rgb),0.2)', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600 }}>✓ Resolve</button>}
+                {inc.status === 'resolved' && <button onClick={() => setShowPostMortem(true)} style={{ fontSize: 11, color: 'var(--brand)', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Post-Mortem</button>}
+                {inc.relatedTicket && <button onClick={() => navTo('helpdesk')} style={{ fontSize: 11, color: 'var(--text-mid)', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>← {inc.relatedTicket}</button>}
               </div>
             </div>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-high)', marginBottom: 4 }}>{inc.title}</div>
@@ -182,7 +182,7 @@ function IncidentScreen() {
             {['timeline', 'playbook'].map(t => (
               <button key={t} onClick={() => setActiveTab(t)} style={{
                 padding: '7px 18px', fontSize: 12, fontWeight: 500, borderRadius: 7, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)',
-                background: activeTab === t ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.04)',
+                background: activeTab === t ? 'rgba(var(--brand-rgb),0.12)' : 'rgba(var(--brand-rgb),0.04)',
                 color: activeTab === t ? 'var(--brand)' : 'var(--text-low)',
                 border: `1px solid ${activeTab === t ? 'var(--border-strong)' : 'var(--border-subtle)'}`, transition: 'all 0.15s'
               }}>{t === 'playbook' ? `Playbook (${completedSteps}/${inc.playbook.length})` : 'Timeline'}</button>
@@ -202,7 +202,7 @@ function IncidentScreen() {
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 3 }}>
                         <span className="mono" style={{ fontSize: 11, color: timelineColors[e.type] || 'var(--text-low)', fontWeight: 600 }}>{e.time}</span>
                         <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-high)' }}>{e.actor}</span>
-                        <span style={{ fontSize: 9, color: timelineColors[e.type] || 'var(--text-low)', background: `${timelineColors[e.type] || 'rgba(99,102,241,0.1)'}20`, padding: '1px 6px', borderRadius: 4, textTransform: 'capitalize' }}>{e.type}</span>
+                        <span style={{ fontSize: 9, color: timelineColors[e.type] || 'var(--text-low)', background: `${timelineColors[e.type] || 'rgba(var(--brand-rgb),0.1)'}20`, padding: '1px 6px', borderRadius: 4, textTransform: 'capitalize' }}>{e.type}</span>
                       </div>
                       <p style={{ fontSize: 13, color: 'var(--text-mid)', lineHeight: 1.55, margin: 0 }}>{e.msg}</p>
                     </div>
@@ -213,8 +213,8 @@ function IncidentScreen() {
                     <input value={newEventText} onChange={e => setNewEventText(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && addTimelineEntry()}
                       placeholder="Add timeline entry… (Enter to submit)"
-                      style={{ flex: 1, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '7px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
-                    <button onClick={addTimelineEntry} style={{ padding: '7px 14px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Add</button>
+                      style={{ flex: 1, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '7px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+                    <button onClick={addTimelineEntry} style={{ padding: '7px 14px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Add</button>
                   </div>
                 )}
               </div>
@@ -222,12 +222,12 @@ function IncidentScreen() {
 
             {activeTab === 'playbook' && (
               <div className="glass" style={{ padding: 16 }}>
-                <div style={{ height: 4, background: 'rgba(99,102,241,0.08)', borderRadius: 2, overflow: 'hidden', marginBottom: 14 }}>
+                <div style={{ height: 4, background: 'rgba(var(--brand-rgb),0.08)', borderRadius: 2, overflow: 'hidden', marginBottom: 14 }}>
                   <div style={{ width: `${(completedSteps / inc.playbook.length) * 100}%`, height: '100%', background: completedSteps === inc.playbook.length ? 'var(--status-ok)' : 'var(--brand)', borderRadius: 2, transition: 'width 0.3s ease' }} />
                 </div>
                 {inc.playbook.map((step, i) => (
                   <div key={i} onClick={() => toggleStep(inc.id, i)} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer' }}>
-                    <div style={{ width: 20, height: 20, borderRadius: '50%', border: `1.5px solid ${step.done ? 'var(--status-ok)' : 'var(--border-strong)'}`, background: step.done ? 'rgba(52,211,153,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1, transition: 'all 0.15s' }}>
+                    <div style={{ width: 20, height: 20, borderRadius: '50%', border: `1.5px solid ${step.done ? 'var(--status-ok)' : 'var(--border-strong)'}`, background: step.done ? 'rgba(var(--ok-rgb),0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1, transition: 'all 0.15s' }}>
                       {step.done && <span style={{ fontSize: 10, color: 'var(--status-ok)', fontWeight: 700 }}>✓</span>}
                     </div>
                     <span style={{ fontSize: 13, color: step.done ? 'var(--text-low)' : 'var(--text-high)', textDecoration: step.done ? 'line-through' : 'none', transition: 'all 0.15s' }}>Step {i + 1}: {step.step}</span>
@@ -290,10 +290,10 @@ function PostMortemModal({ inc, ss, now, fmtDuration, onClose, onSave }) {
             <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--brand)', marginBottom: 5 }}>{f.label}</div>
             <textarea value={draft[f.key]} onChange={(e) => setDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
               placeholder={f.key === 'rootCause' || f.key === 'actionItems' ? 'To be completed by assignee.' : ''}
-              style={{ width: '100%', minHeight: 60, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none', resize: 'vertical', lineHeight: 1.6 }} />
+              style={{ width: '100%', minHeight: 60, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '8px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none', resize: 'vertical', lineHeight: 1.6 }} />
           </div>
         ))}
-        <button onClick={() => onSave(draft)} style={{ width: '100%', padding: '10px 0', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Post-Mortem</button>
+        <button onClick={() => onSave(draft)} style={{ width: '100%', padding: '10px 0', background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)', borderRadius: 8, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Post-Mortem</button>
       </div>
     </>
   );

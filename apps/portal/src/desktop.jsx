@@ -38,51 +38,51 @@ const SCREEN_LIST = [
 const SCREEN_COMPONENTS = {
   'shieldtech-ai': 'ShieldAIScreen',
   /* Sell */
-  crm: 'SellHubScreen',
-  autobid: 'SellHubScreen',
-  'secret-weapon': 'SellHubScreen',
-  proposals: 'ProposalScreen',
+  crm: 'SellBoardScreen',
+  autobid: 'SellBoardScreen',
+  'secret-weapon': 'SellBoardScreen',
+  proposals: 'SellProposalsScreen',
   studio: 'StudioScreen',
   'survey-cloud': 'SurveyCloudScreen',
   /* Deliver */
-  calendar: 'CalendarHubScreen',
-  copilot: 'CalendarHubScreen',
-  dispatch: 'DispatchScreen',
-  workorder: 'WorkOrderHubScreen',
-  photos: 'WorkOrderHubScreen',
-  punchlist: 'WorkOrderHubScreen',
-  projects: 'ProjectsScreen',
-  'plan-room': 'PlanRoomScreen',
+  calendar: 'DeliverCalendarScreen',
+  copilot: 'DeliverCalendarScreen',
+  dispatch: 'DeliverDispatchScreen',
+  workorder: 'DeliverWorkOrdersScreen',
+  photos: 'DeliverWorkOrdersScreen',
+  punchlist: 'DeliverWorkOrdersScreen',
+  projects: 'DeliverProjectsScreen',
+  'plan-room': 'MoneyBlueShieldScreen',
   /* Collect */
   finance: 'FinanceScreen',
-  revops: 'RevOpsScreen',
+  revops: 'MoneyRevOpsScreen',
   invoices: 'InvoicesDirectScreen',
   estimates: 'EstimatesDirectScreen',
   outbox: 'OutboxScreen',
-  'purchase-orders': 'PurchasingHubScreen',
-  'parts-req': 'PurchasingHubScreen',
-  mrr: 'RevenueHubScreen',
-  'rr-builder': 'RevenueHubScreen',
+  'purchase-orders': 'MoneyPurchasingScreen',
+  'parts-req': 'MoneyPurchasingScreen',
+  mrr: 'MoneyRecurringScreen',
+  'rr-builder': 'MoneyRecurringScreen',
   pay: 'PayPageScreen',
   /* Care */
-  'customers-list': 'CustomersScreen',
+  'customers-list': 'CareCustomersScreen',
   cameras: 'MonitoringHubScreen',
   assets: 'MonitoringHubScreen',
-  helpdesk: 'HelpdeskHubScreen',
-  incidents: 'HelpdeskHubScreen',
-  nps: 'NPSScreen',
-  messages: 'PortalMessagesScreen',
+  helpdesk: 'CareHelpdeskScreen',
+  incidents: 'CareHelpdeskScreen',
+  nps: 'CareCustomersScreen',
+  messages: 'CareMessagesScreen',
   /* Admin */
-  employees: 'TeamHubScreen',
-  skills: 'TeamHubScreen',
-  users: 'UsersScreen',
-  hr: 'HRHubScreen',
-  approvals: 'ApprovalsHubScreen',
-  timesheets: 'ApprovalsHubScreen',
-  payroll: 'ApprovalsHubScreen',
-  expenses: 'ApprovalsHubScreen',
-  documents: 'DocumentsScreen',
-  'portal-settings': 'PortalSettingsScreen',
+  employees: 'AdminTeamScreen',
+  skills: 'AdminTeamScreen',
+  users: 'AdminUsersScreen',
+  hr: 'AdminHRScreen',
+  approvals: 'AdminApprovalsScreen',
+  timesheets: 'AdminApprovalsScreen',
+  payroll: 'AdminApprovalsScreen',
+  expenses: 'AdminApprovalsScreen',
+  documents: 'AdminDocumentsScreen',
+  'portal-settings': 'AdminSettingsScreen',
 };
 
 function MissingScreen({ id }) {
@@ -100,9 +100,15 @@ function MissingScreen({ id }) {
    host's tweak persistence as the navigation state of record). */
 function screenFromHash() {
   let h = window.location.hash.replace(/^#\/?/, '');
-  if (h === 'hermes') h = 'shieldtech-ai'; // legacy alias
-  return SCREEN_LIST.includes(h) ? h : null;
+  const [head, sub] = h.split('/');
+  h = head === 'hermes' ? 'shieldtech-ai' : head; // legacy alias
+  if (!SCREEN_LIST.includes(h)) return null;
+  if (sub) window.__navSub = { screen: h, sub };
+  return h;
 }
+/* One sidebar for everything: screens with children (Finance, ShieldTech OS)
+   render without their own rails and follow window.__navSub. */
+window.__navUnified = true;
 
 function App() {
   const [t, setTweak] = window.useTweaks({
@@ -112,20 +118,28 @@ function App() {
   const [aiOpen, setShieldAIOpen] = useState(false);
   const screen = t.screen;
 
+  const [navSubTick, setNavSubTick] = useState(0);
+  useEffect(() => { const h = () => setNavSubTick(t => t + 1); window.addEventListener('st2:subnav', h); return () => window.removeEventListener('st2:subnav', h); }, []);
   useEffect(() => {
-    const cur = screenFromHash();
-    if (cur !== screen) window.history.replaceState(null, '', '#/' + screen);
-  }, [screen]);
+    const sub = window.__navSub && window.__navSub.screen === screen ? window.__navSub.sub : null;
+    const want = '#/' + screen + (sub ? '/' + sub : '');
+    if (window.location.hash !== want) window.history.replaceState(null, '', want);
+  }, [screen, navSubTick]);
   useEffect(() => {
     const onHash = () => {
       const s = screenFromHash();
-      if (s) setTweak('screen', s);
+      if (!s) return;
+      setTweak('screen', s);
+      /* a hash with a sub page (#/finance/invoices, #/cameras/fire) steers the
+         screen that is already mounted */
+      if (window.__navSub && window.__navSub.screen === s && window.navSubSet) window.navSubSet(s, window.__navSub.sub, 'hash');
     };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
-  const handleNav = (id) => {
+  const handleNav = (id, sub) => {
+    if (sub) { if (id === 'finance') window.__qboParams = { ...(window.__qboParams || {}), financeTab: sub }; window.navSubSet && window.navSubSet(id, sub, 'nav'); }
     setTweak('screen', id);
   };
   window.__shieldNav = handleNav;

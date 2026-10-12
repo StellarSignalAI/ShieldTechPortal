@@ -2,7 +2,7 @@
    Live Incidents · SLA Countdown (ticking) · Truck Stock · Parts Requests · AR Aging · Commissions
    Same Apple-style small/medium/large progressive disclosure, dark-glass theme. */
 
-const M1_SEV = { P1: '#F43F5E', P2: '#FBBF24', P3: '#6366F1' };
+const M1_SEV = { P1: '#F43F5E', P2: '#FBBF24', P3: 'var(--brand)' };
 function m1Ago(ts) {
   const m = Math.floor((Date.now() - ts) / 60000);
   if (m < 60) return m + 'm';
@@ -15,7 +15,7 @@ function WIncidents({ size }) {
   const [incidents] = useShieldStore(incidentStore);
   const active = incidents.filter(i => i.status === 'active');
   const sev = s => active.filter(i => i.severity === s).length;
-  const accent = sev('P1') ? '#F43F5E' : sev('P2') ? '#FBBF24' : active.length ? '#6366F1' : '#34D399';
+  const accent = sev('P1') ? '#F43F5E' : sev('P2') ? '#FBBF24' : active.length ? 'var(--brand)' : '#34D399';
   const oldest = [...active].sort((a, b) => a.openedAt - b.openedAt);
   return (
     <WCard size={size} accent={accent} title="Incidents" glyph="siren"
@@ -150,7 +150,7 @@ function WParts({ size }) {
   const [parts] = useShieldStore(partsReqStore);
   const pending = parts.filter(p => p.status === 'requested');
   const urgent = pending.filter(p => p.urgency === 'urgent');
-  const accent = urgent.length ? '#F43F5E' : pending.length ? '#6366F1' : '#34D399';
+  const accent = urgent.length ? '#F43F5E' : pending.length ? 'var(--brand)' : '#34D399';
   const stat = s => parts.filter(p => p.status === s).length;
   return (
     <WCard size={size} accent={accent} title="Parts Requests" glyph="cart"
@@ -167,7 +167,7 @@ function WParts({ size }) {
         <WDivide />
         <WStrip accent={accent} anchor={size === 'medium'} cells={[
           { top: 'Req', color: '#FBBF24', bot: stat('requested') },
-          { top: 'Appr', color: '#6366F1', bot: stat('approved') },
+          { top: 'Appr', color: 'var(--brand)', bot: stat('approved') },
           { top: 'Ful', color: '#34D399', bot: stat('fulfilled') },
         ]} />
       </>}
@@ -274,7 +274,7 @@ function WCommissions({ size }) {
 registerWidget('incidents',   { label: 'Live Incidents',       cat: 'Operations', accent: '#F43F5E', glyph: 'siren',     sizes: ['small', 'medium', 'large'], render: s => <WIncidents size={s} /> });
 registerWidget('sla',         { label: 'SLA Countdown',        cat: 'Operations', accent: '#FBBF24', glyph: 'timeline',  sizes: ['small', 'medium', 'large'], render: s => <WSLA size={s} /> });
 registerWidget('inventory',   { label: 'Truck Stock',          cat: 'Operations', accent: '#FBBF24', glyph: 'package',   sizes: ['small', 'medium', 'large'], render: s => <WInventory size={s} /> });
-registerWidget('parts',       { label: 'Parts Requests',       cat: 'Operations', accent: '#6366F1', glyph: 'cart',      sizes: ['small', 'medium', 'large'], render: s => <WParts size={s} /> });
+registerWidget('parts',       { label: 'Parts Requests',       cat: 'Operations', accent: 'var(--brand)', glyph: 'cart',      sizes: ['small', 'medium', 'large'], render: s => <WParts size={s} /> });
 registerWidget('invoices',    { label: 'A/R Aging',            cat: 'Finance',    accent: '#FB923C', glyph: 'receipt',   sizes: ['small', 'medium', 'large'], render: s => <WInvoices size={s} /> });
 registerWidget('commissions', { label: 'Commissions',          cat: 'Finance',    accent: '#34D399', glyph: 'dollar',    sizes: ['small', 'medium', 'large'], render: s => <WCommissions size={s} /> });
 

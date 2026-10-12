@@ -49,13 +49,13 @@ function SurveyEstimatorScreen() {
             <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)', marginBottom: 12 }}>Survey Input</div>
             <div style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 10, color: 'var(--text-low)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Prospect / Site</div>
-              <select value={customer} onChange={e => setCustomer(e.target.value)} style={{ width: '100%', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '9px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+              <select value={customer} onChange={e => setCustomer(e.target.value)} style={{ width: '100%', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 7, padding: '9px 12px', color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
                 {['Redwood College', 'Westfield Mall — Phase 2', 'Sutter Health — Annex', 'New prospect…'].map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             {/* Upload zones (mock) */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div style={{ border: '1.5px dashed var(--border-strong)', borderRadius: 10, padding: '22px 12px', textAlign: 'center', cursor: 'pointer', background: 'rgba(99,102,241,0.03)' }}
+              <div style={{ border: '1.5px dashed var(--border-strong)', borderRadius: 10, padding: '22px 12px', textAlign: 'center', cursor: 'pointer', background: 'rgba(var(--brand-rgb),0.03)' }}
                 onClick={() => showToast('Floor plan attached — redwood-college-L1.pdf', 'ok')}>
                 <Icon name="floorplan" size={22} color="var(--brand)" />
                 <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-high)', marginTop: 6 }}>Floor plan</div>
@@ -70,7 +70,7 @@ function SurveyEstimatorScreen() {
                 <div style={{ fontSize: 9, color: 'var(--status-ok)', marginTop: 6 }}>✓ 12 photos · Tony G · Jun 10</div>
               </div>
             </div>
-            <button onClick={run} style={{ width: '100%', marginTop: 14, padding: '11px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 9, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 4px 18px rgba(99,102,241,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <button onClick={run} style={{ width: '100%', marginTop: 14, padding: '11px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 9, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 4px 18px rgba(var(--brand-rgb),0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <Icon name="hermes" size={15} color="#fff" /> Run ShieldTech AI Site Analysis
             </button>
           </div>
@@ -83,7 +83,7 @@ function SurveyEstimatorScreen() {
               ['Draft', 'A branded proposal is assembled — you review, tweak margin, send.'],
             ].map(([t, d], i) => (
               <div key={t} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                <span className="mono" style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(99,102,241,0.1)', color: 'var(--brand)', fontSize: 10, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</span>
+                <span className="mono" style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(var(--brand-rgb),0.1)', color: 'var(--brand)', fontSize: 10, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</span>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{t}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-mid)', lineHeight: 1.5 }}>{d}</div>
@@ -157,15 +157,15 @@ function SurveyEstimatorScreen() {
               <tbody>
                 {bom.map(b => (
                   <tr key={b.sku}>
-                    <td className="mono" style={{ padding: '8px 14px', fontSize: 10, color: 'var(--brand)', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>{b.sku}</td>
-                    <td style={{ padding: '8px 14px', fontSize: 12, color: 'var(--text-high)', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>{b.desc}</td>
-                    <td style={{ padding: '8px 14px', textAlign: 'right', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                    <td className="mono" style={{ padding: '8px 14px', fontSize: 10, color: 'var(--brand)', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>{b.sku}</td>
+                    <td style={{ padding: '8px 14px', fontSize: 12, color: 'var(--text-high)', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>{b.desc}</td>
+                    <td style={{ padding: '8px 14px', textAlign: 'right', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                       <input type="number" value={b.qty} onChange={e => setQty(b.sku, parseInt(e.target.value) || 0)}
-                        style={{ width: 52, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', borderRadius: 5, padding: '3px 6px', color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-mono, monospace)', textAlign: 'right', outline: 'none' }} />
+                        style={{ width: 52, background: 'rgba(var(--brand-rgb),0.05)', border: '1px solid var(--border-subtle)', borderRadius: 5, padding: '3px 6px', color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-mono, monospace)', textAlign: 'right', outline: 'none' }} />
                     </td>
-                    <td className="mono" style={{ padding: '8px 14px', fontSize: 11, textAlign: 'right', color: 'var(--text-mid)', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>{b.unit ? `$${b.unit}` : '—'}</td>
-                    <td className="mono" style={{ padding: '8px 14px', fontSize: 11, textAlign: 'right', color: 'var(--text-high)', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>{b.unit ? `$${(b.qty * b.unit).toLocaleString()}` : '—'}</td>
-                    <td className="mono" style={{ padding: '8px 14px', fontSize: 11, textAlign: 'right', color: 'var(--text-mid)', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>{(b.qty * b.hrs).toFixed(1)}</td>
+                    <td className="mono" style={{ padding: '8px 14px', fontSize: 11, textAlign: 'right', color: 'var(--text-mid)', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>{b.unit ? `$${b.unit}` : '—'}</td>
+                    <td className="mono" style={{ padding: '8px 14px', fontSize: 11, textAlign: 'right', color: 'var(--text-high)', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>{b.unit ? `$${(b.qty * b.unit).toLocaleString()}` : '—'}</td>
+                    <td className="mono" style={{ padding: '8px 14px', fontSize: 11, textAlign: 'right', color: 'var(--text-mid)', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>{(b.qty * b.hrs).toFixed(1)}</td>
                   </tr>
                 ))}
               </tbody>

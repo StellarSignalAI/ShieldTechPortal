@@ -9,57 +9,155 @@ const NAV_GROUPS = [
   { id: 'custom-dashboard', icon: 'dashboard', label: 'My Dashboard', useSvg: true },
   { id: 'shieldtech-ai', icon: 'hermes', label: 'ShieldTech AI', useSvg: true }]
 },
-{ id: 'sell', label: 'SELL', collapsible: false, items: [
-  { id: 'crm', icon: 'pipeline', label: 'Bid Board', useSvg: true },
+{ id: 'sell', label: 'SELL', collapsible: true, items: [
+  { id: 'crm', icon: 'pipeline', label: 'Bid Board', useSvg: true, children: [
+    { sub: 'board', label: 'Board' },
+    { sub: 'list', label: 'All bids' },
+    { sub: 'leads', label: 'AI leads' },
+    { sub: 'autobid', label: 'Auto-Bid' }] },
   { id: 'autobid', icon: 'proposals', label: 'Auto-Bid', useSvg: true, mobileOnly: true },
   { id: 'secret-weapon', icon: 'anomaly', label: 'Secret Weapon', useSvg: true, mobileOnly: true },
-  { id: 'proposals', icon: 'proposals', label: 'Proposals', useSvg: true },
+  { id: 'proposals', icon: 'proposals', label: 'Proposals', useSvg: true, children: [
+    { sub: 'all', label: 'Proposals' },
+    { sub: 'tools', label: 'Calculators' }] },
   { id: 'studio', icon: 'topology', label: 'Design Studio', useSvg: true },
   { id: 'survey-cloud', icon: 'floorplan', label: 'Survey Cloud', useSvg: true, mobileOnly: true }]
 },
-{ id: 'deliver', label: 'DELIVER', collapsible: false, items: [
-  { id: 'calendar', icon: 'calendar', label: 'Calendar & Copilot', useSvg: true },
+{ id: 'deliver', label: 'DELIVER', collapsible: true, items: [
+  { id: 'calendar', icon: 'calendar', label: 'Calendar & Copilot', useSvg: true, children: [
+    { sub: 'calendar', label: 'Calendar' },
+    { sub: 'copilot', label: 'Scheduling Copilot' }] },
   { id: 'copilot', icon: 'hermes', label: 'Scheduling Copilot', useSvg: true, mobileOnly: true },
-  { id: 'dispatch', icon: 'dispatch', label: 'Dispatch & Fleet', useSvg: true },
-  { id: 'workorder', icon: 'clipboard', label: 'Work Orders', useSvg: true },
+  { id: 'dispatch', icon: 'dispatch', label: 'Dispatch & Fleet', useSvg: true, children: [
+    { sub: 'map', label: 'Live map' },
+    { sub: 'schedule', label: 'Schedule board' },
+    { sub: 'queue', label: 'Dispatch queue' },
+    { sub: 'owner', label: 'Where are my techs' },
+    { sub: 'driving', label: 'Driving safety' },
+    { sub: 'fleet', label: 'Fleet' }] },
+  { id: 'workorder', icon: 'clipboard', label: 'Work Orders', useSvg: true, children: [
+    { sub: 'all', label: 'Work orders' },
+    { sub: 'requested', label: 'Requests' },
+    { sub: 'photos', label: 'Site photos' },
+    { sub: 'punch', label: 'Punch lists' }] },
   { id: 'photos', icon: 'cameras', label: 'Site Photos', useSvg: true, mobileOnly: true },
   { id: 'punchlist', icon: 'approvals', label: 'Punch Lists', useSvg: true, mobileOnly: true },
-  { id: 'projects', icon: 'projects', label: 'Projects', useSvg: true },
+  { id: 'projects', icon: 'projects', label: 'Projects', useSvg: true, children: [
+    { sub: 'board', label: 'Board' },
+    { sub: 'list', label: 'List' }] },
   { id: 'plan-room', icon: 'floorplan', label: 'BlueShield Studio', useSvg: true }]
 },
-{ id: 'collect', label: 'COLLECT', collapsible: false, items: [
-  { id: 'finance', icon: 'finance', label: 'Finance Suite', useSvg: true },
+{ id: 'collect', label: 'MONEY', collapsible: true, items: [
+  /* The QuickBooks-pattern Finance suite: its pages are children of ONE sidebar
+     entry (no second rail inside the screen). `sub` is the finance page id. */
+  { id: 'finance', icon: 'finance', label: 'Finance (QuickBooks)', useSvg: true, children: [
+    { sub: 'overview', label: 'Home' },
+    { sub: 'bank-transactions', label: 'Bank transactions' },
+    { sub: 'receipts', label: 'Receipts' },
+    { sub: 'reconcile', label: 'Reconcile' },
+    { sub: 'accounts', label: 'Chart of accounts' },
+    { sub: 'expenses', label: 'Expenses' },
+    { sub: 'ap', label: 'Bills' },
+    { sub: 'vendors', label: 'Suppliers' },
+    { sub: 'sales-overview', label: 'Sales' },
+    { sub: 'invoices', label: 'Invoices' },
+    { sub: 'estimates', label: 'Estimates' },
+    { sub: 'customers', label: 'Customers' },
+    { sub: 'products', label: 'Products & services' },
+    { sub: 'payroll', label: 'Payroll' },
+    { sub: 'sales-tax', label: 'Sales tax' },
+    { sub: 'reports-center', label: 'Reports' },
+    { sub: 'settings', label: 'Settings' }] },
   { id: 'revops', icon: 'finance', label: 'Revenue Ops', useSvg: true },
   { id: 'invoices', icon: 'expenses', label: 'Invoices', useSvg: true, mobileOnly: true },
   { id: 'estimates', icon: 'proposals', label: 'Proposal Pipeline', useSvg: true, mobileOnly: true },
   { id: 'outbox', icon: 'chat', label: 'Email Outbox', useSvg: true, mobileOnly: true },
-  { id: 'purchase-orders', icon: 'cart', label: 'Inventory & Purchasing', useSvg: true },
+  { id: 'purchase-orders', icon: 'cart', label: 'Inventory & Purchasing', useSvg: true, children: [
+    { sub: 'pos', label: 'Purchase orders' },
+    { sub: 'req', label: 'Parts requisitions' },
+    { sub: 'inventory', label: 'Inventory' }] },
   { id: 'parts-req', icon: 'parts', label: 'Parts Requisition', useSvg: true, mobileOnly: true },
-  { id: 'mrr', icon: 'roi', label: 'Recurring Revenue', useSvg: true },
+  { id: 'mrr', icon: 'roi', label: 'Recurring Revenue', useSvg: true, children: [
+    { sub: 'contracts', label: 'Contracts' },
+    { sub: 'builder', label: 'RR Builder' }] },
   { id: 'rr-builder', icon: 'roi', label: 'RR Builder', useSvg: true, mobileOnly: true },
   { id: 'expenses', icon: 'expenses', label: 'Expenses & Receipts', useSvg: true, mobileOnly: true }]
 },
-{ id: 'care', label: 'CARE', collapsible: false, items: [
-  { id: 'customers-list', icon: 'customers', label: 'Customers', useSvg: true },
-  { id: 'cameras', icon: 'topology', label: 'Monitoring Console', useSvg: true },
-  { id: 'assets', icon: 'assets', label: 'Assets', useSvg: true, mobileOnly: true },
-  { id: 'helpdesk', icon: 'chat', label: 'Help Desk', useSvg: true },
+{ id: 'os', label: 'SHIELDTECH OS', collapsible: true, items: [
+  /* Every low-voltage discipline the company installs and monitors, as children
+     of ONE entry. `sub` is the console app id. */
+  { id: 'cameras', icon: 'topology', label: 'Sites', useSvg: true, children: [
+    { sub: 'sites', label: 'All sites' },
+    { sub: 'network', label: 'Network' },
+    { sub: 'protect', label: 'Video (CCTV)' },
+    { sub: 'access', label: 'Access control' },
+    { sub: 'intrusion', label: 'Intrusion' },
+    { sub: 'fire', label: 'Fire alarm' },
+    { sub: 'intercom', label: 'Intercom & AV' },
+    { sub: 'cabling', label: 'Cabling & racks' },
+    { sub: 'alerts', label: 'Alerts' },
+    { sub: 'assets', label: 'Assets' },
+    { sub: 'settings', label: 'Controllers & settings' }] },
+  { id: 'assets', icon: 'assets', label: 'Assets', useSvg: true, mobileOnly: true }]
+},
+{ id: 'care', label: 'CARE', collapsible: true, items: [
+  { id: 'customers-list', icon: 'customers', label: 'Customers', useSvg: true, children: [
+    { sub: 'all', label: 'Directory' },
+    { sub: 'nps', label: 'NPS & feedback' }] },
+  { id: 'helpdesk', icon: 'chat', label: 'Help Desk', useSvg: true, children: [
+    { sub: 'tickets', label: 'Tickets' },
+    { sub: 'incidents', label: 'Incidents' }] },
   { id: 'incidents', icon: 'warroom', label: 'Incidents', useSvg: true, mobileOnly: true },
   { id: 'nps', icon: 'star', label: 'NPS & Feedback', useSvg: true, mobileOnly: true },
   { id: 'messages', icon: 'hermes', label: 'Messages', useSvg: true }]
 },
-{ id: 'admin', label: 'ADMIN', collapsible: false, items: [
-  { id: 'employees', icon: 'employees', label: 'Team & Skills', useSvg: true },
-  { id: 'hr', icon: 'employees', label: 'HR Center', useSvg: true },
+{ id: 'admin', label: 'ADMIN', collapsible: true, items: [
+  { id: 'employees', icon: 'employees', label: 'Team & Skills', useSvg: true, children: [
+    { sub: 'team', label: 'Team' },
+    { sub: 'skills', label: 'Skills matrix' }] },
+  { id: 'hr', icon: 'employees', label: 'HR Center', useSvg: true, children: [
+    { sub: 'people', label: 'People' },
+    { sub: 'paycenter', label: 'Payroll Center' },
+    { sub: 'projects', label: 'Project labor' },
+    { sub: 'hiring', label: 'Hiring & actions' },
+    { sub: 'insights', label: 'Insights' },
+    { sub: 'audit', label: 'Audit' },
+    { sub: 'setup', label: 'Setup' }] },
   { id: 'skills', icon: 'certs', label: 'Skills Matrix', useSvg: true, mobileOnly: true },
   { id: 'users', icon: 'credential', label: 'Users & Invites', useSvg: true },
-  { id: 'approvals', icon: 'check', label: 'Approvals & Expenses', useSvg: true },
+  { id: 'approvals', icon: 'check', label: 'Approvals & Expenses', useSvg: true, children: [
+    { sub: 'appr', label: 'Approvals' },
+    { sub: 'time', label: 'Timesheets' },
+    { sub: 'pay', label: 'Payroll' },
+    { sub: 'exp', label: 'Expenses & receipts' }] },
   { id: 'timesheets', icon: 'timesheets', label: 'Timesheets', useSvg: true, mobileOnly: true },
   { id: 'payroll', icon: 'finance', label: 'Payroll', useSvg: true, mobileOnly: true },
   { id: 'documents', icon: 'note', label: 'Documents', useSvg: true },
-  { id: 'portal-settings', icon: 'compliance', label: 'Portal Settings', useSvg: true }]
+  { id: 'portal-settings', icon: 'compliance', label: 'Portal Settings', useSvg: true, children: [
+    { sub: 'users', label: 'Users & roles' },
+    { sub: 'account', label: 'Account' },
+    { sub: 'billing', label: 'Billing' },
+    { sub: 'privacy', label: 'Privacy' },
+    { sub: 'fields', label: 'Custom fields' },
+    { sub: 'resolution', label: 'Resolution center' },
+    { sub: 'desktop', label: 'Desktop app' },
+    { sub: 'updates', label: "What's new" },
+    { sub: 'help', label: 'Help' }] }]
 }];
 
+/* ── Sub-navigation bus ──
+   A screen with children (Finance, ShieldTech OS) tells the sidebar which page
+   it is on, and the sidebar tells the screen which page to open — one source
+   of truth, no second menu inside the screen. */
+function navSubSet(screen, sub, source) {
+  window.__navSub = { screen, sub };
+  try { window.dispatchEvent(new CustomEvent('st2:subnav', { detail: { screen, sub, source: source || 'nav' } })); } catch { /* noop */ }
+}
+function useNavSub() {
+  const [v, setV] = React.useState(() => window.__navSub || null);
+  React.useEffect(() => { const h = (e) => setV({ screen: e.detail.screen, sub: e.detail.sub }); window.addEventListener('st2:subnav', h); return () => window.removeEventListener('st2:subnav', h); }, []);
+  return v;
+}
 
 /* Flat list for backward compat */
 const NAV_ITEMS = NAV_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, section: g.id })));
@@ -69,23 +167,27 @@ NAV_ITEMS.unshift({ id: 'login', icon: 'credential', label: 'Login', section: 'a
 function ShieldLogo({ size = 32 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
-      <path d="M24 4L8 12v12c0 11 16 20 16 20s16-9 16-20V12L24 4z" fill="rgba(99,102,241,0.1)" stroke="#6366F1" strokeWidth="1.5" />
-      <path d="M24 14l-8 4v6c0 5.5 8 10 8 10s8-4.5 8-10v-6l-8-4z" fill="rgba(99,102,241,0.15)" stroke="#6366F1" strokeWidth="1" />
-      <circle cx="24" cy="24" r="3" fill="#6366F1" opacity="0.8" />
-      <line x1="24" y1="21" x2="24" y2="16" stroke="#6366F1" strokeWidth="0.8" opacity="0.5" />
-      <line x1="24" y1="27" x2="24" y2="32" stroke="#6366F1" strokeWidth="0.8" opacity="0.5" />
-      <line x1="21" y1="24" x2="18" y2="24" stroke="#6366F1" strokeWidth="0.8" opacity="0.5" />
-      <line x1="27" y1="24" x2="30" y2="24" stroke="#6366F1" strokeWidth="0.8" opacity="0.5" />
+      <path d="M24 4L8 12v12c0 11 16 20 16 20s16-9 16-20V12L24 4z" fill="rgba(var(--brand-rgb),0.1)" stroke="var(--brand)" strokeWidth="1.5" />
+      <path d="M24 14l-8 4v6c0 5.5 8 10 8 10s8-4.5 8-10v-6l-8-4z" fill="rgba(var(--brand-rgb),0.15)" stroke="var(--brand)" strokeWidth="1" />
+      <circle cx="24" cy="24" r="3" fill="var(--brand)" opacity="0.8" />
+      <line x1="24" y1="21" x2="24" y2="16" stroke="var(--brand)" strokeWidth="0.8" opacity="0.5" />
+      <line x1="24" y1="27" x2="24" y2="32" stroke="var(--brand)" strokeWidth="0.8" opacity="0.5" />
+      <line x1="21" y1="24" x2="18" y2="24" stroke="var(--brand)" strokeWidth="0.8" opacity="0.5" />
+      <line x1="27" y1="24" x2="30" y2="24" stroke="var(--brand)" strokeWidth="0.8" opacity="0.5" />
     </svg>);
 
 }
 
 /* ── Nav Rail (Collapsible Groups) ── */
 function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
+  const navSub = useNavSub();
+  const [openItems, setOpenItems] = React.useState(() => ({ [current]: true }));
+  React.useEffect(() => { setOpenItems(o => o[current] ? o : { ...o, [current]: true }); }, [current]);
   const [openGroups, setOpenGroups] = React.useState(() => {
     // Auto-open the group containing the current screen
     const active = NAV_GROUPS.find((g) => g.items.some((i) => i.id === current));
-    const defaults = { overview: true };
+    const defaults = { home: true, sell: true, deliver: true, collect: true, os: true, care: true, admin: true };
+    try { Object.assign(defaults, JSON.parse(localStorage.getItem('st2:nav-groups') || '{}')); } catch { /* noop */ }
     if (active) defaults[active.id] = true;
     return defaults;
   });
@@ -99,8 +201,9 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
   }, [current]);
 
   const toggleGroup = (gid) => {
-    setOpenGroups((prev) => ({ ...prev, [gid]: !prev[gid] }));
+    setOpenGroups((prev) => { const n = { ...prev, [gid]: !prev[gid] }; try { localStorage.setItem('st2:nav-groups', JSON.stringify(n)); } catch { /* noop */ } return n; });
   };
+  const childCount = (items) => items.reduce((n, i) => n + 1 + ((i.children && openItems[i.id]) ? i.children.length : 0), 0);
 
   return (
     <nav style={{
@@ -178,25 +281,29 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
               {/* Group items — animate open/close */}
               <div style={{
                 overflow: 'hidden',
-                maxHeight: isOpen || collapsed ? `${itemCount * 36 + 4}px` : '0px',
+                maxHeight: isOpen || collapsed ? `${childCount(group.items) * 36 + 4}px` : '0px',
                 opacity: isOpen || collapsed ? 1 : 0,
                 transition: 'max-height 0.25s ease, opacity 0.2s ease'
               }}>
                 {group.items.map((item) => {
                   const active = current === item.id;
+                  const kids = item.children || null;
+                  const kidsOpen = kids && !collapsed && openItems[item.id];
+                  const activeSub = active && navSub && navSub.screen === item.id ? navSub.sub : null;
                   return (
-                    <button key={item.id} onClick={() => onNav(item.id)} title={item.label} style={{
+                    <React.Fragment key={item.id}>
+                    <button onClick={() => { if (kids) { setOpenItems(o => ({ ...o, [item.id]: active ? !o[item.id] : true })); if (!active) onNav(item.id, kids[0].sub); } else onNav(item.id); }} title={item.label} style={{
                       display: 'flex', alignItems: 'center', gap: 8,
                       width: '100%',
                       padding: collapsed ? '8px 0' : '6px 16px 6px 28px',
                       justifyContent: collapsed ? 'center' : 'flex-start',
-                      background: active ? 'rgba(99,102,241,0.08)' : 'transparent',
+                      background: active ? 'rgba(var(--brand-rgb),0.08)' : 'transparent',
                       border: 'none', cursor: 'pointer', position: 'relative',
                       color: active ? 'var(--brand)' : 'var(--text-mid)',
                       fontSize: 12, fontFamily: 'var(--font-body)',
                       transition: 'all 0.12s', borderRadius: 0, textAlign: 'left'
                     }}
-                    onMouseEnter={(e) => {if (!active) e.currentTarget.style.background = 'rgba(99,102,241,0.04)';}}
+                    onMouseEnter={(e) => {if (!active) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)';}}
                     onMouseLeave={(e) => {if (!active) e.currentTarget.style.background = 'transparent';}}>
 
                       {active &&
@@ -208,8 +315,20 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
                       }} />
                       }
                       {item.useSvg ? <Icon name={item.icon} size={14} color={active ? 'var(--brand)' : 'var(--text-mid)'} style={{ flexShrink: 0, width: 20, opacity: active ? 1 : 0.7 }} /> : <span style={{ fontSize: 13, width: 20, textAlign: 'center', flexShrink: 0, opacity: active ? 1 : 0.6 }}>{item.icon}</span>}
-                      {!collapsed && <span style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{item.label}</span>}
-                    </button>);
+                      {!collapsed && <span style={{ whiteSpace: 'nowrap', fontSize: 13, flex: 1 }}>{item.label}</span>}
+                      {!collapsed && kids && <span style={{ fontSize: 9, color: 'var(--text-low)', transition: 'transform 0.2s', transform: kidsOpen ? 'rotate(90deg)' : 'none' }}>▶</span>}
+                    </button>
+                    {kidsOpen && kids.map((k) => {
+                      const on = active && (activeSub === k.sub || (!activeSub && k === kids[0]));
+                      return (
+                        <button key={k.sub} onClick={() => onNav(item.id, k.sub)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '5px 16px 5px 52px', background: on ? 'rgba(var(--brand-rgb),0.08)' : 'transparent', border: 'none', cursor: 'pointer', color: on ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12.5, fontFamily: 'var(--font-body)', textAlign: 'left', position: 'relative', fontWeight: on ? 600 : 400 }}
+                          onMouseEnter={(e) => { if (!on) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)'; }}
+                          onMouseLeave={(e) => { if (!on) e.currentTarget.style.background = 'transparent'; }}>
+                          <span style={{ position: 'absolute', left: 36, top: '50%', width: 5, height: 5, borderRadius: '50%', transform: 'translateY(-50%)', background: on ? 'var(--brand)' : 'var(--border-strong)' }} />
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.label}</span>
+                        </button>);
+                    })}
+                    </React.Fragment>);
 
                 })}
               </div>
@@ -234,14 +353,14 @@ function NavRail({ current, onNav, collapsed = false, onToggleCollapse }) {
       <div style={{ padding: '8px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: collapsed ? 'center' : 'flex-end' }}>
         <button onClick={onToggleCollapse} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} style={{
           width: 28, height: 28, borderRadius: 6,
-          background: 'rgba(99,102,241,0.04)',
+          background: 'rgba(var(--brand-rgb),0.04)',
           border: '1px solid var(--border-subtle)',
           color: 'var(--text-low)', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.15s'
         }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.1)'; e.currentTarget.style.color = 'var(--brand)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(99,102,241,0.04)'; e.currentTarget.style.color = 'var(--text-low)'; }}>
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.1)'; e.currentTarget.style.color = 'var(--brand)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)'; e.currentTarget.style.color = 'var(--text-low)'; }}>
           <Icon name={collapsed ? 'chevron-right' : 'chevron-down'} size={12} color="currentColor" style={{ transform: collapsed ? 'none' : 'rotate(90deg)' }} />
         </button>
       </div>
@@ -326,7 +445,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
       height: 52, flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '0 24px', borderBottom: '1px solid var(--border-subtle)',
-      background: 'rgba(10,14,20,0.8)',
+      background: 'rgba(var(--card-rgb),0.8)',
       backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
       position: 'relative', zIndex: 100
     }}>
@@ -338,7 +457,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
       {/* Center: search */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)',
+        background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)',
         borderRadius: 8, padding: '6px 14px', width: 320, cursor: 'text'
       }}>
         <span style={{ color: 'var(--text-low)', fontSize: 13 }}>⌕</span>
@@ -354,14 +473,14 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
         {/* ShieldTech AI button */}
         <button onClick={() => onNav && onNav('shieldtech-ai')} style={{
           display: 'flex', alignItems: 'center', gap: 6,
-          background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)',
+          background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)',
           borderRadius: 8, padding: '5px 12px', cursor: 'pointer',
           color: 'var(--brand)', fontSize: 12, fontWeight: 500,
           fontFamily: 'var(--font-body)', transition: 'all 0.15s',
-          boxShadow: '0 0 12px -4px rgba(99,102,241,0.2)'
+          boxShadow: '0 0 12px -4px rgba(var(--brand-rgb),0.2)'
         }}
         onMouseEnter={(e) => e.currentTarget.style.boxShadow = 'var(--glow-brand-sm)'}
-        onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 12px -4px rgba(99,102,241,0.2)'}>
+        onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 12px -4px rgba(var(--brand-rgb),0.2)'}>
 
           <Icon name="hermes" size={14} color="#fff" /> Ask ShieldTech AI
         </button>
@@ -419,7 +538,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                       display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',
                       background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.06)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                       <Icon name={item.icon} size={14} color="var(--text-mid)" />
                       <div>
@@ -442,7 +561,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                     display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',
                     background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left'
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.06)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                     <Icon name="lock" size={14} color="var(--text-mid)" />
                     <div>
@@ -463,7 +582,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                       display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',
                       background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.06)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                       <Icon name={item.icon} size={14} color="var(--text-mid)" />
                       <div>
@@ -483,7 +602,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                     {[{id:'dark',l:'Dark'},{id:'light',l:'Light'},{id:'system',l:'System'}].map(t => (
                       <button key={t.id} onClick={() => { setTheme(t.id); shieldToast('Appearance: ' + t.l); }} style={{
                         flex: 1, padding: '4px', borderRadius: 4, fontSize: 10,
-                        background: t.id === theme ? 'rgba(99,102,241,0.12)' : 'transparent',
+                        background: t.id === theme ? 'rgba(var(--brand-rgb),0.12)' : 'transparent',
                         border: `1px solid ${t.id === theme ? 'var(--brand)' : 'var(--border-subtle)'}`,
                         color: t.id === theme ? 'var(--brand)' : 'var(--text-low)',
                         cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -526,7 +645,7 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
                     display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 16px',
                     background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left'
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,63,94,0.04)'}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--critical-rgb),0.04)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                     <Icon name="export" size={14} color="var(--status-critical)" />
                     <span style={{ fontSize: 12, color: 'var(--status-critical)' }}>Sign Out</span>
@@ -544,26 +663,28 @@ function TopBar({ title, onAI, onNotifications, onNav }) {
 /* ── App Shell ── */
 function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
   const titles = {
+    'purchase-orders': 'Inventory & Purchasing', 'parts-req': 'Inventory & Purchasing', mrr: 'Recurring Revenue', 'rr-builder': 'Recurring Revenue', revops: 'Revenue Ops',
+    messages: 'Messages', users: 'Users & Invites', documents: 'Documents', 'portal-settings': 'Portal Settings', employees: 'Team & Skills', helpdesk: 'Help Desk', incidents: 'Help Desk', nps: 'Customers', skills: 'Team & Skills',
     dashboard: 'Mission Control', customer: 'Customer Portal',
     assets: 'Asset Management', 'shieldtech-ai': 'ShieldTech AI',
-    crm: 'Leads', studio: 'Design Studio',
+    crm: 'Bid Board', studio: 'Design Studio',
     'product-library': 'Product Library', 'service-plans': 'Service Plans',
     'custom-dashboard': 'My Dashboard',
     'customers-list': 'Customers',
-    dispatch: 'Dispatch Center', finance: 'Finance Suite', revops: 'Revenue Operations',
+    dispatch: 'Dispatch & Fleet', finance: 'Finance Suite', revops: 'Revenue Ops',
     timeline: 'Customer Timeline',
-    approvals: 'Approvals Center',
-    cameras: 'Monitoring Console', topology: 'Monitoring Console',
+    approvals: 'Approvals & Expenses',
+    cameras: 'ShieldTech OS', topology: 'ShieldTech OS', finance: 'Finance',
     certs: 'Certifications', tools: 'Engineering Tools',
     costing: 'Job Costing', audit: 'Audit Trail',
-    warroom: 'Monitoring Console', floorplan: 'Monitoring Console', anomaly: 'Monitoring Console',
+    warroom: 'ShieldTech OS', floorplan: 'ShieldTech OS', anomaly: 'ShieldTech OS',
     expenses: 'Expense Approval', timesheets: 'Timesheet Approval', payroll: 'Payroll',
     hr: 'HR Center',
     projects: 'Projects', 'plan-room': 'BlueShield Studio', inventory: 'Inventory',
-    reports: 'Reports & BI', proposals: 'Proposal Builder',
-    employees: 'Team Management', contracts: 'Contracts', sla: 'SLA Dashboard',
+    reports: 'Reports & BI', proposals: 'Proposals',
+    employees: 'Team & Skills', contracts: 'Contracts', sla: 'SLA Dashboard',
     integrations: 'Integrations', marketing: 'Marketing',
-    documents: 'Documents & Attachments', 'portal-settings': 'Portal Settings',
+    documents: 'Documents', 'portal-settings': 'Portal Settings',
     health: 'Customer Health', forecast: 'Revenue Forecast',
     commissions: 'Commissions', compliance: 'Compliance Calendar',
     onboarding: 'Customer Onboarding', 'service-reports': 'Service Reports',
@@ -578,19 +699,19 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
     copilot: 'Scheduling Copilot',
     intel: 'Security Intelligence',
     'margin-xray': 'Margin X-Ray',
-    'rr-builder': 'Recurring Revenue Builder',
+    'rr-builder': 'Recurring Revenue',
     rfp: 'RFP Workspace',
     wallboard: 'NOC Wallboard',
     nps: 'NPS & Feedback',
     incidents: 'Incident Response',
     warranty: 'Warranty Tracker',
     'quote-cash': 'Quote to Cash',
-    mrr: 'MRR Tracker',
+    mrr: 'Recurring Revenue',
     helpdesk: 'Help Desk',
     workorder: 'Work Orders',
-    'parts-req': 'Parts Requisition',
+    'parts-req': 'Inventory & Purchasing',
     subcontractors: 'Sub-Contractors',
-    'purchase-orders': 'Purchase Orders',
+    'purchase-orders': 'Inventory & Purchasing',
     skills: 'Skills Matrix',
     knowledge: 'Knowledge Base'
   };
@@ -603,13 +724,13 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
           height: 56, flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 32px', borderBottom: '1px solid var(--border-subtle)',
-          background: 'rgba(10,14,20,0.9)',
+          background: 'rgba(var(--card-rgb),0.9)',
           backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {onBack &&
             <button onClick={onBack} style={{
-              background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)',
+              background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)',
               borderRadius: 6, padding: '4px 10px', color: 'var(--brand)',
               fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)',
               display: 'flex', alignItems: 'center', gap: 4
@@ -621,13 +742,13 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <button onClick={() => shieldToast('Connecting you with ShieldTech support…')} style={{
-              background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)',
+              background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)',
               borderRadius: 8, padding: '5px 14px', color: 'var(--brand)',
               fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)'
             }}>Support</button>
             <div style={{
               width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #4F4CC7, #6366F1)',
+              background: 'linear-gradient(135deg, #4F4CC7, var(--brand))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 11, fontWeight: 600, color: '#fff'
             }}>AD</div>
@@ -667,4 +788,4 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
 
 }
 
-Object.assign(window, { ShieldLogo, NavRail, TopBar, AppShell, NAV_ITEMS, NAV_GROUPS });
+Object.assign(window, { ShieldLogo, NavRail, TopBar, AppShell, NAV_ITEMS, NAV_GROUPS, navSubSet, useNavSub });

@@ -1,13 +1,15 @@
-/* ShieldTech — Glow, shadow & motion tokens. Accent used on focus/active/alerts. */
+/* ShieldTech — Glow, shadow & motion tokens. The neon signature: a soft blue
+   halo on focus/active and a faint glow on status dots, on otherwise flat
+   UniFi-pattern surfaces. */
 :root {
-  --glow-brand: 0 0 0 1px var(--brand), 0 0 24px -6px var(--brand);
-  --glow-brand-sm: 0 0 0 1px rgba(var(--brand-rgb),0.3), 0 0 12px -4px var(--brand);
+  --glow-brand: 0 0 0 1px var(--brand), 0 0 22px -6px var(--brand);
+  --glow-brand-sm: 0 0 0 1px rgba(var(--brand-rgb),0.35), 0 0 12px -4px var(--brand);
 
-  /* Hover lift — cards raise with deep shadow + faint brand ring */
-  --shadow-hover: 0 8px 22px -14px rgba(0,0,0,0.9), 0 0 0 1px rgba(var(--brand-rgb),0.18);
+  /* Hover lift — cards raise with a deep shadow + faint brand ring */
+  --shadow-hover: 0 8px 22px -14px rgba(0,0,0,0.8), 0 0 0 1px rgba(var(--brand-rgb),0.22);
 
   /* Focus — glowing ring */
-  --glow-focus: 0 0 0 3px rgba(var(--brand-rgb),0.22);
+  --glow-focus: 0 0 0 3px rgba(var(--brand-rgb),0.24);
 
   /* Status glows (dots, badges) */
   --glow-ok: 0 0 8px var(--status-ok);

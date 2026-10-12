@@ -7,7 +7,7 @@
    live markup. Coordinates are normalized to a 1000-wide space so markup
    scales with the drawing on any screen. */
 
-const BP_COLORS = ['#6366F1', '#F43F5E', '#34D399', '#FBBF24', '#FFFFFF'];
+const BP_COLORS = ['var(--brand)', '#F43F5E', '#34D399', '#FBBF24', '#FFFFFF'];
 const BP_ICONS = [
   ['cam', '📷', 'Camera'], ['ap', '📡', 'AP / antenna'], ['door', '🚪', 'Door / reader'],
   ['panel', '🔔', 'Panel'], ['drop', '⌖', 'Cable drop'], ['power', '⚡', 'Power'],
@@ -138,7 +138,7 @@ function BlueprintEditor({ drawing, readOnly = false, showAnnotations = true, on
   const undo = () => { if (objects.length) save(objects.slice(0, -1)); };
 
   const doneCount = objects.filter(o => o.done).length;
-  const btn = (on) => ({ width: 40, height: 40, borderRadius: 9, border: `1px solid ${on ? 'var(--brand)' : 'var(--border-subtle)'}`, background: on ? 'rgba(99,102,241,0.16)' : 'rgba(10,14,20,0.9)', color: on ? 'var(--brand)' : 'var(--text-mid)', fontSize: 17, cursor: 'pointer', flexShrink: 0, fontFamily: 'var(--font-body)' });
+  const btn = (on) => ({ width: 40, height: 40, borderRadius: 9, border: `1px solid ${on ? 'var(--brand)' : 'var(--border-subtle)'}`, background: on ? 'rgba(var(--brand-rgb),0.16)' : 'rgba(var(--card-rgb),0.9)', color: on ? 'var(--brand)' : 'var(--text-mid)', fontSize: 17, cursor: 'pointer', flexShrink: 0, fontFamily: 'var(--font-body)' });
 
   return (
     <div data-no-ptr style={{ position: 'fixed', inset: 0, zIndex: 9500, background: '#04070c', display: 'flex', flexDirection: 'column', paddingTop: 'env(safe-area-inset-top)' }}>
@@ -174,7 +174,7 @@ function BlueprintEditor({ drawing, readOnly = false, showAnnotations = true, on
       {draft && draft.type === 'wire' && (
         <div style={{ position: 'absolute', bottom: 92, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 8, pointerEvents: 'none' }}>
           <button onClick={finishWire} style={{ pointerEvents: 'auto', padding: '9px 20px', borderRadius: 20, border: 'none', background: 'var(--brand)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✓ Finish wire ({draft.pts.length} pts)</button>
-          <button onClick={() => setDraft(null)} style={{ pointerEvents: 'auto', padding: '9px 16px', borderRadius: 20, border: '1px solid var(--border-strong)', background: 'rgba(10,14,20,0.9)', color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
+          <button onClick={() => setDraft(null)} style={{ pointerEvents: 'auto', padding: '9px 16px', borderRadius: 20, border: '1px solid var(--border-strong)', background: 'rgba(var(--card-rgb),0.9)', color: 'var(--text-mid)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Cancel</button>
         </div>
       )}
 
@@ -217,13 +217,13 @@ function BlueprintRows({ drawings, onOpen, extra }) {
     const a = (annoMap && annoMap[d.id]) || { objects: [] };
     const done = (a.objects || []).filter(o => o.done).length;
     return (
-      <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 0', borderBottom: '1px solid rgba(99,102,241,0.05)' }}>
+      <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)' }}>
         <span style={{ fontSize: 17 }}>📐</span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 12.5, color: 'var(--text-high)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.name || 'Drawing'}</div>
           <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{(a.objects || []).length} markups · {done} checked off{a.by ? ` · ${a.by}` : ''}</div>
         </div>
-        <button onClick={() => onOpen(d)} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border-strong)', background: 'rgba(99,102,241,0.08)', color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Open</button>
+        <button onClick={() => onOpen(d)} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border-strong)', background: 'rgba(var(--brand-rgb),0.08)', color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>Open</button>
         {extra ? extra(d) : null}
       </div>
     );

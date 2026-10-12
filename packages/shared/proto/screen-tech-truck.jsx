@@ -51,7 +51,7 @@ function TechTruckView() {
         const pending = pendingRestock(item.sku);
         const pct = Math.min(100, Math.round((item.qty / (item.min * 2)) * 100));
         return (
-          <div key={item.sku} className="glass" style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', border: `1px solid ${low ? 'rgba(251,191,36,0.3)' : 'var(--border-subtle)'}` }}>
+          <div key={item.sku} className="glass" style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', border: `1px solid ${low ? 'rgba(var(--warn-rgb),0.3)' : 'var(--border-subtle)'}` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{item.name}</div>
@@ -62,15 +62,15 @@ function TechTruckView() {
                 <div style={{ fontSize: 8, color: 'var(--text-low)', letterSpacing: '0.08em' }}>ON HAND</div>
               </div>
             </div>
-            <div style={{ height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.08)', overflow: 'hidden', margin: '8px 0' }}>
+            <div style={{ height: 4, borderRadius: 2, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden', margin: '8px 0' }}>
               <div style={{ width: `${pct}%`, height: '100%', borderRadius: 2, background: item.qty === 0 ? 'var(--status-critical)' : low ? 'var(--status-warn)' : 'var(--status-ok)', transition: 'width 0.25s' }}></div>
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <button onClick={() => useOne(item.sku)} disabled={item.qty === 0}
-                style={{ padding: '6px 14px', background: item.qty ? 'rgba(99,102,241,0.08)' : 'rgba(148,163,184,0.04)', border: `1px solid ${item.qty ? 'var(--border-strong)' : 'var(--border-subtle)'}`, borderRadius: 6, color: item.qty ? 'var(--brand)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: item.qty ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>
+                style={{ padding: '6px 14px', background: item.qty ? 'rgba(var(--brand-rgb),0.08)' : 'rgba(148,163,184,0.04)', border: `1px solid ${item.qty ? 'var(--border-strong)' : 'var(--border-subtle)'}`, borderRadius: 6, color: item.qty ? 'var(--brand)' : 'var(--text-low)', fontSize: 11, fontWeight: 600, cursor: item.qty ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>
                 Use on job
               </button>
-              {pending && <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--status-warn)', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8, padding: '3px 9px' }}>⟳ restock requested</span>}
+              {pending && <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--status-warn)', background: 'rgba(var(--warn-rgb),0.08)', border: '1px solid rgba(var(--warn-rgb),0.25)', borderRadius: 8, padding: '3px 9px' }}>⟳ restock requested</span>}
               {low && !pending && <button onClick={() => restock(item.sku)} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Restocked</button>}
             </div>
           </div>

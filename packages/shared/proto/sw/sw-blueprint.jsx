@@ -5,7 +5,7 @@
 // toggles, and click-a-device → BOM line + spec + price.
 // ============================================================
 
-const BR_TRADE_COLOR = { 'CCTV': '#7D7CF5', 'Access': '#6EE7B7', 'Access (PACS)': '#6EE7B7', 'Intrusion': '#FCD34D', 'Cabling': '#A78BFA', 'Fiber': '#A78BFA', 'Network': '#7DD3FC', 'Intercom': '#FDBA74', 'Paging': '#FDBA74', 'Nurse call': '#F9A8D4', 'Fire': '#F87171', 'Div 28': '#94A3B8', 'Div 27': '#94A3B8' };
+const BR_TRADE_COLOR = { 'CCTV': 'var(--brand-hover)', 'Access': '#6EE7B7', 'Access (PACS)': '#6EE7B7', 'Intrusion': '#FCD34D', 'Cabling': 'var(--accent-2)', 'Fiber': 'var(--accent-2)', 'Network': '#7DD3FC', 'Intercom': '#FDBA74', 'Paging': '#FDBA74', 'Nurse call': '#F9A8D4', 'Fire': '#F87171', 'Div 28': '#94A3B8', 'Div 27': '#94A3B8' };
 
 /* Combined single-plan model: rooms + every trade's devices */
 function brPlan(opp) {
@@ -67,7 +67,7 @@ function BrPlanSVG({ opp, plan, marked, layers, selected, onSelect }) {
       {plan.rooms.map((r, i) => (
         <g key={i}>
           <rect x={r.x - 0.45} y={r.y - 0.45} width={r.w + 0.9} height={r.h + 0.9} fill="none" stroke="rgba(125,211,252,0.55)" strokeWidth="0.28" />
-          <rect x={r.x} y={r.y} width={r.w} height={r.h} fill="rgba(99,102,241,0.02)" stroke="rgba(125,211,252,0.45)" strokeWidth="0.3" />
+          <rect x={r.x} y={r.y} width={r.w} height={r.h} fill="rgba(var(--brand-rgb),0.02)" stroke="rgba(125,211,252,0.45)" strokeWidth="0.3" />
           <text x={r.x + 1.5} y={r.y + 3} fontSize="1.8" fill="rgba(125,211,252,0.65)" fontFamily="var(--font-mono)">{100 + i * 2}</text>
           <text x={r.x + 1.5} y={r.y + 5.4} fontSize="1.3" fill="rgba(125,211,252,0.4)" fontFamily="var(--font-mono)">{Math.round(r.w * 2) * Math.round(r.h * 2)} SF</text>
           {/* room dimension */}
@@ -86,7 +86,7 @@ function BrPlanSVG({ opp, plan, marked, layers, selected, onSelect }) {
       <g transform="translate(88 16.5)">
         <path d="M 0 0 L 1.4 0 L 0 1.4 Z" fill="#FCD34D" />
         <circle cx="0.35" cy="0.35" r="0.28" fill="#0B111E" />
-        <text x="2.2" y="1" fontSize="1.3" fill="rgba(251,191,36,0.75)" fontFamily="var(--font-mono)">BM-1 EL 100.00'</text>
+        <text x="2.2" y="1" fontSize="1.3" fill="rgba(var(--warn-rgb),0.75)" fontFamily="var(--font-mono)">BM-1 EL 100.00'</text>
       </g>
       <g transform="translate(63 74.2)">
         {[0, 1, 2, 3].map(i => <rect key={i} x={i * 4} width="4" height="1.1" fill={i % 2 ? 'rgba(125,211,252,0.75)' : 'rgba(125,211,252,0.18)'} stroke="rgba(125,211,252,0.6)" strokeWidth="0.12" />)}
@@ -126,13 +126,13 @@ function BrPlanSVG({ opp, plan, marked, layers, selected, onSelect }) {
       {marked && selected && layers[selected.trade] !== false && (
         <g pointerEvents="none">
           <line x1={selected.x + 1.4} y1={selected.y - 1.4} x2={selected.x + 5} y2={selected.y - 4} stroke="#FCD34D" strokeWidth="0.25" />
-          <rect x={selected.x + 5} y={selected.y - 6.4} width="9.5" height="3.2" rx="0.5" fill="rgba(251,191,36,0.14)" stroke="#FCD34D" strokeWidth="0.25" />
+          <rect x={selected.x + 5} y={selected.y - 6.4} width="9.5" height="3.2" rx="0.5" fill="rgba(var(--warn-rgb),0.14)" stroke="#FCD34D" strokeWidth="0.25" />
           <text x={selected.x + 9.75} y={selected.y - 4.1} fontSize="1.8" fill="#FCD34D" textAnchor="middle" fontFamily="var(--font-mono)">{selected.tag}</text>
         </g>
       )}
       {marked ? (
         <g transform="translate(5 71.2)">
-          <rect width="38" height="3.8" rx="0.5" fill="rgba(251,191,36,0.1)" stroke="rgba(251,191,36,0.55)" strokeWidth="0.25" />
+          <rect width="38" height="3.8" rx="0.5" fill="rgba(var(--warn-rgb),0.1)" stroke="rgba(var(--warn-rgb),0.55)" strokeWidth="0.25" />
           <text x="19" y="2.6" fontSize="1.6" fill="#FCD34D" textAnchor="middle" fontFamily="var(--font-mono)" letterSpacing="0.3">SHIELDTECH AI MARKUP · DIMS FIELD-VERIFIED · SURVEY GRADE</text>
         </g>
       ) : (
@@ -201,7 +201,7 @@ function BrBlueprint({ opp, state, update, onClose }) {
             const on = layers[t] !== false;
             const c = BR_TRADE_COLOR[t] || '#7DD3FC';
             return (
-              <button key={t} onClick={() => setLayers(p => ({ ...p, [t]: !on }))} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 11px', borderRadius: 999, cursor: 'pointer', background: on ? `color-mix(in srgb, ${c} 12%, transparent)` : 'rgba(99,102,241,0.03)', border: `1px solid ${on ? c : 'var(--border-subtle)'}`, font: '600 11px/1 var(--font-body)', color: on ? c : 'var(--text-low)' }}>
+              <button key={t} onClick={() => setLayers(p => ({ ...p, [t]: !on }))} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 11px', borderRadius: 999, cursor: 'pointer', background: on ? `color-mix(in srgb, ${c} 12%, transparent)` : 'rgba(var(--brand-rgb),0.03)', border: `1px solid ${on ? c : 'var(--border-subtle)'}`, font: '600 11px/1 var(--font-body)', color: on ? c : 'var(--text-low)' }}>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: on ? c : 'var(--text-low)' }} />{t}
               </button>
             );
@@ -231,7 +231,7 @@ function BrBlueprint({ opp, state, update, onClose }) {
               </div>
             </div>
             {/* wipe line */}
-            <div style={{ position: 'absolute', top: 0, bottom: 0, left: wipe + '%', width: 2, background: '#FCD34D', boxShadow: '0 0 12px rgba(251,191,36,0.6)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', top: 0, bottom: 0, left: wipe + '%', width: 2, background: '#FCD34D', boxShadow: '0 0 12px rgba(var(--warn-rgb),0.6)', pointerEvents: 'none' }} />
           </div>
           {/* wipe slider */}
           <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 18, width: 'min(420px, 70%)', padding: '10px 16px', borderRadius: 999, background: 'rgba(8,11,18,0.88)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', gap: 12, backdropFilter: 'blur(10px)' }}>
@@ -243,7 +243,7 @@ function BrBlueprint({ opp, state, update, onClose }) {
           {sel && selRow && (
             <div className="sw-up" style={{ position: 'absolute', top: 16, right: 16, width: 300, borderRadius: 'var(--radius-lg)', background: 'rgba(10,15,26,0.96)', border: '1px solid var(--border-strong)', backdropFilter: 'blur(12px)', overflow: 'hidden' }}>
               <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 9 }}>
-                <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.5)', font: '700 11px/1 var(--font-mono)', color: '#FCD34D' }}>{sel.tag}</span>
+                <span style={{ padding: '3px 8px', borderRadius: 6, background: 'rgba(var(--warn-rgb),0.12)', border: '1px solid rgba(var(--warn-rgb),0.5)', font: '700 11px/1 var(--font-mono)', color: '#FCD34D' }}>{sel.tag}</span>
                 <span style={{ flex: 1, font: '600 12px/1.3 var(--font-body)', color: 'var(--text-high)' }}>{sel.trade}</span>
                 <button onClick={() => setSel(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}><Icon name="x" size={13} color="var(--text-low)" /></button>
               </div>
@@ -251,7 +251,7 @@ function BrBlueprint({ opp, state, update, onClose }) {
                 <div style={{ font: '500 12.5px/1.45 var(--font-body)', color: 'var(--text-high)' }}>{selRow.item}</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   {[['Spec §', selRow.csi], ['Sheet', selRow.sheet], ['Qty (bid)', selQty + ' ' + selRow.unit], ['Sell / unit', fmt(unitPrice)]].map(([l, v]) => (
-                    <div key={l} style={{ padding: '7px 9px', borderRadius: 8, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)' }}>
+                    <div key={l} style={{ padding: '7px 9px', borderRadius: 8, background: 'rgba(var(--brand-rgb),0.05)', border: '1px solid var(--border-subtle)' }}>
                       <div style={{ font: '600 8.5px/1 var(--font-mono)', color: 'var(--text-low)', letterSpacing: '0.1em' }}>{l.toUpperCase()}</div>
                       <div style={{ font: '600 12px/1.2 var(--font-mono)', color: 'var(--text-high)', marginTop: 4 }}>{v}</div>
                     </div>
@@ -282,7 +282,7 @@ function BrBlueprint({ opp, state, update, onClose }) {
             {rows.map(r => {
               const hot = sel && sel.rowId === r.id;
               return (
-                <div key={r.id} data-spec={r.id} style={{ padding: '11px 16px', borderBottom: '1px solid var(--border-subtle)', background: hot ? 'rgba(251,191,36,0.08)' : 'transparent', borderLeft: hot ? '2px solid #FCD34D' : '2px solid transparent' }}>
+                <div key={r.id} data-spec={r.id} style={{ padding: '11px 16px', borderBottom: '1px solid var(--border-subtle)', background: hot ? 'rgba(var(--warn-rgb),0.08)' : 'transparent', borderLeft: hot ? '2px solid #FCD34D' : '2px solid transparent' }}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
                     <span style={{ font: '600 10.5px/1 var(--font-mono)', color: 'var(--brand)' }}>§{r.csi}</span>
                     <span style={{ font: '600 10px/1 var(--font-mono)', color: 'var(--text-low)' }}>{r.sheet}</span>

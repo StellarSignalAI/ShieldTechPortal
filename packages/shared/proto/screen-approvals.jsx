@@ -78,13 +78,13 @@ function ApprovalsScreen() {
   };
 
   const tagColors = {
-    pricing: { bg: 'rgba(251,191,36,0.12)', color: 'var(--status-warn)', border: 'rgba(251,191,36,0.25)' },
-    comms: { bg: 'rgba(99,102,241,0.12)', color: 'var(--brand)', border: 'rgba(99,102,241,0.25)' },
-    contract: { bg: 'rgba(192,132,252,0.12)', color: '#c084fc', border: 'rgba(192,132,252,0.25)' },
-    alarm: { bg: 'rgba(244,63,94,0.12)', color: 'var(--status-critical)', border: 'rgba(244,63,94,0.25)' },
-    refund: { bg: 'rgba(52,211,153,0.12)', color: 'var(--status-ok)', border: 'rgba(52,211,153,0.25)' },
-    timesheet: { bg: 'rgba(52,211,153,0.12)', color: 'var(--status-ok)', border: 'rgba(52,211,153,0.25)' },
-    expense: { bg: 'rgba(251,191,36,0.12)', color: 'var(--status-warn)', border: 'rgba(251,191,36,0.25)' },
+    pricing: { bg: 'rgba(var(--warn-rgb),0.12)', color: 'var(--status-warn)', border: 'rgba(var(--warn-rgb),0.25)' },
+    comms: { bg: 'rgba(var(--brand-rgb),0.12)', color: 'var(--brand)', border: 'rgba(var(--brand-rgb),0.25)' },
+    contract: { bg: 'rgba(25,227,236,0.12)', color: 'var(--accent-2)', border: 'rgba(25,227,236,0.25)' },
+    alarm: { bg: 'rgba(var(--critical-rgb),0.12)', color: 'var(--status-critical)', border: 'rgba(var(--critical-rgb),0.25)' },
+    refund: { bg: 'rgba(var(--ok-rgb),0.12)', color: 'var(--status-ok)', border: 'rgba(var(--ok-rgb),0.25)' },
+    timesheet: { bg: 'rgba(var(--ok-rgb),0.12)', color: 'var(--status-ok)', border: 'rgba(var(--ok-rgb),0.25)' },
+    expense: { bg: 'rgba(var(--warn-rgb),0.12)', color: 'var(--status-warn)', border: 'rgba(var(--warn-rgb),0.25)' },
   };
 
   const riskIcons = { low: '○', medium: '◐', high: '●' };
@@ -104,7 +104,7 @@ function ApprovalsScreen() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
             padding: '6px 14px', borderRadius: 100,
-            background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)',
+            background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)',
             display: 'flex', alignItems: 'center', gap: 6
           }}>
             <span className="mono" style={{ fontSize: 18, fontWeight: 600, color: 'var(--brand)' }}>{queue.length}</span>
@@ -153,7 +153,7 @@ function ApprovalsScreen() {
               {/* Header */}
               <div style={{
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
-                borderBottom: '1px solid rgba(99,102,241,0.05)'
+                borderBottom: '1px solid rgba(var(--brand-rgb),0.05)'
               }}>
                 <span style={{
                   fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
@@ -180,7 +180,7 @@ function ApprovalsScreen() {
                 {/* Draft content (if present) */}
                 {a.content && (
                   <div style={{
-                    background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)',
+                    background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)',
                     borderRadius: 6, padding: 14, fontSize: 12, color: 'var(--text-mid)',
                     lineHeight: 1.7, marginBottom: 14, whiteSpace: 'pre-line',
                     fontFamily: 'var(--font-body)'
@@ -193,20 +193,20 @@ function ApprovalsScreen() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={() => resolve(a, 'approve')} style={{
-                      background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)',
+                      background: 'rgba(var(--ok-rgb),0.1)', border: '1px solid rgba(var(--ok-rgb),0.25)',
                       color: 'var(--status-ok)', padding: '7px 18px', borderRadius: 6,
                       fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)',
                       display: 'flex', alignItems: 'center', gap: 4
                     }}>✓ Approve</button>
                     <button onClick={() => resolve(a, 'reject')} style={{
-                      background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.15)',
+                      background: 'rgba(var(--critical-rgb),0.06)', border: '1px solid rgba(var(--critical-rgb),0.15)',
                       color: 'var(--status-critical)', padding: '7px 14px', borderRadius: 6,
                       fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)',
                       display: 'flex', alignItems: 'center', gap: 4
                     }}>✕ Reject</button>
                     {a.content && (
                       <button onClick={() => shieldModal({ kind: 'editor', title: 'Edit Draft — ' + a.title, subtitle: 'Affects: ' + a.who, submitLabel: 'Approve & Send', successMsg: 'Approved & sent: ' + a.title, value: a.content, onSubmit: () => resolve(a, 'approve') })} style={{
-                        background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)',
+                        background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)',
                         color: 'var(--brand)', padding: '7px 14px', borderRadius: 6,
                         fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)'
                       }}>Edit</button>

@@ -20,7 +20,7 @@ function hexToRgba(hex, a) {
 /* ── The widget shell (the "card") ──
    Provides the rounded dark-glass surface, an accent wash, a top-lit highlight,
    and a standard header (title left, glyph right). Body is the children. */
-function WCard({ size = 'medium', accent = '#6366F1', title, sub, glyph, children, flush = false, onClick }) {
+function WCard({ size = 'medium', accent = 'var(--brand)', title, sub, glyph, children, flush = false, onClick }) {
   const s = WSIZE[size];
   const pad = size === 'small' ? 14 : 16;
   return (
@@ -101,7 +101,7 @@ function WRow({ label, glyph, glyphColor, a, b, accent, last }) {
 
 /* ── Divider used under the header on medium/large (like the weather hairline) ── */
 /* Shared empty state for widgets whose data source has no records yet */
-function WNoData({ size, accent = '#6366F1', title, glyph, sub }) {
+function WNoData({ size, accent = 'var(--brand)', title, glyph, sub }) {
   return (
     <WCard size={size} accent={accent} title={title} glyph={glyph} sub={sub}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 6, padding: 8 }}>
@@ -117,7 +117,7 @@ function WDivide() {
 }
 
 /* ── Donut/ring gauge ── */
-function WRing({ pct, size = 64, stroke = 7, color = '#6366F1', label, value }) {
+function WRing({ pct, size = 64, stroke = 7, color = 'var(--brand)', label, value }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const off = c * (1 - pct / 100);
@@ -136,7 +136,7 @@ function WRing({ pct, size = 64, stroke = 7, color = '#6366F1', label, value }) 
 }
 
 /* ── Sparkline ── */
-function WSpark({ data, color = '#6366F1', w = 120, h = 34, fill = true }) {
+function WSpark({ data, color = 'var(--brand)', w = 120, h = 34, fill = true }) {
   const max = Math.max(...data), min = Math.min(...data);
   const rng = max - min || 1;
   const pts = data.map((v, i) => [(i / (data.length - 1)) * w, h - ((v - min) / rng) * (h - 4) - 2]);
@@ -151,7 +151,7 @@ function WSpark({ data, color = '#6366F1', w = 120, h = 34, fill = true }) {
 }
 
 /* ── Mini bar row ── */
-function WBars({ data, color = '#6366F1', h = 38 }) {
+function WBars({ data, color = 'var(--brand)', h = 38 }) {
   const max = Math.max(...data.map(d => d.v)) || 1;
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: h }}>

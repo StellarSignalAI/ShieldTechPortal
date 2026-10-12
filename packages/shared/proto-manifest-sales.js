@@ -8,4 +8,5 @@ import './proto/photos-shared.jsx';
 import './proto/mobile-ui.jsx';
 import './proto/screen-login.jsx';
 import './proto/screen-auth.jsx';
+import './proto/uc-ui.jsx';
 import './proto/sales-app.jsx';

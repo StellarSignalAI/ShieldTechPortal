@@ -41,7 +41,7 @@ const S = {
   val: 'font-size:13px;color:#e5ecf5;word-break:break-all;',
   input: 'width:100%;box-sizing:border-box;padding:10px 12px;margin-bottom:10px;border-radius:8px;border:1px solid rgba(63,169,245,0.25);background:#0a0e14;color:#e5ecf5;font-size:13px;',
   btnRow: 'display:flex;gap:10px;margin-top:20px;',
-  approve: 'flex:1;padding:11px;border-radius:8px;border:1px solid rgba(52,211,153,0.5);background:rgba(52,211,153,0.15);color:#34d399;font-size:13px;font-weight:700;cursor:pointer;',
+  approve: 'flex:1;padding:11px;border-radius:8px;border:1px solid rgba(var(--ok-rgb),0.5);background:rgba(var(--ok-rgb),0.15);color:#34d399;font-size:13px;font-weight:700;cursor:pointer;',
   deny: 'flex:1;padding:11px;border-radius:8px;border:1px solid rgba(148,163,184,0.3);background:transparent;color:#8fa3b8;font-size:13px;font-weight:700;cursor:pointer;',
   ghost: 'width:100%;padding:11px;border-radius:8px;border:1px solid rgba(63,169,245,0.35);background:transparent;color:#3fa9f5;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;',
   err: 'font-size:12px;color:#fbbf24;margin-top:12px;line-height:1.5;',

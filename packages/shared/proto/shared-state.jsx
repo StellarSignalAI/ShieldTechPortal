@@ -202,8 +202,17 @@ const mobileTabsStore = createShieldStore('mobiletabs', {
     { id: 'calendar',         icon: 'calendar',  label: 'Schedule' },
     { id: 'dispatch',         icon: 'dispatch',  label: 'Field' },
     { id: 'finance',          icon: 'finance',   label: 'Money' },
+    { id: 'cameras',          icon: 'topology',  label: 'OS' },
   ],
 });
+/* Existing 4-tab defaults pick up the ShieldTech OS tab in the open slot. */
+(() => {
+  const c = mobileTabsStore.get();
+  const legacy = ['custom-dashboard', 'calendar', 'dispatch', 'finance'];
+  if (c && Array.isArray(c.tabs) && c.tabs.length === 4 && c.tabs.every((t, i) => t.id === legacy[i]) && (c.maxTabs || 6) >= 6) {
+    mobileTabsStore.set({ ...c, maxTabs: 6, tabs: [...c.tabs, { id: 'cameras', icon: 'topology', label: 'OS' }] });
+  }
+})();
 /* Migrate the original 5-slot default up to 6 so there's an open slot to fill. */
 (() => {
   const c = mobileTabsStore.get();
@@ -230,7 +239,7 @@ const truckStore = createShieldStore('truck', {});
    notification prefs, and any future personal toggles. store-sync.js keys this
    to the signed-in user (userprefs:<uid>), so each person keeps their own. */
 const userPrefsStore = createShieldStore('userprefs', {
-  theme: 'dark', status: 'online',
+  theme: 'system', status: 'online',
   notify: { email: true, push: true, desktop: false },
 });
 /* Apply the remembered appearance to the document as soon as it's known and on
@@ -575,14 +584,10 @@ function normalizeJobDates(rec) {
    color, role }. Cached on window so all calendars share one fetch; the demo
    crew only appears when no backend/profiles exist, so screens never render
    an empty scheduler. */
-const TECH_PALETTE = ['#6366F1', '#34D399', '#FBBF24', '#c084fc', '#F43F5E', '#22D3EE', '#A3E635', '#FB923C', '#818CF8', '#F472B6'];
-const DEMO_TECHS = [
-  { id: 'MR', name: 'Mike Reyes', color: '#6366F1' },
-  { id: 'JL', name: 'Jessica Liu', color: '#34D399' },
-  { id: 'KW', name: 'Kevin White', color: '#FBBF24' },
-  { id: 'DP', name: 'Diana Patel', color: '#c084fc' },
-  { id: 'TG', name: 'Tony Garcia', color: '#F43F5E' },
-];
+const TECH_PALETTE = ['var(--brand)', '#34D399', '#FBBF24', 'var(--accent-2)', '#F43F5E', '#22D3EE', '#A3E635', '#FB923C', 'var(--disc-av)', '#F472B6'];
+/* No placeholder crew: technicians are the real user roster (Supabase
+   profiles). Until users are invited the roster is simply empty. */
+const DEMO_TECHS = [];
 function techInitialsOf(name, email) {
   const n = String(name || '').trim();
   if (n && !n.includes('@')) {
@@ -948,9 +953,9 @@ const punchStore = createShieldStore('punch', []);
 const PUNCH_STATUS = {
   open:     { c: '#FBBF24', label: 'Open' },
   done:     { c: '#34D399', label: 'Done' },
-  verified: { c: '#6366F1', label: 'Verified' },
+  verified: { c: 'var(--brand)', label: 'Verified' },
 };
-const PUNCH_TECHS = { MR: { name: 'Mike Reyes', color: '#6366F1' }, JL: { name: 'Jessica Liu', color: '#34D399' }, KW: { name: 'Kevin White', color: '#FBBF24' }, DP: { name: 'Diana Patel', color: '#c084fc' }, TG: { name: 'Tony Garcia', color: '#F43F5E' } };
+const PUNCH_TECHS = { MR: { name: 'Mike Reyes', color: 'var(--brand)' }, JL: { name: 'Jessica Liu', color: '#34D399' }, KW: { name: 'Kevin White', color: '#FBBF24' }, DP: { name: 'Diana Patel', color: 'var(--accent-2)' }, TG: { name: 'Tony Garcia', color: '#F43F5E' } };
 
 /* ── Toast helper ── */
 function showToast(msg, type = 'info') {

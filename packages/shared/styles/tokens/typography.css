@@ -1,11 +1,13 @@
 /* ShieldTech — Typography tokens & webfonts */
-/* Geist (UI/display) + Geist Mono (data/labels) loaded via Google Fonts in each
-   app's index.html. The mono/sans pairing is the ShieldTech signature. */
+/* Inter (UI/display) is the open stand-in for the UniFi console typeface —
+   same neutral grotesque texture, tabular figures, tight tracking on titles.
+   Geist Mono stays for data labels. Both load via Google Fonts in each app's
+   index.html. */
 
 :root {
   /* Families */
-  --font-display: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
 
   /* Scale (html { font-size: 14px } is the base) */

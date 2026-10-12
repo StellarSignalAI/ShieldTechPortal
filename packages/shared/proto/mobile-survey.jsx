@@ -3,7 +3,7 @@
 
 const SV_STEPS = ['Reading floor plan geometry…', 'Detecting entry points & door hardware…', 'Placing camera coverage zones…', 'Matching devices against Price Book…', 'Estimating labor from Skills Matrix…', 'Building report draft…'];
 const SV_DETECT_SEED = [];
-const svInput = { width: '100%', padding: '10px 12px', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
+const svInput = { width: '100%', padding: '10px 12px', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
 const svLabel = { fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-low)', marginBottom: 5, display: 'block' };
 
 /* ════════════ SURVEY LIST ════════════ */
@@ -17,10 +17,10 @@ function MSurvey({ onNav }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <OpsKpis items={[['SURVEYS', surveys.length, 'var(--brand)'], ['DRAFTS', drafts, drafts ? 'var(--status-warn)' : 'var(--status-ok)'], ['EST. VALUE', `$${(pipeline / 1000).toFixed(0)}K`, 'var(--status-ok)']]} />
       <button onClick={() => setBuildId('new')} style={{ padding: '13px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Site Survey</button>
-      <button onClick={() => onNav && onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(99,102,241,0.08), rgba(192,132,252,0.07))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-        <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(99,102,241,0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
+      <button onClick={() => onNav && onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(var(--brand-rgb),0.08), rgba(25,227,236,0.07))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+        <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(var(--brand-rgb),0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
         <span style={{ flex: 1 }}>
-          <span style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>SiteScan 3D capture <span style={{ fontSize: 8, fontWeight: 700, color: '#c084fc', border: '1px solid rgba(192,132,252,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
+          <span style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>SiteScan 3D capture <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--accent-2)', border: '1px solid rgba(25,227,236,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
           <span style={{ display: 'block', fontSize: 9.5, color: 'var(--text-low)' }}>Scan rooms → blueprint → AR → feeds this estimator</span>
         </span>
         <span style={{ color: 'var(--text-low)', fontSize: 14 }}>›</span>
@@ -161,7 +161,7 @@ function MSurveyBuilder({ id, onClose, onNav }) {
           <input type="range" min="15" max="55" value={draft.margin} onChange={e => setDraft(d => ({ ...d, margin: Number(e.target.value) }))} style={{ width: '100%', accentColor: 'var(--brand)' }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
             {[['Hardware', `$${t.hardware.toLocaleString()}`], ['Labor', `$${t.labor.toLocaleString()} · ${Math.round(t.laborHrs)}h`], ['Cost', `$${t.cost.toLocaleString()}`], ['Sell Price', `$${t.price.toLocaleString()}`]].map(([k, v], i) => (
-              <div key={k} style={{ background: i === 3 ? 'rgba(52,211,153,0.08)' : 'rgba(99,102,241,0.03)', border: `1px solid ${i === 3 ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'}`, borderRadius: 9, padding: '8px 10px' }}>
+              <div key={k} style={{ background: i === 3 ? 'rgba(var(--ok-rgb),0.08)' : 'rgba(var(--brand-rgb),0.03)', border: `1px solid ${i === 3 ? 'rgba(var(--ok-rgb),0.3)' : 'var(--border-subtle)'}`, borderRadius: 9, padding: '8px 10px' }}>
                 <div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{k}</div>
                 <div className="mono" style={{ fontSize: 13, fontWeight: 700, color: i === 3 ? 'var(--status-ok)' : 'var(--text-high)' }}>{v}</div>
               </div>
@@ -170,13 +170,13 @@ function MSurveyBuilder({ id, onClose, onNav }) {
         </div>
 
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={save} style={{ flex: 1, padding: '12px 0', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Report</button>
+          <button onClick={save} style={{ flex: 1, padding: '12px 0', background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)', borderRadius: 11, color: 'var(--brand)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Save Report</button>
           <button onClick={toProposal} style={{ flex: 1.5, padding: '12px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 11, color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>→ Draft Proposal</button>
         </div>
       </>}
     </div>
   );
 }
-const svStep = { width: 30, height: 30, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', fontSize: 16, cursor: 'pointer', fontFamily: 'var(--font-body)' };
+const svStep = { width: 30, height: 30, borderRadius: 8, background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', color: 'var(--brand)', fontSize: 16, cursor: 'pointer', fontFamily: 'var(--font-body)' };
 
 Object.assign(window, { MSurvey, MSurveyBuilder });

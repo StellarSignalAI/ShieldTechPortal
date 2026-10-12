@@ -22,6 +22,7 @@ import '@shared/live-map.js';
 import '@shared/email.js';
 import '@shared/acceptance.js';
 import '@shared/pay.js';
+import '@shared/unifi.js';
 import '@shared/receipts.js';
 import '@shared/tickets.js';
 import '@shared/bids.js';

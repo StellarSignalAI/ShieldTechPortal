@@ -41,7 +41,7 @@ function DashboardScreen() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ height: 8, borderRadius: 4, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
+              <div style={{ height: 8, borderRadius: 4, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden' }}>
                 <div style={{ width: '0%', height: '100%', borderRadius: 4, background: 'linear-gradient(90deg, var(--brand), var(--brand-hover))' }} />
               </div>
             </div>
@@ -107,9 +107,9 @@ function DashboardScreen() {
           <div style={{ padding: '14px 18px 10px' }}>
             <SectionHeader title="Fleet Status Map" icon="map-pin" />
           </div>
-          <div style={{ height: 220, position: 'relative', background: 'linear-gradient(180deg, rgba(5,7,10,0.3), rgba(10,14,20,0.8))' }}>
+          <div style={{ height: 220, position: 'relative', background: 'linear-gradient(180deg, rgba(var(--canvas-rgb),0.3), rgba(var(--card-rgb),0.8))' }}>
             <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, opacity: 0.15 }}>
-              <defs><pattern id="mapG" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(99,102,241,0.3)" strokeWidth="0.3"/></pattern></defs>
+              <defs><pattern id="mapG" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(var(--brand-rgb),0.3)" strokeWidth="0.3"/></pattern></defs>
               <rect width="100%" height="100%" fill="url(#mapG)" />
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--text-low)' }}>No customer sites yet</div>
@@ -127,7 +127,7 @@ function DashboardScreen() {
         <GlassPanel style={{ animation: 'fade-up 0.5s ease 0.75s both' }}>
           <SectionHeader title="Upcoming Renewals" icon="clipboard" count={renewals.length} />
           {renewals.length ? renewals.map((r, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < renewals.length - 1 ? '1px solid rgba(99,102,241,0.04)' : 'none' }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < renewals.length - 1 ? '1px solid rgba(var(--brand-rgb),0.04)' : 'none' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>{r.customer}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-low)' }}>{r.plan || 'RMR'} · ${'{'}r.mrr{'}'}/mo</div>
@@ -137,7 +137,7 @@ function DashboardScreen() {
           )) : <Empty>No contracts yet — renewals will appear here.</Empty>}
           <button onClick={() => window.__shieldNav && window.__shieldNav('mrr')} style={{
             width: '100%', marginTop: 10, padding: '6px', fontSize: 11,
-            background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)',
+            background: 'rgba(var(--brand-rgb),0.05)', border: '1px solid var(--border-subtle)',
             borderRadius: 6, color: 'var(--brand)', cursor: 'pointer', fontFamily: 'var(--font-body)'
           }}>View All Contracts →</button>
         </GlassPanel>
@@ -154,8 +154,8 @@ function BarChart({ data }) {
       {data.map((d, i) => (
         <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 60 }}>
-            <div style={{ width: 10, height: `${(d.prev/max)*100}%`, background: 'rgba(99,102,241,0.15)', borderRadius: '2px 2px 0 0' }} />
-            <div style={{ width: 10, height: `${(d.value/max)*100}%`, background: 'var(--brand)', borderRadius: '2px 2px 0 0', boxShadow: '0 0 8px -2px rgba(99,102,241,0.3)' }} />
+            <div style={{ width: 10, height: `${(d.prev/max)*100}%`, background: 'rgba(var(--brand-rgb),0.15)', borderRadius: '2px 2px 0 0' }} />
+            <div style={{ width: 10, height: `${(d.value/max)*100}%`, background: 'var(--brand)', borderRadius: '2px 2px 0 0', boxShadow: '0 0 8px -2px rgba(var(--brand-rgb),0.3)' }} />
           </div>
           <span style={{ fontSize: 9, color: 'var(--text-low)' }}>{d.label}</span>
         </div>
@@ -170,7 +170,7 @@ function MetricRow({ label, value, target, status }) {
       <div className="label-sm" style={{ marginBottom: 4 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span className="mono" style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-high)' }}>{value}</span>
-        <span style={{ fontSize: 10, color: status === 'ok' ? 'var(--status-ok)' : 'var(--status-warn)', background: status === 'ok' ? 'rgba(52,211,153,0.1)' : 'rgba(251,191,36,0.1)', padding: '1px 6px', borderRadius: 4 }}>target: {target}</span>
+        <span style={{ fontSize: 10, color: status === 'ok' ? 'var(--status-ok)' : 'var(--status-warn)', background: status === 'ok' ? 'rgba(var(--ok-rgb),0.1)' : 'rgba(var(--warn-rgb),0.1)', padding: '1px 6px', borderRadius: 4 }}>target: {target}</span>
       </div>
     </div>
   );
@@ -180,8 +180,8 @@ function AlertRow({ severity, message, time, sla }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 'var(--radius-sm)',
-      background: severity === 'critical' ? 'rgba(244,63,94,0.04)' : severity === 'warning' ? 'rgba(251,191,36,0.03)' : 'rgba(99,102,241,0.03)',
-      border: `1px solid ${severity === 'critical' ? 'rgba(244,63,94,0.12)' : severity === 'warning' ? 'rgba(251,191,36,0.08)' : 'var(--border-subtle)'}`
+      background: severity === 'critical' ? 'rgba(var(--critical-rgb),0.04)' : severity === 'warning' ? 'rgba(var(--warn-rgb),0.03)' : 'rgba(var(--brand-rgb),0.03)',
+      border: `1px solid ${severity === 'critical' ? 'rgba(var(--critical-rgb),0.12)' : severity === 'warning' ? 'rgba(var(--warn-rgb),0.08)' : 'var(--border-subtle)'}`
     }}>
       <StatusDot status={severity} size={8} />
       <span style={{ flex: 1, fontSize: 12, color: 'var(--text-high)' }}>{message}</span>
@@ -196,7 +196,7 @@ function AlertRow({ severity, message, time, sla }) {
 function InsightCard({ priority, text, action, model, cost }) {
   const colors = { high: 'var(--status-critical)', medium: 'var(--status-warn)', low: 'var(--brand)' };
   return (
-    <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', borderLeft: `3px solid ${colors[priority]}` }}>
+    <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', borderLeft: `3px solid ${colors[priority]}` }}>
       <p style={{ fontSize: 12, color: 'var(--text-high)', lineHeight: 1.5, marginBottom: 8 }}>{text}</p>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <button onClick={() => {
@@ -204,7 +204,7 @@ function InsightCard({ priority, text, action, model, cost }) {
           const dest = map[action];
           if (dest && window.__shieldNav) { window.__shieldNav(dest); }
           else shieldToast(action);
-        }} style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 6, padding: '3px 10px', color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{action}</button>
+        }} style={{ background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', borderRadius: 6, padding: '3px 10px', color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{action}</button>
         <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{model} · {cost}</span>
       </div>
     </div>
@@ -215,10 +215,10 @@ function MapMarker({ x, y, label, status }) {
   const colors = { online: 'var(--status-ok)', warning: 'var(--status-warn)', critical: 'var(--status-critical)' };
   return (
     <div style={{ position: 'absolute', left: x, top: y, transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-      <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid', borderColor: colors[status], background: 'rgba(10,14,20,0.8)', boxShadow: `0 0 10px ${colors[status]}40`, animation: status === 'critical' ? 'pulse-critical 2s ease-in-out infinite' : 'none' }}>
+      <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid', borderColor: colors[status], background: 'rgba(var(--card-rgb),0.8)', boxShadow: `0 0 10px ${colors[status]}40`, animation: status === 'critical' ? 'pulse-critical 2s ease-in-out infinite' : 'none' }}>
         <div style={{ width: 4, height: 4, borderRadius: '50%', background: colors[status], margin: '2px auto' }} />
       </div>
-      <span style={{ fontSize: 8, color: 'var(--text-mid)', whiteSpace: 'nowrap', background: 'rgba(10,14,20,0.8)', padding: '1px 4px', borderRadius: 3 }}>{label}</span>
+      <span style={{ fontSize: 8, color: 'var(--text-mid)', whiteSpace: 'nowrap', background: 'rgba(var(--card-rgb),0.8)', padding: '1px 4px', borderRadius: 3 }}>{label}</span>
     </div>
   );
 }

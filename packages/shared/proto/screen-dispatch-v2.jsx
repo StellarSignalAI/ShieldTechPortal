@@ -1,7 +1,8 @@
 /* Dispatch V2 — Real Map, Right-Click Context Menu, Geofencing, Schedule Board */
 
-function DispatchScreen() {
-  const [view, setView] = React.useState('map');
+function DispatchScreen({ view: viewProp, embedded }) {
+  const [viewState, setView] = React.useState('map');
+  const view = viewProp || viewState;
   const [selectedTech, setSelectedTech] = React.useState(null);
   const [contextMenu, setContextMenu] = React.useState(null);
   const [geofenceAlert, setGeofenceAlert] = React.useState(null);
@@ -54,14 +55,14 @@ function DispatchScreen() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 76px)', overflow: 'hidden' }} onClick={closeContext}>
-      {/* Dispatch Toolbar */}
-      <div style={{ display: 'flex', gap: 6, padding: '0 0 10px', flexShrink: 0, justifyContent: 'space-between', flexWrap: 'wrap', rowGap: 8 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: embedded ? '100%' : 'calc(100vh - 76px)', overflow: 'hidden' }} onClick={closeContext}>
+      {/* Dispatch Toolbar (hidden when the unified DELIVER screen drives the view) */}
+      {!embedded && <div style={{ display: 'flex', gap: 6, padding: '0 0 10px', flexShrink: 0, justifyContent: 'space-between', flexWrap: 'wrap', rowGap: 8 }}>
         <div style={{ display: 'flex', gap: 4, overflowX: 'auto', maxWidth: '100%', paddingBottom: 2 }}>
           {[{id:'map',label:'Live Map'},{id:'schedule',label:'Schedule Board'},{id:'queue',label:'Dispatch Queue'},{id:'driving',label:'Driving Safety'},{id:'owner',label:'Where Are My Techs?'}].map(t => (
             <button key={t.id} onClick={() => setView(t.id)} style={{
               padding: '5px 14px', borderRadius: 6, fontSize: 11, fontWeight: view===t.id?600:400,
-              background: view===t.id?'rgba(99,102,241,0.12)':'transparent',
+              background: view===t.id?'rgba(var(--brand-rgb),0.12)':'transparent',
               border: `1px solid ${view===t.id?'var(--brand)':'var(--border-subtle)'}`,
               color: view===t.id?'var(--brand)':'var(--text-mid)',
               cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap'
@@ -69,14 +70,14 @@ function DispatchScreen() {
           ))}
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <div style={{ padding: '4px 10px', borderRadius: 4, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-low)' }}>
+          <div style={{ padding: '4px 10px', borderRadius: 4, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', fontSize: 10, color: 'var(--text-low)' }}>
             GPS: live phone positions
           </div>
-          <button onClick={() => showToast('Route optimization needs live GPS + scheduled jobs — not available yet')} style={{ padding: '5px 12px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button onClick={() => showToast('Route optimization needs live GPS + scheduled jobs — not available yet')} style={{ padding: '5px 12px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 4 }}>
             <span>⟡</span> Optimize Routes
           </button>
         </div>
-      </div>
+      </div>}
 
       {/* Content */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
@@ -105,7 +106,7 @@ function DispatchScreen() {
           <GlassPanel style={{ borderLeft: '3px solid var(--status-ok)', padding: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div style={{ display: 'flex', gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(52,211,153,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(var(--ok-rgb),0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <StatusDot status="online" size={10} />
                 </div>
                 <div>
@@ -146,7 +147,8 @@ function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMe
   // Collapsible roster so the map is fully visible — especially on mobile where
   // the panel would otherwise cover most of the screen. Opening a tech's detail
   // is what surfaces their projects + options.
-  const [rosterOpen, setRosterOpen] = React.useState(true);
+  // Phones start with the roster collapsed so the map stays unobstructed.
+  const [rosterOpen, setRosterOpen] = React.useState(() => window.innerWidth > 820);
   return (
     <div className="glass" style={{ position: 'relative', height: '100%', minHeight: 340, overflow: 'hidden', borderRadius: 12 }}>
       {/* Real map fills the whole surface; roster + legend float on top */}
@@ -155,7 +157,7 @@ function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMe
       {/* Legend — top-left */}
       <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 500, display: 'flex', flexDirection: 'column', gap: 4 }}>
         {[{status:'on-site',label:'On-Site',color:'var(--status-ok)'},{status:'driving',label:'Driving',color:'var(--brand)'},{status:'idle',label:'Idle',color:'var(--status-warn)'}].map(s => (
-          <div key={s.status} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 8px', borderRadius: 4, background: 'rgba(5,7,10,0.8)', border: '1px solid var(--border-subtle)' }}>
+          <div key={s.status} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 8px', borderRadius: 4, background: 'rgba(var(--canvas-rgb),0.8)', border: '1px solid var(--border-subtle)' }}>
             <StatusDot status={s.status==='on-site'?'online':s.status==='driving'?'info':'warning'} size={6} />
             <span style={{ fontSize: 9, color: 'var(--text-mid)' }}>{s.label}</span>
           </div>
@@ -192,7 +194,7 @@ function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMe
                 onContextMenu={(e) => handleContextMenu(e, tech)}
                 style={{
                   padding: 10, borderRadius: 8, cursor: 'pointer',
-                  background: selectedTech === tech.id ? 'rgba(99,102,241,0.1)' : 'var(--glass-bg)',
+                  background: selectedTech === tech.id ? 'rgba(var(--brand-rgb),0.1)' : 'var(--glass-bg)',
                   border: `1px solid ${selectedTech === tech.id ? 'var(--brand)' : 'var(--border-subtle)'}`,
                   transition: 'all 0.15s'
                 }}>
@@ -221,8 +223,8 @@ function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMe
                 </div>
                 {(notifyOnSite[tech.id] || notifyLeave[tech.id]) && (
                   <div style={{ marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                    {notifyOnSite[tech.id] && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(52,211,153,0.08)', color: 'var(--status-ok)', border: '1px solid rgba(52,211,153,0.15)' }}>⊙ Notify on arrival</span>}
-                    {notifyLeave[tech.id] && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(251,191,36,0.08)', color: 'var(--status-warn)', border: '1px solid rgba(251,191,36,0.15)' }}>⊙ Notify on departure</span>}
+                    {notifyOnSite[tech.id] && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(var(--ok-rgb),0.08)', color: 'var(--status-ok)', border: '1px solid rgba(var(--ok-rgb),0.15)' }}>⊙ Notify on arrival</span>}
+                    {notifyLeave[tech.id] && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 3, background: 'rgba(var(--warn-rgb),0.08)', color: 'var(--status-warn)', border: '1px solid rgba(var(--warn-rgb),0.15)' }}>⊙ Notify on departure</span>}
                   </div>
                 )}
               </div>
@@ -242,7 +244,7 @@ function DispatchMapView({ techs, selectedTech, setSelectedTech, handleContextMe
                   const sent = results.filter(r => r && r.ok).length;
                   showToast(sent ? `Broadcast delivered to ${sent} technician${sent === 1 ? '' : 's'}` : 'Broadcast failed — try Messages directly');
                 } });
-              }} style={{ width: '100%', padding: '8px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast All Techs</button>
+              }} style={{ width: '100%', padding: '8px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Broadcast All Techs</button>
               <button onClick={() => showToast('Geofence reports need telematics history — not wired up yet')} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Today's Geofence Report</button>
             </div>
           </div>
@@ -283,7 +285,7 @@ function DispatchContextMenu({ x, y, tech, onClose, notifyOnSite, setNotifyOnSit
     <div style={menuStyle} onClick={e => e.stopPropagation()}>
       {/* Header */}
       <div style={{ padding: '8px 14px 10px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(99,102,241,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--brand)' }}>{tech.id}</div>
+        <div style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(var(--brand-rgb),0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--brand)' }}>{tech.id}</div>
         <div>
           <div style={{ fontSize: 12, fontWeight: 600 }}>{tech.name}</div>
           <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{tech.status} · {tech.job}</div>
@@ -298,7 +300,7 @@ function DispatchContextMenu({ x, y, tech, onClose, notifyOnSite, setNotifyOnSit
             color: 'var(--text-high)', fontSize: 12, cursor: 'pointer',
             fontFamily: 'var(--font-body)', textAlign: 'left', transition: 'background 0.1s'
           }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.06)'}
           onMouseLeave={e => e.currentTarget.style.background = 'none'}>
             <span style={{ width: 16, textAlign: 'center', fontSize: 12, opacity: 0.6 }}>{item.icon}</span>
             <span style={{ flex: 1 }}>{item.label}</span>
@@ -348,7 +350,7 @@ function DispatchScheduleBoard({ techs, showToast }) {
   const [detailModal, setDetailModal] = React.useState(null);
   const boardRef = React.useRef(null);
 
-  const typeColors = { install: 'var(--brand)', service: 'rgba(99,102,241,0.6)', pm: 'var(--status-ok)', internal: 'rgba(192,132,252,0.5)', open: 'rgba(92,111,134,0.2)', emergency: 'var(--status-critical)' };
+  const typeColors = { install: 'var(--brand)', service: 'rgba(var(--brand-rgb),0.6)', pm: 'var(--status-ok)', internal: 'rgba(25,227,236,0.5)', open: 'rgba(92,111,134,0.2)', emergency: 'var(--status-critical)' };
 
   /* ── Drag Handlers ── */
   const onBlockMouseDown = (e, techId, blockIdx) => {
@@ -457,11 +459,11 @@ function DispatchScheduleBoard({ techs, showToast }) {
           {/* View toggle */}
           <div style={{ display: 'flex', gap: 0, borderRadius: 5, overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
             {[{id:'day',l:'Day'},{id:'week',l:'Week'}].map(v => (
-              <button key={v.id} onClick={() => setSchedView(v.id)} style={{ padding: '4px 10px', fontSize: 10, fontWeight: 500, background: schedView===v.id?'rgba(99,102,241,0.12)':'transparent', border: 'none', color: schedView===v.id?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{v.l}</button>
+              <button key={v.id} onClick={() => setSchedView(v.id)} style={{ padding: '4px 10px', fontSize: 10, fontWeight: 500, background: schedView===v.id?'rgba(var(--brand-rgb),0.12)':'transparent', border: 'none', color: schedView===v.id?'var(--brand)':'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{v.l}</button>
             ))}
           </div>
           <button onClick={() => setDayOffset(d => d - 1)} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>← Prev</button>
-          <button onClick={() => setDayOffset(0)} style={{ padding: '4px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Today</button>
+          <button onClick={() => setDayOffset(0)} style={{ padding: '4px 10px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Today</button>
           <button onClick={() => setDayOffset(d => d + 1)} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Next →</button>
           <button onClick={() => setAddModal({ techId: activeTechs[0]?.id || 'MR', start: 4 })} style={{ padding: '4px 12px', background: 'var(--brand)', border: 'none', borderRadius: 4, color: '#fff', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Job</button>
         </div>
@@ -481,7 +483,7 @@ function DispatchScheduleBoard({ techs, showToast }) {
           <div style={{ width: 140, padding: '8px 12px', borderRight: '1px solid var(--border-subtle)', fontSize: 10, fontWeight: 600, color: 'var(--text-low)' }}>TECHNICIAN</div>
           <div style={{ flex: 1, display: 'flex' }} data-time-area>
             {hours.map(h => (
-              <div key={h} style={{ flex: 1, padding: '8px 0', textAlign: 'center', fontSize: 9, color: 'var(--text-low)', borderRight: '1px solid rgba(99,102,241,0.04)' }}>{h}</div>
+              <div key={h} style={{ flex: 1, padding: '8px 0', textAlign: 'center', fontSize: 9, color: 'var(--text-low)', borderRight: '1px solid rgba(var(--brand-rgb),0.04)' }}>{h}</div>
             ))}
           </div>
         </div>
@@ -493,9 +495,9 @@ function DispatchScheduleBoard({ techs, showToast }) {
             <div key={tech.id} data-tech-row={tech.id}
               onDoubleClick={(e) => onRowDoubleClick(e, tech.id)}
               onClick={(e) => onRowClick(e, tech.id)}
-              style={{ display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.04)', minHeight: 52, alignItems: 'center', background: isDropTarget ? 'rgba(99,102,241,0.04)' : 'transparent', transition: 'background 0.15s' }}>
+              style={{ display: 'flex', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', minHeight: 52, alignItems: 'center', background: isDropTarget ? 'rgba(var(--brand-rgb),0.04)' : 'transparent', transition: 'background 0.15s' }}>
               <div style={{ width: 140, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, borderRight: '1px solid var(--border-subtle)' }}>
-                <div style={{ width: 24, height: 24, borderRadius: 5, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--brand)' }}>{tech.id}</div>
+                <div style={{ width: 24, height: 24, borderRadius: 5, background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid rgba(var(--brand-rgb),0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--brand)' }}>{tech.id}</div>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-high)' }}>{tech.name.split(' ')[0]}</div>
                   <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{blocks.length} jobs</div>
@@ -503,7 +505,7 @@ function DispatchScheduleBoard({ techs, showToast }) {
               </div>
               <div style={{ flex: 1, position: 'relative', height: 42, padding: '0 2px' }} data-time-area>
                 {hours.map((_, i) => (
-                  <div key={i} style={{ position: 'absolute', left: `${(i/hours.length)*100}%`, top: 0, bottom: 0, width: 1, background: 'rgba(99,102,241,0.04)' }} />
+                  <div key={i} style={{ position: 'absolute', left: `${(i/hours.length)*100}%`, top: 0, bottom: 0, width: 1, background: 'rgba(var(--brand-rgb),0.04)' }} />
                 ))}
 
                 {blocks.map((block, i) => {
@@ -526,7 +528,7 @@ function DispatchScheduleBoard({ techs, showToast }) {
                         cursor: isDrag ? 'grabbing' : 'grab',
                         border: isSel ? '2px solid #fff' : '1px solid rgba(255,255,255,0.15)',
                         opacity: isDrag ? 0.4 : 1,
-                        boxShadow: isSel ? '0 0 12px rgba(99,102,241,0.4)' : 'none',
+                        boxShadow: isSel ? '0 0 12px rgba(var(--brand-rgb),0.4)' : 'none',
                         zIndex: isSel ? 5 : 1,
                         transition: isDrag ? 'none' : 'opacity 0.15s',
                         display: 'flex', alignItems: 'center', gap: 4
@@ -568,7 +570,7 @@ function DispatchScheduleBoard({ techs, showToast }) {
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)' }}>
             <div style={{ width: 140, padding: '8px 12px', borderRight: '1px solid var(--border-subtle)', fontSize: 10, fontWeight: 600, color: 'var(--text-low)' }}>TECHNICIAN</div>
             {weekDays.map(d => (
-              <div key={d} style={{ flex: 1, padding: '8px 0', textAlign: 'center', fontSize: 10, fontWeight: 600, color: 'var(--text-low)', borderRight: '1px solid rgba(99,102,241,0.04)' }}>
+              <div key={d} style={{ flex: 1, padding: '8px 0', textAlign: 'center', fontSize: 10, fontWeight: 600, color: 'var(--text-low)', borderRight: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                 {d} <span className="mono" style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-low)', opacity: 0.6 }}>{['Jun 2','Jun 3','Jun 4','Jun 5','Jun 6'][weekDays.indexOf(d)]}</span>
               </div>
             ))}
@@ -579,17 +581,17 @@ function DispatchScheduleBoard({ techs, showToast }) {
             const weekBlocks = { Mon: [], Tue: [], Wed: [], Thu: [], Fri: [] };
             blocks.forEach((b, i) => { const day = weekDays[i % 5]; weekBlocks[day].push(b); });
             return (
-              <div key={tech.id} style={{ display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.04)', minHeight: 56 }}>
+              <div key={tech.id} style={{ display: 'flex', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', minHeight: 56 }}>
                 <div style={{ width: 140, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, borderRight: '1px solid var(--border-subtle)' }}>
-                  <div style={{ width: 24, height: 24, borderRadius: 5, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--brand)' }}>{tech.id}</div>
+                  <div style={{ width: 24, height: 24, borderRadius: 5, background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid rgba(var(--brand-rgb),0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--brand)' }}>{tech.id}</div>
                   <div>
                     <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-high)' }}>{tech.name.split(' ')[0]}</div>
                     <div style={{ fontSize: 9, color: 'var(--text-low)' }}>{blocks.length} jobs</div>
                   </div>
                 </div>
                 {weekDays.map(day => (
-                  <div key={day} onClick={() => setAddModal({ techId: tech.id, start: 3 })} style={{ flex: 1, padding: '4px 4px', borderRight: '1px solid rgba(99,102,241,0.04)', display: 'flex', flexDirection: 'column', gap: 2, cursor: 'pointer', minHeight: 48 }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.02)'}
+                  <div key={day} onClick={() => setAddModal({ techId: tech.id, start: 3 })} style={{ flex: 1, padding: '4px 4px', borderRight: '1px solid rgba(var(--brand-rgb),0.04)', display: 'flex', flexDirection: 'column', gap: 2, cursor: 'pointer', minHeight: 48 }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.02)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     {weekBlocks[day].map((b, bi) => (
                       <div key={bi}
@@ -655,12 +657,12 @@ function DispatchScheduleBoard({ techs, showToast }) {
             { label: 'Reassign to...', action: () => { setAddModal({ techId: ctxMenu.techId, start: ctxMenu.block.start, prefill: ctxMenu.block }); setCtxMenu(null); }},
           ].map((item, i) => (
             <button key={i} onClick={item.action} style={{ display: 'block', width: '100%', padding: '7px 14px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}
-              onMouseEnter={e => e.currentTarget.style.background='rgba(99,102,241,0.06)'}
+              onMouseEnter={e => e.currentTarget.style.background='rgba(var(--brand-rgb),0.06)'}
               onMouseLeave={e => e.currentTarget.style.background='none'}>{item.label}</button>
           ))}
           <div style={{ height: 1, background: 'var(--border-subtle)', margin: '3px 8px' }} />
           <button onClick={() => deleteBlock(ctxMenu.techId, ctxMenu.block.id)} style={{ display: 'block', width: '100%', padding: '7px 14px', background: 'none', border: 'none', color: 'var(--status-critical)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}
-            onMouseEnter={e => e.currentTarget.style.background='rgba(244,63,94,0.06)'}
+            onMouseEnter={e => e.currentTarget.style.background='rgba(var(--critical-rgb),0.06)'}
             onMouseLeave={e => e.currentTarget.style.background='none'}>Delete Job</button>
         </div>
       )}
@@ -685,7 +687,7 @@ function DispatchScheduleBoard({ techs, showToast }) {
               <div><div style={{ fontSize: 9, color: 'var(--text-low)', textTransform: 'uppercase' }}>Priority</div><StatusBadge status={detailModal.block.priority === 'high' ? 'warning' : 'info'} label={detailModal.block.priority} /></div>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              <button onClick={() => { deleteBlock(detailModal.techId, detailModal.block.id); setDetailModal(null); }} style={{ padding: '7px 14px', background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Delete</button>
+              <button onClick={() => { deleteBlock(detailModal.techId, detailModal.block.id); setDetailModal(null); }} style={{ padding: '7px 14px', background: 'rgba(var(--critical-rgb),0.06)', border: '1px solid rgba(var(--critical-rgb),0.2)', borderRadius: 6, color: 'var(--status-critical)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Delete</button>
               <button onClick={() => setDetailModal(null)} style={{ padding: '7px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)', marginLeft: 'auto' }}>Close</button>
             </div>
           </div>
@@ -704,7 +706,7 @@ function ScheduleAddModal({ techs, hours, initial, onAdd, onClose }) {
   const [type, setType] = React.useState(initial.prefill?.type || 'install');
   const [priority, setPriority] = React.useState(initial.prefill?.priority || 'normal');
   const [customer, setCustomer] = React.useState(initial.prefill?.customer || '');
-  const inputStyle = { width: '100%', padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inputStyle = { width: '100%', padding: '7px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' };
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div onClick={e => e.stopPropagation()} className="glass" style={{ width: 440, padding: 24, animation: 'fade-up 0.15s ease both' }}>
@@ -784,7 +786,7 @@ function DispatchQueue({ jobs, techs, showToast }) {
                 <div style={{ fontSize: 10, color: 'var(--text-low)' }}>SLA Remaining</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginLeft: 14 }}>
-                <button onClick={() => { if (window.navTo) window.navTo('calendar'); else showToast('Open Calendar & Copilot to schedule this job'); }} style={{ padding: '6px 10px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Schedule on Calendar</button>
+                <button onClick={() => { if (window.navTo) window.navTo('calendar'); else showToast('Open Calendar & Copilot to schedule this job'); }} style={{ padding: '6px 10px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Schedule on Calendar</button>
               </div>
             </div>
           </GlassPanel>
@@ -802,7 +804,7 @@ function DispatchQueue({ jobs, techs, showToast }) {
               { label: 'Copy job ref', action: () => { try { navigator.clipboard.writeText(queueCtx.job.id); showToast(`${queueCtx.job.id} copied`); } catch { showToast('Copy failed'); } } },
             ].map((item, i) => (
               <button key={i} onClick={() => { item.action(); setQueueCtx(null); }} style={{ display: 'block', width: '100%', padding: '7px 14px', background: 'none', border: 'none', color: 'var(--text-high)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.06)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}>{item.label}</button>
             ))}
           </div>
@@ -836,7 +838,7 @@ function DispatchDriving({ events, techs }) {
           <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-low)' }}>No driving events recorded. Connect a telematics provider or keep the tech app open to stream phone-GPS behavior.</div>
         )}
         {events.map((e, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid rgba(99,102,241,0.04)', background: e.severity==='severe'?'rgba(244,63,94,0.02)':'transparent' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', background: e.severity==='severe'?'rgba(var(--critical-rgb),0.02)':'transparent' }}>
             <StatusDot status={e.severity==='severe'?'critical':e.severity==='moderate'?'warning':'info'} size={7} />
             <span style={{ fontSize: 12, fontWeight: 500, width: 100 }}>{techs.find(t=>t.id===e.tech)?.name || e.tech}</span>
             <span style={{ flex: 1, fontSize: 12, color: 'var(--text-mid)' }}>{e.event}</span>
@@ -889,14 +891,14 @@ function DispatchOwnerView({ techs, statusColors, notifyOnSite, setNotifyOnSite,
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               <button onClick={() => { setNotifyOnSite(p => ({...p, [tech.id]: !p[tech.id]})); showToast(notifyOnSite[tech.id] ? 'Disabled' : `Notify when ${tech.name.split(' ')[0]} arrives`); }} style={{
                 padding: '4px 10px', borderRadius: 4, fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)',
-                background: notifyOnSite[tech.id] ? 'rgba(52,211,153,0.1)' : 'transparent',
-                border: `1px solid ${notifyOnSite[tech.id] ? 'rgba(52,211,153,0.3)' : 'var(--border-subtle)'}`,
+                background: notifyOnSite[tech.id] ? 'rgba(var(--ok-rgb),0.1)' : 'transparent',
+                border: `1px solid ${notifyOnSite[tech.id] ? 'rgba(var(--ok-rgb),0.3)' : 'var(--border-subtle)'}`,
                 color: notifyOnSite[tech.id] ? 'var(--status-ok)' : 'var(--text-low)'
               }}>⊙ {notifyOnSite[tech.id] ? 'Watching arrival' : 'Notify on arrival'}</button>
               <button onClick={() => { setNotifyLeave(p => ({...p, [tech.id]: !p[tech.id]})); showToast(notifyLeave[tech.id] ? 'Disabled' : `Notify when ${tech.name.split(' ')[0]} leaves`); }} style={{
                 padding: '4px 10px', borderRadius: 4, fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)',
-                background: notifyLeave[tech.id] ? 'rgba(251,191,36,0.1)' : 'transparent',
-                border: `1px solid ${notifyLeave[tech.id] ? 'rgba(251,191,36,0.3)' : 'var(--border-subtle)'}`,
+                background: notifyLeave[tech.id] ? 'rgba(var(--warn-rgb),0.1)' : 'transparent',
+                border: `1px solid ${notifyLeave[tech.id] ? 'rgba(var(--warn-rgb),0.3)' : 'var(--border-subtle)'}`,
                 color: notifyLeave[tech.id] ? 'var(--status-warn)' : 'var(--text-low)'
               }}>⊘ {notifyLeave[tech.id] ? 'Watching departure' : 'Notify on departure'}</button>
               <button onClick={() => showToast(`Calling ${tech.phone}...`)} style={{ padding: '4px 10px', borderRadius: 4, fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-low)' }}>✆ Call</button>
@@ -969,7 +971,7 @@ function DispatchTechDrawer({ tech, onClose, showToast }) {
         })()}
         <div className="label-sm" style={{ marginBottom: 8 }}>ACTIONS</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <button onClick={() => { if (tech.phone && tech.phone !== '—') window.location.href = `tel:${tech.phone}`; else showToast('No phone number on file for this tech'); }} style={{ width: '100%', padding: '8px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✆ Call {tech.name.split(' ')[0]}</button>
+          <button onClick={() => { if (tech.phone && tech.phone !== '—') window.location.href = `tel:${tech.phone}`; else showToast('No phone number on file for this tech'); }} style={{ width: '100%', padding: '8px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>✆ Call {tech.name.split(' ')[0]}</button>
           <button onClick={async () => {
             // Open the real conversation with this tech. Resolve their profile id
             // (the thread key) from their name, then jump to Messages.

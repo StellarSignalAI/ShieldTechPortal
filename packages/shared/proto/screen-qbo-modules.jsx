@@ -286,7 +286,7 @@ function MarketingScreen() {
 /* ════ Documents / Attachments — REAL (window.__shieldStorage) ════
    Lists the shared attachments registry; Upload puts the file in Supabase
    Storage and Download opens the real signed URL. No invented files. */
-function DocumentsScreen() {
+function DocumentsScreen({ embedded }) {
   const [docs, setDocs] = React.useState(null);
   const [toast, setToast] = React.useState(null);
   const fileRef = React.useRef(null);
@@ -310,7 +310,7 @@ function DocumentsScreen() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <h2 className="display" style={{ fontSize: 20, fontWeight: 300, marginRight: 'auto' }}>Documents & Attachments</h2>
+        <h2 className="display" style={{ fontSize: embedded ? 13 : 20, fontWeight: embedded ? 600 : 300, marginRight: 'auto' }}>{embedded ? 'Attachments' : 'Documents & Attachments'}</h2>
         <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>↑ Upload</button>
         <input ref={fileRef} type="file" onChange={upload} style={{ display: 'none' }} />
       </div>

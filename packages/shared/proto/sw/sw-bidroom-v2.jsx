@@ -108,7 +108,7 @@ function BrStepQualify({ opp, state, update }) {
           <Eyebrow>Competition intel</Eyebrow>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, margin: '12px 0' }}>
             {[[intel.planHolders, 'plan holders'], ['~' + intel.bidders, 'likely bidders'], [intel.winRate + '%', 'your win rate']].map(([n, l]) => (
-              <div key={l} style={{ textAlign: 'center', padding: '10px 6px', borderRadius: 10, background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)' }}>
+              <div key={l} style={{ textAlign: 'center', padding: '10px 6px', borderRadius: 10, background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ font: '700 18px/1 var(--font-display)', color: 'var(--text-high)' }}>{n}</div>
                 <div style={{ font: '500 9.5px/1.3 var(--font-body)', color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 5 }}>{l}</div>
               </div>
@@ -140,7 +140,7 @@ function BrStepQualify({ opp, state, update }) {
                 <div style={{ display: 'flex', gap: 5 }}>
                   {[1, 2, 3, 4, 5].map(n => {
                     const on = (state.scorecard || {})[c.id] === n;
-                    return <button key={n} onClick={() => setCrit(c.id, n)} style={{ flex: 1, padding: '7px 0', borderRadius: 7, cursor: 'pointer', font: '600 12px/1 var(--font-mono)', background: on ? 'rgba(99,102,241,0.16)' : 'rgba(99,102,241,0.04)', border: '1px solid ' + (on ? 'var(--brand)' : 'var(--border-subtle)'), color: on ? 'var(--brand)' : 'var(--text-mid)' }}>{n}</button>;
+                    return <button key={n} onClick={() => setCrit(c.id, n)} style={{ flex: 1, padding: '7px 0', borderRadius: 7, cursor: 'pointer', font: '600 12px/1 var(--font-mono)', background: on ? 'rgba(var(--brand-rgb),0.16)' : 'rgba(var(--brand-rgb),0.04)', border: '1px solid ' + (on ? 'var(--brand)' : 'var(--border-subtle)'), color: on ? 'var(--brand)' : 'var(--text-mid)' }}>{n}</button>;
                   })}
                 </div>
               </div>
@@ -187,14 +187,14 @@ function BrKeyReqs({ opp }) {
           const c = r.sev === 'high' ? 'var(--status-warn)' : 'var(--brand)';
           const on = open === r.id;
           return (
-            <button key={r.id} onClick={() => setOpen(on ? null : r.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 13px', borderRadius: 999, cursor: 'pointer', background: on ? `color-mix(in srgb, ${c} 14%, transparent)` : 'rgba(99,102,241,0.04)', border: `1px solid color-mix(in srgb, ${c} ${on ? 55 : 30}%, transparent)`, font: '600 12px/1 var(--font-body)', color: on ? c : 'var(--text-high)' }}>
+            <button key={r.id} onClick={() => setOpen(on ? null : r.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 13px', borderRadius: 999, cursor: 'pointer', background: on ? `color-mix(in srgb, ${c} 14%, transparent)` : 'rgba(var(--brand-rgb),0.04)', border: `1px solid color-mix(in srgb, ${c} ${on ? 55 : 30}%, transparent)`, font: '600 12px/1 var(--font-body)', color: on ? c : 'var(--text-high)' }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: c }} />{r.label}
               <span style={{ font: '500 10px/1 var(--font-mono)', color: 'var(--text-low)' }}>{r.src}</span>
             </button>
           );
         })}
       </div>
-      {open && <div className="sw-up" style={{ marginTop: 10, padding: '10px 13px', borderRadius: 10, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', font: '400 12.5px/1.6 var(--font-body)', color: 'var(--text-mid)' }}>{reqs.find(r => r.id === open).detail}</div>}
+      {open && <div className="sw-up" style={{ marginTop: 10, padding: '10px 13px', borderRadius: 10, background: 'rgba(var(--brand-rgb),0.05)', border: '1px solid var(--border-subtle)', font: '400 12.5px/1.6 var(--font-body)', color: 'var(--text-mid)' }}>{reqs.find(r => r.id === open).detail}</div>}
     </Card>
   );
 }
@@ -230,13 +230,13 @@ function BbCardMenu({ opp, s }) {
   const save = (patch, msg, type = 'info') => { brSave(opp.id, { ...brLoad(opp.id), ...patch }); if (msg) swToast(msg, type); setOpen(false); };
   const Item = ({ icon, label, onClick, color = 'var(--text-high)', divider }) => (
     <button onClick={(e) => { e.stopPropagation(); onClick(); }} style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', padding: '8px 12px', background: 'none', border: 'none', borderTop: divider ? '1px solid var(--border-subtle)' : 'none', cursor: 'pointer', font: '500 12px/1.2 var(--font-body)', color, textAlign: 'left' }}
-      onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.07)'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+      onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.07)'} onMouseLeave={e => e.currentTarget.style.background = 'none'}>
       <Icon name={icon} size={13} color={color === 'var(--text-high)' ? 'var(--text-low)' : color} />{label}
     </button>
   );
   return (
     <div ref={ref} style={{ position: 'relative', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-      <button onClick={() => setOpen(v => !v)} title="Bid options" style={{ width: 26, height: 26, borderRadius: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: open ? 'rgba(99,102,241,0.14)' : 'rgba(99,102,241,0.05)', border: '1px solid ' + (open ? 'var(--border-strong)' : 'var(--border-subtle)'), color: open ? 'var(--brand)' : 'var(--text-low)' }}>
+      <button onClick={() => setOpen(v => !v)} title="Bid options" style={{ width: 26, height: 26, borderRadius: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: open ? 'rgba(var(--brand-rgb),0.14)' : 'rgba(var(--brand-rgb),0.05)', border: '1px solid ' + (open ? 'var(--border-strong)' : 'var(--border-subtle)'), color: open ? 'var(--brand)' : 'var(--text-low)' }}>
         <BbGearIcon size={13} />
       </button>
       {open && (
@@ -291,7 +291,7 @@ function BbBidCard({ opp, onOpen }) {
         <div style={{ font: '400 11px/1.45 var(--font-body)', color: untouched ? 'var(--brand)' : 'var(--text-low)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{untouched ? '● Built by SHIELDTECH AI — ready for review' : 'Next: ' + brNextAction(opp, s).action}</div>
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.12)', overflow: 'hidden' }}>
+        <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(var(--brand-rgb),0.12)', overflow: 'hidden' }}>
           <div style={{ width: pct + '%', height: '100%', borderRadius: 2, background: nogo || cur === 'lost' ? 'var(--text-low)' : cur === 'submitted' || cur === 'won' ? 'var(--status-ok)' : 'linear-gradient(90deg, var(--brand), var(--status-ok))' }} />
         </div>
         <span style={{ font: '600 10.5px/1 var(--font-mono)', color: 'var(--text-low)' }}>{pct}%</span>
@@ -304,12 +304,12 @@ function BbLeadCard({ lead, onAccept, onDismiss }) {
   const h = brHash(lead.id);
   const bars = [['Trades', Math.min(100, lead.fit + 8)], ['Territory', 92 + (h % 9)], ['Buyer history', Math.max(35, lead.fit - 12 - (h % 10))]];
   return (
-    <Card className="sw-hoverlift" style={{ padding: 14, width: 312, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid rgba(99,102,241,0.22)', position: 'relative' }}>
+    <Card className="sw-hoverlift" style={{ padding: 14, width: 312, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10, border: '1px solid rgba(var(--brand-rgb),0.22)', position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: '600 10px/1 var(--font-mono)', letterSpacing: '0.1em', color: 'var(--brand)' }}><Icon name="sparkles" size={12} color="var(--brand)" />FOUND OVERNIGHT</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ font: '600 11px/1 var(--font-mono)', color: lead.fit >= 80 ? 'var(--status-ok)' : 'var(--status-warn)' }}>{lead.fit} fit</span>
-          <button onClick={onAccept} title="Add to Qualify" style={{ width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--brand)', border: 'none', boxShadow: '0 4px 14px -4px rgba(99,102,241,0.7)' }}>
+          <button onClick={onAccept} title="Add to Qualify" style={{ width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--brand)', border: 'none', boxShadow: '0 4px 14px -4px rgba(var(--brand-rgb),0.7)' }}>
             <Icon name="plus" size={15} color="#03121F" />
           </button>
         </div>
@@ -322,7 +322,7 @@ function BbLeadCard({ lead, onAccept, onDismiss }) {
         {bars.map(([l, n]) => (
           <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ width: 84, font: '500 10px/1 var(--font-body)', color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{l}</span>
-            <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.1)', overflow: 'hidden' }}><div style={{ width: n + '%', height: '100%', borderRadius: 2, background: n >= 75 ? 'var(--status-ok)' : 'var(--status-warn)' }} /></div>
+            <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(var(--brand-rgb),0.1)', overflow: 'hidden' }}><div style={{ width: n + '%', height: '100%', borderRadius: 2, background: n >= 75 ? 'var(--status-ok)' : 'var(--status-warn)' }} /></div>
             <span style={{ font: '600 10px/1 var(--font-mono)', color: 'var(--text-mid)', width: 24, textAlign: 'right' }}>{n}</span>
           </div>
         ))}
@@ -421,12 +421,12 @@ function BidBoardWorkspace({ onOpenOpp }) {
 
       {/* Agent run ticker (renders only after a real overnight run) */}
       {BR_AGENT_RUN && <GlassCard style={{ padding: '11px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <span style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(99,102,241,0.14)', border: '1px solid var(--border-strong)', flexShrink: 0 }}><Icon name="sparkles" size={14} color="var(--brand)" /></span>
+        <span style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(var(--brand-rgb),0.14)', border: '1px solid var(--border-strong)', flexShrink: 0 }}><Icon name="sparkles" size={14} color="var(--brand)" /></span>
         <div style={{ flex: 1, minWidth: 260, font: '400 12.5px/1.55 var(--font-body)', color: 'var(--text-mid)' }}>
           <span style={{ color: 'var(--text-high)', fontWeight: 600 }}>SHIELDTECH AI ran at {BR_AGENT_RUN.at}</span> — screened <span style={{ color: 'var(--text-high)' }}>{BR_AGENT_RUN.screened.toLocaleString()} solicitations</span> across {BR_AGENT_RUN.portals.length} portals · <span style={{ color: 'var(--status-ok)', fontWeight: 600 }}>{freshLeads.length} matched</span> your win profile · top rejections: {BR_AGENT_RUN.rejected.slice(0, 2).map(([r, n]) => `${r} (${n})`).join(', ')}
         </div>
         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-          {BR_AGENT_RUN.portals.map(p => <span key={p} style={{ padding: '4px 9px', borderRadius: 999, background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', font: '500 10px/1 var(--font-mono)', color: 'var(--text-low)' }}>{p}</span>)}
+          {BR_AGENT_RUN.portals.map(p => <span key={p} style={{ padding: '4px 9px', borderRadius: 999, background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', font: '500 10px/1 var(--font-mono)', color: 'var(--text-low)' }}>{p}</span>)}
         </div>
       </GlassCard>}
 
@@ -487,7 +487,7 @@ function BidBoardWorkspace({ onOpenOpp }) {
               <span style={{ font: '600 12px/1 var(--font-body)', color: 'var(--text-high)', letterSpacing: '0.03em' }}>{c.label}</span>
               <span style={{ font: '600 10.5px/1 var(--font-mono)', color: 'var(--text-low)', marginLeft: 'auto' }}>{byCol[c.id].length} · {swK(byCol[c.id].reduce((a, o) => a + o.value, 0))}</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 60, padding: 6, borderRadius: 'var(--radius-lg)', background: 'rgba(99,102,241,0.025)', border: '1px dashed var(--border-subtle)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 60, padding: 6, borderRadius: 'var(--radius-lg)', background: 'rgba(var(--brand-rgb),0.025)', border: '1px dashed var(--border-subtle)' }}>
               {byCol[c.id].map(o => <BbBidCard key={o.id} opp={o} onOpen={onOpenOpp} />)}
               {!byCol[c.id].length && <div style={{ font: '400 11.5px/1.5 var(--font-body)', color: 'var(--text-low)', textAlign: 'center', padding: '18px 8px' }}>Nothing in {c.label.toLowerCase()}</div>}
             </div>

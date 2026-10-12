@@ -5,7 +5,7 @@ body { max-width: 430px; margin: 0 auto; }
    reliably even under viewport-lock's `position:fixed; inset:0` body (where
    `margin:0 auto` does not). Height tracks the viewport, so it resizes live. */
 @media (min-width: 500px) {
-  html { background: #060410; }
+  html { background: var(--canvas); }
   /* body is `position:fixed; inset:0` (viewport-lock) + `margin:0 auto`, which
      already centers it. No transform — a transformed body becomes the containing
      block for the login's position:fixed layer and knocks it off-center. */
@@ -102,6 +102,19 @@ body { max-width: 430px; margin: 0 auto; }
   .m-screen button { min-height: 30px; }
 }
 
+/* ── Unified SELL / DELIVER / CARE / MONEY frames on the phone ──
+   The frame fills the content area; its own header scrolls with nothing,
+   its body scrolls. Tables scroll sideways inside their card instead of
+   stretching the frame. 16px inputs stop iOS zoom-on-focus. */
+.m-screen[data-desk="unified"] { padding: 0 !important; overflow: hidden !important; }
+.m-screen[data-desk="unified"] .m-unified, .m-screen[data-desk="unified"] .m-unified > [data-screen-label] { height: 100%; }
+.m-screen[data-desk="unified"] table { display: table; white-space: nowrap; }
+.m-screen[data-desk="unified"] input, .m-screen[data-desk="unified"] select, .m-screen[data-desk="unified"] textarea { font-size: 16px; }
+.m-screen[data-desk="unified"] button { min-height: 32px; }
+/* KPI tiles: two-up, compact, so the list is above the fold */
+.m-screen[data-desk="unified"] .uc-tile { flex: 1 1 calc(50% - 5px) !important; min-width: 0 !important; padding: 9px 12px !important; }
+.m-screen[data-desk="unified"] .uc-tile .uc-tile-v { font-size: 19px !important; margin-top: 2px !important; }
+
 /* ── Bespoke polish pass — native (non-desk) screens only ──
    Softer glass, one consistent card radius, calmer borders, comfortable tap
    targets, and breathing room between sections. Scoped to data-desk="false"
@@ -110,7 +123,7 @@ body { max-width: 430px; margin: 0 auto; }
 .m-screen[data-desk="false"] .glass {
   border-radius: 14px;
   border-color: rgba(148, 163, 184, 0.10);
-  background: linear-gradient(160deg, rgba(99,102,241,0.045), rgba(15,23,36,0.35));
+  background: linear-gradient(160deg, rgba(var(--brand-rgb),0.045), rgba(15,23,36,0.35));
   box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 22px -18px rgba(0,0,0,0.8);
 }
 .m-screen[data-desk="false"] .glass:active { transform: scale(0.992); transition: transform 0.08s; }

@@ -34,8 +34,8 @@ function BrWarGames({ opp, state, update }) {
             const on = simTier === t.id;
             return (
               <div key={t.id} onClick={() => setSimTier(t.id)} style={{ position: 'absolute', left: X(t.price) + '%', top: 0, bottom: 24, cursor: 'pointer', zIndex: 3 }}>
-                <div style={{ position: 'absolute', top: 0, bottom: 0, left: -1, width: 2, background: on ? 'var(--brand)' : 'rgba(99,102,241,0.35)', boxShadow: on ? '0 0 10px rgba(99,102,241,0.6)' : 'none' }} />
-                <div style={{ position: 'absolute', top: -30, left: 0, transform: 'translateX(-50%)', padding: '4px 9px', borderRadius: 7, whiteSpace: 'nowrap', background: on ? 'var(--brand)' : 'rgba(99,102,241,0.1)', border: '1px solid ' + (on ? 'var(--brand)' : 'var(--border-strong)'), font: '700 10px/1 var(--font-mono)', color: on ? '#03121F' : 'var(--brand)', letterSpacing: '0.06em' }}>
+                <div style={{ position: 'absolute', top: 0, bottom: 0, left: -1, width: 2, background: on ? 'var(--brand)' : 'rgba(var(--brand-rgb),0.35)', boxShadow: on ? '0 0 10px rgba(var(--brand-rgb),0.6)' : 'none' }} />
+                <div style={{ position: 'absolute', top: -30, left: 0, transform: 'translateX(-50%)', padding: '4px 9px', borderRadius: 7, whiteSpace: 'nowrap', background: on ? 'var(--brand)' : 'rgba(var(--brand-rgb),0.1)', border: '1px solid ' + (on ? 'var(--brand)' : 'var(--border-strong)'), font: '700 10px/1 var(--font-mono)', color: on ? '#03121F' : 'var(--brand)', letterSpacing: '0.06em' }}>
                   {t.label.toUpperCase()} {fmt(t.price)}
                 </div>
               </div>
@@ -44,7 +44,7 @@ function BrWarGames({ opp, state, update }) {
           {/* competitor ranges */}
           {comps.map((c, i) => (
             <div key={c.id} style={{ position: 'absolute', top: 34 + i * 34, left: 0, right: 0, height: 26 }}>
-              <div style={{ position: 'absolute', left: X(c.low) + '%', width: (X(c.high) - X(c.low)) + '%', top: 7, height: 12, borderRadius: 6, background: c.mid < sim.price ? 'rgba(248,113,113,0.22)' : 'rgba(52,211,153,0.16)', border: '1px solid ' + (c.mid < sim.price ? 'rgba(248,113,113,0.55)' : 'rgba(52,211,153,0.45)') }} />
+              <div style={{ position: 'absolute', left: X(c.low) + '%', width: (X(c.high) - X(c.low)) + '%', top: 7, height: 12, borderRadius: 6, background: c.mid < sim.price ? 'rgba(248,113,113,0.22)' : 'rgba(var(--ok-rgb),0.16)', border: '1px solid ' + (c.mid < sim.price ? 'rgba(248,113,113,0.55)' : 'rgba(var(--ok-rgb),0.45)') }} />
               <div style={{ position: 'absolute', left: X(c.mid) + '%', top: 5, width: 3, height: 16, borderRadius: 2, background: c.mid < sim.price ? 'var(--status-critical)' : 'var(--status-ok)' }} />
               <div style={{ position: 'absolute', left: X(c.low) + '%', top: -7, transform: 'translateX(-2px)', font: '600 9.5px/1 var(--font-mono)', color: 'var(--text-low)', whiteSpace: 'nowrap' }}>
                 {c.name}{c.incumbent ? ' · INCUMBENT' : ''}

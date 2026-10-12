@@ -5,7 +5,7 @@ function ProjectsScreen() {
   const columns = [
     { id: 'planning', label: 'Planning', color: 'var(--text-low)' },
     { id: 'in-progress', label: 'In Progress', color: 'var(--brand)' },
-    { id: 'review', label: 'Review', color: '#c084fc' },
+    { id: 'review', label: 'Review', color: 'var(--accent-2)' },
     { id: 'complete', label: 'Complete', color: 'var(--status-ok)' },
   ];
   const [wizardOpen, setWizardOpen] = React.useState(false);
@@ -38,7 +38,7 @@ function ProjectsScreen() {
         <h2 className="display" style={{ fontSize: 20, fontWeight: 300 }}>Projects</h2>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <input value={query} onChange={e => setQuery(e.target.value)} placeholder="⌕ Search projects…"
-          style={{ width: 240, padding: '6px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+          style={{ width: 240, padding: '6px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
         <button onClick={() => setWizardOpen(true)} style={{ padding: '6px 16px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Project</button>
         </div>
       </div>
@@ -63,7 +63,7 @@ function ProjectsScreen() {
           const colProjects = projects.filter(p => p.stage === col.id);
           return (
             <div key={col.id} style={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(99,102,241,0.03)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(var(--brand-rgb),0.03)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: col.color }} />
                   <span style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{col.label}</span>
@@ -78,7 +78,7 @@ function ProjectsScreen() {
                   <div style={{ fontSize: 11, color: 'var(--text-low)', marginBottom: 8 }}>{p.customer}</div>
                   {/* Progress bar */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <div style={{ flex: 1, height: 4, background: 'rgba(99,102,241,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ flex: 1, height: 4, background: 'rgba(var(--brand-rgb),0.08)', borderRadius: 2, overflow: 'hidden' }}>
                       <div style={{ width: `${p.progress}%`, height: '100%', background: col.color, borderRadius: 2 }} />
                     </div>
                     <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.progress}%</span>
@@ -86,19 +86,19 @@ function ProjectsScreen() {
                   {/* Milestones mini */}
                   <div style={{ display: 'flex', gap: 3, marginBottom: 8 }}>
                     {p.milestones.map((m, mi) => (
-                      <div key={mi} style={{ width: 8, height: 8, borderRadius: 2, background: m.done ? 'var(--status-ok)' : 'rgba(99,102,241,0.08)', border: m.done ? 'none' : '1px solid var(--border-subtle)' }} title={m.label} />
+                      <div key={mi} style={{ width: 8, height: 8, borderRadius: 2, background: m.done ? 'var(--status-ok)' : 'rgba(var(--brand-rgb),0.08)', border: m.done ? 'none' : '1px solid var(--border-subtle)' }} title={m.label} />
                     ))}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span className="mono" style={{ fontSize: 12, fontWeight: 500 }}>{p.value}</span>
                     <div style={{ display: 'flex', gap: -4 }}>
                       {p.techs.map((t, ti) => (
-                        <div key={ti} style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(99,102,241,0.1)', color: 'var(--brand)', fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-mono)', border: '1px solid var(--card)', marginLeft: ti > 0 ? -4 : 0 }}>{t}</div>
+                        <div key={ti} style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(var(--brand-rgb),0.1)', color: 'var(--brand)', fontSize: 8, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-mono)', border: '1px solid var(--card)', marginLeft: ti > 0 ? -4 : 0 }}>{t}</div>
                       ))}
                     </div>
                   </div>
                   {(p.start || p.end) && <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)', marginTop: 6 }}>{p.start} → {p.end}</div>}
-                  <button onClick={(e) => { e.stopPropagation(); setInvModal({ type: 'new-invoice', customer: p.customer, projectName: p.name, projectId: p._rec && p._rec.number }); }} style={{ marginTop: 8, width: '100%', padding: '5px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Create Invoice</button>
+                  <button onClick={(e) => { e.stopPropagation(); setInvModal({ type: 'new-invoice', customer: p.customer, projectName: p.name, projectId: p._rec && p._rec.number }); }} style={{ marginTop: 8, width: '100%', padding: '5px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Create Invoice</button>
                 </div>
               ))}
             </div>
@@ -181,9 +181,9 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
     } else shieldToast(r.error, 'warn');
   };
 
-  const selStyle = { width: '100%', padding: '6px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, fontFamily: 'var(--font-body)' };
-  const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(99,102,241,0.05)', fontSize: 12 };
-  const pctBtn = { padding: '5px 10px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
+  const selStyle = { width: '100%', padding: '6px 8px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, fontFamily: 'var(--font-body)' };
+  const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.05)', fontSize: 12 };
+  const pctBtn = { padding: '5px 10px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' };
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(3px)', zIndex: 8500, display: 'flex', justifyContent: 'flex-end' }}>
@@ -219,7 +219,7 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
         <div className="glass" style={{ padding: 14, marginBottom: 16 }}>
           <div className="label-sm" style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>BLUEPRINTS / DRAWINGS ({drawings.length})</span>
-            <button onClick={() => fileRef.current && fileRef.current.click()} disabled={uploading} style={{ padding: '5px 10px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{uploading ? 'Uploading…' : '+ Upload'}</button>
+            <button onClick={() => fileRef.current && fileRef.current.click()} disabled={uploading} style={{ padding: '5px 10px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{uploading ? 'Uploading…' : '+ Upload'}</button>
             <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { uploadDrawing(e.target.files && e.target.files[0]); e.target.value = ''; }} />
           </div>
           {drawings.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-low)' }}>No drawings yet — upload the blueprint from the proposal so techs get the digital version on their scheduled job.</div>}
@@ -240,7 +240,7 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
         <div className="glass" style={{ padding: 14, marginBottom: 16 }}>
           <div className="label-sm" style={{ marginBottom: 8 }}>PROGRESS BILLING</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-            <div style={{ flex: 1, height: 6, background: 'rgba(99,102,241,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ flex: 1, height: 6, background: 'rgba(var(--brand-rgb),0.08)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{ width: `${Math.min(billedPct, 100)}%`, height: '100%', background: billedPct >= 100 ? 'var(--status-ok)' : 'var(--brand)', borderRadius: 3 }} />
             </div>
             <span className="mono" style={{ fontSize: 11, fontWeight: 600 }}>{billedPct}%</span>
@@ -252,11 +252,11 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
             <>
               <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
                 {[10, 25, 50].map(x => <button key={x} onClick={() => cutInvoice(x)} style={pctBtn}>{x}%</button>)}
-                {remainingPct > 0 && <button onClick={() => cutInvoice(remainingPct)} style={{ ...pctBtn, background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', color: 'var(--status-ok)' }}>Remaining {remainingPct}%</button>}
+                {remainingPct > 0 && <button onClick={() => cutInvoice(remainingPct)} style={{ ...pctBtn, background: 'rgba(var(--ok-rgb),0.08)', border: '1px solid rgba(var(--ok-rgb),0.2)', color: 'var(--status-ok)' }}>Remaining {remainingPct}%</button>}
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <input value={pctInput} onChange={e => setPctInput(e.target.value)} placeholder="Custom %" inputMode="decimal"
-                  style={{ flex: 1, padding: '6px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none' }} />
+                  style={{ flex: 1, padding: '6px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none' }} />
                 <button onClick={() => cutInvoice(Number(pctInput))} style={{ ...pctBtn, background: 'var(--brand)', color: '#fff', border: 'none' }}>Invoice it</button>
               </div>
               {billedPct > 100 && <div style={{ fontSize: 10, color: 'var(--status-warn)', marginTop: 6 }}>⚠ Billed over 100% of contract</div>}
@@ -317,7 +317,7 @@ function ProjectDetailDrawer({ number, onClose, onNewInvoice }) {
           {unattachedInv.map(i2 => <option key={i2.ref} value={i2.ref}>{i2.ref} — {i2.customer} (${Number(i2.amount).toLocaleString()})</option>)}
         </select>
 
-        <button onClick={() => onNewInvoice(p)} style={{ width: '100%', padding: '9px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Invoice for this Project</button>
+        <button onClick={() => onNewInvoice(p)} style={{ width: '100%', padding: '9px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ New Invoice for this Project</button>
       </div>
     </div>
   );
@@ -473,7 +473,7 @@ function InventoryScreen() {
           {[{id:'warehouse',l:'Warehouse'},{id:'trucks',l:'Truck Stock'},{id:'orders',l:'Purchase Orders'},{id:'transfers',l:'Transfers'},{id:'audit',l:'Audit Log'}].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               padding: '5px 14px', borderRadius: 6, fontSize: 11, fontWeight: tab===t.id?600:400,
-              background: tab===t.id?'rgba(99,102,241,0.12)':'transparent',
+              background: tab===t.id?'rgba(var(--brand-rgb),0.12)':'transparent',
               border: `1px solid ${tab===t.id?'var(--brand)':'var(--border-subtle)'}`,
               color: tab===t.id?'var(--brand)':'var(--text-mid)',
               cursor: 'pointer', fontFamily: 'var(--font-body)'
@@ -482,7 +482,7 @@ function InventoryScreen() {
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={() => setNewItemModal(true)} style={{ padding: '5px 14px', background: 'var(--brand)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>+ Add Item</button>
-          <button onClick={() => showToast('PO created')} style={{ padding: '5px 14px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create PO</button>
+          <button onClick={() => showToast('PO created')} style={{ padding: '5px 14px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 6, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Create PO</button>
           <button onClick={() => showToast('Inventory exported')} style={{ padding: '5px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Export</button>
         </div>
       </div>
@@ -491,16 +491,16 @@ function InventoryScreen() {
         <>
           {/* Search + Filters */}
           <div style={{ display: 'flex', gap: 8 }}>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search brands, devices, SKUs, models, categories..." style={{ flex: 2, padding: '7px 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
-            <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)} style={{ padding: '7px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search brands, devices, SKUs, models, categories..." style={{ flex: 2, padding: '7px 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', outline: 'none' }} />
+            <select value={brandFilter} onChange={e => setBrandFilter(e.target.value)} style={{ padding: '7px 8px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
               <option value="all">All Brands</option>
               {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
-            <select value={catFilter} onChange={e => setCatFilter(e.target.value)} style={{ padding: '7px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+            <select value={catFilter} onChange={e => setCatFilter(e.target.value)} style={{ padding: '7px 8px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
               <option value="all">All Categories</option>
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ padding: '7px 8px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ padding: '7px 8px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 11, fontFamily: 'var(--font-body)', outline: 'none', cursor: 'pointer' }}>
               <option value="name">Sort: Name</option>
               <option value="stock">Sort: Stock (low first)</option>
               <option value="value">Sort: Value (high first)</option>
@@ -527,20 +527,20 @@ function InventoryScreen() {
                       const brandName = brands.find(b => b.id === item.brand)?.name || item.brand;
                       const isSel = selectedItem?.sku === item.sku;
                       return (
-                        <tr key={i} onClick={() => setSelectedItem(isSel ? null : item)} style={{ cursor: 'pointer', background: isSel ? 'rgba(99,102,241,0.06)' : 'transparent', transition: 'background 0.1s' }}
-                          onMouseEnter={e => { if (!isSel) e.currentTarget.style.background='rgba(99,102,241,0.03)'; }}
+                        <tr key={i} onClick={() => setSelectedItem(isSel ? null : item)} style={{ cursor: 'pointer', background: isSel ? 'rgba(var(--brand-rgb),0.06)' : 'transparent', transition: 'background 0.1s' }}
+                          onMouseEnter={e => { if (!isSel) e.currentTarget.style.background='rgba(var(--brand-rgb),0.03)'; }}
                           onMouseLeave={e => { if (!isSel) e.currentTarget.style.background='transparent'; }}>
-                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 9, color: 'var(--brand)' }}>{item.sku}</td>
-                          <td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, fontWeight: 500 }}>{item.name}</td>
-                          <td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--text-mid)' }}>{brandName}</td>
-                          <td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{item.cat}</td>
-                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, textAlign: 'right' }}>{item.inStock}</td>
-                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, textAlign: 'right', color: 'var(--text-low)' }}>{item.committed}</td>
-                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, textAlign: 'right', fontWeight: 600, color: item.available <= 0 ? 'var(--status-critical)' : item.available <= item.reorder ? 'var(--status-warn)' : 'var(--text-high)' }}>{item.available}</td>
-                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, textAlign: 'right', color: 'var(--text-low)' }}>{item.reorder}</td>
-                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, textAlign: 'right', color: 'var(--text-low)' }}>${item.cost}</td>
-                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, textAlign: 'right', fontWeight: 500 }}>${item.msrp}</td>
-                          <td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 9, color: 'var(--text-low)' }}>{item.location}</td>
+                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 9, color: 'var(--brand)' }}>{item.sku}</td>
+                          <td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, fontWeight: 500 }}>{item.name}</td>
+                          <td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, color: 'var(--text-mid)' }}>{brandName}</td>
+                          <td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, color: 'var(--text-low)' }}>{item.cat}</td>
+                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, textAlign: 'right' }}>{item.inStock}</td>
+                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, textAlign: 'right', color: 'var(--text-low)' }}>{item.committed}</td>
+                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, textAlign: 'right', fontWeight: 600, color: item.available <= 0 ? 'var(--status-critical)' : item.available <= item.reorder ? 'var(--status-warn)' : 'var(--text-high)' }}>{item.available}</td>
+                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, textAlign: 'right', color: 'var(--text-low)' }}>{item.reorder}</td>
+                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, textAlign: 'right', color: 'var(--text-low)' }}>${item.cost}</td>
+                          <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, textAlign: 'right', fontWeight: 500 }}>${item.msrp}</td>
+                          <td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 9, color: 'var(--text-low)' }}>{item.location}</td>
                         </tr>
                       );
                     })}
@@ -578,10 +578,10 @@ function InventoryScreen() {
                       <div key={i}><div style={{ fontSize: 8, color: 'var(--text-low)', textTransform: 'uppercase' }}>{f.l}</div><div className="mono" style={{ fontSize: 12, fontWeight: 500, color: f.c || 'var(--text-high)' }}>{f.v}</div></div>
                     ))}
                   </div>
-                  {selectedItem.notes && <div style={{ fontSize: 11, color: 'var(--text-mid)', marginBottom: 10, padding: '6px 8px', background: 'rgba(99,102,241,0.03)', borderRadius: 4 }}>{selectedItem.notes}</div>}
+                  {selectedItem.notes && <div style={{ fontSize: 11, color: 'var(--text-mid)', marginBottom: 10, padding: '6px 8px', background: 'rgba(var(--brand-rgb),0.03)', borderRadius: 4 }}>{selectedItem.notes}</div>}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <button onClick={() => showToast(`PO created for ${selectedItem.name}`)} style={{ width: '100%', padding: '6px', background: 'var(--brand)', border: 'none', borderRadius: 5, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Reorder Now</button>
-                    <button onClick={() => setTransferModal(selectedItem)} style={{ width: '100%', padding: '6px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Transfer to Truck</button>
+                    <button onClick={() => setTransferModal(selectedItem)} style={{ width: '100%', padding: '6px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 5, color: 'var(--brand)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Transfer to Truck</button>
                     <button onClick={() => showToast('Price history loaded')} style={{ width: '100%', padding: '6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Price History</button>
                     <button onClick={() => showToast('Spec sheet downloaded')} style={{ width: '100%', padding: '6px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 5, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Download Spec Sheet</button>
                   </div>
@@ -592,7 +592,7 @@ function InventoryScreen() {
                   <GlassPanel style={{ borderLeft: '3px solid var(--status-warn)' }}>
                     <SectionHeader title="Reorder Alerts" icon="warning-tri" count={lowStock.length} />
                     {lowStock.map((item, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                         <StatusDot status={item.available <= 0 ? 'critical' : 'warning'} size={5} />
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 11, fontWeight: 500 }}>{item.name}</div>
@@ -600,7 +600,7 @@ function InventoryScreen() {
                             {item.available <= 0 ? 'OUT OF STOCK' : `${item.available} left (reorder at ${item.reorder})`}
                           </div>
                         </div>
-                        <button onClick={() => showToast(`PO created for ${item.name}`)} style={{ padding: '3px 8px', background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Order</button>
+                        <button onClick={() => showToast(`PO created for ${item.name}`)} style={{ padding: '3px 8px', background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 9, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Order</button>
                       </div>
                     ))}
                   </GlassPanel>
@@ -639,14 +639,14 @@ function InventoryScreen() {
                   <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{truck.items.reduce((s,i) => s+i.qty, 0)} items · ${truck.value.toLocaleString()}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ width: 50, height: 4, borderRadius: 2, background: 'rgba(99,102,241,0.08)', overflow: 'hidden', marginBottom: 2 }}>
+                  <div style={{ width: 50, height: 4, borderRadius: 2, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden', marginBottom: 2 }}>
                     <div style={{ width: `${truck.capacity}%`, height: '100%', borderRadius: 2, background: truck.capacity > 80 ? 'var(--status-ok)' : truck.capacity > 60 ? 'var(--status-warn)' : 'var(--status-critical)' }} />
                   </div>
                   <span className="mono" style={{ fontSize: 9, color: 'var(--text-low)' }}>{truck.capacity}% stocked</span>
                 </div>
               </div>
               {truck.items.map((item, j) => (
-                <div key={j} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11 }}>
+                <div key={j} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11 }}>
                   <span style={{ color: 'var(--text-mid)' }}>{item.name}</span>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <span className="mono" style={{ color: 'var(--text-low)', fontSize: 10 }}>{item.sku}</span>
@@ -655,7 +655,7 @@ function InventoryScreen() {
                 </div>
               ))}
               <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
-                <button onClick={() => showToast(`Restocking ${truck.tech}'s truck`)} style={{ flex: 1, padding: '5px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Restock</button>
+                <button onClick={() => showToast(`Restocking ${truck.tech}'s truck`)} style={{ flex: 1, padding: '5px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Restock</button>
                 <button onClick={() => showToast('Audit started')} style={{ flex: 1, padding: '5px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--text-low)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Audit</button>
               </div>
             </GlassPanel>
@@ -677,8 +677,8 @@ function InventoryScreen() {
             { id: 'PO-1021', vendor: 'Anixter', items: 12, total: '$8,800', status: 'Received', date: 'May 22', eta: '—' },
             { id: 'PO-1020', vendor: 'ADI Global', items: 15, total: '$18,600', status: 'Received', date: 'May 15', eta: '—' },
           ].map((po, i) => (
-            <div key={i} onClick={() => showToast(`Viewing PO ${po.id}`)} style={{ display: 'flex', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid rgba(99,102,241,0.04)', cursor: 'pointer', transition: 'background 0.1s' }}
-              onMouseEnter={e => e.currentTarget.style.background='rgba(99,102,241,0.03)'}
+            <div key={i} onClick={() => showToast(`Viewing PO ${po.id}`)} style={{ display: 'flex', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', cursor: 'pointer', transition: 'background 0.1s' }}
+              onMouseEnter={e => e.currentTarget.style.background='rgba(var(--brand-rgb),0.03)'}
               onMouseLeave={e => e.currentTarget.style.background='transparent'}>
               <span className="mono" style={{ fontSize: 12, color: 'var(--brand)', fontWeight: 600, width: 80 }}>{po.id}</span>
               <span style={{ fontSize: 12, color: 'var(--text-mid)', flex: 1 }}>{po.vendor}</span>
@@ -701,7 +701,7 @@ function InventoryScreen() {
             { from: 'V-08 (Jessica Liu)', to: 'Warehouse', items: 'Hanwha QNO-8080R ×1 (return)', date: 'Jun 4', status: 'Complete' },
             { from: 'Warehouse', to: 'V-15 (Kevin White)', items: 'Mercury LP4502 ×1, DSC Neo ×1', date: 'Jun 3', status: 'Complete' },
           ].map((t, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12, fontWeight: 500 }}>{t.from} → {t.to}</div>
                 <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{t.items}</div>
@@ -724,7 +724,7 @@ function InventoryScreen() {
             { action: 'PO created', detail: 'PO-1024: ADI Global — 8 items, $12,420', user: 'Admin', time: 'Yesterday' },
             { action: 'Reorder alert', detail: 'Verkada CD52 dropped below reorder point (0 avail)', user: 'System', time: 'Yesterday' },
           ].map((log, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
               <StatusDot status={log.action.includes('alert') ? 'warning' : log.action.includes('Adjustment') ? 'info' : 'online'} size={5} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12, fontWeight: 500 }}>{log.action}</div>
@@ -744,12 +744,12 @@ function InventoryScreen() {
             <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 14 }}>Transfer: {transferModal.name}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div><div className="label-sm" style={{ marginBottom: 4 }}>Destination</div>
-                <select style={{ width: '100%', padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', cursor: 'pointer', outline: 'none' }}>
+                <select style={{ width: '100%', padding: '7px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)', cursor: 'pointer', outline: 'none' }}>
                   {trucks.map(t => <option key={t.id} value={t.id}>{t.id} — {t.tech}</option>)}
                 </select>
               </div>
               <div><div className="label-sm" style={{ marginBottom: 4 }}>Quantity (available: {transferModal.available})</div>
-                <input type="number" defaultValue={1} min={1} max={transferModal.available} style={{ width: '100%', padding: '7px 10px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none' }} />
+                <input type="number" defaultValue={1} min={1} max={transferModal.available} style={{ width: '100%', padding: '7px 10px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-mono)', outline: 'none' }} />
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
@@ -843,7 +843,7 @@ function ReportsScreen() {
         <h2 className="display" style={{ fontSize: 20, fontWeight: 300 }}>Business Intelligence</h2>
         <div style={{ display: 'flex', gap: 6 }}>
           {['This Month','Last Month','This Quarter','YTD'].map((p, i) => (
-            <button key={i} onClick={() => setPeriod(p)} style={{ padding: '5px 12px', fontSize: 11, borderRadius: 6, background: period === p ? 'rgba(99,102,241,0.1)' : 'transparent', border: '1px solid var(--border-subtle)', color: period === p ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{p}</button>
+            <button key={i} onClick={() => setPeriod(p)} style={{ padding: '5px 12px', fontSize: 11, borderRadius: 6, background: period === p ? 'rgba(var(--brand-rgb),0.1)' : 'transparent', border: '1px solid var(--border-subtle)', color: period === p ? 'var(--brand)' : 'var(--text-low)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{p}</button>
           ))}
         </div>
       </div>
@@ -869,8 +869,8 @@ function ReportsScreen() {
                 <span style={{ fontSize: 12, color: 'var(--text-high)' }}>{r.cat}</span>
                 <span className="mono" style={{ fontSize: 12, fontWeight: 500 }}>${(r.value / 1000).toFixed(0)}K <span style={{ color: 'var(--text-low)', fontWeight: 400 }}>({r.pct}%)</span></span>
               </div>
-              <div style={{ height: 6, borderRadius: 3, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
-                <div style={{ width: `${r.pct}%`, height: '100%', borderRadius: 3, background: i === 0 ? 'var(--brand)' : i === 1 ? 'var(--status-warn)' : i === 2 ? 'var(--status-ok)' : '#c084fc' }} />
+              <div style={{ height: 6, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.08)', overflow: 'hidden' }}>
+                <div style={{ width: `${r.pct}%`, height: '100%', borderRadius: 3, background: i === 0 ? 'var(--brand)' : i === 1 ? 'var(--status-warn)' : i === 2 ? 'var(--status-ok)' : 'var(--accent-2)' }} />
               </div>
             </div>
           ))}
@@ -890,11 +890,11 @@ function ReportsScreen() {
             <tbody>
               {leadSources.map((l, i) => (
                 <tr key={i} onClick={() => openLeadSource(l)} className="st-clickrow">
-                  <td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12 }}>{l.source}</td>
-                  <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right' }}>{l.leads}</td>
-                  <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', color: 'var(--status-ok)' }}>{l.won}</td>
-                  <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', fontWeight: 500 }}>{l.revenue}</td>
-                  <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, textAlign: 'right', color: parseInt(l.cac.replace(/\D/g,'')) < 200 ? 'var(--status-ok)' : 'var(--status-warn)' }}>{l.cac}</td>
+                  <td style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12 }}>{l.source}</td>
+                  <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right' }}>{l.leads}</td>
+                  <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right', color: 'var(--status-ok)' }}>{l.won}</td>
+                  <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right', fontWeight: 500 }}>{l.revenue}</td>
+                  <td className="mono" style={{ padding: '6px 8px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, textAlign: 'right', color: parseInt(l.cac.replace(/\D/g,'')) < 200 ? 'var(--status-ok)' : 'var(--status-warn)' }}>{l.cac}</td>
                 </tr>
               ))}
             </tbody>

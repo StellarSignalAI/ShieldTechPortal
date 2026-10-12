@@ -94,7 +94,7 @@ function SchedCopilotScreen() {
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           <button onClick={() => navTo('calendar')} style={{ padding: '7px 14px', background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-mid)', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Open calendar</button>
-          <button onClick={solve} disabled={stage === 'solving'} style={{ padding: '7px 18px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 4px 14px rgba(99,102,241,0.3)' }}>
+          <button onClick={solve} disabled={stage === 'solving'} style={{ padding: '7px 18px', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 4px 14px rgba(var(--brand-rgb),0.3)' }}>
             {stage === 'solving' ? 'Solving…' : 'Optimize my week'}
           </button>
         </div>
@@ -107,7 +107,7 @@ function SchedCopilotScreen() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {issues.map((iss, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 7, background: iss.sev === 'critical' ? 'rgba(244,63,94,0.05)' : 'rgba(251,191,36,0.05)', border: `1px solid ${iss.sev === 'critical' ? 'rgba(244,63,94,0.2)' : 'rgba(251,191,36,0.2)'}` }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 7, background: iss.sev === 'critical' ? 'rgba(var(--critical-rgb),0.05)' : 'rgba(var(--warn-rgb),0.05)', border: `1px solid ${iss.sev === 'critical' ? 'rgba(var(--critical-rgb),0.2)' : 'rgba(var(--warn-rgb),0.2)'}` }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: iss.sev === 'critical' ? 'var(--status-critical)' : 'var(--status-warn)', flexShrink: 0 }}></span>
               <span style={{ fontSize: 12, color: 'var(--text-high)' }}>{iss.label}</span>
               <span style={{ marginLeft: 'auto', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-low)' }}>{iss.type}</span>
@@ -129,7 +129,7 @@ function SchedCopilotScreen() {
                   <span style={{ fontSize: 11, color: 'var(--text-mid)' }}>{meta.name}</span>
                   <span className="mono" style={{ fontSize: 10, color: pct > 90 ? 'var(--status-critical)' : pct > 70 ? 'var(--status-warn)' : 'var(--text-low)' }}>{util[t]}h · {pct}%</span>
                 </div>
-                <div style={{ height: 5, borderRadius: 3, background: 'rgba(99,102,241,0.07)', overflow: 'hidden' }}>
+                <div style={{ height: 5, borderRadius: 3, background: 'rgba(var(--brand-rgb),0.07)', overflow: 'hidden' }}>
                   <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%', borderRadius: 3, background: pct > 90 ? 'var(--status-critical)' : pct > 70 ? 'var(--status-warn)' : meta.color, transition: 'width 0.4s' }}></div>
                 </div>
               </div>
@@ -143,7 +143,7 @@ function SchedCopilotScreen() {
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
             <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-low)' }}>Proposed Moves</span>
             {stage === 'proposed' && proposals.length > 0 && applied.length < proposals.length && (
-              <button onClick={applyAll} style={{ marginLeft: 'auto', padding: '5px 14px', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 7, color: 'var(--status-ok)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Apply all ({proposals.length - applied.length})</button>
+              <button onClick={applyAll} style={{ marginLeft: 'auto', padding: '5px 14px', background: 'rgba(var(--ok-rgb),0.1)', border: '1px solid rgba(var(--ok-rgb),0.3)', borderRadius: 7, color: 'var(--status-ok)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Apply all ({proposals.length - applied.length})</button>
             )}
           </div>
 
@@ -167,7 +167,7 @@ function SchedCopilotScreen() {
             const toMeta = COPILOT_TECH_META[p.to];
             const fromMeta = COPILOT_TECH_META[p.from];
             return (
-              <div key={p.id} style={{ padding: '12px 14px', borderRadius: 9, background: done ? 'rgba(52,211,153,0.04)' : 'rgba(5,7,10,0.4)', border: `1px solid ${done ? 'rgba(52,211,153,0.25)' : 'var(--border-subtle)'}`, marginBottom: 8, transition: 'all 0.2s' }}>
+              <div key={p.id} style={{ padding: '12px 14px', borderRadius: 9, background: done ? 'rgba(var(--ok-rgb),0.04)' : 'rgba(var(--canvas-rgb),0.4)', border: `1px solid ${done ? 'rgba(var(--ok-rgb),0.25)' : 'var(--border-subtle)'}`, marginBottom: 8, transition: 'all 0.2s' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-high)' }}>{p.title}</div>
@@ -182,10 +182,10 @@ function SchedCopilotScreen() {
                   </div>
                   {done
                     ? <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--status-ok)' }}>✓ Applied</span>
-                    : <button onClick={() => applyOne(p)} style={{ padding: '6px 16px', background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Apply</button>}
+                    : <button onClick={() => applyOne(p)} style={{ padding: '6px 16px', background: 'rgba(var(--brand-rgb),0.1)', border: '1px solid var(--border-strong)', borderRadius: 7, color: 'var(--brand)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>Apply</button>}
                 </div>
                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 8 }}>
-                  {p.reasons.map(r => <span key={r} style={{ fontSize: 9, padding: '3px 9px', borderRadius: 9, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)' }}>{r}</span>)}
+                  {p.reasons.map(r => <span key={r} style={{ fontSize: 9, padding: '3px 9px', borderRadius: 9, background: 'rgba(var(--brand-rgb),0.05)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)' }}>{r}</span>)}
                 </div>
               </div>
             );

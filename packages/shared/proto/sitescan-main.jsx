@@ -24,7 +24,7 @@ function MSiteScan({ onNav }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span className="mono" style={{ fontSize: 10, color: 'var(--text-low)' }}>{p.id}</span>
                 <MBadge color={p.status === 'complete' ? 'var(--status-ok)' : 'var(--status-warn)'}>{p.status}</MBadge>
-                {p.pushed && p.pushed.length > 0 && <MBadge color="#c084fc">→ studio</MBadge>}
+                {p.pushed && p.pushed.length > 0 && <MBadge color="var(--accent-2)">→ studio</MBadge>}
                 <span className="mono" style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-low)' }}>{p.created}</span>
               </div>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-high)', marginTop: 3 }}>{p.customer}</div>
@@ -45,7 +45,7 @@ function SSWizard({ onClose, onCreate }) {
   const [customer, setCustomer] = React.useState('');
   const [site, setSite] = React.useState('');
   const [floorLabel, setFloorLabel] = React.useState('Ground Floor');
-  const inp = { width: '100%', padding: '10px 12px', background: 'rgba(99,102,241,0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
+  const inp = { width: '100%', padding: '10px 12px', background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 9, color: 'var(--text-high)', fontSize: 13, fontFamily: 'var(--font-body)', outline: 'none' };
   const lbl = { fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-low)', marginBottom: 5, display: 'block' };
   const create = () => {
     if (!customer.trim()) { showToast('Add a customer first', 'warn'); return; }
@@ -117,7 +117,7 @@ function SSProject({ project, onClose, onNav }) {
   const floorChips = (
     <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
       {project.floors.map((f, i) => (
-        <button key={f.id} onClick={() => setFloorIdx(i)} style={{ flexShrink: 0, padding: '7px 13px', borderRadius: 16, border: '1px solid', borderColor: i === floorIdx ? 'var(--border-strong)' : 'var(--border-subtle)', background: i === floorIdx ? 'rgba(99,102,241,0.14)' : 'transparent', color: i === floorIdx ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+        <button key={f.id} onClick={() => setFloorIdx(i)} style={{ flexShrink: 0, padding: '7px 13px', borderRadius: 16, border: '1px solid', borderColor: i === floorIdx ? 'var(--border-strong)' : 'var(--border-subtle)', background: i === floorIdx ? 'rgba(var(--brand-rgb),0.14)' : 'transparent', color: i === floorIdx ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
           {f.label} <span className="mono" style={{ fontSize: 9, opacity: 0.7 }}>· {f.rooms.length}</span>
         </button>
       ))}
@@ -146,7 +146,7 @@ function SSProject({ project, onClose, onNav }) {
           {floor.rooms.length === 0 && <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 11.5, borderRadius: 12, lineHeight: 1.5 }}>No rooms on this floor yet.<br />Auto-Scan detects walls, openings & obstructions as you move; Corner Mode lets you tap corners through furniture.</div>}
           {floor.rooms.map(r => (
             <div key={r.id} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 13px', borderRadius: 12 }}>
-              <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--brand)', flexShrink: 0 }}>{r.mode === 'corner' ? '⊹' : '◉'}</div>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--brand)', flexShrink: 0 }}>{r.mode === 'corner' ? '⊹' : '◉'}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>{r.name}</div>
                 <div style={{ fontSize: 9.5, color: 'var(--text-low)' }}>{Math.round(ssArea(r.poly))} ft² · {ssFt(ssPerim(r.poly))} walls · {r.h || 9}′ ceiling · {r.mode === 'corner' ? 'corner mode' : 'AR auto-scan'}</div>
@@ -178,16 +178,16 @@ function SSProject({ project, onClose, onNav }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {floorChips}
           <div className="glass" style={{ borderRadius: 14, overflow: 'hidden' }}>
-            <div style={{ height: 130, background: 'radial-gradient(ellipse at 50% 80%, rgba(99,102,241,0.22) 0%, rgba(6,12,20,0.9) 70%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <div style={{ height: 130, background: 'radial-gradient(ellipse at 50% 80%, rgba(var(--brand-rgb),0.22) 0%, rgba(6,12,20,0.9) 70%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
               <div style={{ display: 'flex', gap: 8 }}>
-                {[0, 1].map(i => <div key={i} style={{ width: 74, height: 52, borderRadius: 12, border: '2px solid rgba(99,102,241,0.6)', background: 'linear-gradient(160deg, rgba(99,102,241,0.15), rgba(10,20,32,0.8))', boxShadow: '0 0 24px rgba(99,102,241,0.25)' }}></div>)}
+                {[0, 1].map(i => <div key={i} style={{ width: 74, height: 52, borderRadius: 12, border: '2px solid rgba(var(--brand-rgb),0.6)', background: 'linear-gradient(160deg, rgba(var(--brand-rgb),0.15), rgba(10,20,32,0.8))', boxShadow: '0 0 24px rgba(var(--brand-rgb),0.25)' }}></div>)}
               </div>
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 3, height: 40, background: 'rgba(99,102,241,0.4)', borderRadius: 2 }}></div>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 3, height: 40, background: 'rgba(var(--brand-rgb),0.4)', borderRadius: 2 }}></div>
             </div>
             <div style={{ padding: '12px 14px 14px' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-high)' }}>Walk the site in AR</div>
               <div style={{ fontSize: 10.5, color: 'var(--text-low)', lineHeight: 1.5, margin: '4px 0 12px' }}>First-person AR walkthrough of {floor.label} built from your scan. Switch to Headset mode for stereo split-screen, or 360° for room panoramas. Place and check devices from inside the walkthrough.</div>
-              <button onClick={() => setVr(true)} disabled={!floor.rooms.length} style={{ width: '100%', padding: '13px 0', background: floor.rooms.length ? 'linear-gradient(135deg, var(--brand), var(--brand-pressed))' : 'rgba(99,102,241,0.1)', border: 'none', borderRadius: 12, color: floor.rooms.length ? '#fff' : 'var(--text-low)', fontSize: 13.5, fontWeight: 700, cursor: floor.rooms.length ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>⬡ Enter AR walkthrough</button>
+              <button onClick={() => setVr(true)} disabled={!floor.rooms.length} style={{ width: '100%', padding: '13px 0', background: floor.rooms.length ? 'linear-gradient(135deg, var(--brand), var(--brand-pressed))' : 'rgba(var(--brand-rgb),0.1)', border: 'none', borderRadius: 12, color: floor.rooms.length ? '#fff' : 'var(--text-low)', fontSize: 13.5, fontWeight: 700, cursor: floor.rooms.length ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>⬡ Enter AR walkthrough</button>
             </div>
           </div>
           <div style={{ fontSize: 9.5, color: 'var(--text-low)', textAlign: 'center' }}>{t.devices} devices across {project.floors.length} floor{project.floors.length > 1 ? 's' : ''} will render in-world</div>

@@ -52,7 +52,7 @@ function ServicePlansScreen() {
       {/* tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
         {tabs.map(([id, l]) => (
-          <button key={id} onClick={() => setTab(id)} style={{ padding: '6px 14px', borderRadius: 7, fontSize: 12, fontWeight: tab === id ? 600 : 400, background: tab === id ? 'rgba(99,102,241,0.12)' : 'transparent', border: `1px solid ${tab === id ? 'var(--brand)' : 'var(--border-subtle)'}`, color: tab === id ? 'var(--brand)' : 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{l}</button>
+          <button key={id} onClick={() => setTab(id)} style={{ padding: '6px 14px', borderRadius: 7, fontSize: 12, fontWeight: tab === id ? 600 : 400, background: tab === id ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', border: `1px solid ${tab === id ? 'var(--brand)' : 'var(--border-subtle)'}`, color: tab === id ? 'var(--brand)' : 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{l}</button>
         ))}
       </div>
 
@@ -71,8 +71,8 @@ function ServicePlansScreen() {
                   <span style={{ fontSize: 11, color: 'var(--text-low)' }}>/mo</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-                  <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: 'rgba(99,102,241,0.08)', color: 'var(--text-mid)' }}>SLA {p.sla}</span>
-                  <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: 'rgba(99,102,241,0.08)', color: 'var(--text-mid)' }}>{p.visits} visits/yr</span>
+                  <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: 'rgba(var(--brand-rgb),0.08)', color: 'var(--text-mid)' }}>SLA {p.sla}</span>
+                  <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 4, background: 'rgba(var(--brand-rgb),0.08)', color: 'var(--text-mid)' }}>{p.visits} visits/yr</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
                   {p.features.map((f, i) => (
@@ -96,16 +96,16 @@ function ServicePlansScreen() {
             <tbody>{SP_CONTRACTS.map(c => {
               const p = planById(c.plan);
               return (
-                <tr key={c.id} onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 12, fontWeight: 500 }}>{c.customer}</td>
-                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: `${p.color}1f`, color: p.color }}>{p.name}</span></td>
-                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--brand)' }}>${c.mrr}</td>
-                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{c.sites}</td>
-                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{c.devices}</td>
-                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: 'var(--text-low)' }}>{c.since}</td>
-                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)', fontSize: 10, color: c.status === 'renewal' ? 'var(--status-warn)' : 'var(--text-low)' }}>{c.renews}</td>
-                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>{c.status === 'renewal' ? <span style={{ fontSize: 10, color: 'var(--status-warn)' }}>● Renewal due</span> : <span style={{ fontSize: 10, color: 'var(--status-ok)' }}>● Active</span>}</td>
-                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}><button onClick={() => showToast(`${c.status === 'renewal' ? 'Renewing' : 'Opening'} ${c.customer}`)} style={{ padding: '3px 10px', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>{c.status === 'renewal' ? 'Renew' : 'Manage'}</button></td>
+                <tr key={c.id} onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 12, fontWeight: 500 }}>{c.customer}</td>
+                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: `${p.color}1f`, color: p.color }}>{p.name}</span></td>
+                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--brand)' }}>${c.mrr}</td>
+                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{c.sites}</td>
+                  <td className="mono" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 11, color: 'var(--text-mid)' }}>{c.devices}</td>
+                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, color: 'var(--text-low)' }}>{c.since}</td>
+                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)', fontSize: 10, color: c.status === 'renewal' ? 'var(--status-warn)' : 'var(--text-low)' }}>{c.renews}</td>
+                  <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>{c.status === 'renewal' ? <span style={{ fontSize: 10, color: 'var(--status-warn)' }}>● Renewal due</span> : <span style={{ fontSize: 10, color: 'var(--status-ok)' }}>● Active</span>}</td>
+                  <td style={{ padding: '8px 10px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}><button onClick={() => showToast(`${c.status === 'renewal' ? 'Renewing' : 'Opening'} ${c.customer}`)} style={{ padding: '3px 10px', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-subtle)', borderRadius: 4, color: 'var(--brand)', fontSize: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>{c.status === 'renewal' ? 'Renew' : 'Manage'}</button></td>
                 </tr>
               );
             })}</tbody>
@@ -119,7 +119,7 @@ function ServicePlansScreen() {
           {SP_ORDERS.map(o => {
             const p = planById(o.plan); const st = SP_ORDER_STATUS[o.status] || SP_ORDER_STATUS.scheduled;
             return (
-              <div key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderBottom: '1px solid rgba(99,102,241,0.04)' }}>
+              <div key={o.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderBottom: '1px solid rgba(var(--brand-rgb),0.04)' }}>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: st.c, flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)' }}>{o.summary}</div>
@@ -153,7 +153,7 @@ function SellPlanModal({ onClose, showToast }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-low)', fontSize: 18, cursor: 'pointer' }}>✕</button>
         </div>
         <label style={{ fontSize: 10, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Customer</label>
-        <select value={cust} onChange={e => setCust(e.target.value)} style={{ width: '100%', padding: '8px 10px', margin: '4px 0 12px', background: 'rgba(5,7,10,0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)' }}>
+        <select value={cust} onChange={e => setCust(e.target.value)} style={{ width: '100%', padding: '8px 10px', margin: '4px 0 12px', background: 'rgba(var(--canvas-rgb),0.5)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-high)', fontSize: 12, fontFamily: 'var(--font-body)' }}>
           {customers.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <label style={{ fontSize: 10, color: 'var(--text-low)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Plan</label>
@@ -165,7 +165,7 @@ function SellPlanModal({ onClose, showToast }) {
             </button>
           ))}
         </div>
-        <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.05)', border: '1px solid var(--border-subtle)', marginBottom: 14 }}>
+        <div style={{ padding: '10px 12px', borderRadius: 8, background: 'rgba(var(--brand-rgb),0.05)', border: '1px solid var(--border-subtle)', marginBottom: 14 }}>
           <div style={{ fontSize: 11, color: 'var(--text-mid)' }}>{cust} → <span style={{ color: p.color, fontWeight: 600 }}>{p.name}</span></div>
           <div style={{ fontSize: 10, color: 'var(--text-low)', marginTop: 2 }}>Adds <span className="mono" style={{ color: 'var(--brand)' }}>${p.price}/mo</span> (<span className="mono">${(p.price * 12).toLocaleString()}/yr</span>) to recurring revenue · SLA {p.sla}</div>
         </div>

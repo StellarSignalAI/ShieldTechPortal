@@ -10,6 +10,7 @@ html {
 
 body {
   font-family: var(--font-body);
+  font-feature-settings: 'tnum' 1, 'cv11' 1, 'ss01' 1;
   background: var(--canvas);
   color: var(--text-high);
   overflow: hidden;
@@ -17,26 +18,16 @@ body {
   width: 100vw;
 }
 
-/* Grain overlay — 3% fractal noise over everything */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 10000;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 200px;
-}
+/* Flat surfaces — the UniFi pattern has no grain or glow overlay. */
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.15); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.3); }
+::-webkit-scrollbar-thumb { background: rgba(var(--brand-rgb),0.18); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(var(--brand-rgb),0.32); }
 
 /* Selection */
-::selection { background: rgba(99,102,241,0.3); color: var(--text-high); }
+::selection { background: rgba(var(--brand-rgb),0.28); color: var(--text-high); }
 
 /* Focus ring */
 :focus-visible {
@@ -65,7 +56,7 @@ body::after {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   pointer-events: none;
 }
@@ -77,15 +68,15 @@ body::after {
   display: inline-block;
   flex-shrink: 0;
 }
-.status-dot.online { background: var(--status-ok); box-shadow: 0 0 8px var(--status-ok); }
-.status-dot.warning { background: var(--status-warn); box-shadow: 0 0 8px var(--status-warn); }
-.status-dot.critical { background: var(--status-critical); box-shadow: 0 0 8px var(--status-critical); animation: pulse-critical 2s ease-in-out infinite; }
+.status-dot.online { background: var(--status-ok); box-shadow: var(--glow-ok); }
+.status-dot.warning { background: var(--status-warn); box-shadow: var(--glow-warn); }
+.status-dot.critical { background: var(--status-critical); box-shadow: var(--glow-critical); animation: pulse-critical 2s ease-in-out infinite; }
 .status-dot.offline { background: var(--text-low); }
 .status-dot.info { background: var(--status-info); box-shadow: 0 0 8px var(--status-info); }
 
 @keyframes pulse-critical {
   0%, 100% { box-shadow: 0 0 4px var(--status-critical); }
-  50% { box-shadow: 0 0 12px var(--status-critical), 0 0 24px rgba(244,63,94,0.3); }
+  50% { box-shadow: 0 0 12px var(--status-critical), 0 0 24px rgba(var(--critical-rgb),0.3); }
 }
 
 @keyframes pulse-online {
@@ -105,10 +96,10 @@ body::after {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-.badge.ok { background: rgba(52,211,153,0.12); color: var(--status-ok); }
-.badge.warn { background: rgba(251,191,36,0.12); color: var(--status-warn); }
-.badge.critical { background: rgba(244,63,94,0.12); color: var(--status-critical); }
-.badge.info { background: rgba(99,102,241,0.12); color: var(--status-info); }
+.badge.ok { background: var(--ok-tint-12); color: var(--status-ok); }
+.badge.warn { background: var(--warn-tint-12); color: var(--status-warn); }
+.badge.critical { background: var(--critical-tint-12); color: var(--status-critical); }
+.badge.info { background: var(--brand-tint-12); color: var(--status-info); }
 
 /* Animated grid background */
 @keyframes grid-move {
@@ -154,7 +145,7 @@ html:not(.anim-ready) [style*="fade-up"] {
 
 @keyframes count-glow {
   0% { text-shadow: 0 0 0 transparent; }
-  50% { text-shadow: 0 0 20px rgba(99,102,241,0.4); }
+  50% { text-shadow: 0 0 20px rgba(var(--brand-rgb),0.4); }
   100% { text-shadow: 0 0 0 transparent; }
 }
 

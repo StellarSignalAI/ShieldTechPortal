@@ -39,8 +39,8 @@ function MSurveyScan({ onNav }) {
   const newBtn = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <button onClick={() => setWizard(true)} style={{ padding: '13px 0', background: 'linear-gradient(135deg, var(--brand), var(--brand-pressed))', border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◉ New Survey Scan</button>
-      {arReady && <button onClick={startArScan} style={{ padding: '11px 0', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: 12, color: 'var(--status-ok)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◈ AR Scan a Room (live · Android)</button>}
-      <button onClick={() => lidarInputRef.current && lidarInputRef.current.click()} style={{ padding: '11px 0', background: 'rgba(99,102,241,0.06)', border: '1px solid var(--border-strong)', borderRadius: 12, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⌁ Import LiDAR Scan (ShieldTech Scanner)</button>
+      {arReady && <button onClick={startArScan} style={{ padding: '11px 0', background: 'rgba(var(--ok-rgb),0.08)', border: '1px solid rgba(var(--ok-rgb),0.3)', borderRadius: 12, color: 'var(--status-ok)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>◈ AR Scan a Room (live · Android)</button>}
+      <button onClick={() => lidarInputRef.current && lidarInputRef.current.click()} style={{ padding: '11px 0', background: 'rgba(var(--brand-rgb),0.06)', border: '1px solid var(--border-strong)', borderRadius: 12, color: 'var(--brand)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>⌁ Import LiDAR Scan (ShieldTech Scanner)</button>
       <input ref={lidarInputRef} type="file" accept=".json,application/json" onChange={onLidarFile} style={{ display: 'none' }} />
     </div>
   );
@@ -164,7 +164,7 @@ function SV2Project({ project, onClose, onNav }) {
   const floorChips = (
     <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
       {project.floors.map((f, i) => (
-        <button key={f.id} onClick={() => setFloorIdx(i)} style={{ flexShrink: 0, padding: '7px 13px', borderRadius: 16, border: '1px solid', borderColor: i === floorIdx ? 'var(--border-strong)' : 'var(--border-subtle)', background: i === floorIdx ? 'rgba(99,102,241,0.14)' : 'transparent', color: i === floorIdx ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+        <button key={f.id} onClick={() => setFloorIdx(i)} style={{ flexShrink: 0, padding: '7px 13px', borderRadius: 16, border: '1px solid', borderColor: i === floorIdx ? 'var(--border-strong)' : 'var(--border-subtle)', background: i === floorIdx ? 'rgba(var(--brand-rgb),0.14)' : 'transparent', color: i === floorIdx ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
           {f.label} <span className="mono" style={{ fontSize: 9, opacity: 0.7 }}>· {f.rooms.length}</span>
         </button>
       ))}
@@ -183,28 +183,28 @@ function SV2Project({ project, onClose, onNav }) {
           <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--text-high)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{project.customer}</div>
           <div style={{ fontSize: 9.5, color: 'var(--text-low)' }}>{project.site} · <span className="mono">{project.id}</span> · {t.area.toLocaleString()} ft²</div>
         </div>
-        <button onClick={() => setLaser(true)} title="Laser meter" style={{ width: 30, height: 30, borderRadius: 9, border: '1px solid var(--border-subtle)', background: prefs.laser ? 'rgba(52,211,153,0.12)' : 'rgba(99,102,241,0.06)', color: prefs.laser ? 'var(--status-ok)' : 'var(--text-mid)', fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>⌖</button>
-        <button onClick={() => setSync(true)} title="Survey Cloud sync" style={{ width: 30, height: 30, borderRadius: 9, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.06)', cursor: 'pointer', flexShrink: 0, position: 'relative', color: 'var(--text-mid)', fontSize: 12 }}>
+        <button onClick={() => setLaser(true)} title="Laser meter" style={{ width: 30, height: 30, borderRadius: 9, border: '1px solid var(--border-subtle)', background: prefs.laser ? 'rgba(var(--ok-rgb),0.12)' : 'rgba(var(--brand-rgb),0.06)', color: prefs.laser ? 'var(--status-ok)' : 'var(--text-mid)', fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>⌖</button>
+        <button onClick={() => setSync(true)} title="Survey Cloud sync" style={{ width: 30, height: 30, borderRadius: 9, border: '1px solid var(--border-subtle)', background: 'rgba(var(--brand-rgb),0.06)', cursor: 'pointer', flexShrink: 0, position: 'relative', color: 'var(--text-mid)', fontSize: 12 }}>
           ⇅<span style={{ position: 'absolute', top: 4, right: 4, width: 6, height: 6, borderRadius: '50%', background: 'var(--status-ok)' }}></span>
         </button>
       </div>
 
       {/* ShieldTech AI capture — hero */}
       {prefs.aiCapture && (
-        <button onClick={() => setAi(true)} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 13px', borderRadius: 12, border: '1px solid rgba(192,132,252,0.35)', background: 'linear-gradient(120deg, rgba(192,132,252,0.10), rgba(99,102,241,0.06))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-          <span style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, background: 'rgba(192,132,252,0.14)', border: '1px solid rgba(192,132,252,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#c084fc' }}>✦</span>
+        <button onClick={() => setAi(true)} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 13px', borderRadius: 12, border: '1px solid rgba(25,227,236,0.35)', background: 'linear-gradient(120deg, rgba(25,227,236,0.10), rgba(var(--brand-rgb),0.06))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+          <span style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, background: 'rgba(25,227,236,0.14)', border: '1px solid rgba(25,227,236,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--accent-2)' }}>✦</span>
           <span style={{ flex: 1 }}>
             <span style={{ display: 'block', fontSize: 12.5, fontWeight: 700, color: 'var(--text-high)' }}>Walk & talk with ShieldTech AI</span>
             <span style={{ display: 'block', fontSize: 9.5, color: 'var(--text-low)' }}>Speak as you scan — issues, scope & notes file themselves</span>
           </span>
-          <span style={{ color: '#c084fc', fontSize: 14 }}>›</span>
+          <span style={{ color: 'var(--accent-2)', fontSize: 14 }}>›</span>
         </button>
       )}
 
       {/* tab chips */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
         {TABS.map(tb => (
-          <button key={tb} onClick={() => setTab(tb)} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: 9, border: '1px solid', borderColor: tab === tb ? 'var(--border-strong)' : 'var(--border-subtle)', background: tab === tb ? 'rgba(99,102,241,0.14)' : 'transparent', color: tab === tb ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{tb}</button>
+          <button key={tb} onClick={() => setTab(tb)} style={{ flexShrink: 0, padding: '8px 14px', borderRadius: 9, border: '1px solid', borderColor: tab === tb ? 'var(--border-strong)' : 'var(--border-subtle)', background: tab === tb ? 'rgba(var(--brand-rgb),0.14)' : 'transparent', color: tab === tb ? 'var(--brand)' : 'var(--text-mid)', fontSize: 11.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{tb}</button>
         ))}
       </div>
 
@@ -216,7 +216,7 @@ function SV2Project({ project, onClose, onNav }) {
           {floor.rooms.length === 0 && <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 11.5, borderRadius: 12, lineHeight: 1.5 }}>No rooms on this floor yet.<br />Walls, doors, windows & obstructions land on the plan as you move.</div>}
           {floor.rooms.map(r => (
             <div key={r.id} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 13px', borderRadius: 12 }}>
-              <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--brand)', flexShrink: 0 }}>{r.mode === 'corner' ? '⊹' : '◉'}</div>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(var(--brand-rgb),0.08)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--brand)', flexShrink: 0 }}>{r.mode === 'corner' ? '⊹' : '◉'}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-high)' }}>{r.name}</div>
                 <div style={{ fontSize: 9.5, color: 'var(--text-low)' }}>{Math.round(ssArea(r.poly))} ft² · {ssFt(ssPerim(r.poly))} walls · {r.h || 9}′ ceiling · {r.mode === 'corner' ? 'corner mode' : 'LiDAR auto-scan'}</div>
@@ -239,7 +239,7 @@ function SV2Project({ project, onClose, onNav }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <div style={{ flex: 1, minWidth: 0 }}>{floorChips}</div>
-            <button onClick={() => setViews(true)} style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 9, border: '1px solid var(--border-subtle)', background: 'rgba(99,102,241,0.06)', color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>2D/3D ▾</button>
+            <button onClick={() => setViews(true)} style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 9, border: '1px solid var(--border-subtle)', background: 'rgba(var(--brand-rgb),0.06)', color: 'var(--brand)', fontSize: 10.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>2D/3D ▾</button>
           </div>
           {floor.rooms.length === 0
             ? <div className="glass" style={{ padding: 26, textAlign: 'center', color: 'var(--text-low)', fontSize: 11.5, borderRadius: 12 }}>Capture a room first — the blueprint builds itself as you scan.</div>
@@ -255,15 +255,15 @@ function SV2Project({ project, onClose, onNav }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {floorChips}
           <div className="glass" style={{ borderRadius: 14, overflow: 'hidden' }}>
-            <div style={{ height: 130, background: 'radial-gradient(ellipse at 50% 80%, rgba(99,102,241,0.22) 0%, rgba(6,12,20,0.9) 70%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <div style={{ height: 130, background: 'radial-gradient(ellipse at 50% 80%, rgba(var(--brand-rgb),0.22) 0%, rgba(6,12,20,0.9) 70%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
               <div style={{ display: 'flex', gap: 8 }}>
-                {[0, 1].map(i => <div key={i} style={{ width: 74, height: 52, borderRadius: 12, border: '2px solid rgba(99,102,241,0.6)', background: 'linear-gradient(160deg, rgba(99,102,241,0.15), rgba(10,20,32,0.8))', boxShadow: '0 0 24px rgba(99,102,241,0.25)' }}></div>)}
+                {[0, 1].map(i => <div key={i} style={{ width: 74, height: 52, borderRadius: 12, border: '2px solid rgba(var(--brand-rgb),0.6)', background: 'linear-gradient(160deg, rgba(var(--brand-rgb),0.15), rgba(10,20,32,0.8))', boxShadow: '0 0 24px rgba(var(--brand-rgb),0.25)' }}></div>)}
               </div>
             </div>
             <div style={{ padding: '12px 14px 14px' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-high)' }}>Walk the site in AR</div>
               <div style={{ fontSize: 10.5, color: 'var(--text-low)', lineHeight: 1.5, margin: '4px 0 12px' }}>First-person walkthrough of {floor.label} built from your scan. Place and check devices from inside; 360° panoramas open where they're pinned.</div>
-              <button onClick={() => setVr(true)} disabled={!floor.rooms.length} style={{ width: '100%', padding: '13px 0', background: floor.rooms.length ? 'linear-gradient(135deg, var(--brand), var(--brand-pressed))' : 'rgba(99,102,241,0.1)', border: 'none', borderRadius: 12, color: floor.rooms.length ? '#fff' : 'var(--text-low)', fontSize: 13.5, fontWeight: 700, cursor: floor.rooms.length ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>⬡ Enter AR walkthrough</button>
+              <button onClick={() => setVr(true)} disabled={!floor.rooms.length} style={{ width: '100%', padding: '13px 0', background: floor.rooms.length ? 'linear-gradient(135deg, var(--brand), var(--brand-pressed))' : 'rgba(var(--brand-rgb),0.1)', border: 'none', borderRadius: 12, color: floor.rooms.length ? '#fff' : 'var(--text-low)', fontSize: 13.5, fontWeight: 700, cursor: floor.rooms.length ? 'pointer' : 'default', fontFamily: 'var(--font-body)' }}>⬡ Enter AR walkthrough</button>
             </div>
           </div>
         </div>
