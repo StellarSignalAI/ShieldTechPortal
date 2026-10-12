@@ -686,6 +686,15 @@ ShieldTech's own data and tools.
   bottom == viewport bottom, scroll area ends at the bar's top, no page errors. Service
   worker cache `shieldtech-v30`.
 
+### 2x. Tech app: no finance anywhere
+- Search no longer indexes invoices (placeholder "Jobs, customers, sites, devices…"); the
+  recents chips are Requests · Jobs · Clients · Photos · Punch list; the speed dial is
+  Request · Task · Job · Client; the job page is Job · Flow · Notes (no Money tab, no price
+  in the title, no "Snap a receipt"); Home no longer shows the day's dollar value; the
+  request page lost "Convert to quote"; the quotes / invoices / health / expenses /
+  doc-builder routes are unrouted (they fall back to More). The builder components stay
+  in the bundle unused.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 
