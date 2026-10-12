@@ -673,6 +673,19 @@ ShieldTech's own data and tools.
   OpenStreetMap tiles, no CARTO; with the tile host blocked (sandbox) the layer swaps to
   Esri on its own. Service worker cache `shieldtech-v29`.
 
+### 2w. Phone tab bar: position: fixed (the second, real fix)
+- The 2t change sized the shell from the fixed body; installed iOS web apps still showed
+  the bar floating a home-indicator's height above the screen edge. The bar is now
+  **`position: fixed; bottom: 0`** (`.m-app-shell > :is(nav, footer):last-of-type` in
+  `viewport-lock.css`), owns the bottom safe-area inset, and the shell reserves
+  `--m-nav-h` (62px; the customer footer sets 34px) + inset of bottom padding so content
+  never hides under it. In the rotated-landscape case the transformed body is the
+  containing block, so the bar lands on the phone's physical bottom edge. On wide
+  screens it stays inside the 460px device frame.
+- Verified with Playwright on all four apps at 390×844, 390×700 and rotated 844×390: bar
+  bottom == viewport bottom, scroll area ends at the bar's top, no page errors. Service
+  worker cache `shieldtech-v30`.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 

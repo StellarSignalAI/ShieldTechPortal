@@ -311,7 +311,7 @@ function CustomerPortalApp() {
   const me = window.__shieldUser || {};
 
   return (
-    <div className="m-app-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--canvas)' }}>
+    <div className="m-app-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--canvas)', '--m-nav-h': '34px' }}>
       {/* Header */}
       <header className="cp-header" style={{
         height: 56, flexShrink: 0,
