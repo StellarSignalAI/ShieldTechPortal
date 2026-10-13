@@ -778,6 +778,23 @@ ShieldTech's own data and tools.
   `vp W×H · screen W×H · inset top/bottom · home-screen app|browser`. Translucent install =
   vp height ≈ screen − 60 with top inset > 0; opaque install = top inset 0.
 
+### 2ab. Bottom gap — the viewport-sized fixed body was the trigger Apple names
+- Still reported after 2aa. Apple's Safari 26.1 release notes describe the iOS 26 bug as
+  "a bottom gap appearing on layouts with **viewport-sized fixed containers**" (158055568);
+  `viewport-lock.css` had `body { position: fixed; inset: 0 }` — exactly that container —
+  in every build that showed the band. It is gone: `html, body { height: 100%; overflow:
+  hidden; overscroll-behavior: none }`, body `position: relative`, nothing viewport-sized is
+  `position: fixed` except the thin tab bar. The landscape rotation rule drops its
+  `right/bottom: auto` (irrelevant for a non-fixed body) and otherwise still applies.
+- Status bar meta is back to **`black-translucent`** (edge-to-edge, and the mode the
+  user's installed icons most likely carry, so no re-add is required for this build).
+  Service worker cache `shieldtech-v34`. The viewport readout from 2aa stays in the
+  avatar menus.
+- Verified with Playwright on portal / tech / customer / sales at iPhone 14 and Pixel 7:
+  body is not fixed, body = shell = viewport height, the tab bar's bottom equals the
+  viewport bottom, `window.scrollTo(0,120)` leaves scrollY at 0 (document never scrolls),
+  no horizontal overflow, no page errors.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 
