@@ -33,51 +33,63 @@
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') lock(); });
   window.addEventListener('pointerdown', lock, { once: true });
 
-  /* ── Short layout viewport (iOS 26 home-screen apps) ──
-     Measures how far the layout viewport stops above the real screen bottom
-     and hands it to viewport-lock.css as --st-vgap-js (see the comment there).
-     Only ever non-zero for a standalone, portrait, phone-sized page that sits
-     under the status bar (top safe-area inset > 0 — the translucent mode the
-     bug lives in); an opaque status bar legitimately makes innerHeight shorter
-     than the screen, so that case reports 0. Capped at 120px; skipped while a
-     field has focus so a keyboard-shrunk viewport never counts as the gap. */
+  /* ── Viewport readout (shown under "build …" in the avatar menus) ──
+     One line that says exactly how iOS sized this app, so a phone screenshot
+     is never a guess: page viewport, physical screen, top/bottom safe-area
+     insets, and whether it runs as a home-screen app or in the browser. An
+     installed app whose viewport height is screen minus ~60 AND whose top
+     inset is > 0 is the iOS 26 translucent-status-bar install (see
+     viewport-lock.css): remove it from the home screen and add it again. */
   const probe = document.createElement('div');
   probe.setAttribute('aria-hidden', 'true');
-  probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;padding-top:env(safe-area-inset-top, 0px);visibility:hidden;pointer-events:none;z-index:-1';
-  const topInset = () => { try { if (!probe.isConnected) document.documentElement.appendChild(probe); return probe.getBoundingClientRect().height || 0; } catch { return 0; } };
-  const standalone = () => { try { return navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); } catch { return false; } };
-  const typing = () => { const a = document.activeElement; return !!a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable); };
-  let lastGap = -1;
-  const measureGap = () => {
-    if (typing()) return; // keyboard up: keep the last value, never re-measure a shrunk viewport
-    let gap = 0;
+  probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;padding-top:env(safe-area-inset-top, 0px);padding-bottom:env(safe-area-inset-bottom, 0px);visibility:hidden;pointer-events:none;z-index:-1';
+  const insets = () => {
     try {
-      const portrait = window.innerHeight >= window.innerWidth;
-      if (standalone() && portrait && isPhone() && topInset() > 0) {
-        const screenH = Math.max(window.screen.height || 0, window.screen.width || 0);
-        gap = Math.round(screenH - window.innerHeight);
-        if (!(gap > 0 && gap <= 120)) gap = 0;
-      }
-    } catch { gap = 0; }
-    if (gap !== lastGap) { lastGap = gap; document.documentElement.style.setProperty('--st-vgap-js', gap + 'px'); }
+      if (!probe.isConnected) document.documentElement.appendChild(probe);
+      const cs = getComputedStyle(probe);
+      return { top: Math.round(parseFloat(cs.paddingTop) || 0), bottom: Math.round(parseFloat(cs.paddingBottom) || 0) };
+    } catch { return { top: 0, bottom: 0 }; }
   };
-  measureGap();
-  window.addEventListener('resize', measureGap);
-  window.addEventListener('orientationchange', () => { measureGap(); setTimeout(measureGap, 300); });
-  window.addEventListener('pageshow', measureGap);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') measureGap(); });
-  window.__shieldViewportGap = measureGap;
+  const standalone = () => { try { return navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); } catch { return false; } };
+  /* Every viewport number iOS exposes, so one screenshot of the avatar menu
+     tells exactly how the web view was sized: layout viewport (innerHeight),
+     visual viewport, document client height, 100lvh / 100dvh / 100svh probes,
+     the physical screen, the safe-area insets, the OS version and whether
+     this is a home-screen app or the browser. */
+  const unitProbe = (unit) => {
+    try {
+      const d = document.createElement('div');
+      d.style.cssText = `position:fixed;top:0;left:0;width:0;height:100${unit};visibility:hidden;pointer-events:none;z-index:-1`;
+      document.documentElement.appendChild(d);
+      const h = Math.round(d.getBoundingClientRect().height); d.remove(); return h;
+    } catch { return 0; }
+  };
+  const osVersion = () => { const m = /OS (\d+)[_.](\d+)/.exec(navigator.userAgent || ''); return m ? `iOS ${m[1]}.${m[2]}` : (/Android (\d+)/.exec(navigator.userAgent || '') || [])[0] || ''; };
+  window.__shieldViewportInfo = () => {
+    const i = insets();
+    const vv = window.visualViewport ? Math.round(window.visualViewport.height) : 0;
+    return [
+      `vp ${window.innerWidth}×${window.innerHeight}`,
+      `visual ${vv}`,
+      `doc ${document.documentElement.clientHeight}`,
+      `lvh ${unitProbe('lvh')} · dvh ${unitProbe('dvh')} · svh ${unitProbe('svh')}`,
+      `screen ${window.screen.width}×${window.screen.height}`,
+      `inset ${i.top}/${i.bottom}`,
+      osVersion(),
+      standalone() ? 'home-screen app' : 'browser',
+    ].filter(Boolean).join(' · ');
+  };
 
-  /* iOS home-screen apps can also leave the layout viewport shrunk after the
+  /* iOS home-screen apps can leave the layout viewport shrunk after the
      on-screen keyboard closes (a dead band appears under the tab bar for the
      rest of the session). Nudging a reflow right after focus leaves an input
-     restores the full-height viewport, then the gap is re-measured. */
+     restores the full-height viewport. */
   document.addEventListener('focusout', () => {
     setTimeout(() => {
       try {
         window.scrollTo(0, 0);
         const b = document.body; b.style.minHeight = '100.01%';
-        requestAnimationFrame(() => { b.style.minHeight = ''; measureGap(); });
+        requestAnimationFrame(() => { b.style.minHeight = ''; });
       } catch { /* noop */ }
     }, 80);
   });

@@ -128,7 +128,7 @@ function TechAvatarMenu() {
             </div>
             <div style={{ height: 1, background: 'var(--border-subtle)', margin: '5px 12px' }} />
             <button style={{ ...item, color: 'var(--status-critical)' }} onClick={() => { setOpen(false); if (window.__shieldAuth) window.__shieldAuth.signOut(); }}>← Sign out</button>
-            <div className="mono" style={{ padding: '6px 14px 10px', fontSize: 9, color: 'var(--text-low)', opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}</div>
+            <div className="mono" style={{ padding: '6px 14px 10px', fontSize: 9, color: 'var(--text-low)', opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}{window.__shieldViewportInfo ? ` · ${window.__shieldViewportInfo()}` : ''}</div>
           </div>
         </>
       ), document.body)}
