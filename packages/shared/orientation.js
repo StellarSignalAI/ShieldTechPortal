@@ -51,9 +51,33 @@
     } catch { return { top: 0, bottom: 0 }; }
   };
   const standalone = () => { try { return navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); } catch { return false; } };
+  /* Every viewport number iOS exposes, so one screenshot of the avatar menu
+     tells exactly how the web view was sized: layout viewport (innerHeight),
+     visual viewport, document client height, 100lvh / 100dvh / 100svh probes,
+     the physical screen, the safe-area insets, the OS version and whether
+     this is a home-screen app or the browser. */
+  const unitProbe = (unit) => {
+    try {
+      const d = document.createElement('div');
+      d.style.cssText = `position:fixed;top:0;left:0;width:0;height:100${unit};visibility:hidden;pointer-events:none;z-index:-1`;
+      document.documentElement.appendChild(d);
+      const h = Math.round(d.getBoundingClientRect().height); d.remove(); return h;
+    } catch { return 0; }
+  };
+  const osVersion = () => { const m = /OS (\d+)[_.](\d+)/.exec(navigator.userAgent || ''); return m ? `iOS ${m[1]}.${m[2]}` : (/Android (\d+)/.exec(navigator.userAgent || '') || [])[0] || ''; };
   window.__shieldViewportInfo = () => {
     const i = insets();
-    return `vp ${window.innerWidth}×${window.innerHeight} · screen ${window.screen.width}×${window.screen.height} · inset ${i.top}/${i.bottom} · ${standalone() ? 'home-screen app' : 'browser'}`;
+    const vv = window.visualViewport ? Math.round(window.visualViewport.height) : 0;
+    return [
+      `vp ${window.innerWidth}×${window.innerHeight}`,
+      `visual ${vv}`,
+      `doc ${document.documentElement.clientHeight}`,
+      `lvh ${unitProbe('lvh')} · dvh ${unitProbe('dvh')} · svh ${unitProbe('svh')}`,
+      `screen ${window.screen.width}×${window.screen.height}`,
+      `inset ${i.top}/${i.bottom}`,
+      osVersion(),
+      standalone() ? 'home-screen app' : 'browser',
+    ].filter(Boolean).join(' · ');
   };
 
   /* iOS home-screen apps can leave the layout viewport shrunk after the
