@@ -2,28 +2,25 @@
    The page itself never scrolls, bounces, or zooms; only the shell's internal
    scroll containers move. Safe-area insets keep the design clear of notches,
    home indicators, and gesture bars without altering the design itself. */
-html { height: 100%; }
-
-/* ── iOS 26 home-screen apps and the dead band under the tab bar ──
-   Pixel scans of the user's iPhone 16 Pro Max screenshots (3px/pt) settled
-   what the band is. An app installed with the TRANSLUCENT status bar
-   (`apple-mobile-web-app-status-bar-style=black-translucent`, read by iOS
-   only when the icon is added) gets a web view that starts at the top of the
-   screen but is one status-bar inset (62pt) SHORT: the page paints under the
-   status bar, the bar sits at the view's bottom, and iOS fills the last 62pt
-   with the page background. Extending the layout by 62pt (tried, reverted)
-   only pushed the tab bar's labels out of the view — the paint region ended on
-   exactly the same pixel row, so the band is outside the web view and no CSS
-   or JS in the page can reach it. The fix is the OPAQUE status bar
-   (`black`, set in every index.html): iOS then starts the same-sized view
-   below the status bar so it ends on the real screen edge. Because iOS bakes
-   that setting into the home-screen icon, the app has to be removed from the
-   home screen and added again once after the deploy. */
+/* ── NO viewport-sized fixed container ──
+   Apple's Safari 26.1 release notes name the iOS 26 bug behind the dead band
+   under the tab bar as "a bottom gap appearing on layouts with viewport-sized
+   fixed containers" (158055568). A `position: fixed; inset: 0` body is exactly
+   that container, and every build that showed the band had one. The page is
+   locked in place the other way: html and body are 100% tall, overflow hidden,
+   overscroll disabled — the document never scrolls or bounces, only the shell's
+   inner scroll containers move — and nothing on the page is sized to the
+   viewport with position: fixed except the thin tab bar. */
+html {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
 body {
-  position: fixed;
-  inset: 0;
+  position: relative;
   width: 100%;
   height: 100%;
+  margin: 0;
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
@@ -36,10 +33,8 @@ body {
    screen edge. Padding here too would double the inset and float the bar
    above the home indicator by a model-dependent gap.
 
-   Height is 100% of the fixed body (which is pinned to every edge of the
-   visual viewport) — NOT 100vh / 100dvh. Installed (standalone) PWAs on iOS
-   report a dvh/vh that is shorter than the screen, which left a dead band
-   under the tab bar; the fixed body is always the exact screen. */
+   Height is 100% of body (100% of html, the viewport) — not 100vh / 100dvh,
+   which installed iOS apps have reported short. */
 .m-app-shell {
   height: 100% !important;
   min-height: 100% !important;
@@ -90,8 +85,6 @@ body {
     width: 100vh !important;
     height: 100vw !important;
     max-width: none !important;
-    right: auto !important;
-    bottom: auto !important;
     left: 0 !important;
     top: 0 !important;
     margin: 0 !important;
