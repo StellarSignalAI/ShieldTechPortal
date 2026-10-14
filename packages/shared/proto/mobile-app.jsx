@@ -128,90 +128,56 @@ const M_NATIVE_IDS = ['m-more','calendar','login','helpdesk','incidents','quote-
 function screenLabel(id) {
   if (id === 'sitescan') return 'Survey Scan';
   if (id === 'autobid') return 'Auto-Bid';
-  if (id === 'm-more') return 'Everything';
+  if (id === 'm-more') return 'Menu';
   if (id === 'cameras') return 'ShieldTech OS';
   if (id === 'finance') return 'Money';
   const item = NAV_ITEMS.find(i => i.id === id);
   return item ? item.label : 'ShieldTech';
 }
 
-/* ── Full directory (every desktop screen) ── */
+/* ── Menu (☰) — the seven workspaces, nothing else to scroll through ──
+   A row per workspace with its second level as chips, then Settings, the tab
+   bar editor and the other apps. Tapping a chip opens that workspace on that
+   tab (the phone remembers the last tab per workspace). */
 function MobileDirectory({ onNav }) {
-  const [q, setQ] = useState('');
-  const groups = NAV_GROUPS.map(g => ({
-    ...g,
-    items: g.items.filter(i => !i.hidden && (i.label.toLowerCase().includes(q.toLowerCase()) || (i.children || []).some(c => c.label.toLowerCase().includes(q.toLowerCase())))),
-  })).filter(g => g.items.length > 0);
-  const goSub = (item, sub) => { if (window.navSubSet) window.navSubSet(item.id, sub, 'nav'); onNav(item.id); };
   const appUrls = window.__shieldAppUrls || {};
-  const qn = q.trim().toLowerCase();
-  const promoMatch = (keywords) => qn.length > 0 && keywords.some(k => k.includes(qn));
+  const target = (w) => (w.component ? 'ws-' + w.id : w.screen);
+  const openTab = (w, t) => { window.__mwsPick = { ws: w.id, m: t.m }; try { localStorage.setItem('st2:mws:' + w.id, t.m); } catch { /* noop */ } onNav('ws-' + w.id); };
+  const row = { display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '13px 14px', border: '1px solid var(--border-subtle)', borderRadius: 12, background: 'var(--glass-bg)', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' };
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search all screens…"
-        style={{ background: 'rgba(var(--brand-rgb),0.04)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '11px 14px', color: 'var(--text-high)', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' }} />
-      {promoMatch(['auto bid', 'autobid', 'auto-bid', 'bids', 'proposals', 'leads', 'secret weapon']) && (
-        <button onClick={() => onNav('autobid')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(var(--brand-rgb),0.10), rgba(var(--ok-rgb),0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(var(--brand-rgb),0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>⟡</span>
-          <span style={{ flex: 1 }}>
-            <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Auto-Bid <span style={{ fontSize: 8, fontWeight: 700, color: '#34D399', border: '1px solid rgba(var(--ok-rgb),0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
-            <span style={{ display: 'block', fontSize: 10, color: 'var(--text-low)' }}>AI-built bids for every scraped lead — pick a tier, send the proposal</span>
-          </span>
-          <span style={{ color: 'var(--text-low)', fontSize: 14 }}>›</span>
-        </button>
-      )}
-      {promoMatch(['survey scan', 'surveyscan', 'site scan', '3d', 'lidar']) && (
-        <button onClick={() => onNav('sitescan')} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 13px', borderRadius: 12, border: '1px solid var(--border-strong)', background: 'linear-gradient(120deg, rgba(var(--brand-rgb),0.10), rgba(25,227,236,0.08))', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-          <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(var(--brand-rgb),0.14)', border: '1px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--brand)', flexShrink: 0 }}>◉</span>
-          <span style={{ flex: 1 }}>
-            <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-high)' }}>Survey Scan <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--accent-2)', border: '1px solid rgba(25,227,236,0.4)', borderRadius: 4, padding: '1px 5px', marginLeft: 4, verticalAlign: 'middle' }}>NEW</span></span>
-            <span style={{ display: 'block', fontSize: 10, color: 'var(--text-low)' }}>Scan · document · estimate · report — the whole site visit</span>
-          </span>
-          <span style={{ color: 'var(--text-low)', fontSize: 14 }}>›</span>
-        </button>
-      )}
-      {groups.map(g => (
-        <div key={g.id}>
-          <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--text-low)', margin: '4px 0 8px' }}>{g.label}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            {g.items.map(item => (
-              <React.Fragment key={item.id}>
-              <button onClick={() => item.children ? goSub(item, item.children[0].sub) : onNav(item.id)} className="glass" style={{
-                padding: '12px 12px', display: 'flex', alignItems: 'center', gap: 9,
-                border: '1px solid var(--border-subtle)', cursor: 'pointer',
-                background: 'var(--glass-bg)', borderRadius: 10,
-                textAlign: 'left', fontFamily: 'var(--font-body)', gridColumn: item.children ? '1 / -1' : undefined
-              }}>
-                <Icon name={item.icon} size={16} color="var(--brand)" />
-                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-high)', lineHeight: 1.25 }}>{item.id === 'cameras' ? 'ShieldTech OS' : item.label}</span>
-              </button>
-              {item.children && (
-                <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 6, flexWrap: 'wrap', padding: '0 2px 4px' }}>
-                  {item.children.filter(c => !qn || c.label.toLowerCase().includes(qn) || item.label.toLowerCase().includes(qn)).map(c => (
-                    <button key={c.sub} onClick={() => goSub(item, c.sub)} style={{ padding: '6px 11px', borderRadius: 14, fontSize: 11.5, fontWeight: 600, background: 'var(--card)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{c.label}</button>
-                  ))}
-                </div>)}
-              </React.Fragment>
-            ))}
-          </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {NAV_WORKSPACES.map(w => (
+        <div key={w.id} className="glass" style={{ borderRadius: 12 }}>
+          <button onClick={() => onNav(target(w))} style={{ ...row, border: 'none', borderRadius: w.tabs.length ? '12px 12px 0 0' : 12 }}>
+            <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(var(--brand-rgb),0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name={w.icon} size={16} color="var(--brand)" /></span>
+            <span style={{ flex: 1, fontSize: 14.5, fontWeight: 600, color: 'var(--text-high)' }}>{w.label}</span>
+            <span style={{ color: 'var(--text-low)', fontSize: 16 }}>›</span>
+          </button>
+          {w.tabs.length > 0 && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: '0 14px 12px 60px' }}>
+              {w.tabs.map(t => <button key={t.m} onClick={() => openTab(w, t)} style={{ padding: '6px 11px', borderRadius: 14, fontSize: 11.5, fontWeight: 600, background: 'var(--card)', border: '1px solid var(--border-subtle)', color: 'var(--text-mid)', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>{t.mLabel || t.label}</button>)}
+            </div>
+          )}
         </div>
       ))}
-      <div style={{ padding: '12px 0', borderTop: '1px solid var(--border-subtle)' }}>
-        <div className="label-sm" style={{ marginBottom: 8 }}>SETTINGS</div>
-        <button onClick={() => window.__shieldEditTabs && window.__shieldEditTabs()} className="glass" style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '12px 13px', border: '1px solid var(--border-subtle)', borderRadius: 10, background: 'var(--glass-bg)', cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left' }}>
-          <span style={{ fontSize: 16, color: 'var(--brand)' }}>✎</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-high)' }}>Customize tab bar</div>
-            <div style={{ fontSize: 10, color: 'var(--text-low)' }}>Choose, reorder & rename your bottom tabs</div>
-          </div>
-          <span style={{ color: 'var(--text-low)', fontSize: 14 }}>›</span>
-        </button>
-      </div>
-      <div style={{ padding: '12px 0', borderTop: '1px solid var(--border-subtle)' }}>
-        <div className="label-sm" style={{ marginBottom: 8 }}>OTHER APPS</div>
-        <a href="?desktop=1" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Desktop Portal →</a>
-        <a href={appUrls.tech || '#'} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Technician App →</a>
-        <a href={appUrls.customer || '#'} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Customer Portal →</a>
+      <button onClick={() => onNav(NAV_SETTINGS.screen)} className="glass" style={{ ...row, borderRadius: 12 }}>
+        <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(var(--brand-rgb),0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon name="settings" size={16} color="var(--text-mid)" /></span>
+        <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--text-high)' }}>Settings</span>
+        <span style={{ color: 'var(--text-low)', fontSize: 16 }}>›</span>
+      </button>
+      <button onClick={() => window.__shieldEditTabs && window.__shieldEditTabs()} className="glass" style={{ ...row, borderRadius: 12 }}>
+        <span style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(var(--brand-rgb),0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text-mid)', fontSize: 15 }}>✎</span>
+        <span style={{ flex: 1 }}>
+          <span style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--text-high)' }}>Tab bar</span>
+          <span style={{ display: 'block', fontSize: 11, color: 'var(--text-low)' }}>Choose and reorder the bottom tabs</span>
+        </span>
+        <span style={{ color: 'var(--text-low)', fontSize: 16 }}>›</span>
+      </button>
+      <div style={{ padding: '10px 2px 0', borderTop: '1px solid var(--border-subtle)' }}>
+        <div className="label-sm" style={{ marginBottom: 6 }}>OTHER APPS</div>
+        <a href="?desktop=1" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Desktop Portal →</a>
+        <a href={appUrls.tech || '#'} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Technician App →</a>
+        <a href={appUrls.customer || '#'} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 0', color: 'var(--brand)', textDecoration: 'none', fontSize: 13 }}><ShieldLogo size={18} /> Customer Portal →</a>
         <div className="mono" style={{ fontSize: 9, color: 'var(--text-low)', paddingTop: 10, opacity: 0.6 }}>build {window.__shieldBuild || 'dev'}{window.__shieldViewportInfo ? ` · ${window.__shieldViewportInfo()}` : ''}</div>
       </div>
     </div>
@@ -274,49 +240,16 @@ function MAvatarMenu({ onNav }) {
   );
 }
 
-function MobilePortalApp() {
-  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  // Restore the last screen on refresh/relaunch (device-local).
-  React.useEffect(() => {
-    const s = savedScreen('portal-m', null);
-    if (s && s !== (t.mscreen || 'custom-dashboard')) setTweak('mscreen', s);
-  }, []);
-  let screen = t.mscreen || 'custom-dashboard';
-  if (screen === 'hermes') screen = 'shieldtech-ai';
-  const handleNav = (id) => { const v = id === 'hermes' ? 'shieldtech-ai' : id; setTweak('mscreen', v); saveScreen('portal-m', v); };
-  const [histBack, setHistBack] = useState([]);
-  const [tabCfg] = useShieldStore(mobileTabsStore);
-  const [ssPrefs] = useShieldStore(ssPrefsStore);
-  const [svPrefs] = useShieldStore(surveyPrefsStore);
-  const [tabEditor, setTabEditor] = useState(false);
-  const [newJob, setNewJob] = useState(false);
-  const [drawer, setDrawer] = useState(false);
-  // Refresh the window hooks every render so they never capture stale closures.
-  React.useEffect(() => {
-    window.__shieldNav = handleNav;
-    window.__shieldNewJob = () => setNewJob(true);
-    window.__shieldEditTabs = () => setTabEditor(true);
-    window.__shieldOpenMenu = () => setDrawer(true);
-  });
-  const liveTabs = tabCfg.tabs.slice(0, tabCfg.maxTabs);
-
-  const nav = (id) => { setHistBack(h => [...h.slice(-12), screen]); handleNav(id); };
-  const goBack = () => {
-    if (histBack.length === 0) { nav('m-more'); return; }
-    const prev = histBack[histBack.length - 1];
-    setHistBack(h => h.slice(0, -1));
-    handleNav(prev);
-  };
-
-  const isTab = liveTabs.some(x => x.id === screen);
-  const activeId = isTab ? screen : null;
-
-  // Long-press anywhere on the tab bar opens the editor (tap still navigates).
-  const lpTimer = React.useRef(null);
-  const lpFired = React.useRef(false);
-  const startLP = () => { lpFired.current = false; lpTimer.current = setTimeout(() => { lpFired.current = true; setTabEditor(true); }, 450); };
-  const cancelLP = () => { clearTimeout(lpTimer.current); };
-
+/* Which kind of view a screen id resolves to on the phone: a unified
+   (UniFi-pattern) frame, a purpose-built native view, or a desktop-built
+   screen adapted by mobile.css. The shell sizes its scroll area by this. */
+function mobileKind(screen) {
+  if (mUnified(screen)) return 'unified';
+  if (M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen] || !!(window.M_OPS5 && window.M_OPS5[screen])) return 'native';
+  return 'desk';
+}
+/* The one place a screen id becomes a view. */
+function renderMobileScreen(screen, nav) {
   let content;
   const Unified = mUnified(screen);
   if (screen === 'm-more') content = <MobileDirectory onNav={nav} />;
@@ -363,6 +296,86 @@ function MobilePortalApp() {
     const Fn = M_SCREEN_MAP[screen] || (() => <MHomeView onNav={nav} />);
     content = <Fn />;
   }
+  return content;
+}
+
+/* ── Workspace (phone) — a chip row for the second level, then the chosen
+   bespoke mobile view underneath. ws-sell / ws-work / ws-money / ws-customers /
+   ws-team. The chosen tab is remembered per workspace on the device. */
+const M_WS_KEY = (id) => 'st2:mws:' + id;
+function MWorkspace({ wsId, nav }) {
+  const ws = NAV_WORKSPACES.find(w => w.id === wsId);
+  const tabs = ws ? ws.tabs : [];
+  const [cur, setCur] = useState(() => {
+    const pick = window.__mwsPick;
+    if (pick && pick.ws === wsId && tabs.some(t => t.m === pick.m)) { window.__mwsPick = null; return pick.m; }
+    try { const v = localStorage.getItem(M_WS_KEY(wsId)); if (v && tabs.some(t => t.m === v)) return v; } catch { /* noop */ }
+    return tabs.length ? tabs[0].m : 'custom-dashboard';
+  });
+  useEffect(() => { try { localStorage.setItem(M_WS_KEY(wsId), cur); } catch { /* noop */ } }, [cur]);
+  const kind = mobileKind(cur);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <div style={{ display: 'flex', gap: 6, padding: '8px 12px', overflowX: 'auto', flexShrink: 0, borderBottom: '1px solid var(--border-subtle)', background: 'rgba(var(--card-rgb),0.6)', scrollbarWidth: 'none' }}>
+        {tabs.map(t => {
+          const on = t.m === cur;
+          return <button key={t.m} onClick={() => setCur(t.m)} style={{ padding: '7px 13px', borderRadius: 16, border: `1px solid ${on ? 'rgba(var(--brand-rgb),0.45)' : 'var(--border-subtle)'}`, background: on ? 'rgba(var(--brand-rgb),0.14)' : 'var(--card)', color: on ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer', fontFamily: 'var(--font-body)', flexShrink: 0 }}>{t.mLabel || t.label}</button>;
+        })}
+      </div>
+      <div className="m-screen" data-desk={kind === 'unified' ? 'unified' : String(kind === 'desk')} style={kind === 'unified' ? { flex: 1, minHeight: 0, overflow: 'hidden', padding: 0 } : { flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
+        {renderMobileScreen(cur, nav)}
+      </div>
+    </div>
+  );
+}
+const mWorkspaceOf = (screen) => (typeof screen === 'string' && screen.startsWith('ws-') && NAV_WORKSPACES.some(w => 'ws-' + w.id === screen)) ? screen.slice(3) : null;
+
+function MobilePortalApp() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  // Restore the last screen on refresh/relaunch (device-local).
+  React.useEffect(() => {
+    const s = savedScreen('portal-m', null);
+    if (s && s !== (t.mscreen || 'custom-dashboard')) setTweak('mscreen', s);
+  }, []);
+  let screen = t.mscreen || 'custom-dashboard';
+  if (screen === 'hermes') screen = 'shieldtech-ai';
+  const handleNav = (id) => { const v = id === 'hermes' ? 'shieldtech-ai' : id; setTweak('mscreen', v); saveScreen('portal-m', v); };
+  const [histBack, setHistBack] = useState([]);
+  const [tabCfg] = useShieldStore(mobileTabsStore);
+  const [ssPrefs] = useShieldStore(ssPrefsStore);
+  const [svPrefs] = useShieldStore(surveyPrefsStore);
+  const [tabEditor, setTabEditor] = useState(false);
+  const [newJob, setNewJob] = useState(false);
+  const [drawer, setDrawer] = useState(false);
+  // Refresh the window hooks every render so they never capture stale closures.
+  React.useEffect(() => {
+    window.__shieldNav = handleNav;
+    window.__shieldNewJob = () => setNewJob(true);
+    window.__shieldEditTabs = () => setTabEditor(true);
+    window.__shieldOpenMenu = () => setDrawer(true);
+  });
+  const liveTabs = tabCfg.tabs.slice(0, tabCfg.maxTabs);
+
+  const nav = (id) => { setHistBack(h => [...h.slice(-12), screen]); handleNav(id); };
+  const goBack = () => {
+    if (histBack.length === 0) { nav('m-more'); return; }
+    const prev = histBack[histBack.length - 1];
+    setHistBack(h => h.slice(0, -1));
+    handleNav(prev);
+  };
+
+  const isTab = liveTabs.some(x => x.id === screen);
+  const activeId = isTab ? screen : null;
+
+  // Long-press anywhere on the tab bar opens the editor (tap still navigates).
+  const lpTimer = React.useRef(null);
+  const lpFired = React.useRef(false);
+  const startLP = () => { lpFired.current = false; lpTimer.current = setTimeout(() => { lpFired.current = true; setTabEditor(true); }, 450); };
+  const cancelLP = () => { clearTimeout(lpTimer.current); };
+
+  const wsId = mWorkspaceOf(screen);
+  const Unified = wsId ? null : mUnified(screen);
+  const content = wsId ? <MWorkspace key={screen} wsId={wsId} nav={nav} /> : renderMobileScreen(screen, nav);
   // Every mobile screen IS the complete, bespoke experience — no desktop
   // fallback and no "full toolset" escape hatch. Desktop layouts stay
   // desktop-only.
@@ -391,7 +404,7 @@ function MobilePortalApp() {
       </header>
 
       {/* Content */}
-      <div className="m-screen" data-desk={Unified ? 'unified' : !(M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen] || !!(window.M_OPS5 && window.M_OPS5[screen]))} style={Unified ? { flex: 1, minHeight: 0, overflow: 'hidden', padding: 0 } : { flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
+      <div className={wsId ? 'm-workspace' : 'm-screen'} data-desk={wsId ? 'ws' : Unified ? 'unified' : !(M_NATIVE_IDS.includes(screen) || !!M_NATIVE[screen] || !!(window.M_OPS5 && window.M_OPS5[screen]))} style={wsId || Unified ? { flex: 1, minHeight: 0, overflow: 'hidden', padding: 0, display: 'flex', flexDirection: 'column' } : { flex: 1, overflowY: 'auto', overflowX: 'auto', padding: 14 }}>
         {content}
       </div>
 

@@ -135,6 +135,57 @@ const NAV_LEGACY_IDS = {
   assets: ['cameras', 'assets'], incidents: ['helpdesk', 'incidents'], nps: ['customers-list', 'nps'], skills: ['employees', 'skills'], timesheets: ['approvals', 'time'], payroll: ['approvals', 'pay'],
 };
 
+/* ── The menu: seven workspaces, nothing nested in the rail ──
+   One flat list. Each workspace is a screen with a quiet tab strip for its
+   second level (screen-workspaces.jsx); a screen's own pages (Finance's
+   ledger, the OS disciplines, HR, Settings) stay inside that screen. NAV_GROUPS
+   above is kept as the search index behind "Jump to…" and the phone directory. */
+const NAV_WORKSPACES = [
+  { id: 'home', label: 'Home', icon: 'dashboard', screen: 'custom-dashboard', screens: ['custom-dashboard', 'dashboard', 'shieldtech-ai'], tabs: [] },
+  { id: 'sell', label: 'Sell', icon: 'pipeline', screen: 'crm', component: 'SellWorkspace', tabs: [
+    { screen: 'crm', label: 'Bid Board', component: 'SellBoardScreen', m: 'crm' },
+    { screen: 'proposals', label: 'Proposals', component: 'SellProposalsScreen', m: 'proposals' },
+    { screen: 'studio', label: 'Design Studio', component: 'StudioScreen', m: 'studio' },
+    { screen: 'survey-cloud', label: 'Survey Cloud', component: 'SurveyCloudScreen', m: 'sitescan', mLabel: 'Survey Scan' }] },
+  { id: 'work', label: 'Work', icon: 'dispatch', screen: 'calendar', component: 'WorkWorkspace', tabs: [
+    { screen: 'calendar', label: 'Calendar', component: 'DeliverCalendarScreen', m: 'calendar', mLabel: 'Schedule' },
+    { screen: 'dispatch', label: 'Dispatch & Fleet', component: 'DeliverDispatchScreen', m: 'dispatch', mLabel: 'Field' },
+    { screen: 'workorder', label: 'Work Orders', component: 'DeliverWorkOrdersScreen', m: 'workorder' },
+    { screen: 'projects', label: 'Projects', component: 'DeliverProjectsScreen', m: 'projects' },
+    { screen: 'plan-room', label: 'BlueShield', component: 'MoneyBlueShieldScreen', m: 'punchlist', mLabel: 'Punch lists' }] },
+  { id: 'money', label: 'Money', icon: 'finance', screen: 'finance', component: 'MoneyWorkspace', tabs: [
+    { screen: 'finance', label: 'Finance', component: 'FinanceScreen', m: 'finance' },
+    { screen: 'revops', label: 'Revenue', component: 'MoneyRevOpsScreen', m: 'revops' },
+    { screen: 'mrr', label: 'Recurring', component: 'MoneyRecurringScreen', m: 'mrr' },
+    { screen: 'purchase-orders', label: 'Purchasing', component: 'MoneyPurchasingScreen', m: 'purchase-orders' }] },
+  { id: 'customers', label: 'Customers', icon: 'customers', screen: 'customers-list', component: 'CustomersWorkspace', tabs: [
+    { screen: 'customers-list', label: 'Directory', component: 'CareCustomersScreen', m: 'customers-list' },
+    { screen: 'helpdesk', label: 'Help Desk', component: 'CareHelpdeskScreen', m: 'helpdesk' },
+    { screen: 'messages', label: 'Messages', component: 'CareMessagesScreen', m: 'messages' }] },
+  { id: 'systems', label: 'Systems', icon: 'topology', screen: 'cameras', screens: ['cameras', 'assets', 'topology', 'warroom', 'floorplan', 'anomaly'], tabs: [] },
+  { id: 'team', label: 'Team', icon: 'employees', screen: 'employees', component: 'TeamWorkspace', tabs: [
+    { screen: 'employees', label: 'Team', component: 'AdminTeamScreen', m: 'employees' },
+    { screen: 'hr', label: 'HR', component: 'AdminHRScreen', m: 'hr' },
+    { screen: 'approvals', label: 'Approvals', component: 'AdminApprovalsScreen', m: 'approvals' },
+    { screen: 'documents', label: 'Documents', component: 'AdminDocumentsScreen', m: 'documents' },
+    { screen: 'users', label: 'Users', component: 'AdminUsersScreen', m: 'users' }] },
+];
+const NAV_SETTINGS = { id: 'settings', label: 'Settings', icon: 'settings', screen: 'portal-settings' };
+/* screen id (current or legacy) → workspace id */
+const WORKSPACE_OF = (() => {
+  const m = {};
+  NAV_WORKSPACES.forEach(w => { m[w.screen] = w.id; (w.screens || []).forEach(s => { m[s] = w.id; }); w.tabs.forEach(t => { m[t.screen] = w.id; if (t.m) m[t.m] = w.id; }); });
+  Object.assign(m, { pay: 'money', invoices: 'money', estimates: 'money', outbox: 'money', inventory: 'money', customer: 'customers', timeline: 'customers', 'portal-settings': 'settings' });
+  return m;
+})();
+/* The workspace tab that owns a screen id (legacy ids resolve to their owner). */
+function wsTabFor(ws, id) {
+  const legacy = NAV_LEGACY_IDS[id] ? NAV_LEGACY_IDS[id][0] : id;
+  const extra = { pay: 'finance', invoices: 'finance', estimates: 'finance', outbox: 'finance', inventory: 'purchase-orders' }[id];
+  const sid = extra || legacy;
+  return ws.tabs.find(t => t.screen === sid || t.m === id) || ws.tabs[0] || null;
+}
+
 /* ── Sub-navigation bus ──
    A screen with children (Finance, ShieldTech OS) tells the sidebar which page
    it is on, and the sidebar tells the screen which page to open — one source
@@ -149,9 +200,16 @@ function useNavSub() {
   return v;
 }
 
-/* Flat list for backward compat */
-const NAV_ITEMS = NAV_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, section: g.id })));
+/* Flat list for backward compat (tab editor candidates, labels, command palette).
+   The phone's workspace screens (ws-sell, ws-work, …) lead so they are the
+   first things offered as bottom tabs. */
+const NAV_ITEMS = [
+  ...NAV_WORKSPACES.filter(w => w.component).map(w => ({ id: 'ws-' + w.id, icon: w.icon, label: w.label, section: 'workspace', useSvg: true })),
+  ...NAV_GROUPS.flatMap((g) => g.items.map((i) => ({ ...i, section: g.id }))),
+];
 NAV_ITEMS.unshift({ id: 'login', icon: 'credential', label: 'Login', section: 'auth', useSvg: true, hidden: true });
+const PAY_LEGACY = { pay: ['finance', 'invoices'], inventory: ['purchase-orders', 'inventory'] };
+Object.assign(NAV_LEGACY_IDS, PAY_LEGACY);
 
 /* ── Shield Logo ── */
 function ShieldLogo({ size = 32 }) {
@@ -168,99 +226,84 @@ function ShieldLogo({ size = 32 }) {
 
 }
 
-/* ── Nav Rail (Collapsible Groups) ── */
+/* ── Nav Rail — seven workspaces, one flat list ──
+   The active workspace unfolds its tabs underneath it (quiet, indented), so
+   the rail never shows more than ~12 rows. "Jump to…" searches every page the
+   platform has, including the third level that lives inside the screens. */
 function NavRail({ current: rawCurrent, onNav, collapsed = false, onToggleCollapse }) {
   const navSub = useNavSub();
-  // A legacy screen id highlights the entry that owns it now.
   const current = NAV_LEGACY_IDS[rawCurrent] ? NAV_LEGACY_IDS[rawCurrent][0] : rawCurrent;
+  const wsId = WORKSPACE_OF[rawCurrent] || WORKSPACE_OF[current] || null;
   const [q, setQ] = React.useState('');
-  const [openItems, setOpenItems] = React.useState(() => ({ [current]: true }));
-  React.useEffect(() => { setOpenItems(o => o[current] ? o : { ...o, [current]: true }); }, [current]);
-  const [openGroups, setOpenGroups] = React.useState(() => {
-    const defaults = { home: true, sell: true, deliver: true, collect: true, os: true, care: true, admin: true };
-    try { Object.assign(defaults, JSON.parse(localStorage.getItem('st2:nav-groups') || '{}')); } catch { /* noop */ }
-    const active = NAV_GROUPS.find((g) => g.items.some((i) => i.id === current));
-    if (active) defaults[active.id] = true;
-    return defaults;
-  });
-  React.useEffect(() => {
-    const active = NAV_GROUPS.find((g) => g.items.some((i) => i.id === current));
-    if (active && !openGroups[active.id]) setOpenGroups((prev) => ({ ...prev, [active.id]: true }));
-  }, [current]);
-  const toggleGroup = (gid) => setOpenGroups((prev) => { const n = { ...prev, [gid]: !prev[gid] }; try { localStorage.setItem('st2:nav-groups', JSON.stringify(n)); } catch { /* noop */ } return n; });
-
-  /* Quick jump: typing filters every entry and child across the groups. */
   const qn = q.trim().toLowerCase();
-  const matches = (item) => !qn || item.label.toLowerCase().includes(qn) || (item.children || []).some(k => k.label.toLowerCase().includes(qn));
-  const kidsOf = (item) => !qn ? (item.children || []) : (item.children || []).filter(k => k.label.toLowerCase().includes(qn) || item.label.toLowerCase().includes(qn));
 
-  const rowBase = { display: 'flex', alignItems: 'center', gap: 9, width: 'calc(100% - 16px)', margin: '1px 8px', padding: collapsed ? '9px 0' : '7px 10px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', cursor: 'pointer', borderRadius: 8, fontFamily: 'var(--font-body)', textAlign: 'left', transition: 'background 0.12s, color 0.12s', position: 'relative' };
+  /* Search index: workspace tabs + every page of every screen. */
+  const index = React.useMemo(() => {
+    const out = [];
+    NAV_WORKSPACES.forEach(w => {
+      out.push({ key: 'ws:' + w.id, label: w.label, where: 'Workspace', go: () => onNav(w.screen) });
+      w.tabs.forEach(t => out.push({ key: 'tab:' + t.screen, label: t.label, where: w.label, go: () => onNav(t.screen) }));
+    });
+    NAV_GROUPS.forEach(g => g.items.forEach(i => (i.children || []).forEach(k => {
+      const w = NAV_WORKSPACES.find(x => x.id === WORKSPACE_OF[i.id]);
+      out.push({ key: 'sub:' + i.id + ':' + k.sub, label: k.label, where: (w ? w.label + ' · ' : '') + i.label, go: () => onNav(i.id, k.sub) });
+    })));
+    out.push({ key: 'settings', label: 'Settings', where: 'Account', go: () => onNav(NAV_SETTINGS.screen) });
+    return out;
+  }, []);
+  const hits = qn ? index.filter(e => e.label.toLowerCase().includes(qn) || e.where.toLowerCase().includes(qn)).slice(0, 24) : [];
+
+  const rowBase = { display: 'flex', alignItems: 'center', gap: 10, width: 'calc(100% - 16px)', margin: '1px 8px', padding: collapsed ? '10px 0' : '9px 12px', justifyContent: collapsed ? 'center' : 'flex-start', border: 'none', cursor: 'pointer', borderRadius: 9, fontFamily: 'var(--font-body)', textAlign: 'left', transition: 'background 0.12s, color 0.12s', position: 'relative', background: 'transparent' };
+  const Row = ({ active, icon, label, onClick, title, sub }) => (
+    <button title={title || label} onClick={onClick}
+      style={{ ...rowBase, ...(sub ? { padding: '6px 12px 6px 40px', margin: '0 8px', width: 'calc(100% - 16px)' } : {}), background: active ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', color: active ? 'var(--brand)' : (sub ? 'var(--text-mid)' : 'var(--text-high)'), fontSize: sub ? 12.5 : 13.5, fontWeight: active ? 600 : (sub ? 400 : 500) }}
+      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.05)'; }}
+      onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
+      {icon && <Icon name={icon} size={16} color={active ? 'var(--brand)' : 'var(--text-mid)'} style={{ flexShrink: 0, width: 18 }} />}
+      {sub && <span style={{ position: 'absolute', left: 26, top: '50%', width: 5, height: 5, borderRadius: '50%', transform: 'translateY(-50%)', background: active ? 'var(--brand)' : 'var(--border-strong)' }} />}
+      {!collapsed && <span style={{ whiteSpace: 'nowrap', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>}
+    </button>
+  );
+
   return (
-    <nav style={{ width: collapsed ? 60 : 236, height: '100vh', flexShrink: 0, background: 'var(--card)', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', transition: 'width 0.2s ease', overflow: 'hidden', zIndex: 100 }}>
-      {/* Brand */}
+    <nav style={{ width: collapsed ? 60 : 224, height: '100vh', flexShrink: 0, background: 'var(--card)', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', transition: 'width 0.2s ease', overflow: 'hidden', zIndex: 100 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '18px 12px 12px', minHeight: 40 }}>
         {collapsed
           ? <img src="uploads/ShieldTech Emblem Transparent MK1 .png" alt="ShieldTech" style={{ height: 26, objectFit: 'contain' }} />
           : <img src="uploads/ShieldTech Logo Transparent MK3.png" alt="ShieldTech" style={{ height: 30, objectFit: 'contain' }} />}
       </div>
-      {/* Quick jump */}
       {!collapsed && (
         <div style={{ padding: '0 12px 8px' }}>
           <input value={q} onChange={e => setQ(e.target.value)} placeholder="Jump to…" style={{ width: '100%', boxSizing: 'border-box', padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--canvas)', color: 'var(--text-high)', fontSize: 12.5, fontFamily: 'var(--font-body)', outline: 'none' }} />
         </div>
       )}
 
-      {/* Groups */}
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '2px 0 8px' }}>
-        {NAV_GROUPS.map((group) => {
-          const items = group.items.filter((i) => !i.mobileOnly && matches(i));
-          if (!items.length) return null;
-          const isOpen = openGroups[group.id] || !group.collapsible || !!qn;
-          const hasActive = group.items.some((i) => i.id === current);
+        {qn ? (
+          hits.length ? hits.map(h => (
+            <button key={h.key} onClick={() => { setQ(''); h.go(); }} style={{ ...rowBase, flexDirection: 'column', alignItems: 'flex-start', gap: 1, padding: '7px 12px' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.05)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
+              <span style={{ fontSize: 13, color: 'var(--text-high)', fontWeight: 500 }}>{h.label}</span>
+              <span style={{ fontSize: 10.5, color: 'var(--text-low)' }}>{h.where}</span>
+            </button>
+          )) : <div style={{ padding: '14px 18px', fontSize: 12, color: 'var(--text-low)' }}>Nothing matches “{q}”.</div>
+        ) : NAV_WORKSPACES.map(w => {
+          const active = wsId === w.id;
+          const open = active && !collapsed && w.tabs.length > 0;
+          const activeTab = open ? wsTabFor(w, rawCurrent) : null;
           return (
-            <div key={group.id} style={{ marginBottom: 6 }}>
-              {!collapsed ? (
-                <button onClick={() => group.collapsible && toggleGroup(group.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%', padding: '10px 18px 4px', background: 'none', border: 'none', cursor: group.collapsible ? 'pointer' : 'default', fontFamily: 'var(--font-body)', color: hasActive ? 'var(--brand)' : 'var(--text-low)' }}>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>{group.label}</span>
-                  {group.collapsible && <span style={{ marginLeft: 'auto', fontSize: 9, opacity: 0.7, transition: 'transform 0.2s', transform: isOpen ? 'rotate(90deg)' : 'none', display: 'inline-block' }}>▶</span>}
-                  {!isOpen && hasActive && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--brand)', boxShadow: '0 0 6px var(--brand)' }} />}
-                </button>
-              ) : <div style={{ height: 1, background: 'var(--border-subtle)', margin: '6px 14px' }} />}
-              {(isOpen || collapsed) && items.map((item) => {
-                const active = current === item.id;
-                const kids = kidsOf(item);
-                const kidsOpen = kids.length > 0 && !collapsed && (openItems[item.id] || !!qn);
-                const activeSub = active && navSub && navSub.screen === item.id ? navSub.sub : null;
-                return (
-                  <React.Fragment key={item.id}>
-                    <button title={item.label}
-                      onClick={() => { if (item.children) { setOpenItems(o => ({ ...o, [item.id]: active ? !o[item.id] : true })); if (!active) onNav(item.id, item.children[0].sub); } else onNav(item.id); }}
-                      style={{ ...rowBase, background: active ? 'rgba(var(--brand-rgb),0.12)' : 'transparent', color: active ? 'var(--brand)' : 'var(--text-high)', fontSize: 13.5, fontWeight: active ? 600 : 500 }}
-                      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.05)'; }}
-                      onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
-                      {item.useSvg ? <Icon name={item.icon} size={15} color={active ? 'var(--brand)' : 'var(--text-mid)'} style={{ flexShrink: 0, width: 18 }} /> : <span style={{ fontSize: 13, width: 18, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>}
-                      {!collapsed && <span style={{ whiteSpace: 'nowrap', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>}
-                      {!collapsed && item.children && <span style={{ fontSize: 9, color: 'var(--text-low)', transition: 'transform 0.2s', transform: kidsOpen ? 'rotate(90deg)' : 'none', display: 'inline-block' }}>▶</span>}
-                    </button>
-                    {kidsOpen && kids.map((k) => {
-                      const on = active && (activeSub === k.sub || (!activeSub && k === (item.children || [])[0]));
-                      return (
-                        <button key={k.sub} onClick={() => onNav(item.id, k.sub)} style={{ ...rowBase, padding: '5px 10px 5px 38px', background: on ? 'rgba(var(--brand-rgb),0.08)' : 'transparent', color: on ? 'var(--brand)' : 'var(--text-mid)', fontSize: 12.5, fontWeight: on ? 600 : 400 }}
-                          onMouseEnter={(e) => { if (!on) e.currentTarget.style.background = 'rgba(var(--brand-rgb),0.04)'; }}
-                          onMouseLeave={(e) => { if (!on) e.currentTarget.style.background = 'transparent'; }}>
-                          <span style={{ position: 'absolute', left: 25, top: '50%', width: 5, height: 5, borderRadius: '50%', transform: 'translateY(-50%)', background: on ? 'var(--brand)' : 'var(--border-strong)' }} />
-                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.label}</span>
-                        </button>);
-                    })}
-                  </React.Fragment>);
-              })}
-            </div>);
+            <React.Fragment key={w.id}>
+              <Row active={active} icon={w.icon} label={w.label} onClick={() => onNav(active && w.tabs.length ? (activeTab || w.tabs[0]).screen : w.screen)} />
+              {open && w.tabs.map(t => <Row key={t.screen} sub active={activeTab === t} label={t.label} onClick={() => onNav(t.screen)} />)}
+            </React.Fragment>
+          );
         })}
-        {qn && !NAV_GROUPS.some(g => g.items.some(i => !i.mobileOnly && matches(i))) && <div style={{ padding: '14px 18px', fontSize: 12, color: 'var(--text-low)' }}>Nothing matches “{q}”.</div>}
       </div>
 
-      {/* Other apps + collapse */}
-      <div style={{ padding: '8px 10px', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ padding: '8px 0 6px', borderTop: '1px solid var(--border-subtle)' }}>
+        <Row active={wsId === 'settings'} icon={NAV_SETTINGS.icon} label={NAV_SETTINGS.label} onClick={() => onNav(NAV_SETTINGS.screen)} />
+      </div>
+      <div style={{ padding: '4px 10px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
         {!collapsed && <>
           <a href={(window.__shieldAppUrls && window.__shieldAppUrls.tech) || '#'} title="Tech app" style={{ flex: 1, fontSize: 11.5, color: 'var(--text-mid)', textDecoration: 'none', padding: '6px 8px', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="phone" size={12} color="var(--text-low)" /> Tech</a>
           <a href={(window.__shieldAppUrls && window.__shieldAppUrls.customer) || '#'} title="Customer portal" style={{ flex: 1, fontSize: 11.5, color: 'var(--text-mid)', textDecoration: 'none', padding: '6px 8px', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="customers" size={12} color="var(--text-low)" /> Customer</a>
@@ -674,7 +717,7 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
         <NavRail current={screen} onNav={onNav} collapsed={navCollapsed} onToggleCollapse={() => setNavCollapsed(prev => !prev)} />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <TopBar title={titles[screen] || 'ShieldTech'} onAI={onAI} onNotifications={() => setNotifOpen(!notifOpen)} onNav={onNav} />
+        <TopBar title={(NAV_WORKSPACES.find(w => w.id === WORKSPACE_OF[screen]) || {}).label || titles[screen] || 'ShieldTech'} onAI={onAI} onNotifications={() => setNotifOpen(!notifOpen)} onNav={onNav} />
         <main style={{ flex: 1, overflow: 'auto', padding: 24 }}>
           {children}
         </main>
@@ -692,4 +735,4 @@ function AppShell({ screen, onNav, children, onAI, isCustomer, onBack }) {
 
 }
 
-Object.assign(window, { ShieldLogo, NavRail, TopBar, AppShell, NAV_ITEMS, NAV_GROUPS, NAV_LEGACY_IDS, navSubSet, useNavSub });
+Object.assign(window, { ShieldLogo, NavRail, TopBar, AppShell, NAV_ITEMS, NAV_GROUPS, NAV_WORKSPACES, NAV_SETTINGS, WORKSPACE_OF, wsTabFor, NAV_LEGACY_IDS, navSubSet, useNavSub });
