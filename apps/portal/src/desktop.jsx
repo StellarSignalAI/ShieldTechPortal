@@ -39,50 +39,18 @@ const SCREEN_LIST = [
 const SCREEN_COMPONENTS = {
   'shieldtech-ai': 'ShieldAIScreen',
   /* Sell */
-  crm: 'SellBoardScreen',
-  autobid: 'SellBoardScreen',
-  'secret-weapon': 'SellBoardScreen',
-  proposals: 'SellProposalsScreen',
-  studio: 'StudioScreen',
-  'survey-cloud': 'SurveyCloudScreen',
-  /* Deliver */
-  calendar: 'DeliverCalendarScreen',
-  copilot: 'DeliverCalendarScreen',
-  dispatch: 'DeliverDispatchScreen',
-  workorder: 'DeliverWorkOrdersScreen',
-  photos: 'DeliverWorkOrdersScreen',
-  punchlist: 'DeliverWorkOrdersScreen',
-  projects: 'DeliverProjectsScreen',
-  'plan-room': 'MoneyBlueShieldScreen',
-  /* Collect */
-  finance: 'FinanceScreen',
-  revops: 'MoneyRevOpsScreen',
-  invoices: 'InvoicesDirectScreen',
-  estimates: 'EstimatesDirectScreen',
-  outbox: 'OutboxScreen',
-  'purchase-orders': 'MoneyPurchasingScreen',
-  'parts-req': 'MoneyPurchasingScreen',
-  mrr: 'MoneyRecurringScreen',
-  'rr-builder': 'MoneyRecurringScreen',
-  pay: 'PayPageScreen',
-  /* Care */
-  'customers-list': 'CareCustomersScreen',
-  cameras: 'MonitoringHubScreen',
-  assets: 'MonitoringHubScreen',
-  helpdesk: 'CareHelpdeskScreen',
-  incidents: 'CareHelpdeskScreen',
-  nps: 'CareCustomersScreen',
-  messages: 'CareMessagesScreen',
-  /* Admin */
-  employees: 'AdminTeamScreen',
-  skills: 'AdminTeamScreen',
-  users: 'AdminUsersScreen',
-  hr: 'AdminHRScreen',
-  approvals: 'AdminApprovalsScreen',
-  timesheets: 'AdminApprovalsScreen',
-  payroll: 'AdminApprovalsScreen',
-  expenses: 'AdminApprovalsScreen',
-  documents: 'AdminDocumentsScreen',
+  crm: 'SellWorkspace', autobid: 'SellWorkspace', 'secret-weapon': 'SellWorkspace', proposals: 'SellWorkspace', studio: 'SellWorkspace', 'survey-cloud': 'SellWorkspace',
+  /* Work */
+  calendar: 'WorkWorkspace', copilot: 'WorkWorkspace', dispatch: 'WorkWorkspace', workorder: 'WorkWorkspace', photos: 'WorkWorkspace', punchlist: 'WorkWorkspace', projects: 'WorkWorkspace', 'plan-room': 'WorkWorkspace',
+  /* Money */
+  finance: 'MoneyWorkspace', revops: 'MoneyWorkspace', invoices: 'MoneyWorkspace', estimates: 'MoneyWorkspace', outbox: 'MoneyWorkspace', pay: 'MoneyWorkspace', 'purchase-orders': 'MoneyWorkspace', 'parts-req': 'MoneyWorkspace', mrr: 'MoneyWorkspace', 'rr-builder': 'MoneyWorkspace',
+  /* Customers */
+  'customers-list': 'CustomersWorkspace', nps: 'CustomersWorkspace', helpdesk: 'CustomersWorkspace', incidents: 'CustomersWorkspace', messages: 'CustomersWorkspace',
+  /* Systems — the ShieldTech OS console is its own screen with its own app rail */
+  cameras: 'MonitoringHubScreen', assets: 'MonitoringHubScreen',
+  /* Team */
+  employees: 'TeamWorkspace', skills: 'TeamWorkspace', hr: 'TeamWorkspace', approvals: 'TeamWorkspace', timesheets: 'TeamWorkspace', payroll: 'TeamWorkspace', expenses: 'TeamWorkspace', documents: 'TeamWorkspace', users: 'TeamWorkspace',
+  /* Settings */
   'portal-settings': 'AdminSettingsScreen',
 };
 
@@ -107,9 +75,9 @@ function screenFromHash() {
   if (sub) window.__navSub = { screen: h, sub };
   return h;
 }
-/* One sidebar for everything: screens with children (Finance, ShieldTech OS)
-   render without their own rails and follow window.__navSub. */
-window.__navUnified = true;
+/* The sidebar lists workspaces only; Finance and ShieldTech OS keep their own
+   page menus inside their screens (the third level lives where it belongs). */
+window.__navUnified = false;
 
 function App() {
   const [t, setTweak] = window.useTweaks({
@@ -245,7 +213,7 @@ function App() {
   return (
     <>
       <AppShell screen={screen} onNav={handleNav} onAI={() => setShieldAIOpen(!aiOpen)}>
-        <ScreenComponent />
+        <ScreenComponent screenId={screen} />
       </AppShell>
       <TweaksPanel>
         {navTweaks}

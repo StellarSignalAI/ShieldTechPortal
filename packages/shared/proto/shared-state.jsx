@@ -194,32 +194,23 @@ function buildCustomer(form) {
 /* ── Mobile Bottom-Tab Config Store ──
    The user-editable bottom tab bar. `maxTabs` is the allocated cap (incl. the locked
    'All' tab pinned to the last slot). `tabs` are the editable slots (cap − 1 of them). */
-const M_ALL_TAB = { id: 'm-more', icon: 'grid-2', label: 'All', locked: true };
-const mobileTabsStore = createShieldStore('mobiletabs', {
-  maxTabs: 6,
-  tabs: [
-    { id: 'custom-dashboard', icon: 'dashboard', label: 'Home' },
-    { id: 'calendar',         icon: 'calendar',  label: 'Schedule' },
-    { id: 'dispatch',         icon: 'dispatch',  label: 'Field' },
-    { id: 'finance',          icon: 'finance',   label: 'Money' },
-    { id: 'cameras',          icon: 'topology',  label: 'OS' },
-  ],
-});
-/* Existing 4-tab defaults pick up the ShieldTech OS tab in the open slot. */
+const M_ALL_TAB = { id: 'm-more', icon: 'grid-2', label: 'Menu', locked: true };
+const M_TABS_DEFAULT = [
+  { id: 'custom-dashboard', icon: 'dashboard',  label: 'Home' },
+  { id: 'ws-work',          icon: 'dispatch',   label: 'Work' },
+  { id: 'ws-money',         icon: 'finance',    label: 'Money' },
+  { id: 'ws-customers',     icon: 'customers',  label: 'Customers' },
+  { id: 'cameras',          icon: 'topology',   label: 'Systems' },
+];
+const mobileTabsStore = createShieldStore('mobiletabs', { maxTabs: 6, tabs: M_TABS_DEFAULT });
+/* Phones still on one of the earlier default layouts move to the workspace
+   tabs; a bar the user customised is left alone. */
 (() => {
   const c = mobileTabsStore.get();
-  const legacy = ['custom-dashboard', 'calendar', 'dispatch', 'finance'];
-  if (c && Array.isArray(c.tabs) && c.tabs.length === 4 && c.tabs.every((t, i) => t.id === legacy[i]) && (c.maxTabs || 6) >= 6) {
-    mobileTabsStore.set({ ...c, maxTabs: 6, tabs: [...c.tabs, { id: 'cameras', icon: 'topology', label: 'OS' }] });
-  }
-})();
-/* Migrate the original 5-slot default up to 6 so there's an open slot to fill. */
-(() => {
-  const c = mobileTabsStore.get();
-  const legacy = ['custom-dashboard', 'calendar', 'dispatch', 'finance'];
-  if (c && c.maxTabs === 5 && Array.isArray(c.tabs) && c.tabs.length === 4 && c.tabs.every((t, i) => t.id === legacy[i])) {
-    mobileTabsStore.set({ ...c, maxTabs: 6 });
-  }
+  if (!c || !Array.isArray(c.tabs)) return;
+  const ids = c.tabs.map(t => t.id).join(',');
+  const olds = ['custom-dashboard,calendar,dispatch,finance', 'custom-dashboard,calendar,dispatch,finance,cameras'];
+  if (olds.includes(ids)) mobileTabsStore.set({ ...c, maxTabs: 6, tabs: M_TABS_DEFAULT });
 })();
 
 /* ── Approvals Store (expenses / timesheets / POs — approve & deny persist + sync) ── */

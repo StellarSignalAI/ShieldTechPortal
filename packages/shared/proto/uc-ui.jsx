@@ -160,5 +160,5 @@ const ucAgoDays = (t) => { if (!t) return null; return Math.floor((Date.now() - 
 
 Object.assign(window, {
   UcBtn, UcToggle, UcTabs, UcCard, UcTile, UcEmpty, UcTable, UcDot, UcStatusCell, UcSearch, UcChips, UcDrawer, UcProp, UcDonut,
-  UcFrame, useUcSub, useUcNavSub, useUcMobile, ucNavSubSet, ucMoney, ucMoneyK, ucDate, ucAgoDays,
+  UcFrame, useUcSub, useUcNavSub, useUcMobile, ucNavSubSet, ucMoney, ucMoneyK, ucDate, ucAgoDays, ucFont,
 });

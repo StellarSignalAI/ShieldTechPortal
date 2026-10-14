@@ -337,7 +337,7 @@ function MTabEditor({ onClose }) {
               <button onClick={() => setMax(Math.min(6, cfg.maxTabs + 1))} disabled={cfg.maxTabs >= 6} style={mwStep(cfg.maxTabs >= 6)}>+</button>
             </div>
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{usedTotal} of {cfg.maxTabs} slots used · the full <strong style={{ color: 'var(--text-mid)' }}>All</strong> directory now opens from the ☰ menu, top-left.</div>
+          <div style={{ fontSize: 10, color: 'var(--text-low)' }}>{usedTotal} of {cfg.maxTabs} slots used · every workspace is in the <strong style={{ color: 'var(--text-mid)' }}>☰ Menu</strong>, top-left.</div>
         </div>
 
         {/* Editable slots */}
