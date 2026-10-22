@@ -795,6 +795,38 @@ ShieldTech's own data and tools.
   viewport bottom, `window.scrollTo(0,120)` leaves scrollY at 0 (document never scrolls),
   no horizontal overflow, no page errors.
 
+### 2ac. Menu consolidation — seven workspaces, nothing nested in the rail
+- **Desktop rail** (`shell.jsx` `NAV_WORKSPACES`, `WORKSPACE_OF`, `wsTabFor`): Home · Sell ·
+  Work · Money · Customers · Systems · Team, plus Settings pinned at the bottom and the
+  Tech / Customer links. The active workspace unfolds its tabs underneath it (quiet, indented).
+  "Jump to…" searches an index of every workspace, tab and third-level page (the old
+  `NAV_GROUPS` tree is kept only as that index and for labels). ShieldTech AI is the top-bar
+  button; Messages is a Customers tab.
+- **Workspaces** (`screen-workspaces.jsx`): `Workspace({wsId, screenId})` renders a segmented
+  tab strip and the chosen screen below it, filling the content area (`--uf-h: 100%` for
+  UniFi frames). Tabs are real screen ids, so the hash, deep links, rail highlight and search
+  all keep working; a legacy id (photos, incidents, invoices…) lands on its owner tab and
+  steers that screen's page via `navSubSet` / `__qboParams.financeTab`. Sell = Bid Board ·
+  Proposals · Design Studio · Survey Cloud; Work = Calendar · Dispatch & Fleet · Work Orders ·
+  Projects · BlueShield; Money = Finance · Revenue · Recurring · Purchasing; Customers =
+  Directory · Help Desk · Messages; Team = Team · HR · Approvals · Documents · Users.
+  Systems is the ShieldTech OS console (its own app rail), Home is the dashboard.
+- `desktop.jsx`: every screen id routes to its workspace (`SCREEN_COMPONENTS`), the screen id
+  is passed as `screenId`, and `window.__navUnified = false` so Finance's page tree and the
+  OS app rail live inside their screens again (third level stays where it belongs).
+  `uc-ui.jsx` now exports `ucFont` (the OS rail used it and had been dead code).
+- **Phone** (`mobile-app.jsx`): the screen switch is `renderMobileScreen(id, nav)` +
+  `mobileKind(id)`; `MWorkspace` is a chip row (second level) over the chosen bespoke mobile
+  view, remembered per workspace in `st2:mws:<ws>`; ids `ws-sell / ws-work / ws-money /
+  ws-customers / ws-team`. The ☰ **Menu** is the seven workspaces with their chips, then
+  Settings, Tab bar, other apps. Bottom tabs default to Home · Work · Money · Customers ·
+  Systems (`shared-state.jsx` `M_TABS_DEFAULT`; phones still on an old default layout are
+  migrated, customised bars are left alone). Service worker cache `shieldtech-v35`.
+- Verified with Playwright: desktop rail rows, Sell/Work/Money/Customers/Team/Systems/
+  Settings/Home navigation with the expected hashes, workspace tabs switching the hash,
+  Jump to "Invoices" opening Money › Finance › Invoices; phone tabs, Work chips, Field chip
+  remembered, Menu rows, Menu chip → Sell on Proposals; no page errors.
+
 ### 3. Housekeeping
 - Rotate the Google OAuth client secret (was shared in chat earlier; advised).
 
